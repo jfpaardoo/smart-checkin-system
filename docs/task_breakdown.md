@@ -11,11 +11,11 @@ Este documento detalla la división del proyecto en pequeñas tareas abordables 
 ## FASE 1: Configuración Inicial y Limpieza (Día 1)
 
 ### Tarea 1.1: Limpieza del dominio Petclinic
-* **Descripción:** Eliminar del backend de Spring Boot y del frontend en React las entidades, controladores y vistas que no usaremos (Vet, Pet, Owner, Visit). Dejar únicamente la infraestructura core (configuración, excepciones, base).
+* **Descripción:** [COMPLETADA] Eliminar del backend de Spring Boot y del frontend en React las entidades, controladores y vistas que no usaremos (Vet, Pet, Owner, Visit). Dejar únicamente la infraestructura core (configuración, excepciones, base).
 * **Rama:** `chore/cleanup-petclinic-entities`
 
 ### Tarea 1.2: Configuración de Base de Datos
-* **Descripción:** Actualizar `application.properties` y `docker-compose.yml` para asegurar la conexión con la base de datos relacional (PostgreSQL/MariaDB) que usaremos en desarrollo.
+* **Descripción:** [COMPLETADA] Actualizar `application.properties` y `docker-compose.yml` para asegurar la conexión con la base de datos relacional (PostgreSQL/MariaDB) que usaremos en desarrollo.
 * **Rama:** `chore/db-configuration`
 
 ---

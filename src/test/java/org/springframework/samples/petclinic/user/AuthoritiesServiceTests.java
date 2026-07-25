@@ -35,13 +35,13 @@ class AuthoritiesServiceTests {
 	@Test
 	void shouldFindAllAuthorities() {
 		List<Authorities> auths = (List<Authorities>) this.authService.findAll();
-		assertEquals(4, auths.size());
+		assertEquals(1, auths.size());
 	}
 
 	@Test
 	void shouldFindAuthoritiesByAuthority() {
-		Authorities auth = this.authService.findByAuthority("VET");
-		assertEquals("VET", auth.getAuthority());
+		Authorities auth = this.authService.findByAuthority("ADMIN");
+		assertEquals("ADMIN", auth.getAuthority());
 	}
 
 	@Test
