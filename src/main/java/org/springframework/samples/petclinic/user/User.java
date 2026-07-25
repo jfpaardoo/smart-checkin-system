@@ -21,18 +21,21 @@ import lombok.EqualsAndHashCode;
 public class User extends BaseEntity {
 
 	@Column(unique = true)
-	String username;
+	private String username;
 
-	String password;
+	private String password;
 
 	@Column(unique = true, length = 4)
-	String personalCode;
+	private String personalCode;
 
-	String firstName;
+	@NotNull
+	private String firstName;
 
-	String lastName;
+	@NotNull
+	private String lastName;
 
-	Boolean isWorking = false;
+	@NotNull
+	private Boolean isWorking = false;
 
 	@Transient
 	public String getEmployeeBlock() {

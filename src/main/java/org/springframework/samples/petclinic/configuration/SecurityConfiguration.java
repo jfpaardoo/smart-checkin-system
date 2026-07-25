@@ -29,7 +29,6 @@ import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 public class SecurityConfiguration {
 
 	private static final String ADMIN = "ADMIN";
-	private static final String HR_MANAGER = "HR_MANAGER";
 
 	@Bean
 	@SuppressWarnings({ "null", "java:S4502" })
@@ -68,8 +67,8 @@ public class SecurityConfiguration {
 						// Rutas de administración y HR
 						.requestMatchers("/api/v1/users/**").hasAuthority(ADMIN)
 
-						// Otras reglas de acceso para el Check-in System irán aquí:
-						// .requestMatchers("/api/v1/checkins/**").authenticated()
+						// Otras reglas de acceso para el Check-in System:
+						.requestMatchers("/api/v1/checkins/**").authenticated()
 
 						// El resto denegado
 						.anyRequest().denyAll())

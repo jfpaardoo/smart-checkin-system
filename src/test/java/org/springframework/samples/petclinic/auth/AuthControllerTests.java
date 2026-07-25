@@ -45,6 +45,7 @@ import io.qameta.allure.Owner;
 @Owner("DP1-tutors")
 @WebMvcTest(value = AuthController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebSecurityConfigurer.class), excludeAutoConfiguration = {
 		SecurityAutoConfiguration.class })
+@SuppressWarnings("java:S3305")
 class AuthControllerTests {
 
 	private static final String BASE_URL = "/api/v1/auth";

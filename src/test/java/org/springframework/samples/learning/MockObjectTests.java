@@ -21,7 +21,7 @@ class MockObjectTests {
     AuditService auditService;
 
     @Test
-    void testAuditLogEntryMadeForNewTrade() throws Exception {
+    void testAuditLogEntryMadeForNewTrade() {
         Trade trade = new Trade("Ref 1", "Description 1");
         when(tradeRepository.createTrade(trade)).thenReturn(anyLong());
 
