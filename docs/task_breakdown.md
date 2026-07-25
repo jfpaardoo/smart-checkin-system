@@ -27,7 +27,7 @@ Este documento detalla la división del proyecto en pequeñas tareas abordables 
 * **Rama:** `feat/user-domain-security`
 
 ### Tarea 2.2: Dominio de Fichajes (Check-ins)
-* **Descripción:** Crear la entidad `Fichaje` relacionada con `Usuario`. Añadir lógica para almacenar fechaHora en formato `YYYYMMDD HH:mm` y tipo (Entrada/Salida).
+* **Descripción:** [COMPLETADA] Crear la entidad `Fichaje` (`Checkin`) relacionada con `Usuario`. Añadir lógica para almacenar fechaHora en formato `YYYYMMDD HH:mm` y tipo (Entrada/Salida) utilizando un Enum.
 * **Rama:** `feat/checkin-domain`
 
 ### Tarea 2.3: Dominio de Formaciones

@@ -19,6 +19,7 @@ import io.qameta.allure.Feature;
 @Feature("Authentication")
 @io.qameta.allure.Owner("DP1-tutors")
 @SpringBootTest
+@SuppressWarnings("java:S3305")
 class AuthServiceTests {
 
 	private static final String PRUEBA = "prueba";
