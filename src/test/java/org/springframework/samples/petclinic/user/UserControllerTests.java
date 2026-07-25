@@ -1,6 +1,6 @@
 package org.springframework.samples.petclinic.user;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -18,7 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
@@ -45,6 +45,7 @@ import io.qameta.allure.Owner;
 @Feature("Users Management")
 @Owner("DP1-tutors")
 @WebMvcTest(controllers = UserRestController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebSecurityConfigurer.class), excludeAutoConfiguration = SecurityConfiguration.class)
+@SuppressWarnings("null")
 class UserControllerTests {
 
 	private static final int TEST_USER_ID = 1;
@@ -55,10 +56,10 @@ class UserControllerTests {
 	@Autowired
 	private UserRestController userController;
 
-	@MockBean
+	@MockitoBean
 	private UserService userService;
 
-	@MockBean
+	@MockitoBean
 	private AuthoritiesService authService;
 
 	@Autowired
@@ -90,11 +91,11 @@ class UserControllerTests {
 		logged = new User();
 		logged.setUsername(details.getUsername());
 		logged.setPassword(details.getPassword());
-		Authorities aux = new Authorities();
-		for (GrantedAuthority auth : details.getAuthorities()) {
-			aux.setAuthority(auth.getAuthority());
+		Authorities authorities = new Authorities();
+		for (GrantedAuthority authority : details.getAuthorities()) {
+			authorities.setAuthority(authority.getAuthority());
 		}
-		logged.setAuthority(aux);
+		logged.setAuthority(authorities);
 		return logged;
 	}
 
@@ -119,22 +120,42 @@ class UserControllerTests {
 
 	@Test
 	@WithMockUser("admin")
-	void shouldFindAllWithAuthority() throws Exception {
+	void shouldFindAllByAuthority() throws Exception {
 		Authorities aux = new Authorities();
 		aux.setId(2);
 		aux.setAuthority("AUX");
 
-		User sara = new User();
-		sara.setId(2);
-		sara.setUsername("Sara");
-		sara.setAuthority(aux);
+		User mockUser = new User();
+		mockUser.setId(1);
+		mockUser.setUsername("user");
+		mockUser.setPassword("password");
+		mockUser.setAuthority(auth);
+		mockUser.setPersonalCode("1000");
+		mockUser.setFirstName("User");
+		mockUser.setLastName("Test");
+		mockUser.setIsWorking(false);
+
+		User user2 = new User();
+		user2.setId(2);
+		user2.setUsername("user2");
+		user2.setPassword("password");
+		user2.setAuthority(aux);
+		user2.setPersonalCode("1001");
+		user2.setFirstName("User2");
+		user2.setLastName("Test2");
+		user2.setIsWorking(false);
 
 		User juan = new User();
 		juan.setId(3);
 		juan.setUsername("Juan");
+		juan.setPassword("password");
 		juan.setAuthority(auth);
+		juan.setPersonalCode("1002");
+		juan.setFirstName("Juan");
+		juan.setLastName("Perez");
+		juan.setIsWorking(true);
 
-		when(this.userService.findAllByAuthority(auth.getAuthority())).thenReturn(List.of(user, juan));
+		when(this.userService.findAllByAuthority(auth.getAuthority())).thenReturn(List.of(mockUser, juan));
 
 		mockMvc.perform(get(BASE_URL).param("auth", "ADMIN")).andExpect(status().isOk())
 				.andExpect(jsonPath("$.size()").value(2)).andExpect(jsonPath("$[?(@.id == 1)].username").value("user"))
@@ -174,7 +195,7 @@ class UserControllerTests {
 
 	@Test
 	@WithMockUser("admin")
-	void shouldCreateUser() throws Exception {
+	void shouldDeleteUser() throws Exception {
 		User aux = new User();
 		aux.setUsername("Prueba");
 		aux.setPassword("Prueba");

@@ -7,9 +7,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
  * and open the template in the editor.
  */
 
-import javax.sql.DataSource;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -32,28 +29,19 @@ import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 @EnableWebSecurity
 public class SecurityConfiguration {
 
-	@Autowired
-	UserDetailsServiceImpl userDetailsService;
-
-	@Autowired
-	private AuthEntryPointJwt unauthorizedHandler;
-
-	@Autowired
-	DataSource dataSource;
-
 	private static final String ADMIN = "ADMIN";
 	private static final String CLINIC_OWNER = "CLINIC_OWNER";
 
-
 	@Bean
-	protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
+	@SuppressWarnings({"null", "java:S4502"})
+	protected SecurityFilterChain configure(HttpSecurity http, AuthEntryPointJwt unauthorizedHandler, AuthTokenFilter authTokenFilter) throws Exception {
 
 		http
 			.cors(withDefaults())
 			.csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-			.headers((headers) -> headers.frameOptions((frameOptions) -> frameOptions.disable()))
-			.exceptionHandling((exepciontHandling) -> exepciontHandling.authenticationEntryPoint(unauthorizedHandler))
+			.headers(headers -> headers.frameOptions(org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig::disable))
+			.exceptionHandling(exepciontHandling -> exepciontHandling.authenticationEntryPoint(unauthorizedHandler))
 
             .authorizeHttpRequests(auth -> auth
             // Recursos estáticos comunes (css, js, images, webjars…) públicos
@@ -104,13 +92,13 @@ public class SecurityConfiguration {
             // El resto denegado
              .anyRequest().denyAll())
 
-			.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+			.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
 		return http.build();
 	}
 
 	@Bean
-	public AuthTokenFilter authenticationJwtTokenFilter() {
-		return new AuthTokenFilter();
+	public AuthTokenFilter authenticationJwtTokenFilter(org.springframework.samples.petclinic.configuration.jwt.JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService) {
+		return new AuthTokenFilter(jwtUtils, userDetailsService);
 	}
 
 	@Bean
@@ -118,12 +106,9 @@ public class SecurityConfiguration {
 		return config.getAuthenticationManager();
 	}
 
-
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
-
-
 
 }

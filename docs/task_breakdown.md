@@ -23,7 +23,7 @@ Este documento detalla la división del proyecto en pequeñas tareas abordables 
 ## FASE 2: Modelado de Datos y Seguridad (Días 2-3)
 
 ### Tarea 2.1: Dominio de Usuario y Autenticación
-* **Descripción:** Crear la entidad `Usuario` (número personal 4 dígitos, nombre, apellidos, password, rol ADMIN/USER). Adaptar Spring Security y JWT para autenticar bajo este nuevo modelo.
+* **Descripción:** [COMPLETADA] Crear la entidad `Usuario` (número personal 4 dígitos, nombre, apellidos, password, rol ADMIN/USER). Adaptar Spring Security y JWT para autenticar bajo este nuevo modelo.
 * **Rama:** `feat/user-domain-security`
 
 ### Tarea 2.2: Dominio de Fichajes (Check-ins)
