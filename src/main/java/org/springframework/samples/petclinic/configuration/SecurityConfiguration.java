@@ -32,57 +32,61 @@ public class SecurityConfiguration {
 	private static final String HR_MANAGER = "HR_MANAGER";
 
 	@Bean
-	@SuppressWarnings({"null", "java:S4502"})
-	protected SecurityFilterChain configure(HttpSecurity http, AuthEntryPointJwt unauthorizedHandler, AuthTokenFilter authTokenFilter) throws Exception {
+	@SuppressWarnings({ "null", "java:S4502" })
+	protected SecurityFilterChain configure(HttpSecurity http, AuthEntryPointJwt unauthorizedHandler,
+			AuthTokenFilter authTokenFilter) throws Exception {
 
 		http
-			.cors(withDefaults())
-			.csrf(AbstractHttpConfigurer::disable)
-			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-			.headers(headers -> headers.frameOptions(org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig::disable))
-			.exceptionHandling(exepciontHandling -> exepciontHandling.authenticationEntryPoint(unauthorizedHandler))
+				.cors(withDefaults())
+				.csrf(AbstractHttpConfigurer::disable)
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.headers(headers -> headers.frameOptions(
+						org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig::disable))
+				.exceptionHandling(exepciontHandling -> exepciontHandling.authenticationEntryPoint(unauthorizedHandler))
 
-            .authorizeHttpRequests(auth -> auth
-            // Recursos estáticos comunes (css, js, images, webjars…) públicos
-            .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-            // H2 Console accesible
-            .requestMatchers(PathRequest.toH2Console()).permitAll()
-            .requestMatchers("/h2-console/**").permitAll()
+				.authorizeHttpRequests(auth -> auth
+						// Recursos estáticos comunes (css, js, images, webjars…) públicos
+						.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+						// H2 Console accesible
+						.requestMatchers(PathRequest.toH2Console()).permitAll()
+						.requestMatchers("/h2-console/**").permitAll()
 
-            // Raíz / páginas públicas
-            .requestMatchers("/", "/oups").permitAll()
+						// Raíz / páginas públicas
+						.requestMatchers("/", "/oups").permitAll()
 
-            // Swagger / OpenAPI accesible
-            .requestMatchers(
-                "/v3/api-docs/**",
-                "/swagger-ui.html",
-                "/swagger-ui/**",
-                "/swagger-resources/**"
-            ).permitAll()
+						// Swagger / OpenAPI accesible
+						.requestMatchers(
+								"/v3/api-docs/**",
+								"/swagger-ui.html",
+								"/swagger-ui/**",
+								"/swagger-resources/**")
+						.permitAll()
 
-            // API pública
-            .requestMatchers("/api/v1/auth/**").permitAll()
+						// API pública
+						.requestMatchers("/api/v1/auth/**").permitAll()
 
-            // Rutas de administración y HR
-            .requestMatchers("/api/v1/users/**").hasAuthority(ADMIN)
+						// Rutas de administración y HR
+						.requestMatchers("/api/v1/users/**").hasAuthority(ADMIN)
 
-            // Otras reglas de acceso para el Check-in System irán aquí:
-            // .requestMatchers("/api/v1/checkins/**").authenticated()
+						// Otras reglas de acceso para el Check-in System irán aquí:
+						// .requestMatchers("/api/v1/checkins/**").authenticated()
 
-            // El resto denegado
-             .anyRequest().denyAll())
+						// El resto denegado
+						.anyRequest().denyAll())
 
-			.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
+				.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
 		return http.build();
 	}
 
 	@Bean
-	public AuthTokenFilter authenticationJwtTokenFilter(org.springframework.samples.petclinic.configuration.jwt.JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService) {
+	public AuthTokenFilter authenticationJwtTokenFilter(
+			org.springframework.samples.petclinic.configuration.jwt.JwtUtils jwtUtils,
+			UserDetailsServiceImpl userDetailsService) {
 		return new AuthTokenFilter(jwtUtils, userDetailsService);
 	}
 
 	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception{
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
 		return config.getAuthenticationManager();
 	}
 

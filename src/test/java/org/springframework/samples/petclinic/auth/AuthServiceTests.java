@@ -21,6 +21,8 @@ import io.qameta.allure.Feature;
 @SpringBootTest
 class AuthServiceTests {
 
+	private static final String PRUEBA = "prueba";
+
 	@Autowired
 	protected AuthService authService;
 	@Autowired
@@ -41,9 +43,9 @@ class AuthServiceTests {
 	private SignupRequest createRequest(String auth, String username) {
 		SignupRequest request = new SignupRequest();
 		request.setAuthority(auth);
-		request.setFirstName("prueba");
-		request.setLastName("prueba");
-		request.setPassword("prueba");
+		request.setFirstName(PRUEBA);
+		request.setLastName(PRUEBA);
+		request.setPassword(PRUEBA);
 		request.setUsername(username);
 		request.setPersonalCode("9999");
 		return request;

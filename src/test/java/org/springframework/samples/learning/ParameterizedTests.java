@@ -66,9 +66,7 @@ class ParameterizedTests {
 	@ParameterizedTest 
 	@ValueSource(ints = { 0, 12 }) 
 	void negativeTestWithValueSource(int argument) {
-			Assertions.assertThrows(AssertionError.class, () -> {
-				assertTrue(argument > 0 && argument < 11); 
-		    });
+			Assertions.assertThrows(AssertionError.class, () -> assertTrue(argument > 0 && argument < 11));
 				
 	} 
 	
