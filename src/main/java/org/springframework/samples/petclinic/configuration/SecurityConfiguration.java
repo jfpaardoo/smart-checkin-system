@@ -9,7 +9,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.samples.petclinic.configuration.jwt.AuthEntryPointJwt;
 import org.springframework.samples.petclinic.configuration.jwt.AuthTokenFilter;
 import org.springframework.samples.petclinic.configuration.services.UserDetailsServiceImpl;
@@ -30,7 +29,7 @@ import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 public class SecurityConfiguration {
 
 	private static final String ADMIN = "ADMIN";
-	private static final String CLINIC_OWNER = "CLINIC_OWNER";
+	private static final String HR_MANAGER = "HR_MANAGER";
 
 	@Bean
 	@SuppressWarnings({"null", "java:S4502"})
@@ -63,31 +62,12 @@ public class SecurityConfiguration {
 
             // API pública
             .requestMatchers("/api/v1/auth/**").permitAll()
-            .requestMatchers("/api/v1/developers").permitAll()
-            .requestMatchers("/api/v1/plan").permitAll()
-            .requestMatchers("/api/v1/clinics").permitAll()
-            .requestMatchers("/api/v1/developers").permitAll()
 
-            // API restringida para propietarios de mascotas:
-            .requestMatchers("/api/v1/plan").hasAuthority("OWNER")
-
-            // API restringida para administradores
+            // Rutas de administración y HR
             .requestMatchers("/api/v1/users/**").hasAuthority(ADMIN)
-            .requestMatchers("/api/v1/clinicOwners/all").hasAuthority(ADMIN)
-            .requestMatchers(HttpMethod.DELETE, "/api/v1/consultations/**").hasAuthority(ADMIN)
-            .requestMatchers("/api/v1/owners/**").hasAuthority(ADMIN)
-            .requestMatchers("/api/v1/pets/stats").hasAuthority(ADMIN)
-            .requestMatchers("/api/v1/vets/stats").hasAuthority(ADMIN)
 
-			// Otras reglas de controal de acceso:
-			.requestMatchers("/api/v1/clinicOwners/**").hasAnyAuthority(ADMIN, CLINIC_OWNER)
-			.requestMatchers("/api/v1/visits/**").authenticated()
-			.requestMatchers("/api/v1/pets").authenticated()
-			.requestMatchers("/api/v1/pets/**").authenticated()
-            .requestMatchers("/api/v1/consultations/**").authenticated()
-			.requestMatchers("/api/v1/clinics/**").hasAnyAuthority(CLINIC_OWNER, ADMIN)
-			.requestMatchers(HttpMethod.GET, "/api/v1/vets/**").authenticated()
-			.requestMatchers("/api/v1/vets/**").hasAnyAuthority(ADMIN, "VET", CLINIC_OWNER)
+            // Otras reglas de acceso para el Check-in System irán aquí:
+            // .requestMatchers("/api/v1/checkins/**").authenticated()
 
             // El resto denegado
              .anyRequest().denyAll())
