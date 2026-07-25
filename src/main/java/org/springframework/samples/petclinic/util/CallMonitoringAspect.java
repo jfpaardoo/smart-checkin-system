@@ -37,6 +37,7 @@ import org.springframework.util.StopWatch;
  */
 @ManagedResource("petclinic:type=CallMonitor")
 @Aspect
+@SuppressWarnings("null")
 public class CallMonitoringAspect {
 
 	private boolean enabled = true;

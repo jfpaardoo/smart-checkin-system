@@ -30,7 +30,12 @@ import org.springframework.samples.petclinic.model.BaseEntity;
  * @see org.springframework.samples.petclinic.model.BaseEntity
  * @since 29.10.2003
  */
+@SuppressWarnings("null")
 public abstract class EntityUtils {
+
+	private EntityUtils() {
+		// hide public constructor
+	}
 
 	/**
 	 * Look up the entity of the given class with the given id in the given collection.

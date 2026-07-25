@@ -3,6 +3,8 @@ package org.springframework.samples.petclinic.auth;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doReturn;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -13,11 +15,11 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
@@ -51,16 +53,16 @@ class AuthControllerTests {
 	@Autowired
 	private AuthController authController;
 
-	@MockBean
+	@MockitoBean
 	private AuthenticationManager authenticationManager;
 
-	@MockBean
+	@MockitoBean
 	private JwtUtils jwtUtils;
 
-	@MockBean
+	@MockitoBean
 	private UserService userService;
 
-	@MockBean
+	@MockitoBean
 	private AuthService authService;
 
 	@Autowired
@@ -85,6 +87,7 @@ class AuthControllerTests {
 		signupRequest.setPassword("password");
 		signupRequest.setFirstName("Test");
 		signupRequest.setLastName("Test");
+		signupRequest.setPersonalCode("0000");
 		signupRequest.setAuthority("OWNER");
 
 		userDetails = new UserDetailsImpl(1, loginRequest.getUsername(), loginRequest.getPassword(),
@@ -94,12 +97,13 @@ class AuthControllerTests {
 	}
 
 	@Test
+	@SuppressWarnings("null")
 	void shouldAuthenticateUser() throws Exception {
-		Authentication auth = Mockito.mock(Authentication.class);
+		Authentication auth = mock(Authentication.class);
 
 		when(this.jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn(token);
 		when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
-		Mockito.doReturn(userDetails).when(auth).getPrincipal();
+		doReturn(userDetails).when(auth).getPrincipal();
 
 		mockMvc.perform(post(BASE_URL + "/signin").with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest))).andExpect(status().isOk())
@@ -108,6 +112,7 @@ class AuthControllerTests {
 	}
 
 	@Test
+	@SuppressWarnings("null")
 	void shouldValidateToken() throws Exception {
 		when(this.jwtUtils.validateJwtToken(token)).thenReturn(true);
 
@@ -117,6 +122,7 @@ class AuthControllerTests {
 	}
 
 	@Test
+	@SuppressWarnings("null")
 	void shouldNotValidateToken() throws Exception {
 		when(this.jwtUtils.validateJwtToken(token)).thenReturn(false);
 
@@ -126,6 +132,7 @@ class AuthControllerTests {
 	}
 
 	@Test
+	@SuppressWarnings("null")
 	void shouldRegisterUser() throws Exception {
 		when(this.userService.existsUser(signupRequest.getUsername())).thenReturn(false);
 		doNothing().when(this.authService).createUser(signupRequest);
@@ -136,6 +143,7 @@ class AuthControllerTests {
 	}
 
 	@Test
+	@SuppressWarnings("null")
 	void shouldNotRegisterUserWithExistingUsername() throws Exception {
 		when(this.userService.existsUser(signupRequest.getUsername())).thenReturn(true);
 

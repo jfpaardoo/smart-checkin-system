@@ -1,7 +1,6 @@
 package org.springframework.samples.learning;
 
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -11,7 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class MockObjectTests {
+class MockObjectTests {
 
     // This will be a stub
     @Mock
@@ -22,7 +21,7 @@ public class MockObjectTests {
     AuditService auditService;
 
     @Test
-    public void testAuditLogEntryMadeForNewTrade() throws Exception {
+    void testAuditLogEntryMadeForNewTrade() throws Exception {
         Trade trade = new Trade("Ref 1", "Description 1");
         when(tradeRepository.createTrade(trade)).thenReturn(anyLong());
 
@@ -31,7 +30,6 @@ public class MockObjectTests {
 
         verify(auditService).logNewTrade(trade);
 
-        //verify(auditService, times(2)).logNewTrade(trade);
     }
 
 }

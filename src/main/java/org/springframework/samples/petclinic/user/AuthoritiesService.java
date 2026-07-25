@@ -22,15 +22,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@SuppressWarnings("null")
 public class AuthoritiesService {
 
 	private AuthoritiesRepository authoritiesRepository;
-//	private UserService userService;
 
 	@Autowired
 	public AuthoritiesService(AuthoritiesRepository authoritiesRepository) {
 		this.authoritiesRepository = authoritiesRepository;
-//		this.userService = userService;
 	}
 
 	@Transactional(readOnly = true)
@@ -48,13 +47,5 @@ public class AuthoritiesService {
 	public void saveAuthorities(Authorities authorities) throws DataAccessException {
 		authoritiesRepository.save(authorities);
 	}
-
-//	@Transactional
-//	public void saveAuthorities(String role) throws ResourceNotFoundException {
-//		Authorities authority = new Authorities();
-//		authority.setAuthority(role);
-//		//user.get().getAuthorities().add(authority);
-//		authoritiesRepository.save(authority);
-//	}
 
 }

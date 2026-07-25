@@ -19,7 +19,9 @@ import io.qameta.allure.Feature;
 @Feature("Authentication")
 @io.qameta.allure.Owner("DP1-tutors")
 @SpringBootTest
-public class AuthServiceTests {
+class AuthServiceTests {
+
+	private static final String PRUEBA = "prueba";
 
 	@Autowired
 	protected AuthService authService;
@@ -30,7 +32,7 @@ public class AuthServiceTests {
 
 	@Test
 	@Transactional
-	public void shouldCreateAdminUser() {
+	void shouldCreateAdminUser() {
 		SignupRequest request = createRequest("ADMIN", "admin2");
 		int userFirstCount = ((Collection<User>) this.userService.findAll()).size();
 		this.authService.createUser(request);
@@ -41,10 +43,11 @@ public class AuthServiceTests {
 	private SignupRequest createRequest(String auth, String username) {
 		SignupRequest request = new SignupRequest();
 		request.setAuthority(auth);
-		request.setFirstName("prueba");
-		request.setLastName("prueba");
-		request.setPassword("prueba");
+		request.setFirstName(PRUEBA);
+		request.setLastName(PRUEBA);
+		request.setPassword(PRUEBA);
 		request.setUsername(username);
+		request.setPersonalCode("9999");
 		return request;
 	}
 }

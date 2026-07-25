@@ -31,10 +31,14 @@ public class AuthService {
 		User user = new User();
 		user.setUsername(request.getUsername());
 		user.setPassword(encoder.encode(request.getPassword()));
+		user.setPersonalCode(request.getPersonalCode());
+		user.setFirstName(request.getFirstName().toUpperCase());
+		user.setLastName(request.getLastName().toUpperCase());
+		user.setIsWorking(false);
 		String strRoles = request.getAuthority();
 		Authorities role;
 
-		if (strRoles != null && strRoles.toLowerCase().equals("admin")) {
+		if (strRoles != null && strRoles.equalsIgnoreCase("admin")) {
 			role = authoritiesService.findByAuthority("ADMIN");
 		} else {
 			role = authoritiesService.findByAuthority("USER");

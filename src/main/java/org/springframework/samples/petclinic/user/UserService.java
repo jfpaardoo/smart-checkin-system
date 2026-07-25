@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@SuppressWarnings("null")
 public class UserService {
 
 	private UserRepository userRepository;
@@ -63,7 +64,7 @@ public class UserService {
 
 	@Transactional
 	public User updateUser(@Valid User user, Integer idToUpdate) {
-		User toUpdate = findUser(idToUpdate);
+		User toUpdate = userRepository.findById(idToUpdate).orElseThrow(() -> new ResourceNotFoundException("User", "id", idToUpdate));
 		BeanUtils.copyProperties(user, toUpdate, "id");
 		userRepository.save(toUpdate);
 
@@ -72,7 +73,7 @@ public class UserService {
 
 	@Transactional
 	public void deleteUser(Integer id) {
-		User toDelete = findUser(id);
+		User toDelete = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
 		this.userRepository.delete(toDelete);
 	}
 
