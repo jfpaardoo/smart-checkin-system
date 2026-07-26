@@ -75,6 +75,9 @@ public class SecurityConfiguration {
 						// API pública
 						.requestMatchers("/api/v1/auth/**").permitAll()
 
+						// WebSockets
+						.requestMatchers("/ws/**").permitAll()
+
 						// Rutas de administración y HR
 						.requestMatchers("/api/v1/users/**").hasAuthority(ADMIN)
 						.requestMatchers("/api/v1/totp/**").hasAuthority(ADMIN)

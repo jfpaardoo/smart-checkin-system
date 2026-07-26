@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import tokenService from '../services/token.service';
 import Login from '../auth/login';
+import { CardGhostLoader } from '../components/GhostLoader';
 
 const PrivateRoute = ({ children }) => {
     const jwt = tokenService.getLocalAccessToken();
@@ -24,7 +25,7 @@ const PrivateRoute = ({ children }) => {
     } else return <Login message={message} navigation={false} />;
 
     if (isLoading === true) {
-        return <div>Loading...</div>;
+        return <CardGhostLoader />;
     } else return isValid === true ? children : <Login message={message} navigation={true} />
 };
 

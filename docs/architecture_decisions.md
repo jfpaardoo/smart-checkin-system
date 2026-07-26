@@ -50,3 +50,22 @@ Este documento es un registro vivo (*Architecture Decision Record* o ADR) de las
 *   **Decisión:** Eliminación del autorregistro público (`POST /api/v1/auth/signup`).
 *   **Justificación:** Al tratarse de un sistema corporativo para el control de asistencia y fichaje laboral dentro de una planta industrial (BA Glass), no debe permitirse que un usuario externo o empleado se cree una cuenta de forma autónoma. Esto previene el registro de identidades falsas o duplicadas y centraliza el control de altas/bajas en el departamento de Recursos Humanos (Admin) a través del Panel de Gestión de Usuarios.
 *   **Implicación:** El endpoint `/api/v1/auth/signup` ha sido desactivado y los flujos frontend correspondientes a la pantalla de registro se han eliminado por completo de la aplicación.
+
+### Fase 5: Sincronización en Tiempo Real mediante WebSockets (STOMP / SockJS) (Completada)
+*   **Decisión:** Integración de Spring WebSocket (`@EnableWebSocketMessageBroker`) con protocolo STOMP sobre SockJS y canal `/topic/totp-update`.
+*   **Justificación:** Elimina la necesidad de peticiones HTTP en bucle (*polling*) desde el quiosco de fichaje. El servidor emite automáticamente el nuevo token TOTP cada 10 segundos a todos los paneles de administración conectados, reduciendo el tráfico de red y garantizando la sincronización instantánea del código QR y la barra de progreso animada.
+*   **Implementación Frontend:** Creación de un contexto global `WebSocketProvider` y el hook reactivo `useSubscription` para gestionar la reconexión automática y el ciclo de vida de la suscripción STOMP.
+
+### Fase 6: Sistema de Diseño Visual "Liquid Glass" y UX Reactiva (Completada)
+*   **Sistema de Diseño Corporativo:** Rediseño íntegro de la interfaz de usuario bajo la estética de **Vidrio Líquido (Liquid Glassmorphism)** de BA Glass:
+    *   Cápsula de navegación flotante (`#2d2d2d`) con opacidad controlada (`rgba(40, 40, 40, 0.85)`) y refracción óptica `backdrop-filter: blur(60px)`.
+    *   Tarjetas, tablas y botones estilizados con bordes traslúcidos, sombras proyectadas y paleta cromática corporativa (verde pistacho `#cce364`, blanco brillante y grises industriales).
+    *   Inclusión de iconografía descriptiva FontAwesome (`react-icons/fa`) en menús de navegación y acciones.
+    *   Favicon circular transparente (`ba-logo-circle.png`) y metadatos PWA adaptados (`ShiftSync | BA Glass Smart Check-in`).
+*   **Carga Mediante Contenedores Fantasma (Skeleton Loaders):**
+    *   **Decisión:** Sustitución global de textos planos y spinners de carga anticuados (`Loading...`) por el componente reutilizable `GhostLoader.js` (`TableGhostLoader`, `CardGhostLoader`, `QRGhostLoader`).
+    *   **Justificación:** Implementa un efecto animado de brillo (*shimmer*) que respeta la forma de la interfaz durante la obtención de datos REST, eliminando el desplazamiento brusco de maquetación (*Cumulative Layout Shift - CLS*) y mejorando la fluidez percibida.
+
+### Fase 7: Purga de Código Muerto y Deuda Técnica (Completada)
+*   **Decisión:** Eliminación completa de todos los módulos, paquetes y componentes residuales del proyecto semilla (Spring Petclinic).
+*   **Justificación:** Se han purgado del backend y del frontend los paquetes `pet`, `vet`, `visit`, `owner`, `consultation`, vistas JSP antiguas y clases react obsoletas. Esto optimiza el tiempo de compilación, elimina la deuda técnica y garantiza que el 100% de la base de código responda exclusivamente al dominio funcional de **Smart Check-in**.

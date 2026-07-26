@@ -1,12 +1,12 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Form, Input, Label, FormGroup } from "reactstrap";
+import { Form, Input, Label, FormGroup, Row, Col, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from "reactstrap";
 import tokenService from "../../services/token.service";
 import "../../static/css/admin/adminPage.css";
-import getErrorModal from "../../util/getErrorModal";
 import getIdFromUrl from "../../util/getIdFromUrl";
 import useFetchData from "../../util/useFetchData";
 import useFetchState from "../../util/useFetchState";
+import { CardGhostLoader } from "../../components/GhostLoader";
+import { useToast } from "../../components/ToastProvider";
 
 const jwt = tokenService.getLocalAccessToken();
 
@@ -22,23 +22,26 @@ export default function UserEditAdmin() {
     authority: null,
   };
   const id = getIdFromUrl(2);
-  const [message, setMessage] = useState(null);
-  const [visible, setVisible] = useState(false);
-  const [user, setUser] = useFetchState(
+  const toast = useToast();
+  const [user, setUser, loading] = useFetchState(
     emptyItem,
     `/api/v1/users/${id}`,
     jwt,
-    setMessage,
-    setVisible,
+    null,
+    null,
     id
   );
   const auths = useFetchData(`/api/v1/users/authorities`, jwt);
 
   function handleChange(event) {
     const target = event.target;
-    const value = target.type === 'checkbox' ? target.checked : target.value;
+    let value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
     
+    if (name === "personalCode") {
+      value = value.replace(/\D/g, "").slice(0, 4);
+    }
+
     if (name === "authority") {
       const auth = auths.find((a) => a.id === Number(value));
       setUser({ ...user, authority: auth });
@@ -62,111 +65,184 @@ export default function UserEditAdmin() {
       .then((response) => response.json())
       .then((json) => {
         if (json.message) {
-          setMessage(json.message);
-          setVisible(true);
-        } else window.location.href = "/users";
+          let errorMsg = json.message;
+          // Handle Spring validation map format: {field=message}
+          if (errorMsg.startsWith("{") && errorMsg.endsWith("}")) {
+            errorMsg = errorMsg
+              .slice(1, -1)
+              .split(",")
+              .map(err => {
+                const [field, msg] = err.split("=");
+                const formattedField = field.trim() === "authority" ? "Role" : field.trim();
+                return `${formattedField}: ${msg.trim()}`;
+              })
+              .join("\n");
+          }
+          // Handle database unique constraints (e.g. SQL duplicate key)
+          else if (errorMsg.includes("duplicate key value")) {
+            if (errorMsg.includes("personal_code") || errorMsg.includes("personalCode")) {
+              errorMsg = "The Personal Code already exists for another user.";
+            } else if (errorMsg.includes("username")) {
+              errorMsg = "The Username already exists for another user.";
+            } else {
+              errorMsg = "A database conflict occurred (duplicated record).";
+            }
+          }
+          toast.error(errorMsg);
+        } else {
+          toast.success(user.id ? "User updated successfully" : "User created successfully");
+          setTimeout(() => { window.location.href = "/users"; }, 1200);
+        }
       })
-      .catch((error_) => alert(error_));
+      .catch(() => toast.error("Connection error. Please try again."));
   }
 
-  const modal = getErrorModal(setVisible, visible, message);
-  const authOptions = auths.map((auth) => (
-    <option key={auth.id} value={auth.id}>
-      {auth.authority}
-    </option>
-  ));
+  if (id !== "new" && loading) {
+    return <CardGhostLoader />;
+  }
 
   return (
-    <div className="ba-container">
-      <div className="ba-card" style={{ maxWidth: '600px', margin: '0 auto' }}>
+    <div className="ba-container justify-content-center">
+      <div className="ba-card ba-card-form my-auto mx-auto">
         <div className="ba-card-header">
           <h2>{user.id ? "Edit User" : "Add New User"}</h2>
         </div>
-        {modal}
         <Form onSubmit={handleSubmit}>
-          <FormGroup>
-            <Label for="username">Username</Label>
-            <Input
-              type="text"
-              required
-              name="username"
-              id="username"
-              value={user.username || ""}
-              onChange={handleChange}
-            />
-          </FormGroup>
+          <Row>
+            <Col md={6}>
+              <FormGroup>
+                <Label for="username">Username</Label>
+                <Input
+                  type="text"
+                  required
+                  name="username"
+                  id="username"
+                  value={user.username || ""}
+                  onChange={handleChange}
+                />
+              </FormGroup>
+            </Col>
 
-          {!user.id && (
-            <FormGroup>
-              <Label for="password">Password</Label>
-              <Input
-                type="password"
-                required
-                name="password"
-                id="password"
-                value={user.password || ""}
-                onChange={handleChange}
-              />
-            </FormGroup>
-          )}
+            {!user.id ? (
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="password">Password</Label>
+                  <Input
+                    type="password"
+                    required
+                    name="password"
+                    id="password"
+                    value={user.password || ""}
+                    onChange={handleChange}
+                  />
+                </FormGroup>
+              </Col>
+            ) : (
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="personalCode">Personal Code (4 digits)</Label>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    required
+                    maxLength="4"
+                    minLength="4"
+                    pattern="\d{4}"
+                    name="personalCode"
+                    id="personalCode"
+                    value={user.personalCode || ""}
+                    onChange={handleChange}
+                  />
+                </FormGroup>
+              </Col>
+            )}
+          </Row>
 
-          <FormGroup>
-            <Label for="personalCode">Personal Code (4 digits)</Label>
-            <Input
-              type="text"
-              required
-              maxLength="4"
-              minLength="4"
-              pattern="\d{4}"
-              name="personalCode"
-              id="personalCode"
-              value={user.personalCode || ""}
-              onChange={handleChange}
-            />
-          </FormGroup>
+          <Row>
+            <Col md={6}>
+              <FormGroup>
+                <Label for="firstName">First Name</Label>
+                <Input
+                  type="text"
+                  required
+                  name="firstName"
+                  id="firstName"
+                  value={user.firstName || ""}
+                  onChange={handleChange}
+                />
+              </FormGroup>
+            </Col>
 
-          <FormGroup>
-            <Label for="firstName">First Name</Label>
-            <Input
-              type="text"
-              required
-              name="firstName"
-              id="firstName"
-              value={user.firstName || ""}
-              onChange={handleChange}
-            />
-          </FormGroup>
+            <Col md={6}>
+              <FormGroup>
+                <Label for="lastName">Last Name</Label>
+                <Input
+                  type="text"
+                  required
+                  name="lastName"
+                  id="lastName"
+                  value={user.lastName || ""}
+                  onChange={handleChange}
+                />
+              </FormGroup>
+            </Col>
+          </Row>
 
-          <FormGroup>
-            <Label for="lastName">Last Name</Label>
-            <Input
-              type="text"
-              required
-              name="lastName"
-              id="lastName"
-              value={user.lastName || ""}
-              onChange={handleChange}
-            />
-          </FormGroup>
+          <Row>
+            {!user.id && (
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="personalCode">Personal Code (4 digits)</Label>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    required
+                    maxLength="4"
+                    minLength="4"
+                    pattern="\d{4}"
+                    name="personalCode"
+                    id="personalCode"
+                    value={user.personalCode || ""}
+                    onChange={handleChange}
+                  />
+                </FormGroup>
+              </Col>
+            )}
 
-          <FormGroup>
-            <Label for="authority">Role / Authority</Label>
-            <Input
-              type="select"
-              required
-              name="authority"
-              id="authority"
-              value={user.authority?.id || ""}
-              onChange={handleChange}
-            >
-              <option value="">Select Role</option>
-              {authOptions}
-            </Input>
-          </FormGroup>
+            <Col md={user.id ? 12 : 6}>
+              <FormGroup>
+                <Label for="authority">Role / Authority</Label>
+                <UncontrolledDropdown className="w-100">
+                  <DropdownToggle
+                    tag="button"
+                    type="button"
+                    className="ba-select-toggle w-100 d-flex align-items-center justify-content-between"
+                  >
+                    <span>{user.authority?.authority || "Select Role"}</span>
+                    <span className="dropdown-caret-icon">▼</span>
+                  </DropdownToggle>
+                  <DropdownMenu className="ba-dropdown-menu w-100">
+                    {auths.map((auth) => (
+                      <DropdownItem
+                        key={auth.id}
+                        className="ba-dropdown-item d-flex align-items-center justify-content-between"
+                        onClick={() => setUser({ ...user, authority: auth })}
+                      >
+                        <span>{auth.authority}</span>
+                        {user.authority?.id === auth.id && <span className="ms-2">✓</span>}
+                      </DropdownItem>
+                    ))}
+                  </DropdownMenu>
+                </UncontrolledDropdown>
+              </FormGroup>
+            </Col>
+          </Row>
 
-          <div style={{ marginTop: '30px', display: 'flex', gap: '15px' }}>
-            <button className="ba-btn-primary" type="submit">Save User</button>
-            <Link to={`/users`} className="ba-btn-secondary" style={{ textDecoration: "none", lineHeight: '1.5' }}>
+          <div className="form-action-group">
+            <button className="ba-btn-primary" type="submit">
+              Save User
+            </button>
+            <Link to="/users" className="ba-btn-secondary form-action-link">
               Cancel
             </Link>
           </div>

@@ -1,25 +1,23 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, ButtonGroup, Table } from "reactstrap";
 import tokenService from "../../services/token.service";
 import "../../static/css/admin/adminPage.css";
 import deleteFromList from "../../util/deleteFromList";
-import getErrorModal from "../../util/getErrorModal";
 import useFetchState from "../../util/useFetchState";
+import { TableGhostLoader } from "../../components/GhostLoader";
+import { useToast } from "../../components/ToastProvider";
 
 const jwt = tokenService.getLocalAccessToken();
 
 export default function UserListAdmin() {
-  const [message, setMessage] = useState(null);
-  const [visible, setVisible] = useState(false);
-  const [users, setUsers] = useFetchState(
+  const toast = useToast();
+  const [users, setUsers, loading] = useFetchState(
     [],
     `/api/v1/users`,
     jwt,
-    setMessage,
-    setVisible
+    null,
+    null
   );
-  const [alerts, setAlerts] = useState([]);
 
   const userList = users.map((user) => {
     return (
@@ -47,17 +45,15 @@ export default function UserListAdmin() {
             </Button>
             <Button
               size="sm"
-              color="danger"
-              style={{ borderRadius: '20px', marginLeft: '5px' }}
+              className="ba-btn-danger btn-gap"
               aria-label={"delete-" + user.id}
               onClick={() =>
                 deleteFromList(
                   `/api/v1/users/${user.id}`,
                   user.id,
                   [users, setUsers],
-                  [alerts, setAlerts],
-                  setMessage,
-                  setVisible
+                  toast,
+                  { entityName: "User" }
                 )
               }
             >
@@ -68,36 +64,37 @@ export default function UserListAdmin() {
       </tr>
     );
   });
-  
-  const modal = getErrorModal(setVisible, visible, message);
 
   return (
     <div className="ba-container">
       <div className="ba-card">
-        <div className="ba-card-header">
-          <h2>Users Management</h2>
-          <Button className="ba-btn-primary" tag={Link} to="/users/new">
-            + Add User
-          </Button>
-        </div>
-        
-        {alerts.map((a) => a.alert)}
-        {modal}
-        
-        <Table responsive aria-label="users" className="ba-table">
-          <thead>
-            <tr>
-              <th>Personal Code</th>
-              <th>Username</th>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>Status</th>
-              <th>Role</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>{userList}</tbody>
-        </Table>
+        {loading ? (
+          <TableGhostLoader columns={7} rows={4} />
+        ) : (
+          <>
+            <div className="ba-card-header">
+              <h2>Users Management</h2>
+              <Button className="ba-btn-primary" tag={Link} to="/users/new">
+                + Add User
+              </Button>
+            </div>
+            
+            <Table responsive aria-label="users" className="ba-table">
+              <thead>
+                <tr>
+                  <th>Personal Code</th>
+                  <th>Username</th>
+                  <th>First Name</th>
+                  <th>Last Name</th>
+                  <th>Status</th>
+                  <th>Role</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>{userList}</tbody>
+            </Table>
+          </>
+        )}
       </div>
     </div>
   );

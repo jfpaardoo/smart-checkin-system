@@ -1,12 +1,12 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Form, Input, Label, FormGroup } from "reactstrap";
+import { Form, Input, Label, FormGroup, Row, Col } from "reactstrap";
 import tokenService from "../../services/token.service";
 import "../../static/css/admin/adminPage.css";
-import getErrorModal from "../../util/getErrorModal";
 import getIdFromUrl from "../../util/getIdFromUrl";
 import useFetchState from "../../util/useFetchState";
 import moment from "moment";
+import { CardGhostLoader } from "../../components/GhostLoader";
+import { useToast } from "../../components/ToastProvider";
 
 const jwt = tokenService.getLocalAccessToken();
 
@@ -18,14 +18,13 @@ export default function FormationEditAdmin() {
     formationDate: "",
   };
   const id = getIdFromUrl(2);
-  const [message, setMessage] = useState(null);
-  const [visible, setVisible] = useState(false);
-  const [formation, setFormation] = useFetchState(
+  const toast = useToast();
+  const [formation, setFormation, loading] = useFetchState(
     emptyItem,
     `/api/v1/formations/${id}`,
     jwt,
-    setMessage,
-    setVisible,
+    null,
+    null,
     id
   );
 
@@ -51,68 +50,99 @@ export default function FormationEditAdmin() {
       .then((response) => response.json())
       .then((json) => {
         if (json.message) {
-          setMessage(json.message);
-          setVisible(true);
-        } else window.location.href = "/formations";
+          let errorMsg = json.message;
+          // Handle Spring validation map format: {field=message}
+          if (errorMsg.startsWith("{") && errorMsg.endsWith("}")) {
+            errorMsg = errorMsg
+              .slice(1, -1)
+              .split(",")
+              .map(err => {
+                const [field, msg] = err.split("=");
+                return `${field.trim()}: ${msg.trim()}`;
+              })
+              .join("\n");
+          }
+          // Handle database unique constraints (e.g. SQL duplicate key)
+          else if (errorMsg.includes("duplicate key value")) {
+            errorMsg = "This formation details already conflict with an existing record.";
+          }
+          toast.error(errorMsg);
+        } else {
+          toast.success(formation.id ? "Formation updated successfully" : "Formation created successfully");
+          setTimeout(() => { window.location.href = "/formations"; }, 1200);
+        }
       })
-      .catch((error_) => alert(error_));
+      .catch(() => toast.error("Connection error. Please try again."));
   }
 
-  const modal = getErrorModal(setVisible, visible, message);
-  
   // Format the date for the datetime-local input field
   const formattedDate = formation.formationDate 
     ? moment(formation.formationDate).format('YYYY-MM-DDTHH:mm') 
     : '';
 
+  if (id !== "new" && loading) {
+    return <CardGhostLoader />;
+  }
+
   return (
-    <div className="ba-container">
-      <div className="ba-card" style={{ maxWidth: '600px', margin: '0 auto' }}>
+    <div className="ba-container justify-content-center">
+      <div className="ba-card ba-card-form my-auto mx-auto">
         <div className="ba-card-header">
           <h2>{formation.id ? "Edit Formation" : "Create New Formation"}</h2>
         </div>
-        {modal}
         <Form onSubmit={handleSubmit}>
-          <FormGroup>
-            <Label for="name">Formation Name</Label>
-            <Input
-              type="text"
-              required
-              name="name"
-              id="name"
-              value={formation.name || ""}
-              onChange={handleChange}
-            />
-          </FormGroup>
+          <Row>
+            <Col md={6}>
+              <FormGroup>
+                <Label for="name">Formation Name</Label>
+                <Input
+                  type="text"
+                  required
+                  name="name"
+                  id="name"
+                  value={formation.name || ""}
+                  onChange={handleChange}
+                />
+              </FormGroup>
+            </Col>
 
-          <FormGroup>
-            <Label for="description">Description</Label>
-            <Input
-              type="textarea"
-              required
-              name="description"
-              id="description"
-              rows="4"
-              value={formation.description || ""}
-              onChange={handleChange}
-            />
-          </FormGroup>
+            <Col md={6}>
+              <FormGroup>
+                <Label for="formationDate">Date and Time</Label>
+                <Input
+                  type="datetime-local"
+                  required
+                  name="formationDate"
+                  id="formationDate"
+                  value={formattedDate}
+                  onChange={handleChange}
+                />
+              </FormGroup>
+            </Col>
+          </Row>
 
-          <FormGroup>
-            <Label for="formationDate">Date and Time</Label>
-            <Input
-              type="datetime-local"
-              required
-              name="formationDate"
-              id="formationDate"
-              value={formattedDate}
-              onChange={handleChange}
-            />
-          </FormGroup>
+          <Row>
+            <Col md={12}>
+              <FormGroup>
+                <Label for="description">Description</Label>
+                <Input
+                  type="textarea"
+                  required
+                  name="description"
+                  id="description"
+                  rows="3"
+                  value={formation.description || ""}
+                  onChange={handleChange}
+                />
+              </FormGroup>
+            </Col>
+          </Row>
 
-          <div style={{ marginTop: '30px', display: 'flex', gap: '15px' }}>
-            <button className="ba-btn-primary" type="submit">Save Formation</button>
-            <Link to={`/formations`} className="ba-btn-secondary" style={{ textDecoration: "none", lineHeight: '1.5' }}>
+          <div className="form-action-group">
+            <button className="ba-btn-primary" type="submit">
+              Save Formation
+            </button>
+            <Link to="/formations" className="ba-btn-secondary form-action-link">
               Cancel
             </Link>
           </div>

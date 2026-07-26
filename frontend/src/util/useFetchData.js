@@ -28,7 +28,7 @@ export default function useFetchData(url, jwt) {
                     if (!ignore) {
                         setData(json);
                     }
-                }).catch((message) => alert(message));
+                }).catch((error_) => console.error("Fetch error:", error_));
             return () => {
                 ignore = true;
             };

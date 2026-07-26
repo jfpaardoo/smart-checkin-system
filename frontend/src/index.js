@@ -9,12 +9,16 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter } from 'react-router-dom';
 
 
+import { WebSocketProvider } from './context/WebSocketProvider';
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter >
+    <WebSocketProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter >
+    </WebSocketProvider>
   </React.StrictMode>
 );
 // If you want to start measuring performance in your app, pass a function

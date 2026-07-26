@@ -1,26 +1,26 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Button, Table, Form, FormGroup, Input } from "reactstrap";
+import { Button, Table, Form, FormGroup, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from "reactstrap";
 import tokenService from "../../services/token.service";
 import "../../static/css/admin/adminPage.css";
-import getErrorModal from "../../util/getErrorModal";
 import getIdFromUrl from "../../util/getIdFromUrl";
 import useFetchState from "../../util/useFetchState";
 import moment from "moment";
+import { CardGhostLoader } from "../../components/GhostLoader";
+import { useToast } from "../../components/ToastProvider";
 
 const jwt = tokenService.getLocalAccessToken();
 
 export default function FormationDetailsAdmin() {
   const id = getIdFromUrl(2);
-  const [message, setMessage] = useState(null);
-  const [visible, setVisible] = useState(false);
+  const toast = useToast();
   
-  const [formation] = useFetchState(
+  const [formation, setFormation] = useFetchState(
     null,
     `/api/v1/formations/${id}`,
     jwt,
-    setMessage,
-    setVisible,
+    null,
+    null,
     id
   );
 
@@ -28,11 +28,23 @@ export default function FormationDetailsAdmin() {
     [],
     `/api/v1/users`,
     jwt,
-    setMessage,
-    setVisible
+    null,
+    null
   );
 
   const [selectedUserId, setSelectedUserId] = useState("");
+
+  const handleAddUserSuccess = () => {
+    toast.success("User added to formation");
+    fetch(`/api/v1/formations/${id}`, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        setFormation(data);
+        setSelectedUserId("");
+      });
+  };
 
   const handleAddUser = () => {
     if (!selectedUserId) return;
@@ -46,22 +58,32 @@ export default function FormationDetailsAdmin() {
     })
       .then((response) => {
         if (response.ok) {
-          window.location.reload();
-        } else {
-          return response.json().then(json => {
-            setMessage(json.message || "Failed to add user");
-            setVisible(true);
-          });
+          handleAddUserSuccess();
+          return null;
+        }
+        return response.json();
+      })
+      .then((json) => {
+        if (json) {
+          toast.error(json.message || "Failed to add user");
         }
       })
-      .catch((error) => {
-        setMessage(error.toString());
-        setVisible(true);
+      .catch(() => {
+        toast.error("Connection error. Please try again.");
       });
   };
 
+  const handleRemoveUserSuccess = () => {
+    toast.success("User removed from formation");
+    fetch(`/api/v1/formations/${id}`, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    })
+      .then((r) => r.json())
+      .then((data) => setFormation(data));
+  };
+
   const handleRemoveUser = (userId) => {
-    if (window.confirm("Are you sure you want to remove this user from the formation?")) {
+    const performRemove = () => {
       fetch(`/api/v1/formations/${id}/users/${userId}`, {
         method: "DELETE",
         headers: {
@@ -71,30 +93,37 @@ export default function FormationDetailsAdmin() {
       })
         .then((response) => {
           if (response.ok) {
-            window.location.reload();
-          } else {
-            return response.json().then(json => {
-              setMessage(json.message || "Failed to remove user");
-              setVisible(true);
-            });
+            handleRemoveUserSuccess();
+            return null;
+          }
+          return response.json();
+        })
+        .then((json) => {
+          if (json) {
+            toast.error(json.message || "Failed to remove user");
           }
         })
-        .catch((error) => {
-          setMessage(error.toString());
-          setVisible(true);
+        .catch(() => {
+          toast.error("Connection error. Please try again.");
         });
-    }
+    };
+
+    toast.confirm("Are you sure you want to remove this user from the formation?", performRemove);
   };
 
-  const modal = getErrorModal(setVisible, visible, message);
-
   if (!formation) {
-    return <div>Loading...</div>;
+    return <CardGhostLoader />;
   }
 
   // Find users not currently attending
   const attendeeIds = formation.attendees ? formation.attendees.map(u => u.id) : [];
   const availableUsers = allUsers.filter(u => !attendeeIds.includes(u.id));
+
+  // Find selected user label for the dropdown display
+  const selectedUser = availableUsers.find(u => String(u.id) === String(selectedUserId));
+  const selectedLabel = selectedUser 
+    ? `${selectedUser.firstName} ${selectedUser.lastName} (${selectedUser.username})`
+    : "Select User to Add...";
 
   return (
     <div className="ba-container">
@@ -105,31 +134,45 @@ export default function FormationDetailsAdmin() {
             Back to List
           </Button>
         </div>
-        {modal}
 
-        <div style={{ marginBottom: "30px", background: "#f8f9fa", padding: "20px", borderRadius: "8px" }}>
+        <div className="formation-info-box">
           <h4>Description</h4>
           <p>{formation.description}</p>
           <h4>Date & Time</h4>
           <p>{moment(formation.formationDate).format('YYYY-MM-DD HH:mm')}</p>
         </div>
 
-        <div className="ba-card-header" style={{ borderTop: "1px solid #eee", paddingTop: "20px" }}>
+        <div className="ba-card-header pt-3">
           <h3>Attendees</h3>
-          <Form inline style={{ display: "flex", gap: "10px" }} onSubmit={(e) => { e.preventDefault(); handleAddUser(); }}>
+          <Form inline className="formation-add-form" onSubmit={(e) => { e.preventDefault(); handleAddUser(); }}>
             <FormGroup className="mb-2 mr-sm-2 mb-sm-0">
-              <Input
-                type="select"
-                value={selectedUserId}
-                onChange={(e) => setSelectedUserId(e.target.value)}
-              >
-                <option value="">Select User to Add...</option>
-                {availableUsers.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.firstName} {u.lastName} ({u.username})
-                  </option>
-                ))}
-              </Input>
+              <UncontrolledDropdown className="w-100">
+                <DropdownToggle
+                  tag="button"
+                  type="button"
+                  className="ba-select-toggle d-flex align-items-center justify-content-between"
+                  style={{ minWidth: '280px' }}
+                >
+                  <span>{selectedLabel}</span>
+                  <span className="dropdown-caret-icon">▼</span>
+                </DropdownToggle>
+                <DropdownMenu className="ba-dropdown-menu w-100">
+                  {availableUsers.length > 0 ? (
+                    availableUsers.map((u) => (
+                      <DropdownItem
+                        key={u.id}
+                        className="ba-dropdown-item d-flex align-items-center justify-content-between"
+                        onClick={() => setSelectedUserId(String(u.id))}
+                      >
+                        <span>{u.firstName} {u.lastName} ({u.username})</span>
+                        {String(selectedUserId) === String(u.id) && <span className="ms-2">✓</span>}
+                      </DropdownItem>
+                    ))
+                  ) : (
+                    <DropdownItem disabled>No available users</DropdownItem>
+                  )}
+                </DropdownMenu>
+              </UncontrolledDropdown>
             </FormGroup>
             <Button className="ba-btn-primary" type="submit" disabled={!selectedUserId}>
               Add User
@@ -156,8 +199,7 @@ export default function FormationDetailsAdmin() {
                   <td>
                     <Button
                       size="sm"
-                      color="danger"
-                      style={{ borderRadius: "20px" }}
+                      className="ba-btn-danger"
                       onClick={() => handleRemoveUser(user.id)}
                     >
                       Remove
