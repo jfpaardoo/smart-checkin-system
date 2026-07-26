@@ -22,6 +22,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.Column;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import java.time.LocalDateTime;
 import lombok.EqualsAndHashCode;
 
 /**
@@ -32,6 +38,7 @@ import lombok.EqualsAndHashCode;
  * @author Juergen Hoeller
  */
 @MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(of = "id")
 public class BaseEntity {
 
@@ -53,6 +60,30 @@ public class BaseEntity {
 	@JsonIgnore
 	public boolean isNew() {
 		return this.id == null;
+	}
+
+	@CreatedDate
+	@Column(name = "created_at", updatable = false)
+	protected LocalDateTime createdAt;
+
+	@LastModifiedDate
+	@Column(name = "updated_at")
+	protected LocalDateTime updatedAt;
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public LocalDateTime getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(LocalDateTime updatedAt) {
+		this.updatedAt = updatedAt;
 	}
 
 }

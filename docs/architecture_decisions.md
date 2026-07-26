@@ -23,4 +23,20 @@ Este documento es un registro vivo (*Architecture Decision Record* o ADR) de las
     *   La entidad `Checkin` se relaciona con `User` mediante una clave foránea (`@ManyToOne`), guardando la fecha y hora mediante `LocalDateTime`.
     *   Se ha integrado la lógica de sincronización: al registrarse una `ENTRADA`, el estado `isWorking` del usuario pasa automáticamente a `true` (y viceversa para una `SALIDA`), optimizando las consultas de estado en tiempo real.
     *   Exposición mediante `CheckinRestController` para permitir el fichaje y consultar el historial propio.
+*   **Diseño de Formaciones (Formations)**:
+    *   Entidad `Formation` con relación `@ManyToMany` bidireccional con `User` a través de tabla intermedia `formation_attendees`.
+    *   Endpoint `POST /formations/{id}/attend` recibe únicamente el `personalCode` de 4 dígitos (validado con `@NotBlank @Size(4,4)`), devolviendo solo mensajes de éxito/fracaso sin datos del empleado (privacidad).
+    *   Creación de formaciones restringida a ADMIN mediante doble capa de seguridad: regla en `SecurityFilterChain` + `@PreAuthorize("hasAuthority('ADMIN')")` con `@EnableMethodSecurity`.
 
+### Fase 2 — Auditoría de Seguridad (Completada)
+*   **Protección de datos sensibles:** `@JsonIgnore` en el campo `password` de `User` para evitar la exposición del hash bcrypt en cualquier respuesta JSON.
+*   **Protección contra recursión infinita:** `@EqualsAndHashCode(exclude)` aplicado en `User` y `Formation` para evitar StackOverflow en las colecciones bidireccionales ManyToMany.
+*   **Validación de entrada:** `AttendRequest.personalCode` validado con `@NotBlank @Size(min=4, max=4)` y `@Valid` en el controlador.
+*   **Defensa en profundidad:** Toda ruta nueva protegida explícitamente en `SecurityFilterChain` (evitando la herencia silenciosa de `denyAll()`), más anotaciones `@PreAuthorize` como segunda barrera.
+
+### Fase 2 — Refuerzo de Seguridad de Grado Empresarial (Completada)
+*   **Mitigación de Fuerza Bruta (Rate Limiting):** Implementación de un `RateLimitFilter` (utilizando **Bucket4j**) antes de la cadena de autenticación. Limita los intentos en `/api/v1/auth/signin` a 10 peticiones por minuto por IP para bloquear ataques de *credential stuffing* o diccionario.
+*   **Bloqueo de Cuentas (Account Lockout):** La entidad `User` incluye lógica para suspender temporalmente el acceso (15 minutos) tras registrar 5 intentos fallidos de contraseña (`BadCredentialsException`).
+*   **Defensa Anti-Enumeración:** El endpoint de autenticación absorbe silenciosamente excepciones de `ResourceNotFoundException` durante el login. Esto evita revelar información sobre la existencia (o inexistencia) de cuentas en el sistema.
+*   **Trazabilidad Automática (JPA Auditing):** Se aplicó `@EnableJpaAuditing` a nivel global con `@EntityListeners` en la clase `BaseEntity`. Todos los registros (Usuarios, Fichajes, Formaciones) registran automáticamente las marcas inmutables de `@CreatedDate` y `@LastModifiedDate`.
+*   **Endurecimiento Perimetral (CORS & CSP):** Configuración manual y explícita de `CorsConfigurationSource` limitando orígenes, métodos y cabeceras permitidas. Sustitución de cabeceras anticuadas por un robusto **Content Security Policy (CSP)** configurado a `default-src 'self'`.

@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,5 +32,6 @@ public class Checkin extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     @NotNull
+    @JsonIgnore
     private User user;
 }

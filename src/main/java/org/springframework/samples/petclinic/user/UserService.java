@@ -2,7 +2,6 @@ package org.springframework.samples.petclinic.user;
 
 import jakarta.validation.Valid;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.samples.petclinic.exceptions.ResourceNotFoundException;
@@ -40,6 +39,12 @@ public class UserService {
 	}
 
 	@Transactional(readOnly = true)
+	public User findByPersonalCode(String personalCode) {
+		return userRepository.findByPersonalCode(personalCode)
+				.orElseThrow(() -> new ResourceNotFoundException("User", "personalCode", personalCode));
+	}
+
+	@Transactional(readOnly = true)
 	public User findCurrentUser() {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth == null)
@@ -65,9 +70,19 @@ public class UserService {
 	@Transactional
 	public User updateUser(@Valid User user, Integer idToUpdate) {
 		User toUpdate = userRepository.findById(idToUpdate).orElseThrow(() -> new ResourceNotFoundException("User", "id", idToUpdate));
-		BeanUtils.copyProperties(user, toUpdate, "id");
+		
+		toUpdate.setUsername(user.getUsername());
+		toUpdate.setFirstName(user.getFirstName());
+		toUpdate.setLastName(user.getLastName());
+		toUpdate.setPersonalCode(user.getPersonalCode());
+		toUpdate.setIsWorking(user.getIsWorking());
+		toUpdate.setAuthority(user.getAuthority());
+		
+		if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+			toUpdate.setPassword(user.getPassword());
+		}
+		
 		userRepository.save(toUpdate);
-
 		return toUpdate;
 	}
 

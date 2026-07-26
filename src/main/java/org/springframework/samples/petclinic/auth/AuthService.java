@@ -35,14 +35,8 @@ public class AuthService {
 		user.setFirstName(request.getFirstName().toUpperCase());
 		user.setLastName(request.getLastName().toUpperCase());
 		user.setIsWorking(false);
-		String strRoles = request.getAuthority();
-		Authorities role;
-
-		if (strRoles != null && strRoles.equalsIgnoreCase("admin")) {
-			role = authoritiesService.findByAuthority("ADMIN");
-		} else {
-			role = authoritiesService.findByAuthority("USER");
-		}
+		
+		Authorities role = authoritiesService.findByAuthority("USER");
 		
 		user.setAuthority(role);
 		userService.saveUser(user);

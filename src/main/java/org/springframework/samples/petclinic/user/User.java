@@ -1,10 +1,18 @@
 package org.springframework.samples.petclinic.user;
 
+import java.util.List;
+
+import org.springframework.samples.petclinic.formation.Formation;
+import java.time.LocalDateTime;
+
 import org.springframework.samples.petclinic.model.BaseEntity;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
@@ -15,7 +23,7 @@ import lombok.EqualsAndHashCode;
 
 @Getter
 @Setter
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = false, exclude = {"formations"})
 @Entity
 @Table(name = "appusers")
 public class User extends BaseEntity {
@@ -23,6 +31,7 @@ public class User extends BaseEntity {
 	@Column(unique = true)
 	private String username;
 
+	@JsonIgnore
 	private String password;
 
 	@Column(unique = true, length = 4)
@@ -35,7 +44,14 @@ public class User extends BaseEntity {
 	private String lastName;
 
 	@NotNull
+	@Column(name = "is_working")
 	private Boolean isWorking = false;
+
+	@Column(name = "failed_login_attempts")
+	private Integer failedLoginAttempts = 0;
+
+	@Column(name = "account_locked_until")
+	private LocalDateTime accountLockedUntil;
 
 	@Transient
 	public String getEmployeeBlock() {
@@ -61,5 +77,9 @@ public class User extends BaseEntity {
 		}
 		return cond;
 	}
+
+	@ManyToMany(mappedBy = "attendees")
+	@JsonIgnore
+	private List<Formation> formations;
 
 }

@@ -25,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.samples.petclinic.auth.payload.response.MessageResponse;
 import org.springframework.samples.petclinic.exceptions.AccessDeniedException;
 import org.springframework.samples.petclinic.util.RestPreconditions;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,11 +46,14 @@ class UserRestController {
 
 	private final UserService userService;
 	private final AuthoritiesService authService;
+	private final PasswordEncoder passwordEncoder;
 
 	@Autowired
-	public UserRestController(UserService userService, AuthoritiesService authService) {
+	public UserRestController(UserService userService, AuthoritiesService authService, 
+			PasswordEncoder passwordEncoder) {
 		this.userService = userService;
 		this.authService = authService;
+		this.passwordEncoder = passwordEncoder;
 	}
 
 	@GetMapping
@@ -76,6 +80,9 @@ class UserRestController {
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<User> create(@RequestBody @Valid User user) {
+		if (user.getPassword() != null) {
+			user.setPassword(passwordEncoder.encode(user.getPassword()));
+		}
 		User savedUser = userService.saveUser(user);
 		return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
 	}
@@ -84,6 +91,9 @@ class UserRestController {
 	@ResponseStatus(HttpStatus.OK)
 	public ResponseEntity<User> update(@PathVariable("userId") Integer id, @RequestBody @Valid User user) {
 		RestPreconditions.checkNotNull(userService.findUser(id), "User", "ID", id);
+		if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+			user.setPassword(passwordEncoder.encode(user.getPassword()));
+		}
 		return new ResponseEntity<>(this.userService.updateUser(user, id), HttpStatus.OK);
 	}
 

@@ -130,13 +130,31 @@
 		<!-- JSON WEB TOKEN -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt</artifactId>
-			<version>0.9.1</version>
+			<artifactId>jjwt-api</artifactId>
+			<version>0.11.5</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>0.11.5</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>0.11.5</version>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 			<version>20230227</version>
+		</dependency>
+		<!-- RATE LIMITING -->
+		<dependency>
+			<groupId>com.bucket4j</groupId>
+			<artifactId>bucket4j-core</artifactId>
+			<version>8.10.1</version>
 		</dependency>
 		<!-- Swagger -->
 		<dependency>
@@ -247,16 +265,6 @@
 							<arguments>run build</arguments>
 						</configuration>
 					</execution-->
-					<!-- <execution>
-						<id>coverage-frontend</id>
-						<goals>
-							<goal>npm</goal>
-						</goals>
-						<phase>prepare-package</phase>
-						<configuration>
-							<arguments>run build</arguments>
-						</configuration>
-					</execution>-->
 				</executions>
 			</plugin>
 			<plugin>
