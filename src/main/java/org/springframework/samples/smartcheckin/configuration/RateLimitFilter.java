@@ -17,8 +17,10 @@ import org.springframework.lang.NonNull;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
+import org.jpatterns.gof.ChainOfResponsibilityPattern;
 
 @Component
+@ChainOfResponsibilityPattern.ConcreteHandler
 public class RateLimitFilter extends OncePerRequestFilter {
 
     private final Map<String, Bucket> cache = new ConcurrentHashMap<>();

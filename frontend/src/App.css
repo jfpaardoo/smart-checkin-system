@@ -239,6 +239,21 @@
 }
 
 /* Buttons */
+.ba-btn-primary, .ba-btn-secondary, .ba-btn-blue, .ba-btn-danger, .auth-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  line-height: 1.2 !important;
+}
+
+.ba-btn-primary svg, .ba-btn-secondary svg, .ba-btn-blue svg, .ba-btn-danger svg, .auth-button svg {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+}
+
 .ba-btn-primary {
   background: rgba(204, 227, 100, 0.45) !important;
   backdrop-filter: blur(15px);
@@ -250,10 +265,6 @@
   font-weight: 600 !important;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 4px 15px rgba(204, 227, 100, 0.25);
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
   text-decoration: none !important;
 }
 
@@ -285,7 +296,7 @@
 }
 
 .ba-btn-blue {
-  background: rgba(59, 130, 246, 0.75) !important;
+  background: rgba(29, 78, 216, 0.85) !important;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.4) !important;

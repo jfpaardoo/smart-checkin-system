@@ -15,6 +15,7 @@ import FormationListAdmin from "./admin/formations/FormationListAdmin";
 import FormationEditAdmin from "./admin/formations/FormationEditAdmin";
 import FormationDetailsAdmin from "./admin/formations/FormationDetailsAdmin";
 import QRGeneratorAdmin from "./admin/qr/QRGeneratorAdmin";
+import AnalyticsDashboard from "./admin/analytics/AnalyticsDashboard";
 import ScannerCheckin from "./user/checkin/ScannerCheckin";
 import UserDashboard from "./user/dashboard/UserDashboard";
 import { ToastProvider } from "./components/ToastProvider";
@@ -54,6 +55,7 @@ function App() {
           <Route path="/formations/:id" exact={true} element={<PrivateRoute><FormationEditAdmin /></PrivateRoute>} />
           <Route path="/formations/:id/details" exact={true} element={<PrivateRoute><FormationDetailsAdmin /></PrivateRoute>} />
           <Route path="/qr-generator" exact={true} element={<PrivateRoute><QRGeneratorAdmin /></PrivateRoute>} />
+          <Route path="/analytics" exact={true} element={<PrivateRoute><AnalyticsDashboard /></PrivateRoute>} />
           <Route path="/docs" element={<PrivateRoute><SwaggerDocs /></PrivateRoute>} />
         </>)
     }

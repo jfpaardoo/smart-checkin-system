@@ -17,6 +17,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsServiceImpl;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -84,6 +86,8 @@ public class SecurityConfiguration {
 						// Rutas de administración y HR
 						.requestMatchers("/api/v1/users/**").hasAuthority(ADMIN)
 						.requestMatchers("/api/v1/totp/**").hasAuthority(ADMIN)
+						.requestMatchers("/api/v1/analytics/**").hasAuthority(ADMIN)
+						.requestMatchers("/api/v1/exports/**").hasAuthority(ADMIN)
 
 						// Otras reglas de acceso para el Check-in System:
 						.requestMatchers(HttpMethod.POST, "/api/v1/checkins/qr-fichaje").permitAll()
@@ -130,5 +134,9 @@ public class SecurityConfiguration {
 		source.registerCorsConfiguration("/**", configuration);
 		return source;
 	}
+
+	@Bean
+	public RoleHierarchy roleHierarchy() {
+		return RoleHierarchyImpl.fromHierarchy("ADMIN > HR_MANAGER \n HR_MANAGER > EMPLOYEE");	}
 
 }

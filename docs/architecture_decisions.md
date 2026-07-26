@@ -102,4 +102,42 @@ Este documento es un registro vivo (*Architecture Decision Record* o ADR) de las
     *   Cambio de idioma dinámico e instantáneo en tiempo real en toda la aplicación sin requerir recargar la página.
 *   **Cobertura Total de Cadenas:**
     *   Traducción integral de barras de navegación, formularios, tablas, listas de datos, encabezados y modales.
-    *   Internacionalización del sistema centralizado de notificaciones **Toast** (éxito, error, advertencias) y diálogos de confirmación (`deleteFromList.js`).
+    *   Internacionalización del sistema centralizado de notificaciones **Toast** (éxito, error, advertencias) y diálogos de confirmación (`deleteFromList.js` y `auth/logout`).
+
+### Fase 9: Criptografía Asimétrica JWT (RSA-256) (Completada)
+*   **Decisión:** Migración de algoritmos de firma simétrica HMAC SHA-256 (`HS256`) a criptografía asimétrica de clave pública/privada RSA de 2048 bits (`RS256`).
+*   **Justificación:**
+    *   **Seguridad Enterprise:** Al firmar los JWT con una clave privada resguardada exclusivamente en el backend y verificar la validez mediante la clave pública correspondiente, se elimina el riesgo de filtración de secreto compartido simétrico.
+    *   **Desacoplamiento y Microservicios:** Permite que servicios externos o portales de auditoría puedan verificar de forma transparente la autenticidad de los tokens emitidos por el sistema sin necesidad de conocer la clave de firma.
+
+### Fase 10: Procesamiento de Lotes y Consolidación de Datos (Spring Batch 5) (Completada)
+*   **Decisión:** Integración de **Spring Batch 5** para tareas periódicas de consolidación estadística e informes de fichajes.
+*   **Inicialización de Esquema Metadata JDBC:**
+    *   Configuración explícita en `application-postgres.properties` (`spring.batch.jdbc.initialize-schema=always`).
+    *   Garantiza la creación inmutable y automática de las tablas meta del motor de lotes (`batch_job_instance`, `batch_job_execution`, etc.) tanto en entornos de desarrollo Docker/PostgreSQL 15 como en plataformas Cloud SQL de producción.
+
+### Fase 11: Jerarquía de Roles y Patrones de Inyección Clean Code (Completada)
+*   **Jerarquía de Roles de Seguridad (`RoleHierarchy`):**
+    *   **Decisión:** Configuración formal del bean `@Bean public RoleHierarchy roleHierarchy()` definiendo la relación `ADMIN > HR_MANAGER` y `HR_MANAGER > EMPLOYEE`.
+    *   **Justificación:** Simplifica la definición de controladores REST al permitir que un usuario con rol `ADMIN` herede automáticamente todas las autoridades y permisos funcionales de los roles inferiores (`HR_MANAGER` y `EMPLOYEE`), reduciendo la redundancia de reglas en `SecurityFilterChain` y expresiones `@PreAuthorize`.
+*   **Refactorización a Inyección por Constructor (Clean Code & JPatterns):**
+    *   **Decisión:** Sustitución total de la inyección por atributos privados (`@Autowired private Service service;`) por **inyección implícita/explícita por constructor** en todos los controladores REST y servicios Spring.
+    *   **Justificación:** Garantiza la inmutabilidad de los componentes (atributos `final`), facilita la ejecución de pruebas unitarias desacopladas sin necesidad de utilidades de reflexión (`ReflectionTestUtils`), y cumple estrictamente con las reglas de calidad de código y patrones Java de SonarQube/SonarLint (reglas S3305 y S3920).
+
+### Fase 12: Módulo de Analíticas y Exportación de Fichajes (Completada)
+*   **Endpoints Restringidos a Administradores:**
+    *   Creación de `/api/v1/analytics` y `/api/v1/exports/checkins/{type}` protegidos explícitamente en `SecurityConfiguration.java` (`.requestMatchers("/api/v1/analytics/**", "/api/v1/exports/**").hasAuthority("ADMIN")`).
+*   **Visualización de Datos Reactiva (Recharts):**
+    *   Integración de componentes gráficos (`LineChart` y Donut `PieChart`) para monitorizar tendencias de asistencia laboral a 30 días y tasas de presencia en formaciones.
+*   **Arquitectura Frontend Defensiva:**
+    *   Verificación estricta de estado HTTP (`if (req.ok)`) previa a la deserialización JSON para prevenir caídas por páginas de error o denegaciones 403.
+    *   Sustitución de componentes obsoletos por renderizado directo con paletas de color accesibles (cumplimiento de contraste WCAG AA).
+
+### Fase 13: Ecosistema Visual Completo "Full Liquid Glassmorphism" (Completada)
+*   **Atmósfera Global de Cristal Líquido:**
+    *   Integración en `index.css` de un lienzo ambiental con orbes de luz radiales flotantes (`body::before` y `body::after` con desenfoque gaussiano de `90px`-`100px`), proporcionando un efecto de profundidad óptica en todo el sistema.
+*   **Estandarización de Componentes de Cristal:**
+    *   **Tarjetas y Formularios:** Aplicación unificada de `backdrop-filter: blur(35px)`, bordes traslúcidos `rgba(255, 255, 255, 0.85)` y sombras difusas (`box-shadow`) en contenedores principales (`.ba-card`), diálogos modales (`.modal-content`) y formularios de autenticación (`.auth-form-container`).
+    *   **Cápsulas de Botón de Cristal:** Botones de acción (`.ba-btn-primary`, `.ba-btn-blue`, `.ba-btn-secondary`, `.ba-btn-danger`, `.auth-button`) alineados con Flexbox (`gap: 8px`), iconos centraros e internacionalización completa.
+    *   **Entradas de Formulario:** Entradas y selectores estilizados con vidrio helado (`rgba(255, 255, 255, 0.45)`), resplandor dinámico en foco (`#cce364`) y etiquetas flotantes animadas.
+

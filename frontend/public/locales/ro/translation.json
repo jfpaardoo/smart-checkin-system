@@ -6,7 +6,8 @@
     "qrGenerator": "Generator QR",
     "docs": "Documentație",
     "login": "Autentificare",
-    "logout": "Deconectare"
+    "logout": "Deconectare",
+    "analytics": "Analitice"
   },
   "home": {
     "welcome": "Bine ați venit la ShiftSync",
@@ -23,7 +24,7 @@
   },
   "users": {
     "title": "Gestionare Utilizatori",
-    "addUser": "+ Adăugare Utilizator",
+    "addUser": "Adăugare Utilizator",
     "editUser": "Editare Utilizator",
     "addNewUser": "Adăugare Utilizator Nou",
     "saveUser": "Salvare Utilizator",
@@ -55,7 +56,7 @@
   },
   "formations": {
     "title": "Gestionare Formări",
-    "createFormation": "+ Creare Formare",
+    "createFormation": "Creare Formare",
     "editFormation": "Editare Formare",
     "createNew": "Creare Formare Nouă",
     "saveFormation": "Salvare Formare",
@@ -192,7 +193,9 @@
     "connectionError": "Eroare de conexiune. Vă rugăm să încercați din nou.",
     "deleteConfirm": "Sigur doriți să ștergeți {{entity}}?",
     "deleted": "{{entity}} șters cu succes",
-    "deleteError": "Eroare la ștergerea {{entity}}"
+    "deleteError": "Eroare la ștergerea {{entity}}",
+    "confirmLogout": "Sigur doriți să vă deconectați?",
+    "noUserLoggedIn": "Niciun utilizator conectat"
   },
   "lang": {
     "es": "Español",
@@ -203,5 +206,15 @@
     "pl": "Polski",
     "bg": "Български",
     "ro": "Română"
+  },
+  "analytics": {
+    "title": "Panou de Analitice",
+    "exportCsv": "Exportați CSV",
+    "exportExcel": "Exportați Excel",
+    "totalCheckins": "Total Check-in-uri (Ultimele 30 de Zile)",
+    "formationAttendance": "Prezența la Formări",
+    "attendance": "Prezență",
+    "absence": "Absență",
+    "daysTracked": "Zile Înregistrate"
   }
 }

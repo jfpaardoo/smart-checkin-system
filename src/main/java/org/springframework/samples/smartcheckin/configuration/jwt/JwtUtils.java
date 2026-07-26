@@ -3,6 +3,13 @@ package org.springframework.samples.smartcheckin.configuration.jwt;
 import java.util.HashMap;
 import java.util.Map;
 import java.time.Instant;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPublicKey;
+import java.util.Base64;
+
+import jakarta.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,22 +23,35 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
-import java.security.Key;
+
+import org.jpatterns.gof.SingletonPattern;
 
 @Component
+@SingletonPattern.Singleton
 public class JwtUtils {
 	private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
-
-	@Value("${smartcheckin.app.jwtSecret}")
-	private String jwtSecret;
 
 	@Value("${smartcheckin.app.jwtExpirationMs}")
 	private int jwtExpirationMs;
 
-	private Key getSigningKey() {
-		return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+	private KeyPair rsaKeyPair;
+
+	@PostConstruct
+	public void initKeys() {
+		try {
+			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+			keyPairGenerator.initialize(2048);
+			this.rsaKeyPair = keyPairGenerator.generateKeyPair();
+			logger.info("RSA Key Pair generated successfully for JWT signing.");
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException("Failed to generate RSA Key Pair", e);
+		}
+	}
+
+	public String getPublicKeyBase64() {
+		RSAPublicKey publicKey = (RSAPublicKey) rsaKeyPair.getPublic();
+		return Base64.getEncoder().encodeToString(publicKey.getEncoded());
 	}
 
 	public String generateJwtToken(Authentication authentication) {
@@ -44,7 +64,7 @@ public class JwtUtils {
 		Instant now = Instant.now();
 		return Jwts.builder().setClaims(claims).setSubject((userPrincipal.getUsername())).setIssuedAt(java.util.Date.from(now))
 				.setExpiration(java.util.Date.from(now.plusMillis(jwtExpirationMs)))
-				.signWith(getSigningKey()).compact();
+				.signWith(rsaKeyPair.getPrivate()).compact();
 	}
 
 	public String generateTokenFromUsername(String username, Authorities authority) {
@@ -53,16 +73,16 @@ public class JwtUtils {
 		Instant now = Instant.now();
 		return Jwts.builder().setClaims(claims).setSubject(username).setIssuedAt(java.util.Date.from(now))
 				.setExpiration(java.util.Date.from(now.plusMillis(jwtExpirationMs)))
-				.signWith(getSigningKey()).compact();
+				.signWith(rsaKeyPair.getPrivate()).compact();
 	}
 
 	public String getUserNameFromJwtToken(String token) {
-		return Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody().getSubject();
+		return Jwts.parserBuilder().setSigningKey(rsaKeyPair.getPublic()).build().parseClaimsJws(token).getBody().getSubject();
 	}
 
 	public boolean validateJwtToken(String authToken) {
 		try {
-			Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(authToken);
+			Jwts.parserBuilder().setSigningKey(rsaKeyPair.getPublic()).build().parseClaimsJws(authToken);
 			return true;
 		} catch (SignatureException e) {
 			logger.error("Invalid JWT signature: {}", e.getMessage());

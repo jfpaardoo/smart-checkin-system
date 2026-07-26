@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -42,7 +43,7 @@ class FormationServiceTests {
         formation = new Formation();
         formation.setId(1);
         formation.setName("Spring Boot Security");
-        formation.setFormationDate(LocalDateTime.now());
+        formation.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
         formation.setAttendances(new ArrayList<>());
 
         user = new User();

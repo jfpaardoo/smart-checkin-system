@@ -55,12 +55,12 @@ class UserControllerTests {
 	private static final String ADMIN = "ADMIN";
 	private static final String PASSWORD = "password";
 	private static final String SIZE_PATH = "$.size()";
+	@SuppressWarnings("squid:S1075")
 	private static final String ID_PATH = "/{id}";
 	private static final String UPDATED = "UPDATED";
 
 	@SuppressWarnings("unused")
-	@Autowired
-	private UserRestController userController;
+	private final UserRestController userController;
 
 	@MockitoBean
 	private UserService userService;
@@ -71,11 +71,16 @@ class UserControllerTests {
 	@MockitoBean
 	private PasswordEncoder passwordEncoder;
 
-	@Autowired
-	private ObjectMapper objectMapper;
+	private final ObjectMapper objectMapper;
+
+	private final MockMvc mockMvc;
 
 	@Autowired
-	private MockMvc mockMvc;
+	public UserControllerTests(UserRestController userController, ObjectMapper objectMapper, MockMvc mockMvc) {
+		this.userController = userController;
+		this.objectMapper = objectMapper;
+		this.mockMvc = mockMvc;
+	}
 
 	private Authorities auth;
 	private User user;

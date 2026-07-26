@@ -6,7 +6,8 @@
     "qrGenerator": "QR Генератор",
     "docs": "Документация",
     "login": "Вход",
-    "logout": "Изход"
+    "logout": "Изход",
+    "analytics": "Анализи"
   },
   "home": {
     "welcome": "Добре дошли в ShiftSync",
@@ -23,7 +24,7 @@
   },
   "users": {
     "title": "Управление на Потребители",
-    "addUser": "+ Добави Потребител",
+    "addUser": "Добави Потребител",
     "editUser": "Редактирай Потребител",
     "addNewUser": "Добави Нов Потребител",
     "saveUser": "Запази Потребител",
@@ -55,7 +56,7 @@
   },
   "formations": {
     "title": "Управление на Обучения",
-    "createFormation": "+ Създай Обучение",
+    "createFormation": "Създай Обучение",
     "editFormation": "Редактирай Обучение",
     "createNew": "Създай Ново Обучение",
     "saveFormation": "Запази Обучение",
@@ -192,7 +193,9 @@
     "connectionError": "Грешка във връзката. Моля, опитайте отново.",
     "deleteConfirm": "Сигурни ли сте, че искате да изтриете {{entity}}?",
     "deleted": "{{entity}} е изтрит успешно",
-    "deleteError": "Грешка при изтриване на {{entity}}"
+    "deleteError": "Грешка при изтриване на {{entity}}",
+    "confirmLogout": "Сигурни ли сте, че искате да излезете?",
+    "noUserLoggedIn": "Няма влязъл потребител"
   },
   "lang": {
     "es": "Español",
@@ -203,5 +206,15 @@
     "pl": "Polski",
     "bg": "Български",
     "ro": "Română"
+  },
+  "analytics": {
+    "title": "Аналитично табло",
+    "exportCsv": "Експортиране на CSV",
+    "exportExcel": "Експортиране на Excel",
+    "totalCheckins": "Общо чекирания (Последни 30 дни)",
+    "formationAttendance": "Присъствие на обучения",
+    "attendance": "Присъствие",
+    "absence": "Отсъствие",
+    "daysTracked": "Проследени дни"
   }
 }

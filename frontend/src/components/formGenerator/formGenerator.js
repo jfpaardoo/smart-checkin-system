@@ -118,6 +118,7 @@ const FormGenerator = forwardRef((rawProps, ref) => {
       props.onSubmit({ values: formValues });
       setSubmitForm(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [submitForm]);
 
   useEffect(() => {
@@ -126,6 +127,7 @@ const FormGenerator = forwardRef((rawProps, ref) => {
         handleSubmit(e);
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

@@ -6,7 +6,8 @@
     "qrGenerator": "Generator QR",
     "docs": "Dokumentacja",
     "login": "Zaloguj się",
-    "logout": "Wyloguj się"
+    "logout": "Wyloguj się",
+    "analytics": "Analityka"
   },
   "home": {
     "welcome": "Witaj w ShiftSync",
@@ -23,7 +24,7 @@
   },
   "users": {
     "title": "Zarządzanie Użytkownikami",
-    "addUser": "+ Dodaj Użytkownika",
+    "addUser": "Dodaj Użytkownika",
     "editUser": "Edytuj Użytkownika",
     "addNewUser": "Dodaj Nowego Użytkownika",
     "saveUser": "Zapisz Użytkownika",
@@ -55,7 +56,7 @@
   },
   "formations": {
     "title": "Zarządzanie Szkoleniami",
-    "createFormation": "+ Utwórz Szkolenie",
+    "createFormation": "Utwórz Szkolenie",
     "editFormation": "Edytuj Szkolenie",
     "createNew": "Utwórz Nowe Szkolenie",
     "saveFormation": "Zapisz Szkolenie",
@@ -192,7 +193,9 @@
     "connectionError": "Błąd połączenia. Spróbuj ponownie.",
     "deleteConfirm": "Czy na pewno chcesz usunąć {{entity}}?",
     "deleted": "{{entity}} usunięty pomyślnie",
-    "deleteError": "Błąd podczas usuwania {{entity}}"
+    "deleteError": "Błąd podczas usuwania {{entity}}",
+    "confirmLogout": "Czy na pewno chcesz się wylogować?",
+    "noUserLoggedIn": "Brak zalogowanego użytkownika"
   },
   "lang": {
     "es": "Español",
@@ -203,5 +206,15 @@
     "pl": "Polski",
     "bg": "Български",
     "ro": "Română"
+  },
+  "analytics": {
+    "title": "Panel Analityczny",
+    "exportCsv": "Eksportuj CSV",
+    "exportExcel": "Eksportuj Excel",
+    "totalCheckins": "Całkowita liczba meldunków (Ostatnie 30 dni)",
+    "formationAttendance": "Obecność na szkoleniach",
+    "attendance": "Obecność",
+    "absence": "Nieobecność",
+    "daysTracked": "Rejestrowane dni"
   }
 }

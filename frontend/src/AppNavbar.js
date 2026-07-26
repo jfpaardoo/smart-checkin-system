@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar, NavbarBrand, NavLink, NavItem, Nav, NavbarToggler, Collapse, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { Link } from 'react-router-dom';
-import { FaUsers, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen } from 'react-icons/fa';
+import { FaUsers, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen, FaChartLine } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import tokenService from './services/token.service';
 import jwt_decode from "jwt-decode";
@@ -41,6 +41,9 @@ function AppNavbar() {
                         <DropdownItem tag={Link} to="/formations" className="ba-dropdown-item d-flex align-items-center">
                             <FaGraduationCap className="me-2" /> {t('nav.manageFormations')}
                         </DropdownItem>
+                        <DropdownItem tag={Link} to="/analytics" className="ba-dropdown-item d-flex align-items-center">
+                            <FaChartLine className="me-2" /> {t('nav.analytics')}
+                        </DropdownItem>
                         <DropdownItem divider />
                         <DropdownItem tag={Link} to="/qr-generator" className="ba-dropdown-item d-flex align-items-center">
                             <FaQrcode className="me-2" /> {t('nav.qrGenerator')}
@@ -66,7 +69,7 @@ function AppNavbar() {
                 <DropdownToggle nav caret className="ba-nav-link d-inline-flex align-items-center">
                     <FaUser className="me-2" /> {username}
                 </DropdownToggle>
-                <DropdownMenu className="ba-dropdown-menu" right>
+                <DropdownMenu className="ba-dropdown-menu" end>
                     <DropdownItem tag={Link} to="/logout" className="ba-dropdown-item text-danger d-flex align-items-center">
                         <FaSignOutAlt className="me-2" /> {t('nav.logout')}
                     </DropdownItem>

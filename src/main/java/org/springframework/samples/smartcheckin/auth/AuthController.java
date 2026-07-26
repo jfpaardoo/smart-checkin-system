@@ -116,4 +116,8 @@ public class AuthController {
 		return ResponseEntity.ok(isValid);
 	}
 
+	@GetMapping("/public-key")
+	public ResponseEntity<String> getPublicKey() {
+		return ResponseEntity.ok(jwtUtils.getPublicKeyBase64());
+	}
 }

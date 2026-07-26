@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import "../../static/css/admin/adminPage.css";
 import deleteFromList from "../../util/deleteFromList";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUsers, faFileCsv, faFileExcel, faPlus } from '@fortawesome/free-solid-svg-icons';
 import useFetchState from "../../util/useFetchState";
 import { TableGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
@@ -75,10 +77,22 @@ export default function UserListAdmin() {
         ) : (
           <>
             <div className="ba-card-header">
-              <h2>{t('users.title')}</h2>
-              <Button className="ba-btn-primary" tag={Link} to="/users/new">
-                {t('users.addUser')}
-              </Button>
+                <h2>
+                    <FontAwesomeIcon icon={faUsers} className="me-2 text-primary" /> {t('users.title', 'Users Management')}
+                </h2>
+                <div className="d-flex gap-2">
+                    <Button className="ba-btn-primary btn-icon-expand" onClick={() => window.open('/api/v1/exports/checkins/csv?token=' + tokenService.getLocalAccessToken(), '_blank')}>
+                        <FontAwesomeIcon icon={faFileCsv} />
+                        <span className="btn-expand-label">{t('analytics.exportCsv', 'Export CSV')}</span>
+                    </Button>
+                    <Button className="ba-btn-blue btn-icon-expand" onClick={() => window.open('/api/v1/exports/checkins/excel?token=' + tokenService.getLocalAccessToken(), '_blank')}>
+                        <FontAwesomeIcon icon={faFileExcel} />
+                        <span className="btn-expand-label">{t('analytics.exportExcel', 'Export Excel')}</span>
+                    </Button>
+                    <Button className="ba-btn-primary" tag={Link} to="/users/new">
+                        <FontAwesomeIcon icon={faPlus} className="me-1" /> {t('users.addUser', 'Add User')}
+                    </Button>
+                </div>
             </div>
             
             <Table responsive aria-label="users" className="ba-table">
