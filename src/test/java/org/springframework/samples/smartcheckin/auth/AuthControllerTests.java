@@ -1,0 +1,121 @@
+package org.springframework.samples.smartcheckin.auth;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doReturn;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.http.MediaType;
+import org.springframework.samples.smartcheckin.auth.payload.request.LoginRequest;
+import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
+import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
+import org.springframework.samples.smartcheckin.user.UserService;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.web.servlet.MockMvc;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Owner;
+
+@Epic("Users & Admin Module")
+@Feature("Authentication")
+@Owner("DP1-tutors")
+@WebMvcTest(value = AuthController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebSecurityConfigurer.class), excludeAutoConfiguration = {
+		SecurityAutoConfiguration.class })
+@SuppressWarnings("java:S3305")
+class AuthControllerTests {
+
+	private static final String BASE_URL = "/api/v1/auth";
+
+	@SuppressWarnings("unused")
+	@Autowired
+	private AuthController authController;
+
+	@MockitoBean
+	private AuthenticationManager authenticationManager;
+
+	@MockitoBean
+	private JwtUtils jwtUtils;
+
+	@MockitoBean
+	private UserService userService;
+
+	@Autowired
+	private ObjectMapper objectMapper;
+
+	@Autowired
+	private MockMvc mockMvc;
+
+	private LoginRequest loginRequest;
+	private UserDetailsImpl userDetails;
+	private String token;
+
+	@BeforeEach
+	void setup() {
+		loginRequest = new LoginRequest();
+		loginRequest.setUsername("owner");
+		loginRequest.setPassword("password");
+
+		userDetails = new UserDetailsImpl(1, loginRequest.getUsername(), loginRequest.getPassword(),
+				List.of(new SimpleGrantedAuthority("OWNER")));
+
+		token = "JWT TOKEN";
+	}
+
+	@Test
+	@SuppressWarnings("null")
+	void shouldAuthenticateUser() throws Exception {
+		Authentication auth = mock(Authentication.class);
+
+		when(this.jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn(token);
+		when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
+		doReturn(userDetails).when(auth).getPrincipal();
+
+		mockMvc.perform(post(BASE_URL + "/signin").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(loginRequest))).andExpect(status().isOk())
+				.andExpect(jsonPath("$.username").value(loginRequest.getUsername()))
+				.andExpect(jsonPath("$.id").value(userDetails.getId())).andExpect(jsonPath("$.token").value(token));
+	}
+
+	@Test
+	@SuppressWarnings("null")
+	void shouldValidateToken() throws Exception {
+		when(this.jwtUtils.validateJwtToken(token)).thenReturn(true);
+
+		mockMvc.perform(get(BASE_URL + "/validate").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.param("token", token)).andExpect(status().isOk())
+				.andExpect(jsonPath("$").value(true));
+	}
+
+	@Test
+	@SuppressWarnings("null")
+	void shouldNotValidateToken() throws Exception {
+		when(this.jwtUtils.validateJwtToken(token)).thenReturn(false);
+
+		mockMvc.perform(get(BASE_URL + "/validate").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.param("token", token)).andExpect(status().isOk())
+				.andExpect(jsonPath("$").value(false));
+	}
+
+}

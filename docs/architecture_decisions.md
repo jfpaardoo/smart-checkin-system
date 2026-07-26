@@ -12,7 +12,7 @@ Este documento es un registro vivo (*Architecture Decision Record* o ADR) de las
 ## 2. Decisiones por Fase
 
 ### Fase 1: Configuración Inicial
-*   **Migración de Base de Datos:** Pasamos de MySQL/H2 (legacy de Petclinic) a **PostgreSQL 15**. Se justifica por ser la base de datos relacional *open source* con mayor madurez para entornos cloud, con soporte robusto de geolocalización (si hiciese falta a futuro con PostGIS) y alta fiabilidad para el almacenamiento de registros inmutables como las horas de trabajo.
+*   **Migración de Base de Datos:** Pasamos de MySQL/H2 (legacy de Smartcheckin) a **PostgreSQL 15**. Se justifica por ser la base de datos relacional *open source* con mayor madurez para entornos cloud, con soporte robusto de geolocalización (si hiciese falta a futuro con PostGIS) y alta fiabilidad para el almacenamiento de registros inmutables como las horas de trabajo.
 *   **Despliegue Local:** Uso de `docker-compose.yml` para garantizar que todos los desarrolladores levanten exactamente la misma versión de PostgreSQL de forma aislada, evitando el síndrome de *"en mi máquina funciona"*.
 *   **Seguridad y Credenciales:** Todas las configuraciones sensibles (`application.properties` y `application-postgres.properties`) han sido parametrizadas con **variables de entorno** (`${POSTGRES_USER}`, `${JWT_SECRET}`). Esto garantiza que el repositorio sea seguro de compartir y que en Producción (Cloud Run) se inyecten estas variables desde un gestor de secretos (Secret Manager).
 
@@ -45,3 +45,8 @@ Este documento es un registro vivo (*Architecture Decision Record* o ADR) de las
 *   **Lógica Criptográfica:** Integración de `dev.samstevens.totp:totp` para generar tokens TOTP de 6 dígitos con vigencia de 30 segundos. Esto asegura que los QR generados no pueden ser fotografiados y compartidos remotamente por los empleados (previene el fraude horario).
 *   **Diseño de Endpoints Invertidos:** A diferencia de sistemas tradicionales, el escáner del empleado llama a una ruta pública (`/api/v1/checkins/qr-fichaje`). El empleado no necesita hacer login ni llevar un JWT en su dispositivo personal.
 *   **Defensa Perimetral Específica:** Al ser un endpoint público, está fuertemente protegido con `RateLimitFilter` (Bucket4j) que previene ataques de adivinación (fuerza bruta) del código personal de 4 dígitos o del token TOTP de 6 dígitos limitando las peticiones concurrentes por IP.
+
+### Fase 4: Restricción de Registro (Control de Acceso Cerrado) (Completada)
+*   **Decisión:** Eliminación del autorregistro público (`POST /api/v1/auth/signup`).
+*   **Justificación:** Al tratarse de un sistema corporativo para el control de asistencia y fichaje laboral dentro de una planta industrial (BA Glass), no debe permitirse que un usuario externo o empleado se cree una cuenta de forma autónoma. Esto previene el registro de identidades falsas o duplicadas y centraliza el control de altas/bajas en el departamento de Recursos Humanos (Admin) a través del Panel de Gestión de Usuarios.
+*   **Implicación:** El endpoint `/api/v1/auth/signup` ha sido desactivado y los flujos frontend correspondientes a la pantalla de registro se han eliminado por completo de la aplicación.

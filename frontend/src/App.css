@@ -2,42 +2,143 @@
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* BA Glass Navbar */
+.ba-navbar {
+  background-color: var(--ba-dark) !important;
+  border-bottom: 2px solid var(--ba-green);
+  padding: 10px 20px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.ba-navbar-brand {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  font-weight: 500;
+  font-size: 1.25rem;
+  color: var(--ba-white) !important;
+  text-decoration: none;
 }
 
-.App-link {
-  color: #61dafb;
+.ba-navbar-brand img {
+  height: 40px;
+  width: auto;
+  margin-right: 15px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
+.ba-nav-link {
+  color: var(--ba-white) !important;
+  font-weight: 400;
+  padding: 0.5rem 1rem !important;
+  transition: color 0.3s ease;
 }
 
-.NavbarBrand {
-  margin-left: 20px;
+.ba-nav-link:hover {
+  color: var(--ba-green) !important;
+}
+
+/* Card and Container Styles */
+.ba-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.ba-card {
+  background-color: var(--ba-white);
+  border-radius: var(--ba-radius);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: 30px;
+  margin-bottom: 20px;
+  border: 1px solid var(--ba-border);
+}
+
+.ba-card-header {
+  border-bottom: 1px solid var(--ba-border);
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ba-card-header h2 {
+  margin: 0;
+  font-weight: 300;
+  color: var(--ba-dark);
+}
+
+/* Buttons */
+.ba-btn-primary {
+  background-color: var(--ba-green) !important;
+  border-color: var(--ba-green) !important;
+  color: var(--ba-white) !important;
+  border-radius: 20px !important;
+  padding: 8px 20px !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+}
+
+.ba-btn-primary:hover {
+  background-color: #8BB530 !important;
+  border-color: #8BB530 !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.ba-btn-secondary {
+  background-color: transparent !important;
+  border-color: var(--ba-border) !important;
+  color: var(--ba-dark) !important;
+  border-radius: 20px !important;
+  padding: 8px 20px !important;
+}
+
+.ba-btn-secondary:hover {
+  background-color: var(--ba-light-grey) !important;
+}
+
+/* Tables */
+.ba-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.ba-table th {
+  font-weight: 500;
+  color: #666;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  padding: 12px 15px;
+  border-bottom: 2px solid var(--ba-border);
+}
+
+.ba-table td {
+  padding: 15px;
+  border-bottom: 1px solid var(--ba-border);
+  vertical-align: middle;
+}
+
+.ba-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ba-table tr:hover td {
+  background-color: var(--ba-light-grey);
+}
+
+/* Badges */
+.ba-badge {
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.ba-badge-active {
+  background-color: rgba(162, 200, 58, 0.2);
+  color: #384f10; /* Darker green for contrast */
+}
+
+.ba-badge-inactive {
+  background-color: #f0f0f0;
+  color: #555555; /* Darker grey for contrast */
 }

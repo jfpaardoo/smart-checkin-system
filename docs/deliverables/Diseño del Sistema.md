@@ -49,7 +49,7 @@ classDiagram
 ### Diagrama de Capas (incluyendo Controladores, Servicios y Repositorios)
 _En esta sección debe proporcionar un diagrama UML de clases que describa el conjunto de controladores, servicios, y repositorios implementados, incluya la división en capas del sistema como paquetes horizontales tal y como se muestra en el siguiente ejemplo:_
 
-![your-UML-diagram-name](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/gii-is-DP1/react-petclinic/main/docs/diagrams/LayersUMLPackageDiagram.iuml)
+![your-UML-diagram-name](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/gii-is-DP1/react-smartcheckin/main/docs/diagrams/LayersUMLPackageDiagram.iuml)
 
 _El diagrama debe especificar además las relaciones de uso entre controladores y servicios, entre servicios y servicios, y entre servicios y repositorios._
 _Tal y como se muestra en el diagrama de ejemplo, para el caso de los repositorios se deben especificar las consultas personalizadas creadas (usando la signatura de su método asociado)._
@@ -59,7 +59,7 @@ _Tal y como se muestra en el diagrama de ejemplo, para el caso de los repositori
 En esta sección procesaremos los mockups más importantes (*como mínimo debe realizarse para los componentes que va a permitir representar el tablero e interfaz de juego en las distintas fases de la partida*) creados para la interfaz de usuario en el documento de requisitos y etiquetaremos las zonas de cada una de las pantallas para identificar componentes a implementar. Para cada mockup se especificará el árbol de jerarquía de componentes, así como, para cada componente el estado que necesita mantener, las llamadas a la API que debe realizar y los parámetros de configuración global que consideramos que necesita usar cada componente concreto. 
 Por ejemplo, para la pantalla de visualización de métricas del usuario en un hipotético módulo de juego social:
 
-![Descomposición en componentes de la interfaz de estadísticas](https://github.com/gii-is-DP1/react-petclinic/assets/756431/12b36c37-39ed-422e-b8d9-56c94753cbdc)
+![Descomposición en componentes de la interfaz de estadísticas](https://github.com/gii-is-DP1/react-smartcheckin/assets/756431/12b36c37-39ed-422e-b8d9-56c94753cbdc)
 
   - App – Componente principal de la aplicación
     - $\color{orange}{\textsf{NavBar – Barra de navegación lateral}}$
