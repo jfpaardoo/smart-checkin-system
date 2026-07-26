@@ -21,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.samples.petclinic.configuration.SecurityConfiguration;
 import org.springframework.samples.petclinic.user.User;
 import org.springframework.samples.petclinic.user.UserService;
+import org.springframework.samples.petclinic.totp.TotpService;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -39,6 +40,9 @@ class CheckinRestControllerTests {
 
     @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private TotpService totpService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -70,7 +74,7 @@ class CheckinRestControllerTests {
         checkin.setCheckInType(CheckinType.ENTRADA);
         checkin.setUser(currentUser);
 
-        when(checkInService.save(any(Checkin.class))).thenReturn(checkin);
+        when(checkInService.performCheckIn(any(User.class), any(CheckinType.class))).thenReturn(checkin);
 
         mockMvc.perform(post(BASE_URL)
                 .with(csrf())

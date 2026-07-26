@@ -25,6 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.samples.petclinic.configuration.SecurityConfiguration;
 import org.springframework.samples.petclinic.exceptions.AccessDeniedException;
 import org.springframework.samples.petclinic.exceptions.ResourceNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -66,6 +67,9 @@ class UserControllerTests {
 
 	@MockitoBean
 	private AuthoritiesService authService;
+
+	@MockitoBean
+	private PasswordEncoder passwordEncoder;
 
 	@Autowired
 	private ObjectMapper objectMapper;

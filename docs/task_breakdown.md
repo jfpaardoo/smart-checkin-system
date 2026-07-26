@@ -39,11 +39,11 @@ Este documento detalla la división del proyecto en pequeñas tareas abordables 
 ## FASE 3: Lógica Core de Fichaje Seguro (Día 4)
 
 ### Tarea 3.1: Servicio TOTP (QR Dinámico)
-* **Descripción:** Implementar la lógica criptográfica en Spring Boot para generar tokens basados en tiempo (TOTP) que expiran cada 15-30 segundos.
+* **Descripción:** [COMPLETADA] Implementar la lógica criptográfica en Spring Boot para generar tokens basados en tiempo (TOTP) que expiran cada 15-30 segundos.
 * **Rama:** `feat/totp-service`
 
 ### Tarea 3.2: API Endpoints para Fichajes
-* **Descripción:** Crear los endpoints REST que el frontend consumirá: uno para que el Admin obtenga el token actual (y generar el QR), y otro para que el Empleado envíe su número de personal y el token leído.
+* **Descripción:** [COMPLETADA] Crear los endpoints REST que el frontend consumirá: uno para que el Admin obtenga el token actual (y generar el QR), y otro para que el Empleado envíe su número de personal y el token leído.
 * **Rama:** `feat/checkin-endpoints`
 
 ---

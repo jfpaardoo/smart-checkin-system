@@ -77,8 +77,10 @@ public class SecurityConfiguration {
 
 						// Rutas de administración y HR
 						.requestMatchers("/api/v1/users/**").hasAuthority(ADMIN)
+						.requestMatchers("/api/v1/totp/**").hasAuthority(ADMIN)
 
 						// Otras reglas de acceso para el Check-in System:
+						.requestMatchers(HttpMethod.POST, "/api/v1/checkins/qr-fichaje").permitAll()
 						.requestMatchers("/api/v1/checkins/**").authenticated()
 
 						// Formaciones: crear solo ADMIN, el resto autenticado
