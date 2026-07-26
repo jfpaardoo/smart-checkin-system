@@ -207,9 +207,9 @@ export default function ScannerCheckin() {
   };
 
   const getDisplayTitle = () => {
-    if (!qrData) return "Enter your 4-digit PIN";
+    if (!qrData) return "Introduce tu PIN de 4 dígitos";
     return qrData.action === "formation" 
-      ? "PIN para registrar Asistencia" 
+      ? "PIN para Asistencia a Formación" 
       : "PIN para Fichar Turno";
   };
 
@@ -217,10 +217,10 @@ export default function ScannerCheckin() {
     if (scannerVisible) {
       return (
         <div>
-          <p className="text-center" style={{ color: '#5e5e5e' }}>
+          <p className="text-center mb-4" style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '1.05rem' }}>
             Apunta con la cámara al código QR proyectado.
           </p>
-          <div id="qr-reader" style={{ width: '100%', borderRadius: '15px', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.4)' }}></div>
+          <div id="qr-reader" style={{ width: '100%', borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(255, 255, 255, 0.3)', boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.2)' }}></div>
         </div>
       );
     }
@@ -231,9 +231,9 @@ export default function ScannerCheckin() {
 
     if (needsSignature) {
       return (
-        <div className="mt-4">
-          <h4 className="text-center mb-4" style={{ color: '#2c3e50' }}>Firma Requerida para Salida</h4>
-          <div style={{ backgroundColor: '#fff', borderRadius: '15px', border: '2px solid rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+        <div className="mt-3">
+          <h4 className="text-center mb-4 text-white" style={{ fontWeight: 500 }}>Firma Requerida para Salida</h4>
+          <div style={{ backgroundColor: '#ffffff', borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.4)', overflow: 'hidden', boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.2)' }}>
             <SignatureCanvas 
               penColor="blue"
               canvasProps={{ width: 450, height: 200, className: 'sigCanvas' }}
@@ -244,7 +244,7 @@ export default function ScannerCheckin() {
             <button
               type="button"
               className="ba-btn ba-btn-secondary"
-              style={{ flex: 1 }}
+              style={{ flex: 1, borderRadius: '30px' }}
               onClick={() => sigCanvas.current.clear()}
             >
               Borrar
@@ -252,7 +252,7 @@ export default function ScannerCheckin() {
             <button
               type="button"
               className="ba-btn ba-btn-primary"
-              style={{ flex: 2 }}
+              style={{ flex: 2, borderRadius: '30px' }}
               onClick={handleSignatureSubmit}
             >
               Confirmar Firma
@@ -263,8 +263,8 @@ export default function ScannerCheckin() {
     }
 
     return (
-      <Form onSubmit={handleSubmit} className="mt-4">
-        <h4 className="text-center mb-4" style={{ color: '#2c3e50' }}>{getDisplayTitle()}</h4>
+      <Form onSubmit={handleSubmit} className="mt-3">
+        <h4 className="text-center mb-4 text-white" style={{ fontWeight: 500 }}>{getDisplayTitle()}</h4>
         <FormGroup className="text-center">
           <Input
             type="number"
@@ -278,8 +278,18 @@ export default function ScannerCheckin() {
                 setPersonalCode(e.target.value);
               }
             }}
-            className="ba-input"
-            style={{ fontSize: '2rem', textAlign: 'center', letterSpacing: '15px', width: '200px', margin: '0 auto' }}
+            className="ba-input text-white"
+            style={{ 
+              fontSize: '2.2rem', 
+              textAlign: 'center', 
+              letterSpacing: '15px', 
+              width: '220px', 
+              margin: '0 auto',
+              backgroundColor: 'rgba(255, 255, 255, 0.15)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '20px'
+            }}
             autoFocus
           />
         </FormGroup>
@@ -288,7 +298,7 @@ export default function ScannerCheckin() {
           <button
             type="button"
             className="ba-btn ba-btn-secondary"
-            style={{ flex: 1 }}
+            style={{ flex: 1, borderRadius: '30px' }}
             onClick={handleCancel}
           >
             Cancelar
@@ -296,7 +306,7 @@ export default function ScannerCheckin() {
           <button
             type="submit"
             className="ba-btn ba-btn-primary"
-            style={{ flex: 2 }}
+            style={{ flex: 2, borderRadius: '30px' }}
             disabled={personalCode.length !== 4}
           >
             Confirmar
@@ -308,35 +318,64 @@ export default function ScannerCheckin() {
 
   return (
     <div className="ba-container justify-content-center">
-      <div className="ba-card ba-card-form my-auto mx-auto" style={{ maxWidth: '500px' }}>
-        <div className="ba-card-header text-center">
-          <h2>ShiftSync Scanner</h2>
+      <div 
+        className="ba-card home-card my-auto mx-auto" 
+        style={{ 
+          maxWidth: '500px', 
+          backgroundColor: 'rgba(255, 255, 255, 0.12)', 
+          backdropFilter: 'blur(20px)', 
+          border: '1px solid rgba(255, 255, 255, 0.25)', 
+          borderRadius: '30px',
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)',
+          padding: '2rem'
+        }}
+      >
+        <div className="text-center mb-4">
+          <h2 className="home-title" style={{ fontSize: '2rem' }}>ShiftSync Scanner</h2>
         </div>
 
         {renderMainContent()}
       </div>
 
-      <Modal isOpen={successModal} toggle={closeSuccessModal} centered>
-        <ModalHeader toggle={closeSuccessModal} style={{ backgroundColor: '#cce364', color: '#2c3e50', borderBottom: 'none' }}>
-          🎉 ¡Asistencia Registrada!
+      <Modal isOpen={successModal} toggle={closeSuccessModal} centered style={{ maxWidth: '450px' }}>
+        <ModalHeader 
+          toggle={closeSuccessModal} 
+          style={{ 
+            backgroundColor: 'rgba(30, 41, 59, 0.95)', 
+            backdropFilter: 'blur(16px)', 
+            color: '#ffffff', 
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '24px 24px 0 0'
+          }}
+        >
+          Asistencia Registrada
         </ModalHeader>
-        <ModalBody className="text-center py-4">
+        <ModalBody className="text-center py-4" style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', backdropFilter: 'blur(16px)', color: '#ffffff' }}>
           {formationDetails && (
             <>
-              <h3 className="mb-3" style={{ fontWeight: 600, color: '#2c3e50' }}>{formationDetails.name}</h3>
+              <h3 className="mb-3 text-white" style={{ fontWeight: 600 }}>{formationDetails.name}</h3>
               {formationDetails.description && (
-                  <p className="text-muted mb-4" style={{ fontSize: '1.05rem' }}>{formationDetails.description}</p>
+                <p className="mb-4" style={{ fontSize: '1rem', color: 'rgba(255, 255, 255, 0.7)' }}>{formationDetails.description}</p>
               )}
-              <div className="p-3 mx-auto" style={{ backgroundColor: '#f4f6fa', borderRadius: '12px', display: 'inline-block', border: '1px solid #e2e8f0' }}>
-                <p className="mb-0" style={{ fontWeight: 500, color: '#2c3e50' }}>
-                  📅 Fecha: {new Date(formationDetails.formationDate).toLocaleString()}
+              <div 
+                className="p-3 mx-auto" 
+                style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.08)', 
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: '16px', 
+                  display: 'inline-block', 
+                  border: '1px solid rgba(255, 255, 255, 0.15)' 
+                }}
+              >
+                <p className="mb-0 text-white" style={{ fontWeight: 500 }}>
+                  Fecha: {new Date(formationDetails.formationDate).toLocaleString()}
                 </p>
               </div>
             </>
           )}
         </ModalBody>
-        <ModalFooter className="justify-content-center" style={{ borderTop: 'none' }}>
-          <Button className="ba-btn-primary" onClick={closeSuccessModal} style={{ width: '150px' }}>
+        <ModalFooter className="justify-content-center" style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderTop: 'none', borderRadius: '0 0 24px 24px' }}>
+          <Button className="ba-btn-primary" onClick={closeSuccessModal} style={{ width: '160px', borderRadius: '30px' }}>
             Ir a Dashboard
           </Button>
         </ModalFooter>

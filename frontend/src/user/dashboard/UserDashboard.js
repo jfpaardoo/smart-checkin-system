@@ -199,33 +199,33 @@ export default function UserDashboard() {
       </div>
 
       <Modal isOpen={detailsModal} toggle={closeDetails} centered style={{ maxWidth: '500px' }}>
-        <ModalHeader toggle={closeDetails} style={{ backgroundColor: '#2c3e50', color: 'white', borderBottom: 'none' }}>
-          {selectedAtt ? selectedAtt.formation.name : 'Formation Details'}
+        <ModalHeader toggle={closeDetails} style={{ backgroundColor: 'rgba(30, 41, 59, 0.95)', backdropFilter: 'blur(16px)', color: 'white', borderBottom: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px 24px 0 0' }}>
+          {selectedAtt ? selectedAtt.formation.name : 'Detalles de la Formación'}
         </ModalHeader>
-        <ModalBody className="py-4" style={{ backgroundColor: '#f4f6fa' }}>
+        <ModalBody className="py-4" style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', backdropFilter: 'blur(16px)', color: 'white' }}>
           {selectedAtt && (
             <>
               {step === 'details' && (
-                <div className="p-3" style={{ backgroundColor: 'white', borderRadius: '15px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
-                  <h6 className="text-muted mb-1">Descripción:</h6>
-                  <p className="lead mb-4" style={{ color: '#2c3e50' }}>{selectedAtt.formation.description || 'Sin descripción.'}</p>
+                <div className="p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(10px)', borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
+                  <h6 style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem' }} className="mb-1">Descripción:</h6>
+                  <p className="lead mb-4 text-white" style={{ fontSize: '1.1rem' }}>{selectedAtt.formation.description || 'Sin descripción.'}</p>
                   
-                  <h6 className="text-muted mb-1">Fecha de la formación:</h6>
-                  <p className="mb-4" style={{ fontWeight: '500' }}>{new Date(selectedAtt.formation.formationDate).toLocaleString()}</p>
+                  <h6 style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem' }} className="mb-1">Fecha de la formación:</h6>
+                  <p className="mb-4 text-white" style={{ fontWeight: '500' }}>{new Date(selectedAtt.formation.formationDate).toLocaleString()}</p>
                   
-                  <h6 className="text-muted mb-1">Hora de entrada (Check-in):</h6>
-                  <p className="mb-4" style={{ fontWeight: '500' }}>{new Date(selectedAtt.checkInDate).toLocaleString()}</p>
+                  <h6 style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem' }} className="mb-1">Hora de entrada (Check-in):</h6>
+                  <p className="mb-4 text-white" style={{ fontWeight: '500' }}>{new Date(selectedAtt.checkInDate).toLocaleString()}</p>
 
                   {selectedAtt.checkOutDate && (
                     <>
-                      <h6 className="text-muted mb-1">Hora de salida (Check-out):</h6>
-                      <p className="mb-4" style={{ fontWeight: '500' }}>{new Date(selectedAtt.checkOutDate).toLocaleString()}</p>
+                      <h6 style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem' }} className="mb-1">Hora de salida (Check-out):</h6>
+                      <p className="mb-4 text-white" style={{ fontWeight: '500' }}>{new Date(selectedAtt.checkOutDate).toLocaleString()}</p>
                     </>
                   )}
 
-                  <div className="d-flex justify-content-between align-items-center mt-4 pt-3" style={{ borderTop: '1px solid #eee' }}>
+                  <div className="d-flex justify-content-between align-items-center mt-4 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                     <div>
-                      <span className="text-muted mr-2">Estado: </span>
+                      <span style={{ color: 'rgba(255, 255, 255, 0.6)' }} className="mr-2">Estado: </span>
                       {selectedAtt.checkOutDate ? (
                         <span className="badge bg-success" style={{ fontSize: '0.9rem' }}>Completada</span>
                       ) : (
@@ -233,7 +233,7 @@ export default function UserDashboard() {
                       )}
                     </div>
                     {!selectedAtt.checkOutDate && (
-                      <button className="ba-btn ba-btn-primary m-0" onClick={() => setStep('scan')}>
+                      <button className="ba-btn ba-btn-primary m-0" style={{ borderRadius: '30px' }} onClick={() => setStep('scan')}>
                         Hacer Checkout
                       </button>
                     )}
@@ -243,14 +243,14 @@ export default function UserDashboard() {
 
               {step === 'scan' && (
                 <div>
-                  <h5 className="text-center mb-3" style={{ color: '#2c3e50' }}>1. Escanea el QR de la Formación</h5>
-                  <div id="checkout-qr-reader" style={{ width: '100%', borderRadius: '15px', overflow: 'hidden', border: '2px solid rgba(0,0,0,0.1)' }}></div>
+                  <h5 className="text-center mb-3 text-white">1. Escanea el QR de la Formación</h5>
+                  <div id="checkout-qr-reader" style={{ width: '100%', borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.3)' }}></div>
                 </div>
               )}
 
               {step === 'sign' && (
                 <div>
-                  <h5 className="text-center mb-3" style={{ color: '#2c3e50' }}>2. Introduce tu PIN y Firma</h5>
+                  <h5 className="text-center mb-3 text-white">2. Introduce tu PIN y Firma</h5>
                   
                   <FormGroup className="text-center mb-4">
                     <Input
@@ -261,34 +261,42 @@ export default function UserDashboard() {
                       onChange={(e) => {
                         if (e.target.value.length <= 4) setPersonalCode(e.target.value);
                       }}
-                      className="ba-input mx-auto"
-                      style={{ fontSize: '1.5rem', textAlign: 'center', letterSpacing: '10px', width: '150px' }}
+                      className="ba-input mx-auto text-white"
+                      style={{ 
+                        fontSize: '1.8rem', 
+                        textAlign: 'center', 
+                        letterSpacing: '10px', 
+                        width: '180px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        borderRadius: '20px'
+                      }}
                     />
                   </FormGroup>
 
-                  <div style={{ backgroundColor: '#fff', borderRadius: '15px', border: '2px solid rgba(0,0,0,0.1)', overflow: 'hidden', width: 'fit-content', margin: '0 auto' }}>
+                  <div style={{ backgroundColor: '#ffffff', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.4)', overflow: 'hidden', width: 'fit-content', margin: '0 auto', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.2)' }}>
                     <SignatureCanvas 
                       penColor="blue"
                       canvasProps={{ width: 450, height: 200, className: 'sigCanvas' }}
                       ref={sigCanvas}
                     />
                   </div>
-                  <div className="text-center mt-2">
-                    <button type="button" className="btn btn-link text-danger" onClick={() => sigCanvas.current.clear()}>Borrar firma</button>
+                  <div className="text-center mt-3">
+                    <button type="button" className="btn btn-link text-white-50" onClick={() => sigCanvas.current.clear()}>Borrar firma</button>
                   </div>
                 </div>
               )}
             </>
           )}
         </ModalBody>
-        <ModalFooter style={{ borderTop: 'none', backgroundColor: '#f4f6fa' }}>
+        <ModalFooter style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderTop: 'none', borderRadius: '0 0 24px 24px' }}>
           {step !== 'details' ? (
-            <Button color="secondary" onClick={() => setStep('details')} style={{ borderRadius: '20px' }}>Volver a Detalles</Button>
+            <Button color="secondary" onClick={() => setStep('details')} style={{ borderRadius: '30px' }}>Volver a Detalles</Button>
           ) : (
-            <Button color="secondary" onClick={closeDetails} style={{ borderRadius: '20px' }}>Cerrar</Button>
+            <Button color="secondary" onClick={closeDetails} style={{ borderRadius: '30px' }}>Cerrar</Button>
           )}
           {step === 'sign' && (
-            <Button className="ba-btn-primary" onClick={handleCheckoutSubmit} style={{ borderRadius: '20px' }}>
+            <Button className="ba-btn-primary" onClick={handleCheckoutSubmit} style={{ borderRadius: '30px' }}>
               Confirmar Checkout
             </Button>
           )}
