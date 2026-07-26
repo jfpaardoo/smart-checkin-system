@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardBody, CardTitle, FormGroup, Label } from 'reactstrap';
 import { QRCodeSVG } from 'qrcode.react';
+import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useLocation } from 'react-router-dom';
 import tokenService from '../../services/token.service';
@@ -9,6 +10,7 @@ import useFetchState from '../../util/useFetchState';
 import GlassDropdown from '../../components/GlassDropdown';
 
 const QRGeneratorAdmin = () => {
+    const { t } = useTranslation();
     const jwt = tokenService.getLocalAccessToken();
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
@@ -112,28 +114,28 @@ const QRGeneratorAdmin = () => {
                                     </div>
                                 ) : (
                                     <div style={{ color: '#888', fontWeight: '500' }}>
-                                        <p className="mb-0">Selecciona una formación</p>
-                                        <p className="mb-0">para generar el QR</p>
+                                        <p className="mb-0">{t('qr.selectFormationPrompt')}</p>
+                                        <p className="mb-0">{t('qr.selectFormationPrompt2')}</p>
                                     </div>
                                 )}
                             </div>
 
                             <div className="d-flex flex-column align-items-center align-items-md-start text-center text-md-start qr-info-column">
                                 <CardTitle tag="h2" className="qr-title">
-                                    QR de Formación
+                                    {t('qr.title')}
                                 </CardTitle>
                                 <p className="qr-subtitle mb-4">
-                                    Selecciona la formación activa y proyecta el código para registrar la asistencia.
+                                    {t('qr.subtitle')}
                                 </p>
 
                                 <div className="w-100 mb-3 text-start">
                                     <FormGroup>
-                                        <Label for="formationId" style={{fontWeight: 600, color: '#555'}}>Seleccionar Formación</Label>
+                                        <Label for="formationId" style={{fontWeight: 600, color: '#555'}}>{t('qr.selectFormation')}</Label>
                                         <GlassDropdown
                                             options={formations.map(f => ({ value: f.id, label: f.name }))}
                                             value={selectedFormationId}
                                             onChange={(val) => setSelectedFormationId(String(val))}
-                                            placeholder="Elige una formación..."
+                                            placeholder={t('qr.selectFormationPlaceholder')}
                                         />
                                     </FormGroup>
                                 </div>
@@ -161,7 +163,7 @@ const QRGeneratorAdmin = () => {
                                         </div>
                                         
                                         <p className="qr-footer-text mt-1">
-                                            Seguridad TOTP: Se actualiza cada 20s
+                                            {t('qr.totpSecurity')}
                                         </p>
                                     </div>
                                 )}

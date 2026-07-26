@@ -13,12 +13,18 @@ import tokenService from "../services/token.service";
  *   - `filtered` {Array}: An optional filtered list that needs to be updated.
  *   - `setFiltered` {function}: A function to update the `filtered` state.
  *   - `entityName` {string}: Human-readable name of the entity for success messages (e.g. "User", "Formation").
+ *   - `t` {function}: Optional i18next translation function. If provided, toast messages will be translated.
  */
 export default function deleteFromList(url, id, [state, setState], toast, options = {}) {
     const jwt = tokenService.getLocalAccessToken();
     const entityName = options.entityName || "Item";
+    const t = options.t;
 
-    toast.confirm(`Are you sure you want to delete this ${entityName.toLowerCase()}?`, () => {
+    const confirmMsg = t
+        ? t(`${entityName.toLowerCase()}s.deleteConfirm`, { defaultValue: `Are you sure you want to delete this ${entityName.toLowerCase()}?` })
+        : `Are you sure you want to delete this ${entityName.toLowerCase()}?`;
+
+    toast.confirm(confirmMsg, () => {
         fetch(url, {
             method: "DELETE",
             headers: {
@@ -35,16 +41,25 @@ export default function deleteFromList(url, id, [state, setState], toast, option
                     } else {
                         setState(state.filter((i) => i.id !== id));
                     }
-                    toast.success(`${entityName} deleted successfully`);
+                    const successMsg = t
+                        ? t(`${entityName.toLowerCase()}s.deleted`, { defaultValue: `${entityName} deleted successfully` })
+                        : `${entityName} deleted successfully`;
+                    toast.success(successMsg);
                 } else {
                     return response.json().then((json) => {
-                        toast.error(json.message || `Failed to delete ${entityName.toLowerCase()}`);
+                        const errorMsg = t
+                            ? t(`${entityName.toLowerCase()}s.deleteError`, { defaultValue: `Failed to delete ${entityName.toLowerCase()}` })
+                            : json.message || `Failed to delete ${entityName.toLowerCase()}`;
+                        toast.error(json.message || errorMsg);
                     });
                 }
             })
             .catch((err) => {
                 console.error(err);
-                toast.error("Connection error. Please try again.");
+                const connMsg = t
+                    ? t('common.connectionError', { defaultValue: "Connection error. Please try again." })
+                    : "Connection error. Please try again.";
+                toast.error(connMsg);
             });
     });
 }

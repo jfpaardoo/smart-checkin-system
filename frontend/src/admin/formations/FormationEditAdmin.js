@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Form, Input, Label, FormGroup, Row, Col } from "reactstrap";
+import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import "../../static/css/admin/adminPage.css";
 import getIdFromUrl from "../../util/getIdFromUrl";
@@ -11,6 +12,7 @@ import { useToast } from "../../components/ToastProvider";
 const jwt = tokenService.getLocalAccessToken();
 
 export default function FormationEditAdmin() {
+  const { t } = useTranslation();
   const emptyItem = {
     id: null,
     name: "",
@@ -51,7 +53,6 @@ export default function FormationEditAdmin() {
       .then((json) => {
         if (json.message) {
           let errorMsg = json.message;
-          // Handle Spring validation map format: {field=message}
           if (errorMsg.startsWith("{") && errorMsg.endsWith("}")) {
             errorMsg = errorMsg
               .slice(1, -1)
@@ -61,21 +62,18 @@ export default function FormationEditAdmin() {
                 return `${field.trim()}: ${msg.trim()}`;
               })
               .join("\n");
-          }
-          // Handle database unique constraints (e.g. SQL duplicate key)
-          else if (errorMsg.includes("duplicate key value")) {
-            errorMsg = "This formation details already conflict with an existing record.";
+          } else if (errorMsg.includes("duplicate key value")) {
+            errorMsg = t('formations.duplicateConflict');
           }
           toast.error(errorMsg);
         } else {
-          toast.success(formation.id ? "Formation updated successfully" : "Formation created successfully");
+          toast.success(formation.id ? t('formations.updated') : t('formations.created'));
           setTimeout(() => { window.location.href = "/formations"; }, 1200);
         }
       })
-      .catch(() => toast.error("Connection error. Please try again."));
+      .catch(() => toast.error(t('formations.connectionError')));
   }
 
-  // Format the date for the datetime-local input field
   const formattedDate = formation.formationDate 
     ? moment(formation.formationDate).format('YYYY-MM-DDTHH:mm') 
     : '';
@@ -88,13 +86,13 @@ export default function FormationEditAdmin() {
     <div className="ba-container justify-content-center">
       <div className="ba-card ba-card-form my-auto mx-auto">
         <div className="ba-card-header">
-          <h2>{formation.id ? "Edit Formation" : "Create New Formation"}</h2>
+          <h2>{formation.id ? t('formations.editFormation') : t('formations.createNew')}</h2>
         </div>
         <Form onSubmit={handleSubmit}>
           <Row>
             <Col md={6}>
               <FormGroup>
-                <Label for="name">Formation Name</Label>
+                <Label for="name">{t('formations.formationName')}</Label>
                 <Input
                   type="text"
                   required
@@ -108,7 +106,7 @@ export default function FormationEditAdmin() {
 
             <Col md={6}>
               <FormGroup>
-                <Label for="formationDate">Date and Time</Label>
+                <Label for="formationDate">{t('formations.dateAndTime')}</Label>
                 <Input
                   type="datetime-local"
                   required
@@ -124,7 +122,7 @@ export default function FormationEditAdmin() {
           <Row>
             <Col md={12}>
               <FormGroup>
-                <Label for="description">Description</Label>
+                <Label for="description">{t('formations.description')}</Label>
                 <Input
                   type="textarea"
                   required
@@ -140,10 +138,10 @@ export default function FormationEditAdmin() {
 
           <div className="form-action-group">
             <button className="ba-btn-primary" type="submit">
-              Save Formation
+              {t('formations.saveFormation')}
             </button>
             <Link to="/formations" className="ba-btn-secondary form-action-link">
-              Cancel
+              {t('formations.cancel')}
             </Link>
           </div>
         </Form>

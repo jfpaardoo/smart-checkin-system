@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button, ButtonGroup, Table } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencil, faUsers, faTrash, faQrcode } from "@fortawesome/free-solid-svg-icons";
+import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import "../../static/css/admin/adminPage.css";
 import deleteFromList from "../../util/deleteFromList";
@@ -14,6 +15,7 @@ import { useSubscription } from "../../hooks/useSubscription";
 const jwt = tokenService.getLocalAccessToken();
 
 export default function FormationListAdmin() {
+  const { t } = useTranslation();
   const toast = useToast();
   const [formations, setFormations, loading] = useFetchState(
     [],
@@ -50,9 +52,9 @@ export default function FormationListAdmin() {
         <td>{moment(formation.formationDate).format('YYYY-MM-DD HH:mm')}</td>
         <td>
           <div className="d-flex align-items-center gap-2">
-            <span className="badge bg-secondary">{total} Total</span>
-            {completed > 0 && <span className="badge bg-success">{completed} Completados</span>}
-            {inProgress > 0 && <span className="badge bg-warning text-dark">{inProgress} En Curso</span>}
+            <span className="badge bg-secondary">{total} {t('formations.total')}</span>
+            {completed > 0 && <span className="badge bg-success">{completed} {t('formations.completed')}</span>}
+            {inProgress > 0 && <span className="badge bg-warning text-dark">{inProgress} {t('formations.inProgress')}</span>}
           </div>
         </td>
         <td>
@@ -65,7 +67,7 @@ export default function FormationListAdmin() {
               to={"/formations/" + formation.id}
             >
               <FontAwesomeIcon icon={faPencil} />
-              <span className="btn-expand-label">Editar</span>
+              <span className="btn-expand-label">{t('formations.edit')}</span>
             </Button>
             <Button
               size="sm"
@@ -75,7 +77,7 @@ export default function FormationListAdmin() {
               to={"/formations/" + formation.id + "/details"}
             >
               <FontAwesomeIcon icon={faUsers} />
-              <span className="btn-expand-label">Asistentes</span>
+              <span className="btn-expand-label">{t('formations.attendeesBtn')}</span>
             </Button>
             <Button
               size="sm"
@@ -85,7 +87,7 @@ export default function FormationListAdmin() {
               to={`/qr-generator?formationId=${formation.id}`}
             >
               <FontAwesomeIcon icon={faQrcode} />
-              <span className="btn-expand-label">QR</span>
+              <span className="btn-expand-label">{t('formations.qr')}</span>
             </Button>
             <Button
               size="sm"
@@ -97,12 +99,12 @@ export default function FormationListAdmin() {
                   formation.id,
                   [formations, setFormations],
                   toast,
-                  { entityName: "Formation" }
+                  { entityName: "Formation", t }
                 )
               }
             >
               <FontAwesomeIcon icon={faTrash} />
-              <span className="btn-expand-label">Eliminar</span>
+              <span className="btn-expand-label">{t('formations.delete')}</span>
             </Button>
           </ButtonGroup>
         </td>
@@ -118,25 +120,25 @@ export default function FormationListAdmin() {
         ) : (
           <>
             <div className="ba-card-header">
-              <h2>Formations Management</h2>
+              <h2>{t('formations.title')}</h2>
               <Button className="ba-btn-primary" tag={Link} to="/formations/new">
-                + Create Formation
+                {t('formations.createFormation')}
               </Button>
             </div>
             
             <Table responsive aria-label="formations" className="ba-table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Description</th>
-                  <th>Date & Time</th>
-                  <th>Attendees</th>
-                  <th>Actions</th>
+                  <th>{t('formations.name')}</th>
+                  <th>{t('formations.description')}</th>
+                  <th>{t('formations.dateTime')}</th>
+                  <th>{t('formations.attendees')}</th>
+                  <th>{t('formations.actions')}</th>
                 </tr>
               </thead>
               <tbody>
                  {formationList.length > 0 ? formationList : (
-                     <tr><td colSpan="5" className="text-center">No formations found</td></tr>
+                     <tr><td colSpan="5" className="text-center">{t('formations.noFormations')}</td></tr>
                  )}
               </tbody>
             </Table>

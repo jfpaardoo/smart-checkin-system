@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button, ButtonGroup, Table } from "reactstrap";
+import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import "../../static/css/admin/adminPage.css";
 import deleteFromList from "../../util/deleteFromList";
@@ -10,6 +11,7 @@ import { useToast } from "../../components/ToastProvider";
 const jwt = tokenService.getLocalAccessToken();
 
 export default function UserListAdmin() {
+  const { t } = useTranslation();
   const toast = useToast();
   const [users, setUsers, loading] = useFetchState(
     [],
@@ -28,7 +30,7 @@ export default function UserListAdmin() {
         <td>{user.lastName}</td>
         <td>
           <span className={`ba-badge ${user.isWorking ? 'ba-badge-active' : 'ba-badge-inactive'}`}>
-            {user.isWorking ? 'Working' : 'Off-duty'}
+            {user.isWorking ? t('users.working') : t('users.offDuty')}
           </span>
         </td>
         <td>{user.authority.authority}</td>
@@ -41,7 +43,7 @@ export default function UserListAdmin() {
               tag={Link}
               to={"/users/" + user.id}
             >
-              Edit
+              {t('users.edit')}
             </Button>
             <Button
               size="sm"
@@ -53,11 +55,11 @@ export default function UserListAdmin() {
                   user.id,
                   [users, setUsers],
                   toast,
-                  { entityName: "User" }
+                  { entityName: "User", t }
                 )
               }
             >
-              Delete
+              {t('users.delete')}
             </Button>
           </ButtonGroup>
         </td>
@@ -73,22 +75,22 @@ export default function UserListAdmin() {
         ) : (
           <>
             <div className="ba-card-header">
-              <h2>Users Management</h2>
+              <h2>{t('users.title')}</h2>
               <Button className="ba-btn-primary" tag={Link} to="/users/new">
-                + Add User
+                {t('users.addUser')}
               </Button>
             </div>
             
             <Table responsive aria-label="users" className="ba-table">
               <thead>
                 <tr>
-                  <th>Personal Code</th>
-                  <th>Username</th>
-                  <th>First Name</th>
-                  <th>Last Name</th>
-                  <th>Status</th>
-                  <th>Role</th>
-                  <th>Actions</th>
+                  <th>{t('users.personalCode')}</th>
+                  <th>{t('users.username')}</th>
+                  <th>{t('users.firstName')}</th>
+                  <th>{t('users.lastName')}</th>
+                  <th>{t('users.status')}</th>
+                  <th>{t('users.role')}</th>
+                  <th>{t('users.actions')}</th>
                 </tr>
               </thead>
               <tbody>{userList}</tbody>

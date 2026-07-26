@@ -40,6 +40,7 @@ Este documento es un registro vivo (*Architecture Decision Record* o ADR) de las
 *   **Defensa Anti-Enumeración:** El endpoint de autenticación absorbe silenciosamente excepciones de `ResourceNotFoundException` durante el login. Esto evita revelar información sobre la existencia (o inexistencia) de cuentas en el sistema.
 *   **Trazabilidad Automática (JPA Auditing):** Se aplicó `@EnableJpaAuditing` a nivel global con `@EntityListeners` en la clase `BaseEntity`. Todos los registros (Usuarios, Fichajes, Formaciones) registran automáticamente las marcas inmutables de `@CreatedDate` y `@LastModifiedDate`.
 *   **Endurecimiento Perimetral (CORS & CSP):** Configuración manual y explícita de `CorsConfigurationSource` limitando orígenes, métodos y cabeceras permitidas. Sustitución de cabeceras anticuadas por un robusto **Content Security Policy (CSP)** configurado a `default-src 'self'`.
+*   **Restricción de Acceso a Documentación (Swagger / OpenAPI):** Acceso restringido exclusivamente a usuarios con rol `ADMIN` tanto a nivel de backend (`SecurityConfiguration.java` con `.requestMatchers("/v3/api-docs/**", "/swagger-ui/**").hasAuthority("ADMIN")`) como a nivel de frontend (`PrivateRoute` y menú de navegación exclusivo de administradores).
 
 ### Fase 3: Fichaje por QR Dinámico (TOTP) (Completada)
 *   **Lógica Criptográfica:** Integración de `dev.samstevens.totp:totp` para generar tokens TOTP de 6 dígitos con vigencia de 30 segundos. Esto asegura que los QR generados no pueden ser fotografiados y compartidos remotamente por los empleados (previene el fraude horario).
@@ -60,8 +61,16 @@ Este documento es un registro vivo (*Architecture Decision Record* o ADR) de las
 *   **Sistema de Diseño Corporativo:** Rediseño íntegro de la interfaz de usuario bajo la estética de **Vidrio Líquido (Liquid Glassmorphism)** de BA Glass:
     *   Cápsula de navegación flotante (`#2d2d2d`) con opacidad controlada (`rgba(40, 40, 40, 0.85)`) y refracción óptica `backdrop-filter: blur(60px)`.
     *   Tarjetas, tablas y botones estilizados con bordes traslúcidos, sombras proyectadas y paleta cromática corporativa (verde pistacho `#cce364`, blanco brillante y grises industriales).
-    *   Inclusión de iconografía descriptiva FontAwesome (`react-icons/fa`) en menús de navegación y acciones.
+    *   Inclusión de iconografía descriptiva FontAwesome (`@fortawesome/react-fontawesome`) en menús de navegación y acciones.
     *   Favicon circular transparente (`ba-logo-circle.png`) y metadatos PWA adaptados (`ShiftSync | BA Glass Smart Check-in`).
+*   **Botones de Acción Desplegables (*Expandable Icon Buttons*):**
+    *   **Decisión:** Sustitución de botones de texto estáticos por botones compactos con iconos de Font Awesome (`faPencil`, `faUsers`, `faQrcode`, `faTrash`) que se expanden horizontalmente al hacer *hover*.
+    *   **Justificación:** Optimiza el espacio horizontal en tablas administrativas manteniendo una estética limpia, permitiendo identificar la acción mediante el icono o mediante el texto descriptivo al interactuar.
+    *   **Implementación:** Animación fluida combinando `max-width`, `margin-left` y `transform: translateX` sincronizados a `0.55s ease` para garantizar cero tirones estéticos.
+*   **Navegación Contextual e Integración QR:**
+    *   Acceso directo al Generador QR de Formación desde la lista (`FormationListAdmin`) y la vista detallada (`FormationDetailsAdmin`).
+    *   Paso automático del ID de formación activa mediante parámetro URL (`?formationId=X`) para pre-seleccionar automáticamente la formación deseada.
+    *   Simplificación del flujo de checkout eliminando la introducción redundante de código personal para usuarios autenticados.
 *   **Carga Mediante Contenedores Fantasma (Skeleton Loaders):**
     *   **Decisión:** Sustitución global de textos planos y spinners de carga anticuados (`Loading...`) por el componente reutilizable `GhostLoader.js` (`TableGhostLoader`, `CardGhostLoader`, `QRGhostLoader`).
     *   **Justificación:** Implementa un efecto animado de brillo (*shimmer*) que respeta la forma de la interfaz durante la obtención de datos REST, eliminando el desplazamiento brusco de maquetación (*Cumulative Layout Shift - CLS*) y mejorando la fluidez percibida.
@@ -69,3 +78,28 @@ Este documento es un registro vivo (*Architecture Decision Record* o ADR) de las
 ### Fase 7: Purga de Código Muerto y Deuda Técnica (Completada)
 *   **Decisión:** Eliminación completa de todos los módulos, paquetes y componentes residuales del proyecto semilla (Spring Petclinic).
 *   **Justificación:** Se han purgado del backend y del frontend los paquetes `pet`, `vet`, `visit`, `owner`, `consultation`, vistas JSP antiguas y clases react obsoletas. Esto optimiza el tiempo de compilación, elimina la deuda técnica y garantiza que el 100% de la base de código responda exclusivamente al dominio funcional de **Smart Check-in**.
+
+### Fase 8: Internacionalización (i18n) Multilingüe Empresarial (Completada)
+*   **Decisión:** Adopción del estándar de la industria `react-i18next` junto con `i18next-http-backend` y `i18next-browser-languagedetector`.
+*   **Justificación:** Como aplicación orientada a plantas industriales transnacionales de BA Glass (España, Portugal, Europa), el sistema debe permitir a cualquier operador o gestor interactuar en su idioma nativo sin degradar el rendimiento de la aplicación.
+*   **Arquitectura y Carga Lazy:**
+    *   Archivos JSON de traducción ubicados en `public/locales/{lang}/translation.json`.
+    *   Carga diferida bajo demanda con `i18next-http-backend`: solo se descarga el bundle del idioma activo, manteniendo ligero el bundle de producción de React.
+    *   Detección automática del idioma preferido del dispositivo/navegador (`navigator.language`) con normalización ISO (`load: 'languageOnly'`), convirtiendo variantes como `pt-BR`, `en-US`, `es-ES` o `pl-PL` a su idioma base (`pt`, `en`, `es`, `pl`). Si el usuario cambia manualmente el idioma, la preferencia se guarda en `localStorage` (`i18nextLng`) para futuras visitas.
+    *   Encapsulado global del árbol de React mediante `React.Suspense` para una transición transparente durante la carga inicial del diccionario de cadenas.
+*   **Idiomas Soportados (8 Idiomas):**
+    *   🇪🇸 **Español (`es`)** — Idioma por defecto (fallback).
+    *   🇬🇧 **Inglés (`en`)**
+    *   🇵🇹 **Português (`pt`)**
+    *   🇫🇷 **Français (`fr`)**
+    *   🇩🇪 **Deutsch (`de`)**
+    *   🇵🇱 **Polski (`pl`)**
+    *   🇧🇬 **Български (`bg`)**
+    *   🇷🇴 **Română (`ro`)**
+*   **Selector de Idioma (`LanguageSwitcher.js`):**
+    *   Integrado en la barra de navegación pública y privada con estilo glassmorphism.
+    *   Indicadores visuales mediante banderas emoji, código ISO y verificación visual (✓) del idioma activo.
+    *   Cambio de idioma dinámico e instantáneo en tiempo real en toda la aplicación sin requerir recargar la página.
+*   **Cobertura Total de Cadenas:**
+    *   Traducción integral de barras de navegación, formularios, tablas, listas de datos, encabezados y modales.
+    *   Internacionalización del sistema centralizado de notificaciones **Toast** (éxito, error, advertencias) y diálogos de confirmación (`deleteFromList.js`).

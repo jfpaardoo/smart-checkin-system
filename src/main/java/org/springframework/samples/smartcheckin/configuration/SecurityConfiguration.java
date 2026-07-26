@@ -64,13 +64,13 @@ public class SecurityConfiguration {
 						// Raíz / páginas públicas
 						.requestMatchers("/", "/oups").permitAll()
 
-						// Swagger / OpenAPI accesible
+						// Swagger / OpenAPI accesible solo por ADMIN
 						.requestMatchers(
 								"/v3/api-docs/**",
 								"/swagger-ui.html",
 								"/swagger-ui/**",
 								"/swagger-resources/**")
-						.permitAll()
+						.hasAuthority(ADMIN)
 
 						// API pública
 						.requestMatchers("/api/v1/auth/**").permitAll()

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button, Table, Form, FormGroup, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQrcode } from "@fortawesome/free-solid-svg-icons";
+import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import "../../static/css/admin/adminPage.css";
 import getIdFromUrl from "../../util/getIdFromUrl";
@@ -17,6 +18,7 @@ const jwt = tokenService.getLocalAccessToken();
 
 export default function FormationDetailsAdmin() {
   const id = getIdFromUrl(2);
+  const { t } = useTranslation();
   const toast = useToast();
   
   const [formation, setFormation] = useFetchState(
@@ -52,107 +54,59 @@ export default function FormationDetailsAdmin() {
   useSubscription(`/topic/formations/${id}`, reloadFormation);
   useSubscription('/topic/formations', reloadFormation);
 
-  const handleAddUserSuccess = () => {
-    toast.success("User added to formation");
-    reloadFormation();
-    setSelectedUserId("");
-  };
-
-  const handleAddUser = () => {
+  const handleAddUser = async () => {
     if (!selectedUserId) return;
-    
-    fetch(`/api/v1/formations/${id}/users/${selectedUserId}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        Accept: "application/json",
-      },
-    })
-      .then((response) => {
-        if (response.ok) {
-          handleAddUserSuccess();
-          return null;
-        }
-        return response.json();
-      })
-      .then((json) => {
-        if (json) {
-          toast.error(json.message || "Failed to add user");
-        }
-      })
-      .catch(() => {
-        toast.error("Connection error. Please try again.");
+    try {
+      const response = await fetch(`/api/v1/formations/${id}/attendances`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: Number(selectedUserId) }),
       });
-  };
-
-  const filterOutUser = (prev, userId) => {
-    if (!prev?.attendances) return prev;
-    return {
-      ...prev,
-      attendances: prev.attendances.filter((att) => att.user?.id !== userId)
-    };
-  };
-
-  const handleRemoveUserSuccess = (userId) => {
-    toast.success("User removed from formation");
-    setFormation((prev) => filterOutUser(prev, userId));
-    reloadFormation();
-  };
-
-  const executeRemoveUserApi = (userId) => {
-    setFormation((prev) => filterOutUser(prev, userId));
-
-    fetch(`/api/v1/formations/${id}/users/${userId}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        Accept: "application/json",
-      },
-    })
-      .then((res) => (res.ok ? null : res.json()))
-      .then((json) => {
-        if (json?.message) {
-          toast.error(json.message);
-          reloadFormation();
-        } else if (json === null) {
-          handleRemoveUserSuccess(userId);
-        }
-      })
-      .catch(() => {
-        toast.error("Connection error. Please try again.");
+      if (response.ok) {
+        toast.success(t('formationDetails.userAdded'));
+        setSelectedUserId("");
         reloadFormation();
-      });
+      } else {
+        const json = await response.json();
+        toast.error(json.message || t('formationDetails.userAddError'));
+      }
+    } catch {
+      toast.error(t('formationDetails.userAddError'));
+    }
   };
 
-  const handleRemoveUser = (userId) => {
-    toast.confirm("Are you sure you want to remove this user from the formation?", () => executeRemoveUserApi(userId));
+  const handleRemoveUser = async (userId) => {
+    toast.confirm(t('formationDetails.userRemoveConfirm'), async () => {
+      try {
+        const response = await fetch(`/api/v1/formations/${id}/attendances/${userId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${jwt}` },
+        });
+        if (response.ok) {
+          toast.success(t('formationDetails.userRemoved'));
+          reloadFormation();
+        } else {
+          toast.error(t('formationDetails.userRemoveError'));
+        }
+      } catch {
+        toast.error(t('formationDetails.userRemoveError'));
+      }
+    });
   };
 
   const renderAttendanceBadge = (att) => {
-    if (att.checkOutDate) {
-      return <span className="badge bg-success">Completada</span>;
-    }
-    if (att.checkInDate) {
-      return <span className="badge bg-warning text-dark">En Curso</span>;
-    }
-    return <span className="badge bg-secondary">Inscrito</span>;
+    if (att.checkOutDate) return <span className="badge bg-success">{t('formationDetails.statusCompleted')}</span>;
+    if (att.checkInDate)  return <span className="badge bg-warning text-dark">{t('formationDetails.statusInProgress')}</span>;
+    return <span className="badge bg-secondary">{t('formationDetails.statusPending')}</span>;
   };
 
-  const renderModalAttendanceBadge = (att) => {
-    if (att.checkOutDate) {
-      return <span className="badge bg-success" style={{ fontSize: '0.9rem' }}>Completada (Checkout realizado)</span>;
-    }
-    if (att.checkInDate) {
-      return <span className="badge bg-warning text-dark" style={{ fontSize: '0.9rem' }}>En Curso (Check-in realizado)</span>;
-    }
-    return <span className="badge bg-secondary" style={{ fontSize: '0.9rem' }}>Inscrito / Sin Fichar</span>;
-  };
+  const renderModalAttendanceBadge = renderAttendanceBadge;
 
-  if (!formation) {
-    return <CardGhostLoader />;
-  }
+  if (!formation) return <CardGhostLoader />;
 
-  // Find users not currently attending
   const attendeeIds = formation.attendances ? formation.attendances.map(a => a.user.id) : [];
   const availableUsers = allUsers.filter(u => !attendeeIds.includes(u.id));
 
@@ -160,26 +114,26 @@ export default function FormationDetailsAdmin() {
     <div className="ba-container">
       <div className="ba-card">
         <div className="ba-card-header">
-          <h2>Formation Details: {formation.name}</h2>
+          <h2>{t('formationDetails.title')}: {formation.name}</h2>
           <div className="d-flex gap-2">
-            <Button className="ba-btn-blue" tag={Link} to={`/qr-generator?formationId=${id}`} title="QR de la Formación">
-              <FontAwesomeIcon icon={faQrcode} className="me-2" />QR
+            <Button className="ba-btn-blue" tag={Link} to={`/qr-generator?formationId=${id}`} title={t('formationDetails.qrButton')}>
+              <FontAwesomeIcon icon={faQrcode} className="me-2" />{t('formationDetails.qrButton')}
             </Button>
             <Button className="ba-btn-secondary" tag={Link} to="/formations">
-              Back to List
+              {t('formationDetails.backToList')}
             </Button>
           </div>
         </div>
 
         <div className="formation-info-box">
-          <h4>Description</h4>
+          <h4>{t('formationDetails.description')}</h4>
           <p>{formation.description}</p>
-          <h4>Date & Time</h4>
+          <h4>{t('formationDetails.dateTime')}</h4>
           <p>{moment(formation.formationDate).format('YYYY-MM-DD HH:mm')}</p>
         </div>
 
         <div className="ba-card-header pt-3">
-          <h3>Attendees</h3>
+          <h3>{t('formationDetails.attendeesSection')}</h3>
           <Form inline className="formation-add-form" onSubmit={(e) => { e.preventDefault(); handleAddUser(); }}>
             <FormGroup className="mb-2 mr-sm-2 mb-sm-0" style={{ minWidth: '280px' }}>
               <GlassDropdown
@@ -189,11 +143,11 @@ export default function FormationDetailsAdmin() {
                 }))}
                 value={selectedUserId}
                 onChange={(val) => setSelectedUserId(String(val))}
-                placeholder="Select User to Add..."
+                placeholder={t('formationDetails.selectUserToAdd')}
               />
             </FormGroup>
             <Button className="ba-btn-primary" type="submit" disabled={!selectedUserId}>
-              Add User
+              {t('formationDetails.addUser')}
             </Button>
           </Form>
         </div>
@@ -201,13 +155,13 @@ export default function FormationDetailsAdmin() {
         <Table responsive className="ba-table align-middle">
           <thead>
             <tr>
-              <th>Personal Code</th>
-              <th>Name</th>
-              <th>Username</th>
-              <th>Check-in</th>
-              <th>Check-out</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th>{t('formationDetails.personalCode')}</th>
+              <th>{t('formationDetails.name')}</th>
+              <th>{t('formationDetails.username')}</th>
+              <th>{t('formationDetails.checkIn')}</th>
+              <th>{t('formationDetails.checkOut')}</th>
+              <th>{t('formationDetails.status')}</th>
+              <th>{t('formationDetails.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -223,9 +177,7 @@ export default function FormationDetailsAdmin() {
                     <td>{user.username}</td>
                     <td>{hasCheckedIn ? moment(att.checkInDate).format('HH:mm:ss') : '-'}</td>
                     <td>{isCompleted ? moment(att.checkOutDate).format('HH:mm:ss') : '-'}</td>
-                    <td>
-                      {renderAttendanceBadge(att)}
-                    </td>
+                    <td>{renderAttendanceBadge(att)}</td>
                     <td>
                       <div className="d-flex gap-2">
                         <Button
@@ -236,14 +188,14 @@ export default function FormationDetailsAdmin() {
                             setModalOpen(true);
                           }}
                         >
-                          Ver Firma / Detalles
+                          {t('formationDetails.viewSignature')}
                         </Button>
                         <Button
                           size="sm"
                           className="ba-btn-danger"
                           onClick={() => handleRemoveUser(user.id)}
                         >
-                          Remove
+                          {t('formationDetails.remove')}
                         </Button>
                       </div>
                     </td>
@@ -253,7 +205,7 @@ export default function FormationDetailsAdmin() {
             ) : (
               <tr>
                 <td colSpan="7" className="text-center">
-                  No attendees enrolled in this formation.
+                  {t('formationDetails.noAttendees')}
                 </td>
               </tr>
             )}
@@ -261,45 +213,38 @@ export default function FormationDetailsAdmin() {
         </Table>
       </div>
 
-      {/* Modal for viewing attendance details and digital signature */}
       <Modal isOpen={modalOpen} toggle={() => setModalOpen(false)} centered style={{ maxWidth: '500px' }}>
         <ModalHeader toggle={() => setModalOpen(false)} style={{ backgroundColor: '#2c3e50', color: 'white', borderBottom: 'none' }}>
-          Detalles de Asistencia - {formation?.name}
+          {t('formationDetails.attendanceDetails')} - {formation?.name}
         </ModalHeader>
         <ModalBody className="py-4" style={{ backgroundColor: '#f4f6fa' }}>
           {selectedAttendance && (
             <div className="p-3" style={{ backgroundColor: 'white', borderRadius: '15px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
-              <h6 className="text-muted mb-1">Formación:</h6>
-              <p className="mb-3" style={{ fontWeight: '600', color: '#2c3e50' }}>
-                {formation?.name}
-              </p>
+              <h6 className="text-muted mb-1">{t('formationDetails.formation')}:</h6>
+              <p className="mb-3" style={{ fontWeight: '600', color: '#2c3e50' }}>{formation?.name}</p>
 
-              <h6 className="text-muted mb-1">Empleado:</h6>
+              <h6 className="text-muted mb-1">{t('formationDetails.employee')}:</h6>
               <p className="mb-3" style={{ fontWeight: '600', color: '#2c3e50' }}>
                 {selectedAttendance.user.firstName} {selectedAttendance.user.lastName} ({selectedAttendance.user.username})
               </p>
 
-              <h6 className="text-muted mb-1">Código Personal:</h6>
-              <p className="mb-3" style={{ fontWeight: '600', color: '#2c3e50' }}>
-                {selectedAttendance.user.personalCode}
-              </p>
+              <h6 className="text-muted mb-1">{t('formationDetails.personalCodeLabel')}:</h6>
+              <p className="mb-3" style={{ fontWeight: '600', color: '#2c3e50' }}>{selectedAttendance.user.personalCode}</p>
 
-              <h6 className="text-muted mb-1">Estado:</h6>
-              <div className="mb-3">
-                {renderModalAttendanceBadge(selectedAttendance)}
-              </div>
+              <h6 className="text-muted mb-1">{t('formationDetails.statusLabel')}:</h6>
+              <div className="mb-3">{renderModalAttendanceBadge(selectedAttendance)}</div>
 
-              <h6 className="text-muted mb-1">Hora de Entrada (Check-in):</h6>
+              <h6 className="text-muted mb-1">{t('formationDetails.checkInTime')}:</h6>
               <p className="mb-3" style={{ fontWeight: '500' }}>
-                {selectedAttendance.checkInDate ? moment(selectedAttendance.checkInDate).format('YYYY-MM-DD HH:mm:ss') : 'No registrado'}
+                {selectedAttendance.checkInDate ? moment(selectedAttendance.checkInDate).format('YYYY-MM-DD HH:mm:ss') : t('formationDetails.notRecorded')}
               </p>
 
-              <h6 className="text-muted mb-1">Hora de Salida (Check-out):</h6>
+              <h6 className="text-muted mb-1">{t('formationDetails.checkOutTime')}:</h6>
               <p className="mb-4" style={{ fontWeight: '500' }}>
-                {selectedAttendance.checkOutDate ? moment(selectedAttendance.checkOutDate).format('YYYY-MM-DD HH:mm:ss') : 'No registrado'}
+                {selectedAttendance.checkOutDate ? moment(selectedAttendance.checkOutDate).format('YYYY-MM-DD HH:mm:ss') : t('formationDetails.notRecorded')}
               </p>
 
-              <h6 className="text-muted mb-2">Firma Digital del Empleado:</h6>
+              <h6 className="text-muted mb-2">{t('formationDetails.digitalSignature')}:</h6>
               {selectedAttendance.signature ? (
                 <div className="text-center p-2" style={{ backgroundColor: '#fff', borderRadius: '12px', border: '2px dashed #cbd5e1' }}>
                   <img 
@@ -310,7 +255,7 @@ export default function FormationDetailsAdmin() {
                 </div>
               ) : (
                 <div className="alert alert-light text-center border mb-0" style={{ borderRadius: '12px' }}>
-                  <small className="text-muted">No se ha registrado firma digital aún para este usuario.</small>
+                  <small className="text-muted">{t('formationDetails.noSignature')}</small>
                 </div>
               )}
             </div>
@@ -318,7 +263,7 @@ export default function FormationDetailsAdmin() {
         </ModalBody>
         <ModalFooter style={{ borderTop: 'none', backgroundColor: '#f4f6fa' }}>
           <Button color="secondary" onClick={() => setModalOpen(false)} style={{ borderRadius: '20px' }}>
-            Cerrar
+            {t('formationDetails.close')}
           </Button>
         </ModalFooter>
       </Modal>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Input } from 'reactstrap';
 import { Html5Qrcode } from 'html5-qrcode';
 import SignatureCanvas from 'react-signature-canvas';
+import { useTranslation } from 'react-i18next';
 import { useToast } from '../../components/ToastProvider';
 import useFetchState from '../../util/useFetchState';
 import tokenService from '../../services/token.service';
@@ -12,6 +13,7 @@ import { useSubscription } from '../../hooks/useSubscription';
 import '../../static/css/admin/adminPage.css';
 
 export default function UserDashboard() {
+  const { t } = useTranslation();
   const jwt = tokenService.getLocalAccessToken();
   const user = tokenService.getUser();
 
@@ -73,14 +75,14 @@ export default function UserDashboard() {
         if (devices && devices.length > 0) {
           const camOptions = devices.map(d => ({
             value: d.id,
-            label: d.label || `Cámara ${d.id}`
+            label: d.label || `${t('dashboard.camera')} ${d.id}`
           }));
           setCameras(camOptions);
           setSelectedCameraId(prev => prev || devices[0].id);
         }
       }).catch(err => console.error("Error getting cameras", err));
     }
-  }, [detailsModal, step, isManualCheckout]);
+  }, [detailsModal, step, isManualCheckout, t]);
 
   useEffect(() => {
     let isScanning = false;
@@ -97,7 +99,7 @@ export default function UserDashboard() {
         (decodedText) => {
           stopScannerSafely(activeScanner);
           setStep('sign');
-          toast.success("Código QR validado. Por favor proporcione su firma.");
+          toast.success(t('dashboard.qrValidated'));
         },
         () => {}
       ).then(() => {
@@ -112,7 +114,7 @@ export default function UserDashboard() {
         }
       };
     }
-  }, [detailsModal, step, isManualCheckout, selectedCameraId, selectedAtt, toast]);
+  }, [detailsModal, step, isManualCheckout, selectedCameraId, selectedAtt, toast, t]);
 
   const openDetails = (attendance) => {
     setSelectedAtt(attendance);
@@ -134,7 +136,7 @@ export default function UserDashboard() {
 
   const handleCheckoutSubmit = async () => {
     if (sigCanvas.current.isEmpty()) {
-      toast.error("Por favor proporcione su firma.");
+      toast.error(t('dashboard.signatureRequired'));
       return;
     }
 
@@ -156,16 +158,15 @@ export default function UserDashboard() {
         throw new Error(text);
       }
 
-      toast.success("Checkout completado con éxito.");
+      toast.success(t('dashboard.checkoutSuccess'));
       closeDetails();
       
-      // Reload attendances
       const res = await fetch("/api/v1/users/me/formations", { headers: { "Authorization": `Bearer ${jwt}` } });
       const data = await res.json();
       setAttendances(data);
 
     } catch (error) {
-      toast.error(error.message || "Error registrando salida");
+      toast.error(error.message || t('dashboard.checkoutError'));
     }
   };
 
@@ -175,7 +176,6 @@ export default function UserDashboard() {
     }
 
     if (attendances && attendances.length > 0) {
-      // Ordenar por fecha de formación más reciente primero (descendente)
       const sortedAttendances = [...attendances].sort(
         (a, b) => new Date(b.formation.formationDate) - new Date(a.formation.formationDate)
       );
@@ -185,10 +185,10 @@ export default function UserDashboard() {
           <table className="table table-hover ba-table align-middle">
             <thead>
               <tr>
-                <th style={{ color: '#2c3e50' }}>Formación</th>
-                <th style={{ color: '#2c3e50' }}>Fecha</th>
-                <th style={{ color: '#2c3e50' }}>Estado</th>
-                <th style={{ color: '#2c3e50' }}>Acción</th>
+                <th style={{ color: '#2c3e50' }}>{t('dashboard.formation')}</th>
+                <th style={{ color: '#2c3e50' }}>{t('dashboard.date')}</th>
+                <th style={{ color: '#2c3e50' }}>{t('dashboard.status')}</th>
+                <th style={{ color: '#2c3e50' }}>{t('dashboard.action')}</th>
               </tr>
             </thead>
             <tbody>
@@ -201,14 +201,14 @@ export default function UserDashboard() {
                     <td style={{ color: '#64748b' }}>{new Date(f.formationDate).toLocaleString()}</td>
                     <td>
                       {isCompleted ? (
-                        <span className="badge bg-success">Completada</span>
+                        <span className="badge bg-success">{t('dashboard.statusCompleted')}</span>
                       ) : (
-                        <span className="badge bg-warning text-dark">En Curso</span>
+                        <span className="badge bg-warning text-dark">{t('dashboard.statusInProgress')}</span>
                       )}
                     </td>
                     <td>
                       <button className="ba-btn ba-btn-primary btn-sm m-0" onClick={() => openDetails(att)}>
-                        Ver Detalles
+                        {t('dashboard.viewDetails')}
                       </button>
                     </td>
                   </tr>
@@ -222,7 +222,7 @@ export default function UserDashboard() {
 
     return (
       <div className="text-center p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.45)', backdropFilter: 'blur(10px)', borderRadius: '20px', border: '1.5px solid rgba(255, 255, 255, 0.8)' }}>
-        <p className="mb-0" style={{ color: '#64748b', fontWeight: 500 }}>No has asistido a ninguna formación todavía.</p>
+        <p className="mb-0" style={{ color: '#64748b', fontWeight: 500 }}>{t('dashboard.noFormations')}</p>
       </div>
     );
   };
@@ -230,56 +230,56 @@ export default function UserDashboard() {
   return (
     <div className="ba-container">
       <div className="ba-card home-card" style={{ maxWidth: '800px', margin: '2rem auto' }}>
-        <h2 className="home-title mb-4" style={{ color: '#2c3e50' }}>Hola, {user?.username}</h2>
+        <h2 className="home-title mb-4" style={{ color: '#2c3e50' }}>{t('dashboard.hello')}, {user?.username}</h2>
         
         <div className="d-flex justify-content-center mb-5">
           <Link to="/checkin" className="ba-btn ba-btn-primary" style={{ padding: '15px 30px', fontSize: '1.2rem', borderRadius: '30px' }}>
-            Escáner QR (Fichar Turno / Asistencia)
+            {t('dashboard.scannerButton')}
           </Link>
         </div>
 
-        <h3 className="mb-3" style={{ color: '#2c3e50', fontWeight: 600 }}>Mis Formaciones</h3>
+        <h3 className="mb-3" style={{ color: '#2c3e50', fontWeight: 600 }}>{t('dashboard.myFormations')}</h3>
         
         {renderContent()}
       </div>
 
       <Modal isOpen={detailsModal} toggle={closeDetails} centered style={{ maxWidth: '500px' }}>
         <ModalHeader toggle={closeDetails}>
-          {selectedAtt ? selectedAtt.formation.name : 'Detalles de la Formación'}
+          {selectedAtt ? selectedAtt.formation.name : t('dashboard.formationDetails')}
         </ModalHeader>
         <ModalBody className="py-4">
           {selectedAtt && (
             <>
               {step === 'details' && (
                 <div className="p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.45)', backdropFilter: 'blur(15px)', borderRadius: '24px', border: '1.5px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 10px 25px rgba(0,0,0,0.03)' }}>
-                  <h6 style={{ color: '#64748b', fontSize: '0.9rem' }} className="mb-1">Descripción:</h6>
-                  <p className="lead mb-4" style={{ color: '#2c3e50', fontSize: '1.1rem' }}>{selectedAtt.formation.description || 'Sin descripción.'}</p>
+                  <h6 style={{ color: '#64748b', fontSize: '0.9rem' }} className="mb-1">{t('dashboard.descriptionLabel')}</h6>
+                  <p className="lead mb-4" style={{ color: '#2c3e50', fontSize: '1.1rem' }}>{selectedAtt.formation.description || t('dashboard.noDescription')}</p>
                   
-                  <h6 style={{ color: '#64748b', fontSize: '0.9rem' }} className="mb-1">Fecha de la formación:</h6>
+                  <h6 style={{ color: '#64748b', fontSize: '0.9rem' }} className="mb-1">{t('dashboard.formationDate')}</h6>
                   <p className="mb-4" style={{ color: '#2c3e50', fontWeight: '500' }}>{new Date(selectedAtt.formation.formationDate).toLocaleString()}</p>
                   
-                  <h6 style={{ color: '#64748b', fontSize: '0.9rem' }} className="mb-1">Hora de entrada (Check-in):</h6>
+                  <h6 style={{ color: '#64748b', fontSize: '0.9rem' }} className="mb-1">{t('dashboard.checkInTime')}</h6>
                   <p className="mb-4" style={{ color: '#2c3e50', fontWeight: '500' }}>{new Date(selectedAtt.checkInDate).toLocaleString()}</p>
 
                   {selectedAtt.checkOutDate && (
                     <>
-                      <h6 style={{ color: '#64748b', fontSize: '0.9rem' }} className="mb-1">Hora de salida (Check-out):</h6>
+                      <h6 style={{ color: '#64748b', fontSize: '0.9rem' }} className="mb-1">{t('dashboard.checkOutTime')}</h6>
                       <p className="mb-4" style={{ color: '#2c3e50', fontWeight: '500' }}>{new Date(selectedAtt.checkOutDate).toLocaleString()}</p>
                     </>
                   )}
 
                   <div className="d-flex justify-content-between align-items-center mt-4 pt-3" style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
                     <div>
-                      <span style={{ color: '#64748b' }} className="mr-2">Estado: </span>
+                      <span style={{ color: '#64748b' }} className="mr-2">{t('dashboard.statusLabel')} </span>
                       {selectedAtt.checkOutDate ? (
-                        <span className="badge bg-success" style={{ fontSize: '0.9rem' }}>Completada</span>
+                        <span className="badge bg-success" style={{ fontSize: '0.9rem' }}>{t('dashboard.statusCompleted')}</span>
                       ) : (
-                        <span className="badge bg-warning text-dark" style={{ fontSize: '0.9rem' }}>En Curso</span>
+                        <span className="badge bg-warning text-dark" style={{ fontSize: '0.9rem' }}>{t('dashboard.statusInProgress')}</span>
                       )}
                     </div>
                     {!selectedAtt.checkOutDate && (
                       <button className="ba-btn ba-btn-primary m-0" onClick={() => setStep('scan')}>
-                        Hacer Checkout
+                        {t('dashboard.checkout')}
                       </button>
                     )}
                   </div>
@@ -288,7 +288,7 @@ export default function UserDashboard() {
 
               {step === 'scan' && (
                 <div>
-                  <h5 className="text-center mb-3" style={{ color: '#2c3e50', fontWeight: 600 }}>1. Validación de Formación</h5>
+                  <h5 className="text-center mb-3" style={{ color: '#2c3e50', fontWeight: 600 }}>{t('dashboard.scanStep')}</h5>
                   {!isManualCheckout ? (
                     <>
                       {cameras.length > 1 && (
@@ -297,7 +297,7 @@ export default function UserDashboard() {
                             options={cameras}
                             value={selectedCameraId}
                             onChange={(camId) => setSelectedCameraId(camId)}
-                            placeholder="Seleccionar Cámara..."
+                            placeholder={t('dashboard.selectCamera')}
                           />
                         </div>
                       )}
@@ -309,17 +309,17 @@ export default function UserDashboard() {
                           style={{ fontSize: '0.9rem', fontWeight: 600 }}
                           onClick={() => {
                             setIsManualCheckout(true);
-                            toast.info("Modo manual activado: Introduce el código de 6 dígitos.");
+                            toast.info(t('dashboard.manualActivated'));
                           }}
                         >
-                          ¿Problemas con la cámara? Introducir código manualmente
+                          {t('dashboard.cameraIssue')}
                         </button>
                       </div>
                     </>
                   ) : (
                     <div className="text-center">
                       <p className="mb-3" style={{ color: '#64748b', fontSize: '0.95rem' }}>
-                        Introduce el código de 6 dígitos proyectado para esta formación.
+                        {t('dashboard.manualCode')}
                       </p>
                       <FormGroup className="mb-4">
                         <Input
@@ -350,10 +350,10 @@ export default function UserDashboard() {
                           onClick={() => {
                             setIsManualCheckout(false);
                             setManualCheckoutCode('');
-                            toast.info("Cámara reactivada.");
+                            toast.info(t('dashboard.cameraReactivated'));
                           }}
                         >
-                          Usar Cámara
+                          {t('dashboard.useCamera')}
                         </button>
                         <button
                           type="button"
@@ -363,13 +363,13 @@ export default function UserDashboard() {
                           onClick={() => {
                             if (manualCheckoutCode.length === 6) {
                               setStep('sign');
-                              toast.success("Código aceptado. Por favor proporcione su firma.");
+                              toast.success(t('dashboard.codeAccepted'));
                             } else {
-                              toast.error("El código debe tener 6 dígitos.");
+                              toast.error(t('dashboard.codeInvalid'));
                             }
                           }}
                         >
-                          Continuar
+                          {t('dashboard.continue')}
                         </button>
                       </div>
                     </div>
@@ -379,7 +379,7 @@ export default function UserDashboard() {
 
               {step === 'sign' && (
                 <div>
-                  <h5 className="text-center mb-3" style={{ color: '#2c3e50', fontWeight: 600 }}>2. Firma del Usuario</h5>
+                  <h5 className="text-center mb-3" style={{ color: '#2c3e50', fontWeight: 600 }}>{t('dashboard.signStep')}</h5>
                   
                   <div style={{ backgroundColor: '#ffffff', borderRadius: '20px', border: '1.5px solid rgba(255, 255, 255, 0.8)', overflow: 'hidden', width: 'fit-content', margin: '0 auto', boxShadow: '0 8px 25px rgba(0,0,0,0.05)' }}>
                     <SignatureCanvas 
@@ -389,7 +389,7 @@ export default function UserDashboard() {
                     />
                   </div>
                   <div className="text-center mt-3">
-                    <button type="button" className="btn btn-link text-muted" onClick={() => sigCanvas.current.clear()}>Borrar firma</button>
+                    <button type="button" className="btn btn-link text-muted" onClick={() => sigCanvas.current.clear()}>{t('dashboard.clearSignature')}</button>
                   </div>
                 </div>
               )}
@@ -398,13 +398,13 @@ export default function UserDashboard() {
         </ModalBody>
         <ModalFooter>
           {step !== 'details' ? (
-            <button type="button" className="ba-btn ba-btn-secondary" onClick={() => setStep('details')}>Volver a Detalles</button>
+            <button type="button" className="ba-btn ba-btn-secondary" onClick={() => setStep('details')}>{t('dashboard.backToDetails')}</button>
           ) : (
-            <button type="button" className="ba-btn ba-btn-secondary" onClick={closeDetails}>Cerrar</button>
+            <button type="button" className="ba-btn ba-btn-secondary" onClick={closeDetails}>{t('dashboard.close')}</button>
           )}
           {step === 'sign' && (
             <button type="button" className="ba-btn ba-btn-primary" onClick={handleCheckoutSubmit}>
-              Confirmar Checkout
+              {t('dashboard.confirmCheckout')}
             </button>
           )}
         </ModalFooter>
