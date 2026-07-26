@@ -268,11 +268,16 @@ export default function FormationDetailsAdmin() {
       {/* Modal for viewing attendance details and digital signature */}
       <Modal isOpen={modalOpen} toggle={() => setModalOpen(false)} centered style={{ maxWidth: '500px' }}>
         <ModalHeader toggle={() => setModalOpen(false)} style={{ backgroundColor: '#2c3e50', color: 'white', borderBottom: 'none' }}>
-          Detalles de Asistencia - {selectedAttendance?.user?.firstName} {selectedAttendance?.user?.lastName}
+          Detalles de Asistencia - {formation?.name}
         </ModalHeader>
         <ModalBody className="py-4" style={{ backgroundColor: '#f4f6fa' }}>
           {selectedAttendance && (
             <div className="p-3" style={{ backgroundColor: 'white', borderRadius: '15px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+              <h6 className="text-muted mb-1">Formación:</h6>
+              <p className="mb-3" style={{ fontWeight: '600', color: '#2c3e50' }}>
+                {formation?.name}
+              </p>
+
               <h6 className="text-muted mb-1">Empleado:</h6>
               <p className="mb-3" style={{ fontWeight: '600', color: '#2c3e50' }}>
                 {selectedAttendance.user.firstName} {selectedAttendance.user.lastName} ({selectedAttendance.user.username})
