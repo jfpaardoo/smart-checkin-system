@@ -5,14 +5,12 @@ import "../../static/css/auth/authButton.css";
 import { loginFormInputs } from "./form/loginFormInputs";
 
 export default function Login() {
-  const [message, setMessage] = useState(null)
+  const toast = useToast();
   const loginFormRef = React.createRef();      
   
-
   async function handleSubmit({ values }) {
 
     const reqBody = values;
-    setMessage(null);
     await fetch("/api/v1/auth/signin", {
       headers: { "Content-Type": "application/json" },
       method: "POST",
@@ -23,23 +21,18 @@ export default function Login() {
         else throw new Error("Invalid login attempt");
       })
       .then(function (data) {
+        toast.success("Login successful");
         tokenService.setUser(data);
         tokenService.updateLocalAccessToken(data.token);
-        window.location.href = "/";
+        setTimeout(() => { window.location.href = "/"; }, 1000);
       })
       .catch((error) => {         
-        setMessage(error);
+        toast.error(error.message || "An error occurred");
       });            
   }
 
-  
     return (
       <div className="auth-page-container">
-        {message ? (
-          <div className="alert alert-danger" role="alert">{message}</div>
-        ) : (
-          <></>
-        )}
 
         <h1>Login</h1>
 
