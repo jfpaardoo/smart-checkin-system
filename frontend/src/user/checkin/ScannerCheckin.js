@@ -168,7 +168,7 @@ export default function ScannerCheckin() {
        toast.error("Por favor proporcione su firma.");
        return;
     }
-    const signatureBase64 = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png');
+    const signatureBase64 = sigCanvas.current.getCanvas().toDataURL('image/png');
     setLoading(true);
     
     try {

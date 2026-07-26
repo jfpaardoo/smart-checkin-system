@@ -93,7 +93,7 @@ export default function UserDashboard() {
       return;
     }
 
-    const signatureBase64 = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png');
+    const signatureBase64 = sigCanvas.current.getCanvas().toDataURL('image/png');
     
     try {
       const response = await fetch(`/api/v1/formations/${selectedAtt.formation.id}/checkout`, {
