@@ -21,14 +21,13 @@ export default function UserDashboard() {
 
   const [detailsModal, setDetailsModal] = useState(false);
   const [selectedAtt, setSelectedAtt] = useState(null);
-  const [step, setStep] = useState('details'); // 'details', 'scan', 'sign'
+  const [step, setStep] = useState('details');
   const [personalCode, setPersonalCode] = useState('');
   
   const toast = useToast();
   const scannerRef = useRef(null);
   const sigCanvas = useRef({});
 
-  // Clean up scanner on unmount
   useEffect(() => {
     return () => {
       if (scannerRef.current) {
@@ -37,7 +36,6 @@ export default function UserDashboard() {
     };
   }, []);
 
-  // Initialize Scanner when step is 'scan'
   useEffect(() => {
     if (detailsModal && step === 'scan' && selectedAtt) {
       const timer = setTimeout(() => {
@@ -200,8 +198,7 @@ export default function UserDashboard() {
         {renderContent()}
       </div>
 
-      {/* Details & Checkout Modal */}
-      <Modal isOpen={detailsModal} toggle={closeDetails} centered size="lg">
+      <Modal isOpen={detailsModal} toggle={closeDetails} centered style={{ maxWidth: '500px' }}>
         <ModalHeader toggle={closeDetails} style={{ backgroundColor: '#2c3e50', color: 'white', borderBottom: 'none' }}>
           {selectedAtt ? selectedAtt.formation.name : 'Formation Details'}
         </ModalHeader>
