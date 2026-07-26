@@ -63,7 +63,7 @@ Este documento detalla la división del proyecto en pequeñas tareas abordables 
 ## FASE 5: Frontend - Portal de Empleado (Días 8-9)
 
 ### Tarea 5.1: Escáner QR Web (PWA)
-* **Descripción:** Implementar la librería `html5-qrcode` para acceder a la cámara desde el navegador. Crear la interfaz minimalista donde el usuario escanea y pone su número de 4 dígitos.
+* **Descripción:** [COMPLETADA] Implementar la librería `html5-qrcode` para acceder a la cámara desde el navegador. Crear la interfaz minimalista donde el usuario escanea y pone su número de 4 dígitos.
 * **Rama:** `feat/ui-user-scanner`
 
 ### Tarea 5.2: Feedback Visual de Fichaje

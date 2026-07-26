@@ -15,6 +15,7 @@ import FormationListAdmin from "./admin/formations/FormationListAdmin";
 import FormationEditAdmin from "./admin/formations/FormationEditAdmin";
 import FormationDetailsAdmin from "./admin/formations/FormationDetailsAdmin";
 import QRGeneratorAdmin from "./admin/qr/QRGeneratorAdmin";
+import ScannerCheckin from "./user/checkin/ScannerCheckin";
 import { ToastProvider } from "./components/ToastProvider";
 
 function ErrorFallback({ error, resetErrorBoundary }) {
@@ -65,6 +66,7 @@ function App() {
       <>
         <Route path="/logout" element={<Logout />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/checkin" element={<ScannerCheckin />} />
       </>
     )
   }
