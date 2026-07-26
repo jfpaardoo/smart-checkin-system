@@ -6,83 +6,113 @@ import FilePondPluginFileEncode from 'filepond-plugin-file-encode';
 
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { FilePond, registerPlugin } from 'react-filepond';
+import GlassDropdown from '../GlassDropdown';
 
-const FormInput = forwardRef(({ tag, name, type, defaultValue, values, isRequired, 
-                    numberOfColumns, validators, minValue, maxValue, onChange, disabled}, ref) => {
+const validateValue = (value, validators = []) => {
+    if (!validators) return [];
+    return validators
+        .filter(v => v && !v.validate(value))
+        .map(v => v.message);
+};
+
+const FormInput = forwardRef(({ 
+    tag = "default", 
+    name = "default", 
+    type = "text", 
+    defaultValue = "", 
+    values = [], 
+    isRequired = false, 
+    numberOfColumns = 1, 
+    validators = [], 
+    minValue = 0, 
+    maxValue = 100, 
+    onChange = null, 
+    disabled = false 
+}, ref) => {
                         
     const [inputErrors, setInputErrors] = useState([]);
     let [files, setFiles] = useState([]);
     let [minInputValue, setMinInputValue] = useState(minValue);
     let [maxInputValue, setMaxInputValue] = useState(maxValue);
+    let [selectedValue, setSelectedValue] = useState(defaultValue || "");
     let inputField = useRef(null);
 
     useImperativeHandle(ref, () => {
-
-        return{
-            setErrors: (errors) => {
-                setInputErrors(errors);
-            },
+        return {
+            setErrors: (errors) => setInputErrors(errors),
             value: inputField.current ? inputField.current.value : "",
             min: minInputValue,
             max: maxInputValue,
             files: files,
-        }
+        };
     });
 
-    function handleFiles(fileItems){
-        setFiles(fileItems);
-    }
+    const handleFiles = (fileItems) => setFiles(fileItems);
 
     useEffect(() => {
-        if(type !== "interval" && type !== "files"){
-            inputField.current.addEventListener("change", () => {
-                let errors = [];
-                validators.forEach((validator) => {
-                    if(!validator.validate(inputField.current.value)){
-                        errors.push(validator.message);
-                    }
-                });
+        if(type !== "interval" && type !== "files" && inputField.current){
+            const handleChange = () => {
+                const errors = validateValue(inputField.current.value, validators);
                 setInputErrors(errors);
-                if(onChange!==null){
+                if(onChange) {
                     onChange({value: inputField.current.value});
                 }
-            });
+            };
+
+            const currentInput = inputField.current;
+            currentInput.addEventListener("change", handleChange);
+            return () => {
+                if (currentInput) currentInput.removeEventListener("change", handleChange);
+            };
         }
-        // eslint-disable-next-line
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     switch(type){
 
-        case "select":
+        case "select": {
+            const selectOptions = values ? values.map((val) => {
+                if (typeof val === 'object' && val !== null) {
+                    return { value: val.value || val.id || val.name, label: val.label || val.name || val.value };
+                }
+                return { value: val, label: String(val) };
+            }) : [];
+
             return(
-                <div className={`class-form-group ${inputErrors.length>0 ? "class-error-form" : ""}`} id={`${name}_form`} style={numberOfColumns>1 ? {paddingTop: `2%`, width: `${100/numberOfColumns-3}%`} : {marginTop: `7.5%`}}>	
-                    <select className="class-form-input" disabled={disabled} id={`${name}`} name={`${name}`} required={isRequired} defaultValue={defaultValue} ref={inputField}>
-                        {
-                            values && values.map((option, index) => {
-                                return(
-                                    <option key={index} selected={option===defaultValue}>{option}</option>
-                                )
-                            })
-                        }
-                    </select>
-                    <label htmlFor={`${name}`} className="class-form-label" style={numberOfColumns>1 ? {paddingLeft: `1%`} : {}}>{tag}:</label>
+                <div className={`class-form-group ${inputErrors.length>0 ? "class-error-form" : ""}`} id={`${name}_form`} style={numberOfColumns>1 ? {paddingTop: `2%`, width: `${100/numberOfColumns-3}%`} : {marginTop: `20px`}}>	
+                    <input type="hidden" name={name} id={name} value={selectedValue} ref={inputField} />
+                    <label htmlFor={`${name}`} className="class-form-label mb-2" style={{ position: 'static', display: 'block', transform: 'none', color: '#2c3e50', fontWeight: 600 }}>{tag}:</label>
+                    <GlassDropdown
+                        options={selectOptions}
+                        value={selectedValue}
+                        disabled={disabled}
+                        onChange={(val) => {
+                            setSelectedValue(val);
+                            if (inputField.current) {
+                                inputField.current.value = val;
+                                inputField.current.dispatchEvent(new Event('change', { bubbles: true }));
+                            }
+                        }}
+                        placeholder={`Seleccionar ${tag}...`}
+                    />
                     {
                         inputErrors.length > 0 && inputErrors.map((error, index) => {
-                            return(<span key={index} className="class-error-message">{error}</span>)
+                            return(<span key={`error-${error}-${index}`} className="class-error-message">{error}</span>)
                         })
                     }
                 </div>
             );
+        }
         
         case "textarea":
 
             return(
                 <div className={`class-form-group ${inputErrors.length>0 ? "class-error-form" : ""}`} id={`${name}_form`} style={{width: `100%`}}>	
-                    <textarea className="class-form-input" disabled={disabled} type={type} id={`${name}`} name={`${name}`} placeholder=" " defaultValue={`${defaultValue ? defaultValue : ""}`} required={isRequired} ref={inputField}/>
+                    <textarea className="class-form-input" disabled={disabled} type={type} id={`${name}`} name={`${name}`} placeholder=" " defaultValue={defaultValue || ""} required={isRequired} ref={inputField}/>
                     <label htmlFor={`${name}`} className="class-form-label">{tag}:</label>
                     {
                         inputErrors.length > 0 && inputErrors.map((error, index) => {
-                            return(<span key={index} className="class-error-message">{error}</span>)
+                            return(<span key={`err-ta-${error}-${index}`} className="class-error-message">{error}</span>)
                         })
                     }
                 </div>
@@ -117,7 +147,7 @@ const FormInput = forwardRef(({ tag, name, type, defaultValue, values, isRequire
                         allowMultiple={true}
                         allowReorder={true}
                         maxFiles={10}
-                        name={name} /* sets the file input name, it's filepond by default */
+                        name={name}
                         labelIdle='Arrastra tus archivos o <span class="filepond--label-action">Selecciona</span>'
                         credits={false}
                     />
@@ -132,7 +162,7 @@ const FormInput = forwardRef(({ tag, name, type, defaultValue, values, isRequire
                     <label htmlFor={`${name}`} className="class-form-label" style={numberOfColumns>1 ? {paddingLeft: `1%`} : {}}>{tag}:</label>
                     {
                         inputErrors.length > 0 && inputErrors.map((error, index) => {
-                            return(<span key={index} className="class-error-message">{error}</span>)
+                            return(<span key={`err-dt-${error}-${index}`} className="class-error-message">{error}</span>)
                         })
                     }
                 </div>
@@ -141,11 +171,11 @@ const FormInput = forwardRef(({ tag, name, type, defaultValue, values, isRequire
         default:
             return(
                 <div className={`class-form-group ${inputErrors.length>0 ? "class-error-form" : ""}`} id={`${name}_form`} style={numberOfColumns>1 ? {width: `${100/numberOfColumns-3}%`} : {}}>	
-                    <input className="class-form-input" disabled={disabled} type={type} id={`${name}`} name={`${name}`} placeholder=" " defaultValue={`${defaultValue ? defaultValue : ""}`} required={isRequired} ref={inputField}/>
+                    <input className="class-form-input" disabled={disabled} type={type} id={`${name}`} name={`${name}`} placeholder=" " defaultValue={defaultValue || ""} required={isRequired} ref={inputField}/>
                     <label htmlFor={`${name}`} className="class-form-label">{tag}:</label>
                     {
                         inputErrors.length > 0 && inputErrors.map((error, index) => {
-                            return(<span key={index} className="class-error-message">{error}</span>)
+                            return(<span key={`err-def-${error}-${index}`} className="class-error-message">{error}</span>)
                         })
                     }
                 </div>
@@ -164,27 +194,8 @@ FormInput.propTypes = {
     maxValue: PropTypes.number,
     numberOfColumns: PropTypes.number,
     validators: PropTypes.array,
-    formValues: PropTypes.object,
-    setFormValues: PropTypes.func,
     onChange: PropTypes.func,
     disabled: PropTypes.bool,
-}
-
-FormInput.defaultProps = {
-    tag: "default",
-    name: "default",
-    type: "text",
-    defaultValue: "",
-    numberOfColumns: 1,
-    values: [],
-    isRequired: false,
-    minValue: 0,
-    maxValue: 100,
-    validators: [],
-    formValues: {},
-    setFormValues: () => {},
-    onChange: null,
-    disabled: false,
-}
+};
 
 export default FormInput;

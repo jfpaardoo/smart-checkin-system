@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardBody, CardTitle, FormGroup, Label, Input } from 'reactstrap';
+import { Card, CardBody, CardTitle, FormGroup, Label } from 'reactstrap';
 import { QRCodeSVG } from 'qrcode.react';
 import { useSubscription } from '../../hooks/useSubscription';
 import tokenService from '../../services/token.service';
 import { QRGhostLoader } from '../../components/GhostLoader';
 import useFetchState from '../../util/useFetchState';
+import GlassDropdown from '../../components/GlassDropdown';
 
 const QRGeneratorAdmin = () => {
     const jwt = tokenService.getLocalAccessToken();
@@ -114,19 +115,12 @@ const QRGeneratorAdmin = () => {
                                 <div className="w-100 mb-3 text-start">
                                     <FormGroup>
                                         <Label for="formationId" style={{fontWeight: 600, color: '#555'}}>Seleccionar Formación</Label>
-                                        <Input 
-                                            type="select" 
-                                            name="formationId" 
-                                            id="formationId"
-                                            className="ba-select-toggle w-100"
+                                        <GlassDropdown
+                                            options={formations.map(f => ({ value: f.id, label: f.name }))}
                                             value={selectedFormationId}
-                                            onChange={(e) => setSelectedFormationId(e.target.value)}
-                                        >
-                                            <option value="" disabled>Elige una formación...</option>
-                                            {formations.map(f => (
-                                                <option key={f.id} value={f.id}>{f.name}</option>
-                                            ))}
-                                        </Input>
+                                            onChange={(val) => setSelectedFormationId(String(val))}
+                                            placeholder="Elige una formación..."
+                                        />
                                     </FormGroup>
                                 </div>
 

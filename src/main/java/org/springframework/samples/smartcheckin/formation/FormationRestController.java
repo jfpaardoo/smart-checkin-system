@@ -1,8 +1,10 @@
 package org.springframework.samples.smartcheckin.formation;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,17 +20,38 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.samples.smartcheckin.user.User;
+import org.springframework.samples.smartcheckin.user.UserService;
+
 @RestController
 @RequestMapping("/api/v1/formations")
 @Tag(name = "Formations", description = "The Formations API based on JWT")
 @SecurityRequirement(name = "bearerAuth")
 public class FormationRestController {
 
+    private static final String MESSAGE_KEY = "message";
+
     private final FormationService formationService;
+    private final UserService userService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Autowired
-    public FormationRestController(FormationService formationService) {
+    public FormationRestController(FormationService formationService, UserService userService, SimpMessagingTemplate messagingTemplate) {
         this.formationService = formationService;
+        this.userService = userService;
+        this.messagingTemplate = messagingTemplate;
+    }
+
+    private void notifyFormationsUpdate(Integer formationId) {
+        try {
+            messagingTemplate.convertAndSend("/topic/formations", "UPDATED");
+            if (formationId != null) {
+                messagingTemplate.convertAndSend("/topic/formations/" + formationId, "UPDATED");
+            }
+        } catch (Exception e) {
+            // Ignore messaging error
+        }
     }
 
     @GetMapping
@@ -52,13 +75,18 @@ public class FormationRestController {
         formation.setFormationDate(request.getFormationDate());
         
         Formation saved = formationService.saveFormation(formation);
+        notifyFormationsUpdate(saved.getId());
         return ResponseEntity.ok(saved);
     }
 
     @PostMapping("/{id}/attend")
-    public ResponseEntity<Object> registerAttendance(@PathVariable Integer id, @Valid @RequestBody AttendRequest request) {
+    public ResponseEntity<Object> registerAttendance(@PathVariable Integer id, @RequestBody(required = false) AttendRequest request) {
         try {
-            Formation formation = formationService.registerAttendance(id, request.getPersonalCode());
+            String code = (request != null && request.getPersonalCode() != null && !request.getPersonalCode().isBlank()) 
+                ? request.getPersonalCode() 
+                : userService.findCurrentUser().getPersonalCode();
+            Formation formation = formationService.registerAttendance(id, code);
+            notifyFormationsUpdate(id);
             return ResponseEntity.ok(formation);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Failed to register: " + e.getMessage());
@@ -68,7 +96,9 @@ public class FormationRestController {
     @PostMapping("/{id}/checkout")
     public ResponseEntity<Object> checkoutAttendance(@PathVariable Integer id, @Valid @RequestBody FormationCheckoutRequest request) {
         try {
-            Formation formation = formationService.checkoutAttendance(id, request.getPersonalCode(), request.getSignature());
+            User currentUser = userService.findCurrentUser();
+            Formation formation = formationService.checkoutAttendance(id, currentUser.getPersonalCode(), request.getSignature());
+            notifyFormationsUpdate(id);
             return ResponseEntity.ok(formation);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Failed to checkout: " + e.getMessage());
@@ -84,6 +114,7 @@ public class FormationRestController {
         formation.setFormationDate(request.getFormationDate());
         
         Formation updated = formationService.updateFormation(formation, id);
+        notifyFormationsUpdate(id);
         return ResponseEntity.ok(updated);
     }
 
@@ -92,6 +123,7 @@ public class FormationRestController {
     public ResponseEntity<String> addAttendee(@PathVariable Integer formationId, @PathVariable Integer userId) {
         try {
             formationService.addAttendee(formationId, userId);
+            notifyFormationsUpdate(formationId);
             return ResponseEntity.ok("Successfully added attendee");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to add attendee: " + e.getMessage());
@@ -103,9 +135,25 @@ public class FormationRestController {
     public ResponseEntity<String> removeAttendee(@PathVariable Integer formationId, @PathVariable Integer userId) {
         try {
             formationService.removeAttendee(formationId, userId);
+            notifyFormationsUpdate(formationId);
             return ResponseEntity.ok("Successfully removed attendee");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to remove attendee: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<Object> deleteFormation(@PathVariable Integer id) {
+        try {
+            formationService.deleteFormation(id);
+            notifyFormationsUpdate(id);
+            return ResponseEntity.ok(Map.of(MESSAGE_KEY, "Formación eliminada correctamente"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of(MESSAGE_KEY, e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(MESSAGE_KEY, "Error al eliminar la formación: " + e.getMessage()));
         }
     }
 }

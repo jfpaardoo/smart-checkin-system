@@ -8,6 +8,8 @@ import moment from "moment";
 import { TableGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
 
+import { useSubscription } from "../../hooks/useSubscription";
+
 const jwt = tokenService.getLocalAccessToken();
 
 export default function FormationListAdmin() {
@@ -19,6 +21,17 @@ export default function FormationListAdmin() {
     null,
     null
   );
+
+  const reloadFormations = () => {
+    fetch("/api/v1/formations", {
+      headers: { Authorization: `Bearer ${jwt}` },
+    })
+      .then((r) => r.json())
+      .then((data) => setFormations(data))
+      .catch((e) => console.error("Error refreshing formations list via WS", e));
+  };
+
+  useSubscription('/topic/formations', reloadFormations);
 
   const sortedFormations = [...formations].sort(
     (a, b) => new Date(b.formationDate) - new Date(a.formationDate)

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Button, Table, Form, FormGroup, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
+import { Button, Table, Form, FormGroup, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
 import tokenService from "../../services/token.service";
 import "../../static/css/admin/adminPage.css";
 import getIdFromUrl from "../../util/getIdFromUrl";
@@ -8,6 +8,9 @@ import useFetchState from "../../util/useFetchState";
 import moment from "moment";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
+import GlassDropdown from "../../components/GlassDropdown";
+
+import { useSubscription } from "../../hooks/useSubscription";
 
 const jwt = tokenService.getLocalAccessToken();
 
@@ -36,16 +39,22 @@ export default function FormationDetailsAdmin() {
   const [selectedAttendance, setSelectedAttendance] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const handleAddUserSuccess = () => {
-    toast.success("User added to formation");
+  const reloadFormation = () => {
     fetch(`/api/v1/formations/${id}`, {
       headers: { Authorization: `Bearer ${jwt}` },
     })
       .then((r) => r.json())
-      .then((data) => {
-        setFormation(data);
-        setSelectedUserId("");
-      });
+      .then((data) => setFormation(data))
+      .catch((e) => console.error("Error refreshing formation", e));
+  };
+
+  useSubscription(`/topic/formations/${id}`, reloadFormation);
+  useSubscription('/topic/formations', reloadFormation);
+
+  const handleAddUserSuccess = () => {
+    toast.success("User added to formation");
+    reloadFormation();
+    setSelectedUserId("");
   };
 
   const handleAddUser = () => {
@@ -75,42 +84,47 @@ export default function FormationDetailsAdmin() {
       });
   };
 
-  const handleRemoveUserSuccess = () => {
+  const filterOutUser = (prev, userId) => {
+    if (!prev?.attendances) return prev;
+    return {
+      ...prev,
+      attendances: prev.attendances.filter((att) => att.user?.id !== userId)
+    };
+  };
+
+  const handleRemoveUserSuccess = (userId) => {
     toast.success("User removed from formation");
-    fetch(`/api/v1/formations/${id}`, {
-      headers: { Authorization: `Bearer ${jwt}` },
+    setFormation((prev) => filterOutUser(prev, userId));
+    reloadFormation();
+  };
+
+  const executeRemoveUserApi = (userId) => {
+    setFormation((prev) => filterOutUser(prev, userId));
+
+    fetch(`/api/v1/formations/${id}/users/${userId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+        Accept: "application/json",
+      },
     })
-      .then((r) => r.json())
-      .then((data) => setFormation(data));
+      .then((res) => (res.ok ? null : res.json()))
+      .then((json) => {
+        if (json?.message) {
+          toast.error(json.message);
+          reloadFormation();
+        } else if (json === null) {
+          handleRemoveUserSuccess(userId);
+        }
+      })
+      .catch(() => {
+        toast.error("Connection error. Please try again.");
+        reloadFormation();
+      });
   };
 
   const handleRemoveUser = (userId) => {
-    const performRemove = () => {
-      fetch(`/api/v1/formations/${id}/users/${userId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${jwt}`,
-          Accept: "application/json",
-        },
-      })
-        .then((response) => {
-          if (response.ok) {
-            handleRemoveUserSuccess();
-            return null;
-          }
-          return response.json();
-        })
-        .then((json) => {
-          if (json) {
-            toast.error(json.message || "Failed to remove user");
-          }
-        })
-        .catch(() => {
-          toast.error("Connection error. Please try again.");
-        });
-    };
-
-    toast.confirm("Are you sure you want to remove this user from the formation?", performRemove);
+    toast.confirm("Are you sure you want to remove this user from the formation?", () => executeRemoveUserApi(userId));
   };
 
   const renderAttendanceBadge = (att) => {
@@ -141,12 +155,6 @@ export default function FormationDetailsAdmin() {
   const attendeeIds = formation.attendances ? formation.attendances.map(a => a.user.id) : [];
   const availableUsers = allUsers.filter(u => !attendeeIds.includes(u.id));
 
-  // Find selected user label for the dropdown display
-  const selectedUser = availableUsers.find(u => String(u.id) === String(selectedUserId));
-  const selectedLabel = selectedUser 
-    ? `${selectedUser.firstName} ${selectedUser.lastName} (${selectedUser.username})`
-    : "Select User to Add...";
-
   return (
     <div className="ba-container">
       <div className="ba-card">
@@ -167,34 +175,16 @@ export default function FormationDetailsAdmin() {
         <div className="ba-card-header pt-3">
           <h3>Attendees</h3>
           <Form inline className="formation-add-form" onSubmit={(e) => { e.preventDefault(); handleAddUser(); }}>
-            <FormGroup className="mb-2 mr-sm-2 mb-sm-0">
-              <UncontrolledDropdown className="w-100">
-                <DropdownToggle
-                  tag="button"
-                  type="button"
-                  className="ba-select-toggle d-flex align-items-center justify-content-between"
-                  style={{ minWidth: '280px' }}
-                >
-                  <span>{selectedLabel}</span>
-                  <span className="dropdown-caret-icon">▼</span>
-                </DropdownToggle>
-                <DropdownMenu className="ba-dropdown-menu w-100">
-                  {availableUsers.length > 0 ? (
-                    availableUsers.map((u) => (
-                      <DropdownItem
-                        key={u.id}
-                        className="ba-dropdown-item d-flex align-items-center justify-content-between"
-                        onClick={() => setSelectedUserId(String(u.id))}
-                      >
-                        <span>{u.firstName} {u.lastName} ({u.username})</span>
-                        {String(selectedUserId) === String(u.id) && <span className="ms-2">✓</span>}
-                      </DropdownItem>
-                    ))
-                  ) : (
-                    <DropdownItem disabled>No available users</DropdownItem>
-                  )}
-                </DropdownMenu>
-              </UncontrolledDropdown>
+            <FormGroup className="mb-2 mr-sm-2 mb-sm-0" style={{ minWidth: '280px' }}>
+              <GlassDropdown
+                options={availableUsers.map(u => ({
+                  value: u.id,
+                  label: `${u.firstName} ${u.lastName} (${u.username})`
+                }))}
+                value={selectedUserId}
+                onChange={(val) => setSelectedUserId(String(val))}
+                placeholder="Select User to Add..."
+              />
             </FormGroup>
             <Button className="ba-btn-primary" type="submit" disabled={!selectedUserId}>
               Add User

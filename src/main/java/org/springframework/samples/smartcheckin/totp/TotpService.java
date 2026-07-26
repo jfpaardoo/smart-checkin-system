@@ -22,7 +22,7 @@ public class TotpService {
     public TotpService() {
         DefaultCodeVerifier v = new DefaultCodeVerifier(codeGenerator, timeProvider);
         v.setTimePeriod(10);
-        v.setAllowedTimePeriodDiscrepancy(1);
+        v.setAllowedTimePeriodDiscrepancy(5);
         this.verifier = v;
     }
 

@@ -45,12 +45,9 @@ public class FormationService {
         return formationRepository.findById(id);
     }
 
-    @Transactional
-    public Formation registerAttendance(Integer formationId, String personalCode) {
+    private Formation doRegisterAttendance(Integer formationId, User user) {
         Formation formation = formationRepository.findById(formationId)
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
-        
-        User user = userService.findByPersonalCode(personalCode);
 
         Optional<FormationAttendance> existing = attendanceRepository.findByFormationAndUser(formation, user);
         if (!existing.isPresent()) {
@@ -68,6 +65,17 @@ public class FormationService {
             }
         }
         return formation;
+    }
+
+    @Transactional
+    public Formation registerAttendance(Integer formationId, User user) {
+        return doRegisterAttendance(formationId, user);
+    }
+
+    @Transactional
+    public Formation registerAttendance(Integer formationId, String personalCode) {
+        User user = userService.findByPersonalCode(personalCode);
+        return doRegisterAttendance(formationId, user);
     }
 
     @Transactional
@@ -119,5 +127,17 @@ public class FormationService {
         User user = userService.findUser(userId);
         
         attendanceRepository.findByFormationAndUser(formation, user).ifPresent(attendanceRepository::delete);
+    }
+
+    @Transactional
+    public void deleteFormation(Integer id) {
+        Formation formation = formationRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
+
+        if (formation.getAttendances() != null && !formation.getAttendances().isEmpty()) {
+            throw new IllegalArgumentException("No se puede eliminar la formación porque contiene usuarios inscritos. Elimine primero a los asistentes.");
+        }
+
+        formationRepository.delete(formation);
     }
 }
