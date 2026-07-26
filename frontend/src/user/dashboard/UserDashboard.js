@@ -199,33 +199,33 @@ export default function UserDashboard() {
       </div>
 
       <Modal isOpen={detailsModal} toggle={closeDetails} centered style={{ maxWidth: '500px' }}>
-        <ModalHeader toggle={closeDetails} style={{ backgroundColor: 'rgba(30, 41, 59, 0.95)', backdropFilter: 'blur(16px)', color: 'white', borderBottom: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px 24px 0 0' }}>
+        <ModalHeader toggle={closeDetails}>
           {selectedAtt ? selectedAtt.formation.name : 'Detalles de la Formación'}
         </ModalHeader>
-        <ModalBody className="py-4" style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', backdropFilter: 'blur(16px)', color: 'white' }}>
+        <ModalBody className="py-4">
           {selectedAtt && (
             <>
               {step === 'details' && (
-                <div className="p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(10px)', borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
-                  <h6 style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem' }} className="mb-1">Descripción:</h6>
-                  <p className="lead mb-4 text-white" style={{ fontSize: '1.1rem' }}>{selectedAtt.formation.description || 'Sin descripción.'}</p>
+                <div className="p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.45)', backdropFilter: 'blur(15px)', borderRadius: '24px', border: '1.5px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 10px 25px rgba(0,0,0,0.03)' }}>
+                  <h6 style={{ color: '#64748b', fontSize: '0.9rem' }} className="mb-1">Descripción:</h6>
+                  <p className="lead mb-4" style={{ color: '#2c3e50', fontSize: '1.1rem' }}>{selectedAtt.formation.description || 'Sin descripción.'}</p>
                   
-                  <h6 style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem' }} className="mb-1">Fecha de la formación:</h6>
-                  <p className="mb-4 text-white" style={{ fontWeight: '500' }}>{new Date(selectedAtt.formation.formationDate).toLocaleString()}</p>
+                  <h6 style={{ color: '#64748b', fontSize: '0.9rem' }} className="mb-1">Fecha de la formación:</h6>
+                  <p className="mb-4" style={{ color: '#2c3e50', fontWeight: '500' }}>{new Date(selectedAtt.formation.formationDate).toLocaleString()}</p>
                   
-                  <h6 style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem' }} className="mb-1">Hora de entrada (Check-in):</h6>
-                  <p className="mb-4 text-white" style={{ fontWeight: '500' }}>{new Date(selectedAtt.checkInDate).toLocaleString()}</p>
+                  <h6 style={{ color: '#64748b', fontSize: '0.9rem' }} className="mb-1">Hora de entrada (Check-in):</h6>
+                  <p className="mb-4" style={{ color: '#2c3e50', fontWeight: '500' }}>{new Date(selectedAtt.checkInDate).toLocaleString()}</p>
 
                   {selectedAtt.checkOutDate && (
                     <>
-                      <h6 style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem' }} className="mb-1">Hora de salida (Check-out):</h6>
-                      <p className="mb-4 text-white" style={{ fontWeight: '500' }}>{new Date(selectedAtt.checkOutDate).toLocaleString()}</p>
+                      <h6 style={{ color: '#64748b', fontSize: '0.9rem' }} className="mb-1">Hora de salida (Check-out):</h6>
+                      <p className="mb-4" style={{ color: '#2c3e50', fontWeight: '500' }}>{new Date(selectedAtt.checkOutDate).toLocaleString()}</p>
                     </>
                   )}
 
-                  <div className="d-flex justify-content-between align-items-center mt-4 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                  <div className="d-flex justify-content-between align-items-center mt-4 pt-3" style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
                     <div>
-                      <span style={{ color: 'rgba(255, 255, 255, 0.6)' }} className="mr-2">Estado: </span>
+                      <span style={{ color: '#64748b' }} className="mr-2">Estado: </span>
                       {selectedAtt.checkOutDate ? (
                         <span className="badge bg-success" style={{ fontSize: '0.9rem' }}>Completada</span>
                       ) : (
@@ -233,7 +233,7 @@ export default function UserDashboard() {
                       )}
                     </div>
                     {!selectedAtt.checkOutDate && (
-                      <button className="ba-btn ba-btn-primary m-0" style={{ borderRadius: '30px' }} onClick={() => setStep('scan')}>
+                      <button className="ba-btn ba-btn-primary m-0" onClick={() => setStep('scan')}>
                         Hacer Checkout
                       </button>
                     )}
@@ -243,14 +243,14 @@ export default function UserDashboard() {
 
               {step === 'scan' && (
                 <div>
-                  <h5 className="text-center mb-3 text-white">1. Escanea el QR de la Formación</h5>
-                  <div id="checkout-qr-reader" style={{ width: '100%', borderRadius: '20px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.3)' }}></div>
+                  <h5 className="text-center mb-3" style={{ color: '#2c3e50', fontWeight: 600 }}>1. Escanea el QR de la Formación</h5>
+                  <div id="checkout-qr-reader"></div>
                 </div>
               )}
 
               {step === 'sign' && (
                 <div>
-                  <h5 className="text-center mb-3 text-white">2. Introduce tu PIN y Firma</h5>
+                  <h5 className="text-center mb-3" style={{ color: '#2c3e50', fontWeight: 600 }}>2. Introduce tu PIN y Firma</h5>
                   
                   <FormGroup className="text-center mb-4">
                     <Input
@@ -261,20 +261,20 @@ export default function UserDashboard() {
                       onChange={(e) => {
                         if (e.target.value.length <= 4) setPersonalCode(e.target.value);
                       }}
-                      className="ba-input mx-auto text-white"
+                      className="ba-input mx-auto"
                       style={{ 
                         fontSize: '1.8rem', 
                         textAlign: 'center', 
                         letterSpacing: '10px', 
                         width: '180px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.65)',
+                        border: '1.5px solid rgba(255, 255, 255, 0.85)',
                         borderRadius: '20px'
                       }}
                     />
                   </FormGroup>
 
-                  <div style={{ backgroundColor: '#ffffff', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.4)', overflow: 'hidden', width: 'fit-content', margin: '0 auto', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.2)' }}>
+                  <div style={{ backgroundColor: '#ffffff', borderRadius: '20px', border: '1.5px solid rgba(255, 255, 255, 0.8)', overflow: 'hidden', width: 'fit-content', margin: '0 auto', boxShadow: '0 8px 25px rgba(0,0,0,0.05)' }}>
                     <SignatureCanvas 
                       penColor="blue"
                       canvasProps={{ width: 450, height: 200, className: 'sigCanvas' }}
@@ -282,23 +282,23 @@ export default function UserDashboard() {
                     />
                   </div>
                   <div className="text-center mt-3">
-                    <button type="button" className="btn btn-link text-white-50" onClick={() => sigCanvas.current.clear()}>Borrar firma</button>
+                    <button type="button" className="btn btn-link text-muted" onClick={() => sigCanvas.current.clear()}>Borrar firma</button>
                   </div>
                 </div>
               )}
             </>
           )}
         </ModalBody>
-        <ModalFooter style={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderTop: 'none', borderRadius: '0 0 24px 24px' }}>
+        <ModalFooter>
           {step !== 'details' ? (
-            <Button color="secondary" onClick={() => setStep('details')} style={{ borderRadius: '30px' }}>Volver a Detalles</Button>
+            <button type="button" className="ba-btn ba-btn-secondary" onClick={() => setStep('details')}>Volver a Detalles</button>
           ) : (
-            <Button color="secondary" onClick={closeDetails} style={{ borderRadius: '30px' }}>Cerrar</Button>
+            <button type="button" className="ba-btn ba-btn-secondary" onClick={closeDetails}>Cerrar</button>
           )}
           {step === 'sign' && (
-            <Button className="ba-btn-primary" onClick={handleCheckoutSubmit} style={{ borderRadius: '30px' }}>
+            <button type="button" className="ba-btn ba-btn-primary" onClick={handleCheckoutSubmit}>
               Confirmar Checkout
-            </Button>
+            </button>
           )}
         </ModalFooter>
       </Modal>

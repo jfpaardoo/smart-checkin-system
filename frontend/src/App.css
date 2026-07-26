@@ -954,3 +954,111 @@
     max-width: 100%;
   }
 }
+
+/* ==========================================================================
+   Liquid Glass Modals & Scanner Styles
+   ========================================================================== */
+
+.modal-dialog {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.modal-content {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75), rgba(240, 245, 252, 0.55)) !important;
+  backdrop-filter: blur(35px) saturate(210%) !important;
+  -webkit-backdrop-filter: blur(35px) saturate(210%) !important;
+  border-radius: 36px !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12), inset 0 1.5px 2px rgba(255, 255, 255, 0.95) !important;
+  overflow: hidden !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.6) !important;
+  background: transparent !important;
+  padding: 22px 28px !important;
+}
+
+.modal-header .modal-title, .modal-header h5, .modal-header h2 {
+  font-weight: 600 !important;
+  color: #2c3e50 !important;
+  font-size: 1.35rem !important;
+}
+
+.modal-body {
+  background: transparent !important;
+  padding: 24px 28px !important;
+  color: #2c3e50 !important;
+}
+
+.modal-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.6) !important;
+  background: transparent !important;
+  padding: 18px 28px !important;
+}
+
+/* Liquid Glass Select & Dropdowns */
+select, .form-select, .ba-select-toggle, #qr-reader select, #checkout-qr-reader select {
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
+  border-radius: 20px !important;
+  padding: 10px 18px !important;
+  font-weight: 500 !important;
+  color: #2c3e50 !important;
+  outline: none !important;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9), 0 4px 15px rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+}
+
+select:focus, select:hover, #qr-reader select:hover, #checkout-qr-reader select:hover {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(204, 227, 100, 0.9) !important;
+  box-shadow: 0 0 0 3px rgba(204, 227, 100, 0.35) !important;
+}
+
+select option {
+  background-color: #ffffff !important;
+  color: #2c3e50 !important;
+  padding: 10px !important;
+}
+
+/* HTML5 QRCode Scanner Controls */
+#qr-reader button, #checkout-qr-reader button,
+#html5-qrcode-button-camera-start, #html5-qrcode-button-camera-stop, #html5-qrcode-button-file-selection {
+  background: rgba(204, 227, 100, 0.45) !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+  border: 1.5px solid rgba(204, 227, 100, 0.85) !important;
+  color: #2b3a04 !important;
+  border-radius: 20px !important;
+  padding: 8px 22px !important;
+  font-weight: 600 !important;
+  margin: 10px 5px !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 4px 15px rgba(204, 227, 100, 0.25) !important;
+  cursor: pointer !important;
+}
+
+#qr-reader button:hover, #checkout-qr-reader button:hover {
+  background: rgba(204, 227, 100, 0.85) !important;
+  transform: translateY(-2px) scale(1.03) !important;
+}
+
+#qr-reader, #checkout-qr-reader {
+  border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
+  background: rgba(255, 255, 255, 0.35) !important;
+  backdrop-filter: blur(20px) !important;
+  border-radius: 28px !important;
+  padding: 18px !important;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.05) !important;
+}
+
+#qr-reader__dashboard, #checkout-qr-reader__dashboard {
+  padding-top: 10px !important;
+  color: #2c3e50 !important;
+  font-weight: 500 !important;
+}
