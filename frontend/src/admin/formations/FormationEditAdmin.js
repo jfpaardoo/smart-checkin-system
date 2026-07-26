@@ -67,7 +67,7 @@ export default function FormationEditAdmin() {
 
   return (
     <div className="ba-container">
-      <div className="ba-card" style={{ maxWidth: '600px', margin: '0 auto' }}>
+      <div className="ba-card ba-card-form">
         <div className="ba-card-header">
           <h2>{formation.id ? "Edit Formation" : "Create New Formation"}</h2>
         </div>
@@ -110,9 +110,9 @@ export default function FormationEditAdmin() {
             />
           </FormGroup>
 
-          <div style={{ marginTop: '30px', display: 'flex', gap: '15px' }}>
+          <div className="form-action-group">
             <button className="ba-btn-primary" type="submit">Save Formation</button>
-            <Link to={`/formations`} className="ba-btn-secondary" style={{ textDecoration: "none", lineHeight: '1.5' }}>
+            <Link to={`/formations`} className="ba-btn-secondary form-action-link">
               Cancel
             </Link>
           </div>

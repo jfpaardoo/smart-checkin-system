@@ -7,6 +7,7 @@ import getErrorModal from "../../util/getErrorModal";
 import getIdFromUrl from "../../util/getIdFromUrl";
 import useFetchState from "../../util/useFetchState";
 import moment from "moment";
+import { CardGhostLoader } from "../../components/GhostLoader";
 
 const jwt = tokenService.getLocalAccessToken();
 
@@ -89,7 +90,7 @@ export default function FormationDetailsAdmin() {
   const modal = getErrorModal(setVisible, visible, message);
 
   if (!formation) {
-    return <div>Loading...</div>;
+    return <CardGhostLoader />;
   }
 
   // Find users not currently attending
@@ -107,16 +108,16 @@ export default function FormationDetailsAdmin() {
         </div>
         {modal}
 
-        <div style={{ marginBottom: "30px", background: "#f8f9fa", padding: "20px", borderRadius: "8px" }}>
+        <div className="formation-info-box">
           <h4>Description</h4>
           <p>{formation.description}</p>
           <h4>Date & Time</h4>
           <p>{moment(formation.formationDate).format('YYYY-MM-DD HH:mm')}</p>
         </div>
 
-        <div className="ba-card-header" style={{ borderTop: "1px solid #eee", paddingTop: "20px" }}>
+        <div className="ba-card-header pt-3">
           <h3>Attendees</h3>
-          <Form inline style={{ display: "flex", gap: "10px" }} onSubmit={(e) => { e.preventDefault(); handleAddUser(); }}>
+          <Form inline className="formation-add-form" onSubmit={(e) => { e.preventDefault(); handleAddUser(); }}>
             <FormGroup className="mb-2 mr-sm-2 mb-sm-0">
               <Input
                 type="select"
@@ -156,8 +157,7 @@ export default function FormationDetailsAdmin() {
                   <td>
                     <Button
                       size="sm"
-                      color="danger"
-                      style={{ borderRadius: "20px" }}
+                      className="ba-btn-danger"
                       onClick={() => handleRemoveUser(user.id)}
                     >
                       Remove

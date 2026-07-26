@@ -55,7 +55,7 @@ Este documento detalla la división del proyecto en pequeñas tareas abordables 
 * **Rama:** `feat/ui-admin-management`
 
 ### Tarea 4.2: Interfaz Generadora de QR
-* **Descripción:** Crear la vista en React donde el supervisor de turno abre el sistema. Debe hacer *polling* a la API cada 15 segundos para renderizar visualmente un nuevo código QR.
+* **Descripción:** [COMPLETADA] Crear la vista en React donde el supervisor de turno abre el sistema. Integración de WebSockets en sustitución del *polling* para renderizar visualmente el nuevo código QR en tiempo real cada 30 segundos.
 * **Rama:** `feat/ui-admin-qr-generator`
 
 ---

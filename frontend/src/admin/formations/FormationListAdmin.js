@@ -7,13 +7,14 @@ import deleteFromList from "../../util/deleteFromList";
 import getErrorModal from "../../util/getErrorModal";
 import useFetchState from "../../util/useFetchState";
 import moment from "moment";
+import { TableGhostLoader } from "../../components/GhostLoader";
 
 const jwt = tokenService.getLocalAccessToken();
 
 export default function FormationListAdmin() {
   const [message, setMessage] = useState(null);
   const [visible, setVisible] = useState(false);
-  const [formations, setFormations] = useFetchState(
+  const [formations, setFormations, loading] = useFetchState(
     [],
     `/api/v1/formations`,
     jwt,
@@ -42,8 +43,7 @@ export default function FormationListAdmin() {
             </Button>
             <Button
               size="sm"
-              className="ba-btn-primary"
-              style={{ borderRadius: '20px', marginLeft: '5px' }}
+              className="ba-btn-primary btn-gap"
               aria-label={"details-" + formation.id}
               tag={Link}
               to={"/formations/" + formation.id + "/details"}
@@ -52,8 +52,7 @@ export default function FormationListAdmin() {
             </Button>
             <Button
               size="sm"
-              color="danger"
-              style={{ borderRadius: '20px', marginLeft: '5px' }}
+              className="ba-btn-danger btn-gap"
               aria-label={"delete-" + formation.id}
               onClick={() =>
                 deleteFromList(
@@ -79,32 +78,38 @@ export default function FormationListAdmin() {
   return (
     <div className="ba-container">
       <div className="ba-card">
-        <div className="ba-card-header">
-          <h2>Formations Management</h2>
-          <Button className="ba-btn-primary" tag={Link} to="/formations/new">
-            + Create Formation
-          </Button>
-        </div>
-        
-        {alerts.map((a) => a.alert)}
-        {modal}
-        
-        <Table responsive aria-label="formations" className="ba-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Description</th>
-              <th>Date & Time</th>
-              <th>Attendees</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-             {formationList.length > 0 ? formationList : (
-                 <tr><td colSpan="5" className="text-center">No formations found</td></tr>
-             )}
-          </tbody>
-        </Table>
+        {loading ? (
+          <TableGhostLoader columns={5} rows={4} />
+        ) : (
+          <>
+            <div className="ba-card-header">
+              <h2>Formations Management</h2>
+              <Button className="ba-btn-primary" tag={Link} to="/formations/new">
+                + Create Formation
+              </Button>
+            </div>
+            
+            {alerts.map((a) => a.alert)}
+            {modal}
+            
+            <Table responsive aria-label="formations" className="ba-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Date & Time</th>
+                  <th>Attendees</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                 {formationList.length > 0 ? formationList : (
+                     <tr><td colSpan="5" className="text-center">No formations found</td></tr>
+                 )}
+              </tbody>
+            </Table>
+          </>
+        )}
       </div>
     </div>
   );

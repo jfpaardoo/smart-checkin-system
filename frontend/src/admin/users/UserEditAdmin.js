@@ -78,7 +78,7 @@ export default function UserEditAdmin() {
 
   return (
     <div className="ba-container">
-      <div className="ba-card" style={{ maxWidth: '600px', margin: '0 auto' }}>
+      <div className="ba-card ba-card-form">
         <div className="ba-card-header">
           <h2>{user.id ? "Edit User" : "Add New User"}</h2>
         </div>
@@ -164,9 +164,9 @@ export default function UserEditAdmin() {
             </Input>
           </FormGroup>
 
-          <div style={{ marginTop: '30px', display: 'flex', gap: '15px' }}>
+          <div className="form-action-group">
             <button className="ba-btn-primary" type="submit">Save User</button>
-            <Link to={`/users`} className="ba-btn-secondary" style={{ textDecoration: "none", lineHeight: '1.5' }}>
+            <Link to={`/users`} className="ba-btn-secondary form-action-link">
               Cancel
             </Link>
           </div>

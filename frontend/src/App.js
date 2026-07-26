@@ -14,6 +14,7 @@ import UserEditAdmin from "./admin/users/UserEditAdmin";
 import FormationListAdmin from "./admin/formations/FormationListAdmin";
 import FormationEditAdmin from "./admin/formations/FormationEditAdmin";
 import FormationDetailsAdmin from "./admin/formations/FormationDetailsAdmin";
+import QRGeneratorAdmin from "./admin/qr/QRGeneratorAdmin";
 
 function ErrorFallback({ error, resetErrorBoundary }) {
   return (
@@ -49,6 +50,7 @@ function App() {
           <Route path="/formations" exact={true} element={<PrivateRoute><FormationListAdmin /></PrivateRoute>} />
           <Route path="/formations/:id" exact={true} element={<PrivateRoute><FormationEditAdmin /></PrivateRoute>} />
           <Route path="/formations/:id/details" exact={true} element={<PrivateRoute><FormationDetailsAdmin /></PrivateRoute>} />
+          <Route path="/qr-generator" exact={true} element={<PrivateRoute><QRGeneratorAdmin /></PrivateRoute>} />
         </>)
     }
   })

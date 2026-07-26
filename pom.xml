@@ -45,6 +45,11 @@
 	</developers>
 
 	<dependencies>
+		<!-- WebSocket -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
 
 		<!-- Spring and Spring Boot dependencies -->
 		<dependency>

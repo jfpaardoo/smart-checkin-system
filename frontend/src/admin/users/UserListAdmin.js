@@ -6,13 +6,14 @@ import "../../static/css/admin/adminPage.css";
 import deleteFromList from "../../util/deleteFromList";
 import getErrorModal from "../../util/getErrorModal";
 import useFetchState from "../../util/useFetchState";
+import { TableGhostLoader } from "../../components/GhostLoader";
 
 const jwt = tokenService.getLocalAccessToken();
 
 export default function UserListAdmin() {
   const [message, setMessage] = useState(null);
   const [visible, setVisible] = useState(false);
-  const [users, setUsers] = useFetchState(
+  const [users, setUsers, loading] = useFetchState(
     [],
     `/api/v1/users`,
     jwt,
@@ -47,8 +48,7 @@ export default function UserListAdmin() {
             </Button>
             <Button
               size="sm"
-              color="danger"
-              style={{ borderRadius: '20px', marginLeft: '5px' }}
+              className="ba-btn-danger btn-gap"
               aria-label={"delete-" + user.id}
               onClick={() =>
                 deleteFromList(
@@ -74,30 +74,36 @@ export default function UserListAdmin() {
   return (
     <div className="ba-container">
       <div className="ba-card">
-        <div className="ba-card-header">
-          <h2>Users Management</h2>
-          <Button className="ba-btn-primary" tag={Link} to="/users/new">
-            + Add User
-          </Button>
-        </div>
-        
-        {alerts.map((a) => a.alert)}
-        {modal}
-        
-        <Table responsive aria-label="users" className="ba-table">
-          <thead>
-            <tr>
-              <th>Personal Code</th>
-              <th>Username</th>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>Status</th>
-              <th>Role</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>{userList}</tbody>
-        </Table>
+        {loading ? (
+          <TableGhostLoader columns={7} rows={4} />
+        ) : (
+          <>
+            <div className="ba-card-header">
+              <h2>Users Management</h2>
+              <Button className="ba-btn-primary" tag={Link} to="/users/new">
+                + Add User
+              </Button>
+            </div>
+            
+            {alerts.map((a) => a.alert)}
+            {modal}
+            
+            <Table responsive aria-label="users" className="ba-table">
+              <thead>
+                <tr>
+                  <th>Personal Code</th>
+                  <th>Username</th>
+                  <th>First Name</th>
+                  <th>Last Name</th>
+                  <th>Status</th>
+                  <th>Role</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>{userList}</tbody>
+            </Table>
+          </>
+        )}
       </div>
     </div>
   );

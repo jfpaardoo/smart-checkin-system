@@ -17,11 +17,18 @@ public class TotpService {
 
     private final TimeProvider timeProvider = new SystemTimeProvider();
     private final CodeGenerator codeGenerator = new DefaultCodeGenerator();
-    private final CodeVerifier verifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
+    private final CodeVerifier verifier;
+
+    public TotpService() {
+        DefaultCodeVerifier v = new DefaultCodeVerifier(codeGenerator, timeProvider);
+        v.setTimePeriod(10);
+        v.setAllowedTimePeriodDiscrepancy(1);
+        this.verifier = v;
+    }
 
     public String getCurrentToken() {
         try {
-            long currentBucket = Math.floorDiv(timeProvider.getTime(), 30);
+            long currentBucket = Math.floorDiv(timeProvider.getTime(), 10);
             return codeGenerator.generate(secret, currentBucket);
         } catch (Exception e) {
             throw new RuntimeException("Error generating TOTP token", e);
