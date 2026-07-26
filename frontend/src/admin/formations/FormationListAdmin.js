@@ -20,13 +20,27 @@ export default function FormationListAdmin() {
     null
   );
 
-  const formationList = formations.map((formation) => {
+  const sortedFormations = [...formations].sort(
+    (a, b) => new Date(b.formationDate) - new Date(a.formationDate)
+  );
+
+  const formationList = sortedFormations.map((formation) => {
+    const total = formation.attendances ? formation.attendances.length : 0;
+    const completed = formation.attendances ? formation.attendances.filter(a => a.checkOutDate).length : 0;
+    const inProgress = formation.attendances ? formation.attendances.filter(a => a.checkInDate && !a.checkOutDate).length : 0;
+
     return (
       <tr key={formation.id}>
         <td>{formation.name}</td>
         <td>{formation.description}</td>
         <td>{moment(formation.formationDate).format('YYYY-MM-DD HH:mm')}</td>
-        <td>{formation.attendances ? formation.attendances.length : 0}</td>
+        <td>
+          <div className="d-flex align-items-center gap-2">
+            <span className="badge bg-secondary">{total} Total</span>
+            {completed > 0 && <span className="badge bg-success">{completed} Completados</span>}
+            {inProgress > 0 && <span className="badge bg-warning text-dark">{inProgress} En Curso</span>}
+          </div>
+        </td>
         <td>
           <ButtonGroup>
             <Button
