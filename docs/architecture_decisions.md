@@ -40,3 +40,8 @@ Este documento es un registro vivo (*Architecture Decision Record* o ADR) de las
 *   **Defensa Anti-Enumeración:** El endpoint de autenticación absorbe silenciosamente excepciones de `ResourceNotFoundException` durante el login. Esto evita revelar información sobre la existencia (o inexistencia) de cuentas en el sistema.
 *   **Trazabilidad Automática (JPA Auditing):** Se aplicó `@EnableJpaAuditing` a nivel global con `@EntityListeners` en la clase `BaseEntity`. Todos los registros (Usuarios, Fichajes, Formaciones) registran automáticamente las marcas inmutables de `@CreatedDate` y `@LastModifiedDate`.
 *   **Endurecimiento Perimetral (CORS & CSP):** Configuración manual y explícita de `CorsConfigurationSource` limitando orígenes, métodos y cabeceras permitidas. Sustitución de cabeceras anticuadas por un robusto **Content Security Policy (CSP)** configurado a `default-src 'self'`.
+
+### Fase 3: Fichaje por QR Dinámico (TOTP) (Completada)
+*   **Lógica Criptográfica:** Integración de `dev.samstevens.totp:totp` para generar tokens TOTP de 6 dígitos con vigencia de 30 segundos. Esto asegura que los QR generados no pueden ser fotografiados y compartidos remotamente por los empleados (previene el fraude horario).
+*   **Diseño de Endpoints Invertidos:** A diferencia de sistemas tradicionales, el escáner del empleado llama a una ruta pública (`/api/v1/checkins/qr-fichaje`). El empleado no necesita hacer login ni llevar un JWT en su dispositivo personal.
+*   **Defensa Perimetral Específica:** Al ser un endpoint público, está fuertemente protegido con `RateLimitFilter` (Bucket4j) que previene ataques de adivinación (fuerza bruta) del código personal de 4 dígitos o del token TOTP de 6 dígitos limitando las peticiones concurrentes por IP.
