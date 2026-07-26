@@ -3,15 +3,18 @@ import { Link } from "react-router-dom";
 import "../../static/css/auth/authButton.css";
 import "../../static/css/auth/authPage.css";
 import tokenService from "../../services/token.service";
+import { useToast } from "../../components/ToastProvider";
 
 const Logout = () => {
+  const toast = useToast();
+
   function sendLogoutRequest() {
     const jwt = window.localStorage.getItem("jwt");
-    if (jwt || typeof jwt === "undefined") {
+    if (jwt !== null && jwt !== undefined) {
       tokenService.removeUser();
       window.location.href = "/";
     } else {
-      alert("There is no user logged in");
+      toast.error("There is no user logged in");
     }
   }
 

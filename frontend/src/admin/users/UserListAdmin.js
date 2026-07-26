@@ -1,26 +1,23 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, ButtonGroup, Table } from "reactstrap";
 import tokenService from "../../services/token.service";
 import "../../static/css/admin/adminPage.css";
 import deleteFromList from "../../util/deleteFromList";
-import getErrorModal from "../../util/getErrorModal";
 import useFetchState from "../../util/useFetchState";
 import { TableGhostLoader } from "../../components/GhostLoader";
+import { useToast } from "../../components/ToastProvider";
 
 const jwt = tokenService.getLocalAccessToken();
 
 export default function UserListAdmin() {
-  const [message, setMessage] = useState(null);
-  const [visible, setVisible] = useState(false);
+  const toast = useToast();
   const [users, setUsers, loading] = useFetchState(
     [],
     `/api/v1/users`,
     jwt,
-    setMessage,
-    setVisible
+    null,
+    null
   );
-  const [alerts, setAlerts] = useState([]);
 
   const userList = users.map((user) => {
     return (
@@ -55,9 +52,8 @@ export default function UserListAdmin() {
                   `/api/v1/users/${user.id}`,
                   user.id,
                   [users, setUsers],
-                  [alerts, setAlerts],
-                  setMessage,
-                  setVisible
+                  toast,
+                  { entityName: "User" }
                 )
               }
             >
@@ -68,8 +64,6 @@ export default function UserListAdmin() {
       </tr>
     );
   });
-  
-  const modal = getErrorModal(setVisible, visible, message);
 
   return (
     <div className="ba-container">
@@ -84,9 +78,6 @@ export default function UserListAdmin() {
                 + Add User
               </Button>
             </div>
-            
-            {alerts.map((a) => a.alert)}
-            {modal}
             
             <Table responsive aria-label="users" className="ba-table">
               <thead>

@@ -41,8 +41,6 @@ export default function useFetchState(initial, url, jwt, setMessage, setVisible,
                                 if (setMessage !== null) {
                                     setMessage(json.message);
                                     setVisible(true);
-                                } else {
-                                    window.alert(json.message);
                                 }
                             } else {
                                 setData(json);

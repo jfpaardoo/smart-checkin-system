@@ -15,6 +15,7 @@ import FormationListAdmin from "./admin/formations/FormationListAdmin";
 import FormationEditAdmin from "./admin/formations/FormationEditAdmin";
 import FormationDetailsAdmin from "./admin/formations/FormationDetailsAdmin";
 import QRGeneratorAdmin from "./admin/qr/QRGeneratorAdmin";
+import { ToastProvider } from "./components/ToastProvider";
 
 function ErrorFallback({ error, resetErrorBoundary }) {
   return (
@@ -69,7 +70,7 @@ function App() {
   }
 
   return (
-    <div>
+    <ToastProvider>
       <ErrorBoundary FallbackComponent={ErrorFallback} >
         <AppNavbar />
         <Routes>
@@ -80,8 +81,9 @@ function App() {
           {adminRoutes}
         </Routes>
       </ErrorBoundary>
-    </div>
+    </ToastProvider>
   );
 }
 
 export default App;
+

@@ -1,13 +1,12 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Form, Input, Label, FormGroup, Row, Col, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from "reactstrap";
 import tokenService from "../../services/token.service";
 import "../../static/css/admin/adminPage.css";
-import getErrorModal from "../../util/getErrorModal";
 import getIdFromUrl from "../../util/getIdFromUrl";
 import useFetchData from "../../util/useFetchData";
 import useFetchState from "../../util/useFetchState";
 import { CardGhostLoader } from "../../components/GhostLoader";
+import { useToast } from "../../components/ToastProvider";
 
 const jwt = tokenService.getLocalAccessToken();
 
@@ -23,14 +22,13 @@ export default function UserEditAdmin() {
     authority: null,
   };
   const id = getIdFromUrl(2);
-  const [message, setMessage] = useState(null);
-  const [visible, setVisible] = useState(false);
+  const toast = useToast();
   const [user, setUser, loading] = useFetchState(
     emptyItem,
     `/api/v1/users/${id}`,
     jwt,
-    setMessage,
-    setVisible,
+    null,
+    null,
     id
   );
   const auths = useFetchData(`/api/v1/users/authorities`, jwt);
@@ -67,14 +65,37 @@ export default function UserEditAdmin() {
       .then((response) => response.json())
       .then((json) => {
         if (json.message) {
-          setMessage(json.message);
-          setVisible(true);
-        } else window.location.href = "/users";
+          let errorMsg = json.message;
+          // Handle Spring validation map format: {field=message}
+          if (errorMsg.startsWith("{") && errorMsg.endsWith("}")) {
+            errorMsg = errorMsg
+              .slice(1, -1)
+              .split(",")
+              .map(err => {
+                const [field, msg] = err.split("=");
+                const formattedField = field.trim() === "authority" ? "Role" : field.trim();
+                return `${formattedField}: ${msg.trim()}`;
+              })
+              .join("\n");
+          }
+          // Handle database unique constraints (e.g. SQL duplicate key)
+          else if (errorMsg.includes("duplicate key value")) {
+            if (errorMsg.includes("personal_code") || errorMsg.includes("personalCode")) {
+              errorMsg = "The Personal Code already exists for another user.";
+            } else if (errorMsg.includes("username")) {
+              errorMsg = "The Username already exists for another user.";
+            } else {
+              errorMsg = "A database conflict occurred (duplicated record).";
+            }
+          }
+          toast.error(errorMsg);
+        } else {
+          toast.success(user.id ? "User updated successfully" : "User created successfully");
+          setTimeout(() => { window.location.href = "/users"; }, 1200);
+        }
       })
-      .catch((error_) => alert(error_));
+      .catch(() => toast.error("Connection error. Please try again."));
   }
-
-  const modal = getErrorModal(setVisible, visible, message);
 
   if (id !== "new" && loading) {
     return <CardGhostLoader />;
@@ -86,7 +107,6 @@ export default function UserEditAdmin() {
         <div className="ba-card-header">
           <h2>{user.id ? "Edit User" : "Add New User"}</h2>
         </div>
-        {modal}
         <Form onSubmit={handleSubmit}>
           <Row>
             <Col md={6}>
