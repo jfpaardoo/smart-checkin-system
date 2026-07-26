@@ -184,17 +184,23 @@
   -webkit-backdrop-filter: blur(15px);
   border: 1px solid rgba(204, 227, 100, 0.8) !important;
   color: #2b3a04 !important;
-  border-radius: 30px !important;
-  padding: 10px 24px !important;
+  border-radius: 20px !important;
+  padding: 8px 22px !important;
   font-weight: 600 !important;
-  transition: all 0.3s ease !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 4px 15px rgba(204, 227, 100, 0.25);
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  text-decoration: none !important;
 }
 
 .ba-btn-primary:hover {
-  background: rgba(204, 227, 100, 0.75) !important;
-  transform: translateY(-2px);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 1), 0 6px 20px rgba(204, 227, 100, 0.35);
+  background: rgba(204, 227, 100, 0.85) !important;
+  color: #2b3a04 !important;
+  transform: translateY(-2px) scale(1.03) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 1), 0 6px 20px rgba(204, 227, 100, 0.35) !important;
 }
 
 .ba-btn-danger, .btn-danger {
@@ -215,6 +221,20 @@
   color: #ffffff !important;
   transform: translateY(-2px) scale(1.03) !important;
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 6px 16px rgba(220, 53, 69, 0.35) !important;
+}
+
+/* Button Group Spacing for Liquid Glass Action Buttons */
+.btn-group, .ba-btn-group {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.btn-group > .btn,
+.btn-group > a.btn,
+.btn-group > button.btn {
+  margin-left: 0 !important;
+  border-radius: 20px !important; /* Full rounded capsule edges on each button */
 }
 
 /* Glass Tables - Liquid Glass Capsule Rows */
@@ -292,16 +312,21 @@
   border: 1px solid rgba(255, 255, 255, 0.4) !important;
   color: #ffffff !important;
   border-radius: 20px !important;
-  padding: 6px 18px !important;
+  padding: 8px 22px !important;
   font-weight: 600 !important;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 3px 10px rgba(0, 0, 0, 0.1);
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  text-decoration: none !important;
 }
 
 .ba-btn-secondary:hover {
   background: rgba(44, 62, 80, 0.90) !important;
   color: #ffffff !important;
-  transform: translateY(-2px) scale(1.03);
+  transform: translateY(-2px) scale(1.03) !important;
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 6px 16px rgba(44, 62, 80, 0.3) !important;
 }
 
@@ -454,19 +479,52 @@
 
 /* Form Views (UserEdit, FormationEdit) */
 .ba-card-form {
-  max-width: 600px;
+  max-width: 780px;
+  width: 100%;
   margin: 0 auto;
 }
 
+/* Custom Liquid Glass Form Select Toggle */
+.ba-select-toggle {
+  background: rgba(255, 255, 255, 0.75) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.9) !important;
+  border-radius: 20px !important;
+  padding: 10px 18px !important;
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+  color: var(--ba-dark) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.03) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  outline: none !important;
+}
+
+.ba-select-toggle:hover, .ba-select-toggle:focus {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(204, 227, 100, 0.9) !important;
+  box-shadow: 0 0 0 3px rgba(204, 227, 100, 0.35) !important;
+}
+
+.dropdown-caret-icon {
+  font-size: 0.7rem;
+  opacity: 0.6;
+  margin-left: 8px;
+}
+
 .form-action-group {
-  margin-top: 30px;
+  margin-top: 35px;
   display: flex;
-  gap: 15px;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  width: 100%;
 }
 
 .form-action-link {
-  text-decoration: none;
-  line-height: 1.5;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
 }
 
 /* Formation Details View */

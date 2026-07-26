@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Form, Input, Label, FormGroup } from "reactstrap";
+import { Form, Input, Label, FormGroup, Row, Col } from "reactstrap";
 import tokenService from "../../services/token.service";
 import "../../static/css/admin/adminPage.css";
 import getErrorModal from "../../util/getErrorModal";
 import getIdFromUrl from "../../util/getIdFromUrl";
 import useFetchState from "../../util/useFetchState";
 import moment from "moment";
+import { CardGhostLoader } from "../../components/GhostLoader";
 
 const jwt = tokenService.getLocalAccessToken();
 
@@ -20,7 +21,7 @@ export default function FormationEditAdmin() {
   const id = getIdFromUrl(2);
   const [message, setMessage] = useState(null);
   const [visible, setVisible] = useState(false);
-  const [formation, setFormation] = useFetchState(
+  const [formation, setFormation, loading] = useFetchState(
     emptyItem,
     `/api/v1/formations/${id}`,
     jwt,
@@ -65,54 +66,70 @@ export default function FormationEditAdmin() {
     ? moment(formation.formationDate).format('YYYY-MM-DDTHH:mm') 
     : '';
 
+  if (id !== "new" && loading) {
+    return <CardGhostLoader />;
+  }
+
   return (
-    <div className="ba-container">
-      <div className="ba-card ba-card-form">
+    <div className="ba-container justify-content-center">
+      <div className="ba-card ba-card-form my-auto mx-auto">
         <div className="ba-card-header">
           <h2>{formation.id ? "Edit Formation" : "Create New Formation"}</h2>
         </div>
         {modal}
         <Form onSubmit={handleSubmit}>
-          <FormGroup>
-            <Label for="name">Formation Name</Label>
-            <Input
-              type="text"
-              required
-              name="name"
-              id="name"
-              value={formation.name || ""}
-              onChange={handleChange}
-            />
-          </FormGroup>
+          <Row>
+            <Col md={6}>
+              <FormGroup>
+                <Label for="name">Formation Name</Label>
+                <Input
+                  type="text"
+                  required
+                  name="name"
+                  id="name"
+                  value={formation.name || ""}
+                  onChange={handleChange}
+                />
+              </FormGroup>
+            </Col>
 
-          <FormGroup>
-            <Label for="description">Description</Label>
-            <Input
-              type="textarea"
-              required
-              name="description"
-              id="description"
-              rows="4"
-              value={formation.description || ""}
-              onChange={handleChange}
-            />
-          </FormGroup>
+            <Col md={6}>
+              <FormGroup>
+                <Label for="formationDate">Date and Time</Label>
+                <Input
+                  type="datetime-local"
+                  required
+                  name="formationDate"
+                  id="formationDate"
+                  value={formattedDate}
+                  onChange={handleChange}
+                />
+              </FormGroup>
+            </Col>
+          </Row>
 
-          <FormGroup>
-            <Label for="formationDate">Date and Time</Label>
-            <Input
-              type="datetime-local"
-              required
-              name="formationDate"
-              id="formationDate"
-              value={formattedDate}
-              onChange={handleChange}
-            />
-          </FormGroup>
+          <Row>
+            <Col md={12}>
+              <FormGroup>
+                <Label for="description">Description</Label>
+                <Input
+                  type="textarea"
+                  required
+                  name="description"
+                  id="description"
+                  rows="3"
+                  value={formation.description || ""}
+                  onChange={handleChange}
+                />
+              </FormGroup>
+            </Col>
+          </Row>
 
           <div className="form-action-group">
-            <button className="ba-btn-primary" type="submit">Save Formation</button>
-            <Link to={`/formations`} className="ba-btn-secondary form-action-link">
+            <button className="ba-btn-primary" type="submit">
+              Save Formation
+            </button>
+            <Link to="/formations" className="ba-btn-secondary form-action-link">
               Cancel
             </Link>
           </div>
