@@ -1,5 +1,7 @@
 package org.springframework.samples.petclinic.auth;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import jakarta.validation.Valid;
@@ -12,6 +14,8 @@ import org.springframework.samples.petclinic.auth.payload.response.JwtResponse;
 import org.springframework.samples.petclinic.auth.payload.response.MessageResponse;
 import org.springframework.samples.petclinic.configuration.jwt.JwtUtils;
 import org.springframework.samples.petclinic.configuration.services.UserDetailsImpl;
+import org.springframework.samples.petclinic.exceptions.ResourceNotFoundException;
+import org.springframework.samples.petclinic.user.User;
 import org.springframework.samples.petclinic.user.UserService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -50,6 +54,19 @@ public class AuthController {
 
 	@PostMapping("/signin")
 	public ResponseEntity<Object> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+		
+		User user = null;
+		try {
+			user = userService.findUser(loginRequest.getUsername());
+		} catch (ResourceNotFoundException e) {
+			// Do nothing to avoid username enumeration, just let it fail later or return bad credentials
+		}
+
+		ResponseEntity<Object> lockoutResponse = checkLockout(user);
+		if (lockoutResponse != null) {
+			return lockoutResponse;
+		}
+
 		try{
 			Authentication authentication = authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -61,9 +78,40 @@ public class AuthController {
 			List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority())
 				.toList();
 
+			if (user != null && user.getFailedLoginAttempts() > 0) {
+				user.setFailedLoginAttempts(0);
+				userService.saveUser(user);
+			}
+
 			return ResponseEntity.ok().body(new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), roles));
 		}catch(BadCredentialsException exception){
+			handleFailedLogin(user);
 			return ResponseEntity.badRequest().body("Bad Credentials!");
+		}
+	}
+
+	private ResponseEntity<Object> checkLockout(User user) {
+		if (user != null && user.getAccountLockedUntil() != null) {
+			if (user.getAccountLockedUntil().isAfter(LocalDateTime.now(java.time.ZoneId.systemDefault()))) {
+				return ResponseEntity.status(403).body("Account is locked due to too many failed attempts. Try again later.");
+			} else {
+				user.setAccountLockedUntil(null);
+				user.setFailedLoginAttempts(0);
+				userService.saveUser(user);
+			}
+		}
+		return null;
+	}
+
+	private void handleFailedLogin(User user) {
+		if (user != null) {
+			int attempts = user.getFailedLoginAttempts() == null ? 0 : user.getFailedLoginAttempts();
+			attempts++;
+			user.setFailedLoginAttempts(attempts);
+			if (attempts >= 5) {
+				user.setAccountLockedUntil(LocalDateTime.now(ZoneId.systemDefault()).plusMinutes(15));
+			}
+			userService.saveUser(user);
 		}
 	}
 

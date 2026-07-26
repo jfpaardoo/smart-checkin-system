@@ -31,7 +31,7 @@ Este documento detalla la división del proyecto en pequeñas tareas abordables 
 * **Rama:** `feat/checkin-domain`
 
 ### Tarea 2.3: Dominio de Formaciones
-* **Descripción:** Crear entidad `Formacion` y la tabla intermedia (Many-To-Many) para gestionar la asistencia de usuarios a las jornadas formativas.
+* **Descripción:** [COMPLETADA] Crear entidad `Formation` y la tabla intermedia (Many-To-Many) para gestionar la asistencia de usuarios a las jornadas formativas. Los usuarios se registrarán automáticamente al escanear un QR e introducir su personalCode.
 * **Rama:** `feat/training-domain`
 
 ---

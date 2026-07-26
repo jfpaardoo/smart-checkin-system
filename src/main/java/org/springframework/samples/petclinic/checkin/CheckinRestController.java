@@ -1,7 +1,5 @@
 package org.springframework.samples.petclinic.checkin;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,15 +40,7 @@ public class CheckinRestController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Checkin> checkIn(@RequestBody @Valid CheckinRequest request) {
         User currentUser = userService.findCurrentUser();
-        Checkin checkIn = new Checkin();
-        checkIn.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
-        checkIn.setCheckInType(request.getCheckInType());
-        checkIn.setUser(currentUser);
-        
-        currentUser.setIsWorking(request.getCheckInType() == CheckinType.ENTRADA);
-        userService.saveUser(currentUser);
-        
-        Checkin saved = checkInService.save(checkIn);
+        Checkin saved = checkInService.performCheckIn(currentUser, request.getCheckInType());
         return new ResponseEntity<>(saved, HttpStatus.CREATED);
     }
 }

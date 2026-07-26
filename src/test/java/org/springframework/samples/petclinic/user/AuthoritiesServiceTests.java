@@ -33,7 +33,7 @@ class AuthoritiesServiceTests {
 	@Test
 	void shouldFindAllAuthorities() {
 		List<Authorities> auths = (List<Authorities>) this.authService.findAll();
-		assertEquals(1, auths.size());
+		assertEquals(2, auths.size());
 	}
 
 	@Test

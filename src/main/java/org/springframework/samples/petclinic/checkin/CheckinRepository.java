@@ -9,5 +9,5 @@ public interface CheckinRepository extends CrudRepository<Checkin, Integer> {
 
     List<Checkin> findByUserId(Integer userId);
 
-    List<Checkin> findByUserIdOrderByCheckinDateDesc(Integer userId);
+    List<Checkin> findByUserIdOrderByCheckInDateDesc(Integer userId);
 }

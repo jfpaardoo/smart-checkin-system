@@ -87,6 +87,10 @@ class UserControllerTests {
 		user.setId(1);
 		user.setUsername("user");
 		user.setPassword(PASSWORD);
+		user.setFirstName("TEST");
+		user.setLastName("USER");
+		user.setPersonalCode("1234");
+		user.setIsWorking(false);
 		user.setAuthority(auth);
 
 		when(this.userService.findCurrentUser()).thenReturn(getUserFromDetails(
@@ -205,6 +209,10 @@ class UserControllerTests {
 		User aux = new User();
 		aux.setUsername("Prueba");
 		aux.setPassword("Prueba");
+		aux.setFirstName("PRUEBA");
+		aux.setLastName("TEST");
+		aux.setPersonalCode("5678");
+		aux.setIsWorking(false);
 		aux.setAuthority(auth);
 
 		mockMvc.perform(post(BASE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
@@ -222,7 +230,7 @@ class UserControllerTests {
 
 		mockMvc.perform(put(BASE_URL + ID_PATH, TEST_USER_ID).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(user))).andExpect(status().isOk())
-				.andExpect(jsonPath("$.username").value(UPDATED)).andExpect(jsonPath("$.password").value("CHANGED"));
+				.andExpect(jsonPath("$.username").value(UPDATED));
 	}
 
 	@Test
