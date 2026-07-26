@@ -1,6 +1,7 @@
 package org.springframework.samples.smartcheckin.formation;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,13 +57,13 @@ public class FormationService {
             FormationAttendance att = new FormationAttendance();
             att.setFormation(formation);
             att.setUser(user);
-            att.setCheckInDate(LocalDateTime.now(java.time.ZoneId.systemDefault()));
+            att.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
             attendanceRepository.save(att);
             formation.getAttendances().add(att);
         } else {
             FormationAttendance att = existing.get();
             if (att.getCheckInDate() == null) {
-                att.setCheckInDate(LocalDateTime.now(java.time.ZoneId.systemDefault()));
+                att.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
                 attendanceRepository.save(att);
             }
         }
@@ -79,7 +80,7 @@ public class FormationService {
         FormationAttendance att = attendanceRepository.findByFormationAndUser(formation, user)
             .orElseThrow(() -> new IllegalArgumentException("El usuario no ha hecho check-in en esta formación"));
 
-        att.setCheckOutDate(LocalDateTime.now(java.time.ZoneId.systemDefault()));
+        att.setCheckOutDate(LocalDateTime.now(ZoneId.systemDefault()));
         att.setSignature(signature);
         attendanceRepository.save(att);
 

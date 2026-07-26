@@ -60,6 +60,7 @@ export default function UserDashboard() {
                 toast.error("El QR no corresponde a esta formación.");
               }
             } catch (e) {
+              console.error(e);
               toast.error("Formato QR inválido.");
             }
           },
