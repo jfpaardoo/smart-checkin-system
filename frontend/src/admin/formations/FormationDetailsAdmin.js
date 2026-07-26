@@ -113,6 +113,26 @@ export default function FormationDetailsAdmin() {
     toast.confirm("Are you sure you want to remove this user from the formation?", performRemove);
   };
 
+  const renderAttendanceBadge = (att) => {
+    if (att.checkOutDate) {
+      return <span className="badge bg-success">Completada</span>;
+    }
+    if (att.checkInDate) {
+      return <span className="badge bg-warning text-dark">En Curso</span>;
+    }
+    return <span className="badge bg-secondary">Inscrito</span>;
+  };
+
+  const renderModalAttendanceBadge = (att) => {
+    if (att.checkOutDate) {
+      return <span className="badge bg-success" style={{ fontSize: '0.9rem' }}>Completada (Checkout realizado)</span>;
+    }
+    if (att.checkInDate) {
+      return <span className="badge bg-warning text-dark" style={{ fontSize: '0.9rem' }}>En Curso (Check-in realizado)</span>;
+    }
+    return <span className="badge bg-secondary" style={{ fontSize: '0.9rem' }}>Inscrito / Sin Fichar</span>;
+  };
+
   if (!formation) {
     return <CardGhostLoader />;
   }
@@ -208,13 +228,7 @@ export default function FormationDetailsAdmin() {
                     <td>{hasCheckedIn ? moment(att.checkInDate).format('HH:mm:ss') : '-'}</td>
                     <td>{isCompleted ? moment(att.checkOutDate).format('HH:mm:ss') : '-'}</td>
                     <td>
-                      {isCompleted ? (
-                        <span className="badge bg-success">Completada</span>
-                      ) : hasCheckedIn ? (
-                        <span className="badge bg-warning text-dark">En Curso</span>
-                      ) : (
-                        <span className="badge bg-secondary">Inscrito</span>
-                      )}
+                      {renderAttendanceBadge(att)}
                     </td>
                     <td>
                       <div className="d-flex gap-2">
@@ -271,13 +285,7 @@ export default function FormationDetailsAdmin() {
 
               <h6 className="text-muted mb-1">Estado:</h6>
               <div className="mb-3">
-                {selectedAttendance.checkOutDate ? (
-                  <span className="badge bg-success" style={{ fontSize: '0.9rem' }}>Completada (Checkout realizado)</span>
-                ) : selectedAttendance.checkInDate ? (
-                  <span className="badge bg-warning text-dark" style={{ fontSize: '0.9rem' }}>En Curso (Check-in realizado)</span>
-                ) : (
-                  <span className="badge bg-secondary" style={{ fontSize: '0.9rem' }}>Inscrito / Sin Fichar</span>
-                )}
+                {renderModalAttendanceBadge(selectedAttendance)}
               </div>
 
               <h6 className="text-muted mb-1">Hora de Entrada (Check-in):</h6>
