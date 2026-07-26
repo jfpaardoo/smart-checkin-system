@@ -26,6 +26,9 @@ class FormationServiceTests {
     private FormationRepository formationRepository;
 
     @Mock
+    private FormationAttendanceRepository attendanceRepository;
+
+    @Mock
     private UserService userService;
 
     @InjectMocks
@@ -40,7 +43,7 @@ class FormationServiceTests {
         formation.setId(1);
         formation.setName("Spring Boot Security");
         formation.setFormationDate(LocalDateTime.now());
-        formation.setAttendees(new ArrayList<>());
+        formation.setAttendances(new ArrayList<>());
 
         user = new User();
         user.setId(10);
@@ -52,11 +55,11 @@ class FormationServiceTests {
     void shouldRegisterAttendance() {
         when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
         when(userService.findByPersonalCode("1234")).thenReturn(user);
+        when(attendanceRepository.findByFormationAndUser(formation, user)).thenReturn(Optional.empty());
 
         formationService.registerAttendance(1, "1234");
 
-        assertTrue(formation.getAttendees().contains(user));
-        verify(formationRepository, times(1)).save(formation);
+        verify(attendanceRepository, times(1)).save(any(FormationAttendance.class));
     }
 
     @Test

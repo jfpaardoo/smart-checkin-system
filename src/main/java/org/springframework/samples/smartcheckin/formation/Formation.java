@@ -5,13 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.samples.smartcheckin.model.BaseEntity;
-import org.springframework.samples.smartcheckin.user.User;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -22,7 +21,7 @@ import lombok.EqualsAndHashCode;
 
 @Getter
 @Setter
-@EqualsAndHashCode(callSuper = false, exclude = {"attendees"})
+@EqualsAndHashCode(callSuper = false, exclude = {"attendances"})
 @Entity
 @Table(name = "formations")
 public class Formation extends BaseEntity {
@@ -38,12 +37,8 @@ public class Formation extends BaseEntity {
     @Future
     private LocalDateTime formationDate;
 
-    @ManyToMany
-    @JoinTable(
-        name = "formation_attendees", 
-        joinColumns = @JoinColumn(name = "formation_id"), 
-        inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private List<User> attendees = new ArrayList<>();
+    @OneToMany(mappedBy = "formation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("formation")
+    private List<FormationAttendance> attendances = new ArrayList<>();
 
 }

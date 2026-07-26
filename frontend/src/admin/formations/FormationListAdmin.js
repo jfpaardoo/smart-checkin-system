@@ -26,7 +26,7 @@ export default function FormationListAdmin() {
         <td>{formation.name}</td>
         <td>{formation.description}</td>
         <td>{moment(formation.formationDate).format('YYYY-MM-DD HH:mm')}</td>
-        <td>{formation.attendees ? formation.attendees.length : 0}</td>
+        <td>{formation.attendances ? formation.attendances.length : 0}</td>
         <td>
           <ButtonGroup>
             <Button

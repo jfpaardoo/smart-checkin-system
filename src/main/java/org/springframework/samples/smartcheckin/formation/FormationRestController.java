@@ -65,6 +65,16 @@ public class FormationRestController {
         }
     }
 
+    @PostMapping("/{id}/checkout")
+    public ResponseEntity<Object> checkoutAttendance(@PathVariable Integer id, @Valid @RequestBody FormationCheckoutRequest request) {
+        try {
+            Formation formation = formationService.checkoutAttendance(id, request.getPersonalCode(), request.getSignature());
+            return ResponseEntity.ok(formation);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Failed to checkout: " + e.getMessage());
+        }
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Formation> updateFormation(@PathVariable Integer id, @Valid @RequestBody FormationRequest request) {

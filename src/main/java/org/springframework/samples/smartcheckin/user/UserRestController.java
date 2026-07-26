@@ -24,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.smartcheckin.auth.payload.response.MessageResponse;
 import org.springframework.samples.smartcheckin.exceptions.AccessDeniedException;
+import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.samples.smartcheckin.util.RestPreconditions;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -73,9 +74,9 @@ class UserRestController {
 	}
 
 	@GetMapping("me/formations")
-	public ResponseEntity<List<org.springframework.samples.smartcheckin.formation.Formation>> getMyFormations() {
+	public ResponseEntity<List<FormationAttendance>> getMyFormations() {
 		User currentUser = userService.findCurrentUser();
-		return new ResponseEntity<>(currentUser.getFormations(), HttpStatus.OK);
+		return new ResponseEntity<>(currentUser.getFormationAttendances(), HttpStatus.OK);
 	}
 
 	@GetMapping(value = "{id}")

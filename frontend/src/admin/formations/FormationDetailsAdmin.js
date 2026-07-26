@@ -116,7 +116,7 @@ export default function FormationDetailsAdmin() {
   }
 
   // Find users not currently attending
-  const attendeeIds = formation.attendees ? formation.attendees.map(u => u.id) : [];
+  const attendeeIds = formation.attendances ? formation.attendances.map(a => a.user.id) : [];
   const availableUsers = allUsers.filter(u => !attendeeIds.includes(u.id));
 
   // Find selected user label for the dropdown display
@@ -190,23 +190,26 @@ export default function FormationDetailsAdmin() {
             </tr>
           </thead>
           <tbody>
-            {formation.attendees && formation.attendees.length > 0 ? (
-              formation.attendees.map((user) => (
-                <tr key={user.id}>
-                  <td>{user.personalCode}</td>
-                  <td>{user.firstName} {user.lastName}</td>
-                  <td>{user.username}</td>
-                  <td>
-                    <Button
-                      size="sm"
-                      className="ba-btn-danger"
-                      onClick={() => handleRemoveUser(user.id)}
-                    >
-                      Remove
-                    </Button>
-                  </td>
-                </tr>
-              ))
+            {formation.attendances && formation.attendances.length > 0 ? (
+              formation.attendances.map((att) => {
+                const user = att.user;
+                return (
+                  <tr key={user.id}>
+                    <td>{user.personalCode}</td>
+                    <td>{user.firstName} {user.lastName}</td>
+                    <td>{user.username}</td>
+                    <td>
+                      <Button
+                        size="sm"
+                        className="ba-btn-danger"
+                        onClick={() => handleRemoveUser(user.id)}
+                      >
+                        Remove
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td colSpan="4" className="text-center">

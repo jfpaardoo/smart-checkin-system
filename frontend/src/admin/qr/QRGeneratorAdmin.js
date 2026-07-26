@@ -12,14 +12,11 @@ const QRGeneratorAdmin = () => {
     const [loading, setLoading] = useState(true);
     const [progress, setProgress] = useState(100);
     
-    // Estado único para gestionar qué formación se ha seleccionado
     const [selectedFormationId, setSelectedFormationId] = useState("");
 
-    // Obtener las formaciones disponibles
     const [formations] = useFetchState([], `/api/v1/formations`, jwt, null, null);
 
     useEffect(() => {
-        // Movido dentro del useEffect para resolver el warning de dependencias de ESLint
         const fetchCurrentToken = async () => {
             try {
                 const response = await fetch('/api/v1/totp/current', {
@@ -65,7 +62,6 @@ const QRGeneratorAdmin = () => {
         }
     });
 
-    // Construcción dinámica del Payload del QR
     const buildQrPayload = () => {
         const payload = { 
             token: totpToken, 
@@ -73,7 +69,6 @@ const QRGeneratorAdmin = () => {
         };
         
         if (selectedFormationId) {
-            // Se utiliza Number.parseInt con base 10 para resolver el warning de SonarQube
             payload.formationId = Number.parseInt(selectedFormationId, 10);
         }
         
@@ -89,7 +84,6 @@ const QRGeneratorAdmin = () => {
                     ) : (
                         <div className="d-flex flex-column flex-md-row align-items-center justify-content-center gap-4 gap-lg-5 py-2 my-auto">
                             
-                            {/* Left Side: QR Code Container */}
                             <div 
                                 className="qr-code-container qr-code-frame d-flex align-items-center justify-content-center text-center" 
                                 style={{ width: '305px', height: '305px', backgroundColor: '#f8f9fa' }}
@@ -109,7 +103,6 @@ const QRGeneratorAdmin = () => {
                                 )}
                             </div>
 
-                            {/* Right Side: Configuration & Info */}
                             <div className="d-flex flex-column align-items-center align-items-md-start text-center text-md-start qr-info-column">
                                 <CardTitle tag="h2" className="qr-title">
                                     QR de Formación
@@ -118,7 +111,6 @@ const QRGeneratorAdmin = () => {
                                     Selecciona la formación activa y proyecta el código para registrar la asistencia.
                                 </p>
 
-                                {/* Selector de Formación (ÚNICO) */}
                                 <div className="w-100 mb-3 text-start">
                                     <FormGroup>
                                         <Label for="formationId" style={{fontWeight: 600, color: '#555'}}>Seleccionar Formación</Label>
@@ -138,17 +130,14 @@ const QRGeneratorAdmin = () => {
                                     </FormGroup>
                                 </div>
 
-                                {/* Renderizado condicional: Solo mostrar si hay formación seleccionada */}
                                 {selectedFormationId && (
                                     <div className="w-100 text-center text-md-start mt-2">
-                                        {/* Token Code Display */}
                                         <div className="mb-3">
                                             <span className="token-display" style={{ fontSize: '2.2rem', padding: '5px 20px' }}>
                                                 {totpToken}
                                             </span>
                                         </div>
 
-                                        {/* Neon Progress Bar */}
                                         <div className="progress qr-progress-bar">
                                             <div 
                                                 className="progress-bar qr-progress-fill" 

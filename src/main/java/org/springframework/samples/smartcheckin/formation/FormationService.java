@@ -1,5 +1,6 @@
 package org.springframework.samples.smartcheckin.formation;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,11 +15,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class FormationService {
 
     private final FormationRepository formationRepository;
+    private final FormationAttendanceRepository attendanceRepository;
     private final UserService userService;
 
     @Autowired
-    public FormationService(FormationRepository formationRepository, UserService userService) {
+    public FormationService(FormationRepository formationRepository, 
+                            FormationAttendanceRepository attendanceRepository, 
+                            UserService userService) {
         this.formationRepository = formationRepository;
+        this.attendanceRepository = attendanceRepository;
         this.userService = userService;
     }
 
@@ -39,7 +44,6 @@ public class FormationService {
         return formationRepository.findById(id);
     }
 
-    // AHORA DEVUELVE LA FORMACION
     @Transactional
     public Formation registerAttendance(Integer formationId, String personalCode) {
         Formation formation = formationRepository.findById(formationId)
@@ -47,10 +51,38 @@ public class FormationService {
         
         User user = userService.findByPersonalCode(personalCode);
 
-        if (!formation.getAttendees().contains(user)) {
-            formation.getAttendees().add(user);
-            formationRepository.save(formation);
+        Optional<FormationAttendance> existing = attendanceRepository.findByFormationAndUser(formation, user);
+        if (!existing.isPresent()) {
+            FormationAttendance att = new FormationAttendance();
+            att.setFormation(formation);
+            att.setUser(user);
+            att.setCheckInDate(LocalDateTime.now(java.time.ZoneId.systemDefault()));
+            attendanceRepository.save(att);
+            formation.getAttendances().add(att);
+        } else {
+            FormationAttendance att = existing.get();
+            if (att.getCheckInDate() == null) {
+                att.setCheckInDate(LocalDateTime.now(java.time.ZoneId.systemDefault()));
+                attendanceRepository.save(att);
+            }
         }
+        return formation;
+    }
+
+    @Transactional
+    public Formation checkoutAttendance(Integer formationId, String personalCode, String signature) {
+        Formation formation = formationRepository.findById(formationId)
+            .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
+        
+        User user = userService.findByPersonalCode(personalCode);
+
+        FormationAttendance att = attendanceRepository.findByFormationAndUser(formation, user)
+            .orElseThrow(() -> new IllegalArgumentException("El usuario no ha hecho check-in en esta formación"));
+
+        att.setCheckOutDate(LocalDateTime.now(java.time.ZoneId.systemDefault()));
+        att.setSignature(signature);
+        attendanceRepository.save(att);
+
         return formation;
     }
 
@@ -70,9 +102,12 @@ public class FormationService {
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
         User user = userService.findUser(userId);
         
-        if (!formation.getAttendees().contains(user)) {
-            formation.getAttendees().add(user);
-            formationRepository.save(formation);
+        Optional<FormationAttendance> existing = attendanceRepository.findByFormationAndUser(formation, user);
+        if (!existing.isPresent()) {
+            FormationAttendance att = new FormationAttendance();
+            att.setFormation(formation);
+            att.setUser(user);
+            attendanceRepository.save(att);
         }
     }
 
@@ -82,9 +117,6 @@ public class FormationService {
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
         User user = userService.findUser(userId);
         
-        if (formation.getAttendees().contains(user)) {
-            formation.getAttendees().remove(user);
-            formationRepository.save(formation);
-        }
+        attendanceRepository.findByFormationAndUser(formation, user).ifPresent(attendanceRepository::delete);
     }
 }
