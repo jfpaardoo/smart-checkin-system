@@ -19,26 +19,27 @@ export default function UserDashboard() {
     jwt
   );
 
-  const [checkoutModal, setCheckoutModal] = useState(false);
-  const [activeFormationId, setActiveFormationId] = useState(null);
-  const [step, setStep] = useState('scan'); // 'scan' or 'sign'
+  const [detailsModal, setDetailsModal] = useState(false);
+  const [selectedAtt, setSelectedAtt] = useState(null);
+  const [step, setStep] = useState('details'); // 'details', 'scan', 'sign'
   const [personalCode, setPersonalCode] = useState('');
   
   const toast = useToast();
   const scannerRef = useRef(null);
   const sigCanvas = useRef({});
 
-  // Clean up scanner on unmount or step change
+  // Clean up scanner on unmount
   useEffect(() => {
     return () => {
       if (scannerRef.current) {
-        scannerRef.current.clear().catch(e => console.log("Error clearing scanner", e));
+        scannerRef.current.clear().catch(e => console.error("Error clearing scanner on unmount", e));
       }
     };
   }, []);
 
+  // Initialize Scanner when step is 'scan'
   useEffect(() => {
-    if (checkoutModal && step === 'scan') {
+    if (detailsModal && step === 'scan' && selectedAtt) {
       const timer = setTimeout(() => {
         const qrElement = document.getElementById("checkout-qr-reader");
         if (qrElement) qrElement.innerHTML = "";
@@ -53,7 +54,7 @@ export default function UserDashboard() {
           (decodedText) => {
             try {
               const data = JSON.parse(decodedText);
-              if (data.action === 'formation' && data.formationId === activeFormationId) {
+              if (data.action === 'formation' && data.formationId === selectedAtt.formation.id) {
                 if (scannerRef.current) scannerRef.current.clear();
                 setStep('sign');
               } else {
@@ -69,19 +70,19 @@ export default function UserDashboard() {
       }, 50);
       return () => clearTimeout(timer);
     }
-  }, [checkoutModal, step, activeFormationId, toast]);
+  }, [detailsModal, step, selectedAtt, toast]);
 
-  const openCheckout = (formationId) => {
-    setActiveFormationId(formationId);
-    setStep('scan');
+  const openDetails = (attendance) => {
+    setSelectedAtt(attendance);
+    setStep('details');
     setPersonalCode('');
-    setCheckoutModal(true);
+    setDetailsModal(true);
   };
 
-  const closeCheckout = () => {
+  const closeDetails = () => {
     if (scannerRef.current) scannerRef.current.clear().catch(e => console.error("Error clearing scanner on close", e));
-    setCheckoutModal(false);
-    setActiveFormationId(null);
+    setDetailsModal(false);
+    setSelectedAtt(null);
   };
 
   const handleCheckoutSubmit = async () => {
@@ -97,7 +98,7 @@ export default function UserDashboard() {
     const signatureBase64 = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png');
     
     try {
-      const response = await fetch(`/api/v1/formations/${activeFormationId}/checkout`, {
+      const response = await fetch(`/api/v1/formations/${selectedAtt.formation.id}/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -113,7 +114,7 @@ export default function UserDashboard() {
       }
 
       toast.success("Checkout completado con éxito.");
-      closeCheckout();
+      closeDetails();
       
       // Reload attendances
       const res = await fetch("/api/v1/users/me/formations", { headers: { "Authorization": `Bearer ${jwt}` } });
@@ -131,6 +132,11 @@ export default function UserDashboard() {
     }
 
     if (attendances && attendances.length > 0) {
+      // Ordenar por fecha de formación más reciente primero (descendente)
+      const sortedAttendances = [...attendances].sort(
+        (a, b) => new Date(b.formation.formationDate) - new Date(a.formation.formationDate)
+      );
+
       return (
         <div className="table-responsive">
           <table className="table table-dark table-hover ba-table align-middle">
@@ -143,7 +149,7 @@ export default function UserDashboard() {
               </tr>
             </thead>
             <tbody>
-              {attendances.map((att) => {
+              {sortedAttendances.map((att) => {
                 const f = att.formation;
                 const isCompleted = !!att.checkOutDate;
                 return (
@@ -158,11 +164,9 @@ export default function UserDashboard() {
                       )}
                     </td>
                     <td>
-                      {!isCompleted && (
-                        <button className="ba-btn ba-btn-primary btn-sm m-0" onClick={() => openCheckout(f.id)}>
-                          Hacer Checkout
-                        </button>
-                      )}
+                      <button className="ba-btn ba-btn-primary btn-sm m-0" onClick={() => openDetails(att)}>
+                        Ver Detalles
+                      </button>
                     </td>
                   </tr>
                 );
@@ -196,50 +200,96 @@ export default function UserDashboard() {
         {renderContent()}
       </div>
 
-      {/* Checkout Modal */}
-      <Modal isOpen={checkoutModal} toggle={closeCheckout} centered size="lg">
-        <ModalHeader toggle={closeCheckout} style={{ backgroundColor: '#2c3e50', color: 'white', borderBottom: 'none' }}>
-          Formation Checkout
+      {/* Details & Checkout Modal */}
+      <Modal isOpen={detailsModal} toggle={closeDetails} centered size="lg">
+        <ModalHeader toggle={closeDetails} style={{ backgroundColor: '#2c3e50', color: 'white', borderBottom: 'none' }}>
+          {selectedAtt ? selectedAtt.formation.name : 'Formation Details'}
         </ModalHeader>
         <ModalBody className="py-4" style={{ backgroundColor: '#f4f6fa' }}>
-          {step === 'scan' ? (
-            <div>
-              <h5 className="text-center mb-3" style={{ color: '#2c3e50' }}>1. Escanea el QR de la Formación</h5>
-              <div id="checkout-qr-reader" style={{ width: '100%', borderRadius: '15px', overflow: 'hidden', border: '2px solid rgba(0,0,0,0.1)' }}></div>
-            </div>
-          ) : (
-            <div>
-              <h5 className="text-center mb-3" style={{ color: '#2c3e50' }}>2. Introduce tu PIN y Firma</h5>
-              
-              <FormGroup className="text-center mb-4">
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  placeholder="PIN 0000"
-                  value={personalCode}
-                  onChange={(e) => {
-                    if (e.target.value.length <= 4) setPersonalCode(e.target.value);
-                  }}
-                  className="ba-input mx-auto"
-                  style={{ fontSize: '1.5rem', textAlign: 'center', letterSpacing: '10px', width: '150px' }}
-                />
-              </FormGroup>
+          {selectedAtt && (
+            <>
+              {step === 'details' && (
+                <div className="p-3" style={{ backgroundColor: 'white', borderRadius: '15px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+                  <h6 className="text-muted mb-1">Descripción:</h6>
+                  <p className="lead mb-4" style={{ color: '#2c3e50' }}>{selectedAtt.formation.description || 'Sin descripción.'}</p>
+                  
+                  <h6 className="text-muted mb-1">Fecha de la formación:</h6>
+                  <p className="mb-4" style={{ fontWeight: '500' }}>{new Date(selectedAtt.formation.formationDate).toLocaleString()}</p>
+                  
+                  <h6 className="text-muted mb-1">Hora de entrada (Check-in):</h6>
+                  <p className="mb-4" style={{ fontWeight: '500' }}>{new Date(selectedAtt.checkInDate).toLocaleString()}</p>
 
-              <div style={{ backgroundColor: '#fff', borderRadius: '15px', border: '2px solid rgba(0,0,0,0.1)', overflow: 'hidden', width: 'fit-content', margin: '0 auto' }}>
-                <SignatureCanvas 
-                  penColor="blue"
-                  canvasProps={{ width: 450, height: 200, className: 'sigCanvas' }}
-                  ref={sigCanvas}
-                />
-              </div>
-              <div className="text-center mt-2">
-                <button type="button" className="btn btn-link text-danger" onClick={() => sigCanvas.current.clear()}>Borrar firma</button>
-              </div>
-            </div>
+                  {selectedAtt.checkOutDate && (
+                    <>
+                      <h6 className="text-muted mb-1">Hora de salida (Check-out):</h6>
+                      <p className="mb-4" style={{ fontWeight: '500' }}>{new Date(selectedAtt.checkOutDate).toLocaleString()}</p>
+                    </>
+                  )}
+
+                  <div className="d-flex justify-content-between align-items-center mt-4 pt-3" style={{ borderTop: '1px solid #eee' }}>
+                    <div>
+                      <span className="text-muted mr-2">Estado: </span>
+                      {selectedAtt.checkOutDate ? (
+                        <span className="badge bg-success" style={{ fontSize: '0.9rem' }}>Completada</span>
+                      ) : (
+                        <span className="badge bg-warning text-dark" style={{ fontSize: '0.9rem' }}>En Curso</span>
+                      )}
+                    </div>
+                    {!selectedAtt.checkOutDate && (
+                      <button className="ba-btn ba-btn-primary m-0" onClick={() => setStep('scan')}>
+                        Hacer Checkout
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {step === 'scan' && (
+                <div>
+                  <h5 className="text-center mb-3" style={{ color: '#2c3e50' }}>1. Escanea el QR de la Formación</h5>
+                  <div id="checkout-qr-reader" style={{ width: '100%', borderRadius: '15px', overflow: 'hidden', border: '2px solid rgba(0,0,0,0.1)' }}></div>
+                </div>
+              )}
+
+              {step === 'sign' && (
+                <div>
+                  <h5 className="text-center mb-3" style={{ color: '#2c3e50' }}>2. Introduce tu PIN y Firma</h5>
+                  
+                  <FormGroup className="text-center mb-4">
+                    <Input
+                      type="number"
+                      inputMode="numeric"
+                      placeholder="PIN"
+                      value={personalCode}
+                      onChange={(e) => {
+                        if (e.target.value.length <= 4) setPersonalCode(e.target.value);
+                      }}
+                      className="ba-input mx-auto"
+                      style={{ fontSize: '1.5rem', textAlign: 'center', letterSpacing: '10px', width: '150px' }}
+                    />
+                  </FormGroup>
+
+                  <div style={{ backgroundColor: '#fff', borderRadius: '15px', border: '2px solid rgba(0,0,0,0.1)', overflow: 'hidden', width: 'fit-content', margin: '0 auto' }}>
+                    <SignatureCanvas 
+                      penColor="blue"
+                      canvasProps={{ width: 450, height: 200, className: 'sigCanvas' }}
+                      ref={sigCanvas}
+                    />
+                  </div>
+                  <div className="text-center mt-2">
+                    <button type="button" className="btn btn-link text-danger" onClick={() => sigCanvas.current.clear()}>Borrar firma</button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </ModalBody>
         <ModalFooter style={{ borderTop: 'none', backgroundColor: '#f4f6fa' }}>
-          <Button color="secondary" onClick={closeCheckout} style={{ borderRadius: '20px' }}>Cancelar</Button>
+          {step !== 'details' ? (
+            <Button color="secondary" onClick={() => setStep('details')} style={{ borderRadius: '20px' }}>Volver a Detalles</Button>
+          ) : (
+            <Button color="secondary" onClick={closeDetails} style={{ borderRadius: '20px' }}>Cerrar</Button>
+          )}
           {step === 'sign' && (
             <Button className="ba-btn-primary" onClick={handleCheckoutSubmit} style={{ borderRadius: '20px' }}>
               Confirmar Checkout
