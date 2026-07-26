@@ -15,6 +15,43 @@ export default function UserDashboard() {
     jwt
   );
 
+  const renderContent = () => {
+    if (isLoading) {
+      return <CardGhostLoader />;
+    }
+
+    if (formations && formations.length > 0) {
+      return (
+        <div className="table-responsive">
+          <table className="table table-dark table-hover ba-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {formations.map((f) => (
+                <tr key={f.id}>
+                  <td>{f.name}</td>
+                  <td>{new Date(f.formationDate).toLocaleString()}</td>
+                  <td>{f.description}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+
+    return (
+      <div className="text-center p-4" style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '15px' }}>
+        <p className="text-white mb-0">You are not enrolled in any formations yet.</p>
+      </div>
+    );
+  };
+
   return (
     <div className="ba-container">
       <div className="ba-card home-card" style={{ maxWidth: '800px', margin: '2rem auto' }}>
@@ -28,34 +65,7 @@ export default function UserDashboard() {
 
         <h3 className="mb-3 text-white">Your Formations</h3>
         
-        {isLoading ? (
-          <CardGhostLoader />
-        ) : formations && formations.length > 0 ? (
-          <div className="table-responsive">
-            <table className="table table-dark table-hover ba-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Date</th>
-                  <th>Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                {formations.map((f) => (
-                  <tr key={f.id}>
-                    <td>{f.name}</td>
-                    <td>{new Date(f.formationDate).toLocaleString()}</td>
-                    <td>{f.description}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="text-center p-4" style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '15px' }}>
-            <p className="text-white mb-0">You are not enrolled in any formations yet.</p>
-          </div>
-        )}
+        {renderContent()}
       </div>
     </div>
   );
