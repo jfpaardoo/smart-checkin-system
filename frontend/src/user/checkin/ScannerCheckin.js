@@ -80,6 +80,68 @@ export default function ScannerCheckin() {
     };
   }, [scannerVisible, toast]);
 
+  const handleFormationAttend = async () => {
+    if (!qrData.formationId) {
+      toast.error("QR Inválido: Falta el ID de la formación.");
+      setLoading(false);
+      return;
+    }
+
+    const response = await fetch(`/api/v1/formations/${qrData.formationId}/attend`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${jwt}`
+      },
+      body: JSON.stringify({ personalCode: personalCode }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text);
+    }
+
+    const data = await response.json();
+    setLoading(false);
+    setFormationDetails(data); 
+    setSuccessModal(true); 
+    handleCancel(); 
+  };
+
+  const handleNormalCheckin = async () => {
+    const response = await fetch("/api/v1/checkins/qr-fichaje", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${jwt}` 
+      },
+      body: JSON.stringify({ token: qrData.token, personalCode: personalCode }),
+    });
+
+    if (response.status === 202) {
+      const data = await response.json();
+      if (data.needsSignature) {
+          setLoading(false);
+          setNeedsSignature(true);
+          toast.info("Se requiere su firma para registrar la salida.");
+          return;
+      }
+    }
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text);
+    }
+
+    const data = await response.json();
+    setLoading(false);
+    const type = data.checkInType === "ENTRADA" ? "Entrada registrada" : "Salida registrada";
+    toast.success(`${type} a las ${new Date(data.timestamp || Date.now()).toLocaleTimeString()}`);
+    setTimeout(() => { window.location.href = '/dashboard'; }, 1000);
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (personalCode.length !== 4) {
@@ -91,64 +153,9 @@ export default function ScannerCheckin() {
 
     try {
       if (qrData.action === "formation") {
-        if (!qrData.formationId) {
-          toast.error("QR Inválido: Falta el ID de la formación.");
-          setLoading(false);
-          return;
-        }
-
-        const response = await fetch(`/api/v1/formations/${qrData.formationId}/attend`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": `Bearer ${jwt}`
-          },
-          body: JSON.stringify({ personalCode: personalCode }),
-        });
-
-        if (!response.ok) {
-          const text = await response.text();
-          throw new Error(text);
-        }
-
-        const data = await response.json();
-        setLoading(false);
-        setFormationDetails(data); 
-        setSuccessModal(true); 
-        handleCancel(); 
-
+        await handleFormationAttend();
       } else {
-        const response = await fetch("/api/v1/checkins/qr-fichaje", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": `Bearer ${jwt}` 
-          },
-          body: JSON.stringify({ token: qrData.token, personalCode: personalCode }),
-        });
-
-        if (response.status === 202) {
-          const data = await response.json();
-          if (data.needsSignature) {
-             setLoading(false);
-             setNeedsSignature(true);
-             toast.info("Se requiere su firma para registrar la salida.");
-             return;
-          }
-        }
-
-        if (!response.ok) {
-          const text = await response.text();
-          throw new Error(text);
-        }
-
-        const data = await response.json();
-        setLoading(false);
-        const type = data.checkInType === "ENTRADA" ? "Entrada registrada" : "Salida registrada";
-        toast.success(`${type} a las ${new Date(data.timestamp || Date.now()).toLocaleTimeString()}`);
-        setTimeout(() => { window.location.href = '/dashboard'; }, 1000);
+        await handleNormalCheckin();
       }
     } catch (error) {
       setLoading(false);

@@ -85,6 +85,7 @@ class UserRestController {
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
+	@SuppressWarnings("squid:S4684")
 	public ResponseEntity<User> create(@RequestBody @Valid User user) {
 		if (user.getPassword() != null) {
 			user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -95,6 +96,7 @@ class UserRestController {
 
 	@PutMapping(value = "{userId}")
 	@ResponseStatus(HttpStatus.OK)
+	@SuppressWarnings("squid:S4684")
 	public ResponseEntity<User> update(@PathVariable("userId") Integer id, @RequestBody @Valid User user) {
 		RestPreconditions.checkNotNull(userService.findUser(id), "User", "ID", id);
 		if (user.getPassword() != null && !user.getPassword().isEmpty()) {

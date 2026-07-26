@@ -78,6 +78,9 @@ public class SecurityConfiguration {
 						// WebSockets
 						.requestMatchers("/ws/**").permitAll()
 
+						// Rutas de perfil personal
+						.requestMatchers("/api/v1/users/me/**").authenticated()
+
 						// Rutas de administración y HR
 						.requestMatchers("/api/v1/users/**").hasAuthority(ADMIN)
 						.requestMatchers("/api/v1/totp/**").hasAuthority(ADMIN)

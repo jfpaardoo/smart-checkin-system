@@ -9,7 +9,7 @@ export default function UserDashboard() {
   const jwt = tokenService.getLocalAccessToken();
   const user = tokenService.getUser();
 
-  const [formations, setFormations] = useFetchState(
+  const [formations, , isLoading] = useFetchState(
     [],
     "/api/v1/users/me/formations",
     jwt
@@ -28,7 +28,9 @@ export default function UserDashboard() {
 
         <h3 className="mb-3 text-white">Your Formations</h3>
         
-        {formations && formations.length > 0 ? (
+        {isLoading ? (
+          <CardGhostLoader />
+        ) : formations && formations.length > 0 ? (
           <div className="table-responsive">
             <table className="table table-dark table-hover ba-table">
               <thead>
