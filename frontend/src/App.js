@@ -5,11 +5,15 @@ import { ErrorBoundary } from "react-error-boundary";
 import AppNavbar from "./AppNavbar";
 import Home from "./home";
 import PrivateRoute from "./privateRoute";
-import Register from "./auth/register";
 import Login from "./auth/login";
 import Logout from "./auth/logout";
 import tokenService from "./services/token.service";
 import SwaggerDocs from "./public/swagger";
+import UserListAdmin from "./admin/users/UserListAdmin";
+import UserEditAdmin from "./admin/users/UserEditAdmin";
+import FormationListAdmin from "./admin/formations/FormationListAdmin";
+import FormationEditAdmin from "./admin/formations/FormationEditAdmin";
+import FormationDetailsAdmin from "./admin/formations/FormationDetailsAdmin";
 
 function ErrorFallback({ error, resetErrorBoundary }) {
   return (
@@ -21,15 +25,15 @@ function ErrorFallback({ error, resetErrorBoundary }) {
   )
 }
 
+function getRolesFromJWT(jwt) {
+  return jwt_decode(jwt).authorities;
+}
+
 function App() {
   const jwt = tokenService.getLocalAccessToken();
   let roles = []
   if (jwt) {
     roles = getRolesFromJWT(jwt);
-  }
-
-  function getRolesFromJWT(jwt) {
-    return jwt_decode(jwt).authorities;
   }
 
   let adminRoutes = <></>;
@@ -40,17 +44,18 @@ function App() {
     if (role === "ADMIN") {
       adminRoutes = (
         <>
-          {/* Aquí irán las rutas de administrador de ShiftSync */}
+          <Route path="/users" exact={true} element={<PrivateRoute><UserListAdmin /></PrivateRoute>} />
+          <Route path="/users/:id" exact={true} element={<PrivateRoute><UserEditAdmin /></PrivateRoute>} />
+          <Route path="/formations" exact={true} element={<PrivateRoute><FormationListAdmin /></PrivateRoute>} />
+          <Route path="/formations/:id" exact={true} element={<PrivateRoute><FormationEditAdmin /></PrivateRoute>} />
+          <Route path="/formations/:id/details" exact={true} element={<PrivateRoute><FormationDetailsAdmin /></PrivateRoute>} />
         </>)
     }
   })
   
   if (!jwt) {
     publicRoutes = (
-      <>        
-        <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-      </>
     )
   } else {
     userRoutes = (

@@ -10,9 +10,9 @@ Este documento detalla la división del proyecto en pequeñas tareas abordables 
 
 ## FASE 1: Configuración Inicial y Limpieza (Día 1)
 
-### Tarea 1.1: Limpieza del dominio Petclinic
+### Tarea 1.1: Limpieza del dominio Smartcheckin
 * **Descripción:** [COMPLETADA] Eliminar del backend de Spring Boot y del frontend en React las entidades, controladores y vistas que no usaremos (Vet, Pet, Owner, Visit). Dejar únicamente la infraestructura core (configuración, excepciones, base).
-* **Rama:** `chore/cleanup-petclinic-entities`
+* **Rama:** `chore/cleanup-smartcheckin-entities`
 
 ### Tarea 1.2: Configuración de Base de Datos
 * **Descripción:** [COMPLETADA] Actualizar `application.properties` y `docker-compose.yml` para asegurar la conexión con la base de datos relacional (PostgreSQL/MariaDB) que usaremos en desarrollo.
@@ -23,7 +23,7 @@ Este documento detalla la división del proyecto en pequeñas tareas abordables 
 ## FASE 2: Modelado de Datos y Seguridad (Días 2-3)
 
 ### Tarea 2.1: Dominio de Usuario y Autenticación
-* **Descripción:** [COMPLETADA] Crear la entidad `Usuario` (número personal 4 dígitos, nombre, apellidos, password, rol ADMIN/USER). Adaptar Spring Security y JWT para autenticar bajo este nuevo modelo.
+* **Descripción:** [COMPLETADA] Crear la entidad `Usuario` (número personal 4 dígitos, nombre, apellidos, password, rol ADMIN/USER). Adaptar Spring Security y JWT para autenticar bajo este nuevo modelo. *Nota de diseño: El autorregistro público ha sido completamente eliminado; el acceso al sistema se realiza únicamente con cuentas aprovisionadas por un Administrador.*
 * **Rama:** `feat/user-domain-security`
 
 ### Tarea 2.2: Dominio de Fichajes (Check-ins)
@@ -51,7 +51,7 @@ Este documento detalla la división del proyecto en pequeñas tareas abordables 
 ## FASE 4: Frontend - Panel de Administración (Días 5-7)
 
 ### Tarea 4.1: Interfaz CRUD de Usuarios y Formaciones
-* **Descripción:** Desarrollar en React las tablas y formularios para crear, editar, listar y eliminar Usuarios y Formaciones.
+* **Descripción:** [COMPLETADA] Desarrollar en React las tablas y formularios para crear, editar, listar y eliminar Usuarios y Formaciones.
 * **Rama:** `feat/ui-admin-management`
 
 ### Tarea 4.2: Interfaz Generadora de QR

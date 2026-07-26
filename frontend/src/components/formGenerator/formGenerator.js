@@ -8,12 +8,24 @@ import {
   forwardRef,
   useEffect,
   useRef,
+  Fragment
 } from "react";
 
 import PropTypes from "prop-types";
 import FormInput from "./formInput";
 
-const FormGenerator = forwardRef((props, ref) => {
+const FormGenerator = forwardRef((rawProps, ref) => {
+  const props = {
+    inputs: [],
+    onSubmit: () => {},
+    buttonText: "Enviar",
+    buttonClassName: "",
+    numberOfColumns: 1,
+    childrenPosition: 0,
+    listenEnterKey: false,
+    ...rawProps
+  };
+
   const [formValues, setFormValues] = useState({});
   const [submitForm, setSubmitForm] = useState(false);
 
@@ -134,12 +146,11 @@ const FormGenerator = forwardRef((props, ref) => {
         {Object.keys(formValues).length > 0 &&
           props.inputs.map((input, index) => {
             return (
-              <>
+              <Fragment key={input.name}>
                 {props.childrenPosition !== -1 &&
                   index === props.childrenPosition &&
                   props.children}
                 <FormInput
-                  key={index}
                   tag={input.tag}
                   name={input.name}
                   type={input.type}
@@ -156,7 +167,7 @@ const FormGenerator = forwardRef((props, ref) => {
                   disabled={input.disabled}
                   ref={(input) => (formInputs.current[index] = input)}
                 />
-              </>
+              </Fragment>
             );
           })}
         {props.childrenPosition === -1 && props.children}
@@ -177,16 +188,6 @@ FormGenerator.propTypes = {
   numberOfColumns: PropTypes.number,
   childrenPosition: PropTypes.number,
   listenEnterKey: PropTypes.bool,
-};
-
-FormGenerator.defaultProps = {
-  inputs: [],
-  onSubmit: () => {},
-  buttonText: "Enviar",
-  buttonClassName: "",
-  numberOfColumns: 1,
-  childrenPosition: 0,
-listenEnterKey: false,
 };
 
 export default FormGenerator;

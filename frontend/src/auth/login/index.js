@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Alert } from "reactstrap";
 import FormGenerator from "../../components/formGenerator/formGenerator";
 import tokenService from "../../services/token.service";
 import "../../static/css/auth/authButton.css";
@@ -21,7 +20,7 @@ export default function Login() {
     })
       .then(function (response) {
         if (response.status === 200) return response.json();
-        else return Promise.reject("Invalid login attempt");
+        else throw new Error("Invalid login attempt");
       })
       .then(function (data) {
         tokenService.setUser(data);
@@ -37,7 +36,7 @@ export default function Login() {
     return (
       <div className="auth-page-container">
         {message ? (
-          <Alert color="primary">{message}</Alert>
+          <div className="alert alert-danger" role="alert">{message}</div>
         ) : (
           <></>
         )}

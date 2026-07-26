@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Form, Input, Label } from "reactstrap";
+import { Form, Input, Label, FormGroup } from "reactstrap";
 import tokenService from "../../services/token.service";
 import "../../static/css/admin/adminPage.css";
 import getErrorModal from "../../util/getErrorModal";
@@ -15,6 +15,10 @@ export default function UserEditAdmin() {
     id: null,
     username: "",
     password: "",
+    personalCode: "",
+    firstName: "",
+    lastName: "",
+    isWorking: false,
     authority: null,
   };
   const id = getIdFromUrl(2);
@@ -32,12 +36,15 @@ export default function UserEditAdmin() {
 
   function handleChange(event) {
     const target = event.target;
-    const value = target.value;
+    const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
+    
     if (name === "authority") {
       const auth = auths.find((a) => a.id === Number(value));
       setUser({ ...user, authority: auth });
-    } else setUser({ ...user, [name]: value });
+    } else {
+      setUser({ ...user, [name]: value });
+    }
   }
 
   function handleSubmit(event) {
@@ -59,7 +66,7 @@ export default function UserEditAdmin() {
           setVisible(true);
         } else window.location.href = "/users";
       })
-      .catch((message) => alert(message));
+      .catch((error_) => alert(error_));
   }
 
   const modal = getErrorModal(setVisible, visible, message);
@@ -70,15 +77,15 @@ export default function UserEditAdmin() {
   ));
 
   return (
-    <div className="auth-page-container">
-      {<h2>{user.id ? "Edit User" : "Add User"}</h2>}
-      {modal}
-      <div className="auth-form-container">
+    <div className="ba-container">
+      <div className="ba-card" style={{ maxWidth: '600px', margin: '0 auto' }}>
+        <div className="ba-card-header">
+          <h2>{user.id ? "Edit User" : "Add New User"}</h2>
+        </div>
+        {modal}
         <Form onSubmit={handleSubmit}>
-          <div className="custom-form-input">
-            <Label for="username" className="custom-form-input-label">
-              Username
-            </Label>
+          <FormGroup>
+            <Label for="username">Username</Label>
             <Input
               type="text"
               required
@@ -86,62 +93,80 @@ export default function UserEditAdmin() {
               id="username"
               value={user.username || ""}
               onChange={handleChange}
-              className="custom-input"
             />
-          </div>
-          <div className="custom-form-input">
-            <Label for="lastName" className="custom-form-input-label">
-              Password
-            </Label>
-            <Input
-              type="password"
-              required
-              name="password"
-              id="password"
-              value={user.password || ""}
-              onChange={handleChange}
-              className="custom-input"
-            />
-          </div>
-          <Label for="authority" className="custom-form-input-label">
-            Authority
-          </Label>
-          <div className="custom-form-input">
-            {user.id ? (
+          </FormGroup>
+
+          {!user.id && (
+            <FormGroup>
+              <Label for="password">Password</Label>
               <Input
-                type="select"
-                disabled
-                name="authority"
-                id="authority"
-                value={user.authority?.id || ""}
-                onChange={handleChange}
-                className="custom-input"
-              >
-                <option value="">None</option>
-                {authOptions}
-              </Input>
-            ) : (
-              <Input
-                type="select"
+                type="password"
                 required
-                name="authority"
-                id="authority"
-                value={user.authority?.id || ""}
+                name="password"
+                id="password"
+                value={user.password || ""}
                 onChange={handleChange}
-                className="custom-input"
-              >
-                <option value="">None</option>
-                {authOptions}
-              </Input>
-            )}
-          </div>
-          <div className="custom-button-row">
-            <button className="auth-button">Save</button>
-            <Link
-              to={`/users`}
-              className="auth-button"
-              style={{ textDecoration: "none" }}
+              />
+            </FormGroup>
+          )}
+
+          <FormGroup>
+            <Label for="personalCode">Personal Code (4 digits)</Label>
+            <Input
+              type="text"
+              required
+              maxLength="4"
+              minLength="4"
+              pattern="\d{4}"
+              name="personalCode"
+              id="personalCode"
+              value={user.personalCode || ""}
+              onChange={handleChange}
+            />
+          </FormGroup>
+
+          <FormGroup>
+            <Label for="firstName">First Name</Label>
+            <Input
+              type="text"
+              required
+              name="firstName"
+              id="firstName"
+              value={user.firstName || ""}
+              onChange={handleChange}
+            />
+          </FormGroup>
+
+          <FormGroup>
+            <Label for="lastName">Last Name</Label>
+            <Input
+              type="text"
+              required
+              name="lastName"
+              id="lastName"
+              value={user.lastName || ""}
+              onChange={handleChange}
+            />
+          </FormGroup>
+
+          <FormGroup>
+            <Label for="authority">Role / Authority</Label>
+            <Input
+              type="select"
+              required
+              name="authority"
+              id="authority"
+              value={user.authority?.id || ""}
+              onChange={handleChange}
             >
+              <option value="">Select Role</option>
+              {authOptions}
+            </Input>
+          </FormGroup>
+
+          <div style={{ marginTop: '30px', display: 'flex', gap: '15px' }}>
+            <button className="ba-btn-primary" type="submit">Save User</button>
+            <Link to={`/users`} className="ba-btn-secondary" style={{ textDecoration: "none", lineHeight: '1.5' }}>
               Cancel
             </Link>
           </div>

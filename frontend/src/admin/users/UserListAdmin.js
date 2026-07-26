@@ -24,13 +24,21 @@ export default function UserListAdmin() {
   const userList = users.map((user) => {
     return (
       <tr key={user.id}>
+        <td>{user.personalCode}</td>
         <td>{user.username}</td>
+        <td>{user.firstName}</td>
+        <td>{user.lastName}</td>
+        <td>
+          <span className={`ba-badge ${user.isWorking ? 'ba-badge-active' : 'ba-badge-inactive'}`}>
+            {user.isWorking ? 'Working' : 'Off-duty'}
+          </span>
+        </td>
         <td>{user.authority.authority}</td>
         <td>
           <ButtonGroup>
             <Button
               size="sm"
-              color="primary"
+              className="ba-btn-secondary"
               aria-label={"edit-" + user.id}
               tag={Link}
               to={"/users/" + user.id}
@@ -40,6 +48,7 @@ export default function UserListAdmin() {
             <Button
               size="sm"
               color="danger"
+              style={{ borderRadius: '20px', marginLeft: '5px' }}
               aria-label={"delete-" + user.id}
               onClick={() =>
                 deleteFromList(
@@ -59,22 +68,31 @@ export default function UserListAdmin() {
       </tr>
     );
   });
+  
   const modal = getErrorModal(setVisible, visible, message);
 
   return (
-    <div className="admin-page-container">
-      <h1 className="text-center">Users</h1>
-      {alerts.map((a) => a.alert)}
-      {modal}
-      <Button color="success" tag={Link} to="/users/new">
-        Add User
-      </Button>
-      <div>
-        <Table aria-label="users" className="mt-4">
+    <div className="ba-container">
+      <div className="ba-card">
+        <div className="ba-card-header">
+          <h2>Users Management</h2>
+          <Button className="ba-btn-primary" tag={Link} to="/users/new">
+            + Add User
+          </Button>
+        </div>
+        
+        {alerts.map((a) => a.alert)}
+        {modal}
+        
+        <Table responsive aria-label="users" className="ba-table">
           <thead>
             <tr>
+              <th>Personal Code</th>
               <th>Username</th>
-              <th>Authority</th>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Status</th>
+              <th>Role</th>
               <th>Actions</th>
             </tr>
           </thead>
