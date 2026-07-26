@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button, ButtonGroup, Table } from "reactstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPencil, faUsers, faTrash, faQrcode } from "@fortawesome/free-solid-svg-icons";
 import tokenService from "../../services/token.service";
 import "../../static/css/admin/adminPage.css";
 import deleteFromList from "../../util/deleteFromList";
@@ -7,7 +9,6 @@ import useFetchState from "../../util/useFetchState";
 import moment from "moment";
 import { TableGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
-
 import { useSubscription } from "../../hooks/useSubscription";
 
 const jwt = tokenService.getLocalAccessToken();
@@ -58,25 +59,37 @@ export default function FormationListAdmin() {
           <ButtonGroup>
             <Button
               size="sm"
-              className="ba-btn-secondary"
+              className="ba-btn-secondary btn-icon-expand"
               aria-label={"edit-" + formation.id}
               tag={Link}
               to={"/formations/" + formation.id}
             >
-              Edit
+              <FontAwesomeIcon icon={faPencil} />
+              <span className="btn-expand-label">Editar</span>
             </Button>
             <Button
               size="sm"
-              className="ba-btn-primary btn-gap"
+              className="ba-btn-primary btn-gap btn-icon-expand"
               aria-label={"details-" + formation.id}
               tag={Link}
               to={"/formations/" + formation.id + "/details"}
             >
-              Details / Attendees
+              <FontAwesomeIcon icon={faUsers} />
+              <span className="btn-expand-label">Asistentes</span>
             </Button>
             <Button
               size="sm"
-              className="ba-btn-danger btn-gap"
+              className="ba-btn-blue btn-gap btn-icon-expand"
+              aria-label={"qr-" + formation.id}
+              tag={Link}
+              to={`/qr-generator?formationId=${formation.id}`}
+            >
+              <FontAwesomeIcon icon={faQrcode} />
+              <span className="btn-expand-label">QR</span>
+            </Button>
+            <Button
+              size="sm"
+              className="ba-btn-danger btn-gap btn-icon-expand"
               aria-label={"delete-" + formation.id}
               onClick={() =>
                 deleteFromList(
@@ -88,7 +101,8 @@ export default function FormationListAdmin() {
                 )
               }
             >
-              Delete
+              <FontAwesomeIcon icon={faTrash} />
+              <span className="btn-expand-label">Eliminar</span>
             </Button>
           </ButtonGroup>
         </td>

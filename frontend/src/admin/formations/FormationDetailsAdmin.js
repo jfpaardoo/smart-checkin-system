@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Table, Form, FormGroup, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faQrcode } from "@fortawesome/free-solid-svg-icons";
 import tokenService from "../../services/token.service";
 import "../../static/css/admin/adminPage.css";
 import getIdFromUrl from "../../util/getIdFromUrl";
@@ -9,7 +11,6 @@ import moment from "moment";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
 import GlassDropdown from "../../components/GlassDropdown";
-
 import { useSubscription } from "../../hooks/useSubscription";
 
 const jwt = tokenService.getLocalAccessToken();
@@ -160,9 +161,14 @@ export default function FormationDetailsAdmin() {
       <div className="ba-card">
         <div className="ba-card-header">
           <h2>Formation Details: {formation.name}</h2>
-          <Button className="ba-btn-secondary" tag={Link} to="/formations">
-            Back to List
-          </Button>
+          <div className="d-flex gap-2">
+            <Button className="ba-btn-blue" tag={Link} to={`/qr-generator?formationId=${id}`} title="QR de la Formación">
+              <FontAwesomeIcon icon={faQrcode} className="me-2" />QR
+            </Button>
+            <Button className="ba-btn-secondary" tag={Link} to="/formations">
+              Back to List
+            </Button>
+          </div>
         </div>
 
         <div className="formation-info-box">

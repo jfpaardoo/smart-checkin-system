@@ -2,6 +2,45 @@
   text-align: center;
 }
 
+/* QR Reader Responsive Glass & Border Constraints */
+#qr-reader, #checkout-qr-reader {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  border-radius: 24px !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+  background: #000000 !important;
+  margin: 0 auto !important;
+  backdrop-filter: blur(20px) !important;
+  padding: 18px !important;
+}
+
+#qr-reader video, #checkout-qr-reader video {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  object-fit: cover !important;
+  border-radius: 20px !important;
+  display: block !important;
+}
+
+#qr-reader img, #checkout-qr-reader img,
+#qr-reader canvas, #checkout-qr-reader canvas {
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: 20px !important;
+}
+
+#qr-reader__scan_region, #checkout-qr-reader__scan_region {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  overflow: hidden !important;
+}
+
 /* BA Glass Navbar - Official Capsule Style */
 .ba-navbar {
   background: rgba(40, 40, 40, 0.85) !important; /* Premium dark glass with ideal legibility */
@@ -245,6 +284,71 @@
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 6px 16px rgba(220, 53, 69, 0.35) !important;
 }
 
+.ba-btn-blue {
+  background: rgba(59, 130, 246, 0.75) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  color: #ffffff !important;
+  border-radius: 20px !important;
+  padding: 6px 18px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 3px 10px rgba(59, 130, 246, 0.2);
+  text-decoration: none !important;
+}
+
+.ba-btn-blue:hover, .ba-btn-blue:focus, .ba-btn-blue:active {
+  background: rgba(37, 99, 235, 0.90) !important;
+  color: #ffffff !important;
+  transform: translateY(-2px) scale(1.03) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 6px 16px rgba(59, 130, 246, 0.4) !important;
+}
+
+/* ── Expandable icon buttons ─────────────────────────────────── */
+.btn-icon-expand {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+  min-width: 36px !important;
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+  /* No transition here — let the label drive the feel */
+}
+
+.btn-icon-expand .btn-expand-label {
+  display: inline-block;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  margin-left: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  /* translateX slide masks the max-width jank completely */
+  transform: translateX(-8px);
+  /* All props share the SAME duration + easing → perfectly in sync */
+  transition:
+    max-width   0.55s ease,
+    opacity     0.55s ease,
+    margin-left 0.55s ease,
+    transform   0.55s ease;
+}
+
+.btn-icon-expand:hover .btn-expand-label {
+  max-width: 95px;
+  opacity: 1;
+  margin-left: 7px;
+  transform: translateX(0);
+}
+
+/* Keep the lift, no scale so overflow doesn't clip text */
+.btn-icon-expand:hover {
+  transform: translateY(-2px) !important;
+}
+
 /* Button Group Spacing for Liquid Glass Action Buttons */
 .btn-group, .ba-btn-group {
   display: inline-flex !important;
@@ -485,9 +589,14 @@
 
 .qr-progress-fill {
   background: linear-gradient(90deg, var(--ba-green), var(--ba-green-glow));
-  transition: width 100ms linear;
+  transition: width 100ms linear, background 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 0 10px var(--ba-green-glow);
   height: 100%;
+}
+
+.qr-progress-fill.ending {
+  background: linear-gradient(90deg, #ef4444, #f87171) !important;
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.85) !important;
 }
 
 .qr-footer-text {
@@ -1073,15 +1182,6 @@ select option {
 #qr-reader button:hover, #checkout-qr-reader button:hover {
   background: rgba(204, 227, 100, 0.85) !important;
   transform: translateY(-2px) scale(1.03) !important;
-}
-
-#qr-reader, #checkout-qr-reader {
-  border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
-  background: rgba(255, 255, 255, 0.35) !important;
-  backdrop-filter: blur(20px) !important;
-  border-radius: 28px !important;
-  padding: 18px !important;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.05) !important;
 }
 
 #qr-reader__dashboard, #checkout-qr-reader__dashboard {

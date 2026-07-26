@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardBody, CardTitle, FormGroup, Label } from 'reactstrap';
 import { QRCodeSVG } from 'qrcode.react';
 import { useSubscription } from '../../hooks/useSubscription';
+import { useLocation } from 'react-router-dom';
 import tokenService from '../../services/token.service';
 import { QRGhostLoader } from '../../components/GhostLoader';
 import useFetchState from '../../util/useFetchState';
@@ -9,11 +10,15 @@ import GlassDropdown from '../../components/GlassDropdown';
 
 const QRGeneratorAdmin = () => {
     const jwt = tokenService.getLocalAccessToken();
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const initialFormationId = queryParams.get('formationId') || '';
+
     const [totpToken, setTotpToken] = useState(null);
     const [loading, setLoading] = useState(true);
     const [progress, setProgress] = useState(100);
     
-    const [selectedFormationId, setSelectedFormationId] = useState("");
+    const [selectedFormationId, setSelectedFormationId] = useState(initialFormationId);
 
     const [formations] = useFetchState([], `/api/v1/formations`, jwt, null, null);
 
@@ -43,8 +48,8 @@ const QRGeneratorAdmin = () => {
 
     useEffect(() => {
         const calculateProgress = () => {
-            const remainingMs = 10000 - (Date.now() % 10000);
-            setProgress((remainingMs / 10000) * 100);
+            const remainingMs = 20000 - (Date.now() % 20000);
+            setProgress((remainingMs / 20000) * 100);
         };
         
         calculateProgress();
@@ -76,6 +81,13 @@ const QRGeneratorAdmin = () => {
         return JSON.stringify(payload);
     };
 
+    const isEnding = progress <= (3 / 20) * 100;
+    const qrOpacity = isEnding ? Math.max(0.2, progress / ((3 / 20) * 100)) : 1;
+    const fadeStyle = {
+        opacity: qrOpacity,
+        transition: 'opacity 0.2s ease-out'
+    };
+
     return (
         <div className="ba-container justify-content-center">
             <Card className="ba-card ba-card-qr p-4 p-md-5 my-auto mx-auto">
@@ -90,12 +102,14 @@ const QRGeneratorAdmin = () => {
                                 style={{ width: '305px', height: '305px', backgroundColor: '#f8f9fa' }}
                             >
                                 {selectedFormationId ? (
-                                    <QRCodeSVG 
-                                        value={buildQrPayload()} 
-                                        size={265} 
-                                        level="M" 
-                                        marginSize={0}
-                                    />
+                                    <div style={fadeStyle}>
+                                        <QRCodeSVG 
+                                            value={buildQrPayload()} 
+                                            size={265} 
+                                            level="M" 
+                                            marginSize={0}
+                                        />
+                                    </div>
                                 ) : (
                                     <div style={{ color: '#888', fontWeight: '500' }}>
                                         <p className="mb-0">Selecciona una formación</p>
@@ -127,20 +141,27 @@ const QRGeneratorAdmin = () => {
                                 {selectedFormationId && (
                                     <div className="w-100 text-center text-md-start mt-2">
                                         <div className="mb-3">
-                                            <span className="token-display" style={{ fontSize: '2.2rem', padding: '5px 20px' }}>
+                                            <span 
+                                                className="token-display" 
+                                                style={{ 
+                                                    fontSize: '2.2rem', 
+                                                    padding: '5px 20px',
+                                                    ...fadeStyle
+                                                }}
+                                            >
                                                 {totpToken}
                                             </span>
                                         </div>
 
                                         <div className="progress qr-progress-bar">
                                             <div 
-                                                className="progress-bar qr-progress-fill" 
+                                                className={`progress-bar qr-progress-fill ${isEnding ? 'ending' : ''}`}
                                                 style={{ width: `${progress}%` }}>
                                             </div>
                                         </div>
                                         
                                         <p className="qr-footer-text mt-1">
-                                            Seguridad TOTP: Se actualiza cada 10s
+                                            Seguridad TOTP: Se actualiza cada 20s
                                         </p>
                                     </div>
                                 )}
