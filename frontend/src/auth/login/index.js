@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
+import { useToast } from "../../components/ToastProvider";
 import FormGenerator from "../../components/formGenerator/formGenerator";
 import tokenService from "../../services/token.service";
 import "../../static/css/auth/authButton.css";

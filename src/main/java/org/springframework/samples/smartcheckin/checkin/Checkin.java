@@ -3,6 +3,8 @@ package org.springframework.samples.smartcheckin.checkin;
 import java.time.LocalDateTime;
 import org.springframework.samples.smartcheckin.model.BaseEntity;
 import org.springframework.samples.smartcheckin.user.User;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -34,4 +36,7 @@ public class Checkin extends BaseEntity {
     @NotNull
     @JsonIgnore
     private User user;
+
+    @Column(columnDefinition = "TEXT")
+    private String signature;
 }

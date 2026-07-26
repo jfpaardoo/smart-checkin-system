@@ -72,6 +72,12 @@ class UserRestController {
 		return new ResponseEntity<>(res, HttpStatus.OK);
 	}
 
+	@GetMapping("me/formations")
+	public ResponseEntity<List<org.springframework.samples.smartcheckin.formation.Formation>> getMyFormations() {
+		User currentUser = userService.findCurrentUser();
+		return new ResponseEntity<>(currentUser.getFormations(), HttpStatus.OK);
+	}
+
 	@GetMapping(value = "{id}")
 	public ResponseEntity<User> findById(@PathVariable("id") Integer id) {
 		return new ResponseEntity<>(userService.findUser(id), HttpStatus.OK);

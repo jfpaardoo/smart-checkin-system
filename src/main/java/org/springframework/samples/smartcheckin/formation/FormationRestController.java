@@ -56,10 +56,10 @@ public class FormationRestController {
     }
 
     @PostMapping("/{id}/attend")
-    public ResponseEntity<String> registerAttendance(@PathVariable Integer id, @Valid @RequestBody AttendRequest request) {
+    public ResponseEntity<Object> registerAttendance(@PathVariable Integer id, @Valid @RequestBody AttendRequest request) {
         try {
-            formationService.registerAttendance(id, request.getPersonalCode());
-            return ResponseEntity.ok("Successfully registered attendance");
+            Formation formation = formationService.registerAttendance(id, request.getPersonalCode());
+            return ResponseEntity.ok(formation);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Failed to register: " + e.getMessage());
         }

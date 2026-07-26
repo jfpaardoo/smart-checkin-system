@@ -67,7 +67,7 @@ Este documento detalla la división del proyecto en pequeñas tareas abordables 
 * **Rama:** `feat/ui-user-scanner`
 
 ### Tarea 5.2: Feedback Visual de Fichaje
-* **Descripción:** Conectar el escáner al endpoint de validación y mostrar pantallas limpias de ÉXITO (verde) o FRACASO (rojo) tras la lectura.
+* **Descripción:** [COMPLETADA] Implementar Dashboard de Usuario para ver sus formaciones. Al hacer checkout, mostrar un panel de firma con estética Liquid Glass en la PWA y guardar la firma gráfica.
 * **Rama:** `feat/ui-user-feedback`
 
 ---

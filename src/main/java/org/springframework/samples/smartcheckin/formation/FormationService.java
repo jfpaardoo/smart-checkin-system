@@ -39,8 +39,9 @@ public class FormationService {
         return formationRepository.findById(id);
     }
 
+    // AHORA DEVUELVE LA FORMACION
     @Transactional
-    public void registerAttendance(Integer formationId, String personalCode) {
+    public Formation registerAttendance(Integer formationId, String personalCode) {
         Formation formation = formationRepository.findById(formationId)
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
         
@@ -50,6 +51,7 @@ public class FormationService {
             formation.getAttendees().add(user);
             formationRepository.save(formation);
         }
+        return formation;
     }
 
     @Transactional

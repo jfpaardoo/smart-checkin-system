@@ -64,7 +64,16 @@ public class CheckinRestController {
         }
 
         CheckinType type = user.getIsWorking() != null && user.getIsWorking() ? CheckinType.SALIDA : CheckinType.ENTRADA;
+        
+        if (type == CheckinType.SALIDA && (request.getSignature() == null || request.getSignature().isEmpty())) {
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(java.util.Map.of("needsSignature", true, "message", "Signature required for checkout"));
+        }
+
         Checkin saved = checkInService.performCheckIn(user, type);
+        if (request.getSignature() != null && !request.getSignature().isEmpty()) {
+            saved.setSignature(request.getSignature());
+            saved = checkInService.save(saved);
+        }
 
         return new ResponseEntity<>(saved, HttpStatus.CREATED);
     }

@@ -17,9 +17,9 @@ export default function Home(){
                 <div className="mt-4">
                     {jwt ? (
                         <div className="d-flex flex-column align-items-center mt-3">
-                            <p className="home-footer-text mb-3">You are logged in. Access the scanner to check in/out.</p>
-                            <Link to="/checkin" className="ba-btn ba-btn-primary" style={{ width: '250px', fontSize: '1.2rem', padding: '12px' }}>
-                                Open QR Scanner
+                            <p className="home-footer-text mb-3">You are logged in. Access your dashboard to view your info and check in/out.</p>
+                            <Link to="/dashboard" className="ba-btn ba-btn-primary" style={{ width: '250px', fontSize: '1.2rem', padding: '12px' }}>
+                                Go to Dashboard
                             </Link>
                         </div>
                     ) : (

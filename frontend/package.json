@@ -26,6 +26,7 @@
     "react-filepond": "^7.1.2",
     "react-icons": "^4.7.1",
     "react-router-dom": "^6.11.0",
+    "react-signature-canvas": "^1.1.0-alpha.2",
     "reactstrap": "^9.1.6",
     "sockjs-client": "^1.6.1",
     "swagger-ui-react": "5.19.0",

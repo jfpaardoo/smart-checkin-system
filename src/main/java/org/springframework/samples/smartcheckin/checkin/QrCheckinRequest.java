@@ -14,4 +14,6 @@ public class QrCheckinRequest {
     @NotBlank
     @Size(min = 6, max = 6, message = "TOTP token must be exactly 6 characters")
     private String token;
+
+    private String signature;
 }
