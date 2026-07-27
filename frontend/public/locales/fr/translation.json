@@ -20,7 +20,9 @@
     "title": "Connexion",
     "success": "Connexion réussie",
     "error": "Tentative de connexion invalide",
-    "genericError": "Une erreur est survenue"
+    "genericError": "Une erreur est survenue",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe"
   },
   "users": {
     "title": "Gestion des Utilisateurs",
@@ -82,7 +84,8 @@
     "deleted": "Formation supprimée",
     "deleteError": "Erreur lors de la suppression",
     "connectionError": "Erreur de connexion.",
-    "duplicateConflict": "Conflit avec un enregistrement existant."
+    "duplicateConflict": "Conflit avec un enregistrement existant.",
+    "searchPlaceholder": "Rechercher une formation par nom ou description..."
   },
   "formationDetails": {
     "title": "Détails de la Formation",
@@ -215,6 +218,35 @@
     "formationAttendance": "Présence aux Formations",
     "attendance": "Présence",
     "absence": "Absence",
-    "daysTracked": "Jours Suivis"
+    "daysTracked": "Jours Suivis",
+    "overviewTab": "Aperçu de la Plateforme",
+    "employeesTab": "Contrôle des Employés",
+    "exportData": "Exporter les Rapports",
+    "checkinExports": "Pointages de Poste",
+    "checkinsCsv": "Pointages (CSV)",
+    "checkinsExcel": "Pointages (Excel)",
+    "formationExports": "Formations et Signatures",
+    "formationsCsv": "Formations et Signatures (CSV)",
+    "formationsExcel": "Formations et Signatures (Excel)",
+    "searchEmployee": "Rechercher par nom ou code...",
+    "totalEmployees": "Total Employés",
+    "formationsCount": "Formations (Présence / Assigné)",
+    "attendancePercentage": "Taux de Présence",
+    "totalFormationTime": "Temps en Formation",
+    "actions": "Actions",
+    "viewDetails": "Voir Détails",
+    "attendanceRate": "Taux de Présence",
+    "timeInFormations": "Temps en Formation",
+    "formationBreakdown": "Détail des Formations et Temps Passé",
+    "formationName": "Formation",
+    "date": "Date",
+    "checkIn": "Entrée",
+    "checkOut": "Sortie",
+    "duration": "Durée",
+    "signature": "Signature Numérique",
+    "signed": "Signé",
+    "inProgress": "En Cours",
+    "pending": "En Attente",
+    "noFormationsUser": "Aucune formation assignée à cet employé."
   }
 }

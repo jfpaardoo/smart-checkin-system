@@ -9,8 +9,16 @@ import { loginFormInputs } from "./form/loginFormInputs";
 export default function Login() {
   const { t } = useTranslation();
   const toast = useToast();
-  const loginFormRef = React.createRef();      
-  
+  const localizedInputs = loginFormInputs.map(input => {
+    if (input.name === 'username') {
+      return { ...input, tag: t('login.username', t('users.username', 'Usuario')) };
+    }
+    if (input.name === 'password') {
+      return { ...input, tag: t('login.password', t('users.password', 'Contraseña')) };
+    }
+    return input;
+  });
+
   async function handleSubmit({ values }) {
     const reqBody = values;
     await fetch("/api/v1/auth/signin", {
@@ -38,8 +46,7 @@ export default function Login() {
         <h1>{t('login.title')}</h1>
         <div className="auth-form-container">
           <FormGenerator
-            ref={loginFormRef}
-            inputs={loginFormInputs}
+            inputs={localizedInputs}
             onSubmit={handleSubmit}
             numberOfColumns={1}
             listenEnterKey

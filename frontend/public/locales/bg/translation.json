@@ -20,7 +20,9 @@
     "title": "Вход",
     "success": "Успешен вход",
     "error": "Невалиден опит за вход",
-    "genericError": "Възникна грешка"
+    "genericError": "Възникна грешка",
+    "username": "Потребителско име",
+    "password": "Парола"
   },
   "users": {
     "title": "Управление на Потребители",
@@ -82,7 +84,8 @@
     "deleted": "Обучението е изтрито успешно",
     "deleteError": "Грешка при изтриване на обучението",
     "connectionError": "Грешка във връзката. Моля, опитайте отново.",
-    "duplicateConflict": "Данните за това обучение съвпадат със съществуващ запис."
+    "duplicateConflict": "Данните за това обучение съвпадат със съществуващ запис.",
+    "searchPlaceholder": "Търсене на обучение по име или описание..."
   },
   "formationDetails": {
     "title": "Детайли за Обучението",
@@ -215,6 +218,35 @@
     "formationAttendance": "Присъствие на обучения",
     "attendance": "Присъствие",
     "absence": "Отсъствие",
-    "daysTracked": "Проследени дни"
+    "daysTracked": "Проследени дни",
+    "overviewTab": "Преглед на платформата",
+    "employeesTab": "Контрол на служителите",
+    "exportData": "Експортиране на доклади",
+    "checkinExports": "Чекирания на смени",
+    "checkinsCsv": "Чекирания (CSV)",
+    "checkinsExcel": "Чекирания (Excel)",
+    "formationExports": "Обучения и подписи",
+    "formationsCsv": "Обучения и подписи (CSV)",
+    "formationsExcel": "Обучения и подписи (Excel)",
+    "searchEmployee": "Търсене по име или код...",
+    "totalEmployees": "Общо служители",
+    "formationsCount": "Обучения (Посетени / Възложени)",
+    "attendancePercentage": "Процент присъствие",
+    "totalFormationTime": "Време в обучения",
+    "actions": "Действия",
+    "viewDetails": "Преглед на детайли",
+    "attendanceRate": "Процент присъствие",
+    "timeInFormations": "Време в обучения",
+    "formationBreakdown": "Детайли за обучения и време",
+    "formationName": "Обучение",
+    "date": "Дата",
+    "checkIn": "Вход",
+    "checkOut": "Изход",
+    "duration": "Времетраене",
+    "signature": "Дигитален подпис",
+    "signed": "Подписано",
+    "inProgress": "В процес",
+    "pending": "Предстоящо",
+    "noFormationsUser": "Няма възложени обучения."
   }
 }

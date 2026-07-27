@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -55,8 +56,16 @@ public class FormationRestController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Formation>> getAllFormations() {
-        return ResponseEntity.ok(formationService.findAll());
+    public ResponseEntity<List<Formation>> getAllFormations(@RequestParam(required = false) String search) {
+        List<Formation> list = formationService.findAll();
+        if (search != null && !search.isBlank()) {
+            String q = search.toLowerCase().trim();
+            list = list.stream().filter(f ->
+                (f.getName() != null && f.getName().toLowerCase().contains(q)) ||
+                (f.getDescription() != null && f.getDescription().toLowerCase().contains(q))
+            ).toList();
+        }
+        return ResponseEntity.ok(list);
     }
 
     @GetMapping("/{id}")

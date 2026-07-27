@@ -58,12 +58,25 @@ class UserRestController {
 	}
 
 	@GetMapping
-	public ResponseEntity<List<User>> findAll(@RequestParam(required = false) String auth) {
+	public ResponseEntity<List<User>> findAll(@RequestParam(required = false) String auth,
+											  @RequestParam(required = false) String search) {
 		List<User> res;
-		if (auth != null) {
+		if (auth != null && !auth.isBlank()) {
 			res = (List<User>) userService.findAllByAuthority(auth);
-		} else
+		} else {
 			res = (List<User>) userService.findAll();
+		}
+
+		if (search != null && !search.isBlank()) {
+			String q = search.toLowerCase().trim();
+			res = res.stream().filter(u ->
+				(u.getUsername() != null && u.getUsername().toLowerCase().contains(q)) ||
+				(u.getFirstName() != null && u.getFirstName().toLowerCase().contains(q)) ||
+				(u.getLastName() != null && u.getLastName().toLowerCase().contains(q)) ||
+				(u.getPersonalCode() != null && u.getPersonalCode().toLowerCase().contains(q))
+			).toList();
+		}
+
 		return new ResponseEntity<>(res, HttpStatus.OK);
 	}
 

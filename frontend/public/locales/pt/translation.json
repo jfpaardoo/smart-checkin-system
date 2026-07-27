@@ -20,7 +20,9 @@
     "title": "Iniciar Sessão",
     "success": "Sessão iniciada com sucesso",
     "error": "Tentativa de sessão inválida",
-    "genericError": "Ocorreu um erro"
+    "genericError": "Ocorreu um erro",
+    "username": "Nome de Utilizador",
+    "password": "Palavra-passe"
   },
   "users": {
     "title": "Gestão de Utilizadores",
@@ -82,7 +84,8 @@
     "deleted": "Formação eliminada com sucesso",
     "deleteError": "Erro ao eliminar a formação",
     "connectionError": "Erro de ligação. Por favor, tente novamente.",
-    "duplicateConflict": "Os dados desta formação entram em conflito com um registo existente."
+    "duplicateConflict": "Os dados desta formação entram em conflito com um registo existente.",
+    "searchPlaceholder": "Pesquisar formação por nome ou descrição..."
   },
   "formationDetails": {
     "title": "Detalhes da Formação",
@@ -215,6 +218,35 @@
     "formationAttendance": "Presença em Formações",
     "attendance": "Presença",
     "absence": "Ausência",
-    "daysTracked": "Dias Registrados"
+    "daysTracked": "Dias Registrados",
+    "overviewTab": "Visão Geral da Plataforma",
+    "employeesTab": "Controlo de Empregados",
+    "exportData": "Exportar Relatórios",
+    "checkinExports": "Registos de Turno",
+    "checkinsCsv": "Registos (CSV)",
+    "checkinsExcel": "Registos (Excel)",
+    "formationExports": "Formações e Assinaturas",
+    "formationsCsv": "Formações e Assinaturas (CSV)",
+    "formationsExcel": "Formações e Assinaturas (Excel)",
+    "searchEmployee": "Pesquisar empregado por nome ou código...",
+    "totalEmployees": "Total Empregados",
+    "formationsCount": "Formações (Presente / Atribuído)",
+    "attendancePercentage": "Taxa de Presença",
+    "totalFormationTime": "Tempo em Formações",
+    "actions": "Ações",
+    "viewDetails": "Ver Detalhes",
+    "attendanceRate": "Taxa de Presença",
+    "timeInFormations": "Tempo em Formações",
+    "formationBreakdown": "Detalhamento de Formações e Permanência",
+    "formationName": "Formação",
+    "date": "Data",
+    "checkIn": "Entrada",
+    "checkOut": "Saída",
+    "duration": "Permanência",
+    "signature": "Assinatura Digital",
+    "signed": "Assinado",
+    "inProgress": "Em Curso",
+    "pending": "Pendente",
+    "noFormationsUser": "Sem formações atribuídas a este empregado."
   }
 }

@@ -101,7 +101,7 @@ const QRGeneratorAdmin = () => {
                             
                             <div 
                                 className="qr-code-container qr-code-frame d-flex align-items-center justify-content-center text-center" 
-                                style={{ width: '305px', height: '305px', backgroundColor: '#f8f9fa' }}
+                                style={{ width: '305px', height: '305px', backgroundColor: '#ffffff', borderRadius: '36px' }}
                             >
                                 {selectedFormationId ? (
                                     <div style={fadeStyle}>

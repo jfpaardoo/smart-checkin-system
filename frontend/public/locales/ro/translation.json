@@ -20,7 +20,9 @@
     "title": "Autentificare",
     "success": "Autentificare reușită",
     "error": "Tentativă de autentificare nevalidă",
-    "genericError": "A apărut o eroare"
+    "genericError": "A apărut o eroare",
+    "username": "Nume de utilizator",
+    "password": "Parolă"
   },
   "users": {
     "title": "Gestionare Utilizatori",
@@ -82,7 +84,8 @@
     "deleted": "Formare ștearsă cu succes",
     "deleteError": "Eroare la ștergerea formării",
     "connectionError": "Eroare de conexiune. Vă rugăm să încercați din nou.",
-    "duplicateConflict": "Datele acestei formări sunt în conflict cu o înregistrare existentă."
+    "duplicateConflict": "Datele acestei formări sunt în conflict cu o înregistrare existentă.",
+    "searchPlaceholder": "Căutare formare după nume sau descriere..."
   },
   "formationDetails": {
     "title": "Detalii Formare",
@@ -215,6 +218,35 @@
     "formationAttendance": "Prezența la Formări",
     "attendance": "Prezență",
     "absence": "Absență",
-    "daysTracked": "Zile Înregistrate"
+    "daysTracked": "Zile Înregistrate",
+    "overviewTab": "Prezentare Generală",
+    "employeesTab": "Control Angajați",
+    "exportData": "Exportă Rapoarte",
+    "checkinExports": "Pontaje de Tură",
+    "checkinsCsv": "Pontaje (CSV)",
+    "checkinsExcel": "Pontaje (Excel)",
+    "formationExports": "Formări și Semnături",
+    "formationsCsv": "Formări și Semnături (CSV)",
+    "formationsExcel": "Formări și Semnături (Excel)",
+    "searchEmployee": "Căutare angajat după nume sau cod...",
+    "totalEmployees": "Total Angajați",
+    "formationsCount": "Formări (Prezent / Alocat)",
+    "attendancePercentage": "Rată de Prezență",
+    "totalFormationTime": "Timp în Formări",
+    "actions": "Acțiuni",
+    "viewDetails": "Vezi Detalii",
+    "attendanceRate": "Rată de Prezență",
+    "timeInFormations": "Timp în Formări",
+    "formationBreakdown": "Detaliu Formări și Timp Petrecut",
+    "formationName": "Formare",
+    "date": "Dată",
+    "checkIn": "Intrare",
+    "checkOut": "Ișire",
+    "duration": "Durată",
+    "signature": "Semnătură Digitală",
+    "signed": "Semnat",
+    "inProgress": "În Curs",
+    "pending": "În Așteptare",
+    "noFormationsUser": "Nicio formare alocată."
   }
 }

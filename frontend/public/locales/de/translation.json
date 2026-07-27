@@ -20,7 +20,9 @@
     "title": "Anmelden",
     "success": "Anmeldung erfolgreich",
     "error": "Ungültiger Anmeldeversuch",
-    "genericError": "Ein Fehler ist aufgetreten"
+    "genericError": "Ein Fehler ist aufgetreten",
+    "username": "Benutzername",
+    "password": "Passwort"
   },
   "users": {
     "title": "Benutzerverwaltung",
@@ -82,7 +84,8 @@
     "deleted": "Schulung gelöscht",
     "deleteError": "Fehler beim Löschen",
     "connectionError": "Verbindungsfehler.",
-    "duplicateConflict": "Konflikt mit einem bestehenden Eintrag."
+    "duplicateConflict": "Konflikt mit einem bestehenden Eintrag.",
+    "searchPlaceholder": "Schulung nach Name oder Beschreibung suchen..."
   },
   "formationDetails": {
     "title": "Schulungsdetails",
@@ -215,6 +218,35 @@
     "formationAttendance": "Teilnahme an Schulungen",
     "attendance": "Teilnahme",
     "absence": "Abwesenheit",
-    "daysTracked": "Erfasste Tage"
+    "daysTracked": "Erfasste Tage",
+    "overviewTab": "Plattform-Übersicht",
+    "employeesTab": "Mitarbeiterkontrolle",
+    "exportData": "Berichte exportieren",
+    "checkinExports": "Schicht-Check-ins",
+    "checkinsCsv": "Check-ins (CSV)",
+    "checkinsExcel": "Check-ins (Excel)",
+    "formationExports": "Schulungen & Unterschriften",
+    "formationsCsv": "Schulungen & Unterschriften (CSV)",
+    "formationsExcel": "Schulungen & Unterschriften (Excel)",
+    "searchEmployee": "Mitarbeiter nach Name oder Code suchen...",
+    "totalEmployees": "Gesamtmitarbeiter",
+    "formationsCount": "Schulungen (Teilgenommen / Zugewiesen)",
+    "attendancePercentage": "Teilnahmequote",
+    "totalFormationTime": "Zeit in Schulungen",
+    "actions": "Aktionen",
+    "viewDetails": "Details anzeigen",
+    "attendanceRate": "Teilnahmequote",
+    "timeInFormations": "Zeit in Schulungen",
+    "formationBreakdown": "Schulungsaufschlüsselung & Dauer",
+    "formationName": "Schulung",
+    "date": "Datum",
+    "checkIn": "Eingang",
+    "checkOut": "Ausgang",
+    "duration": "Dauer",
+    "signature": "Digitale Unterschrift",
+    "signed": "Signiert",
+    "inProgress": "In Bearbeitung",
+    "pending": "Ausstehend",
+    "noFormationsUser": "Keine Schulungen zugewiesen."
   }
 }

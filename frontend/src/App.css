@@ -105,71 +105,114 @@
 
 /* Custom Dropdown Styling - Vitreous Dark Glassmorphism */
 .dropdown-menu.ba-dropdown-menu {
-  border-radius: 24px !important;
-  border: 1px solid rgba(255, 255, 255, 0.25) !important;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), inset 0 1px 1.5px rgba(255, 255, 255, 0.4) !important;
-  background: rgba(40, 40, 40, 0.85) !important; /* Matched 0.85 dark glass opacity for optimal legibility */
-  backdrop-filter: blur(60px) saturate(210%);
-  -webkit-backdrop-filter: blur(60px) saturate(210%);
-  padding: 8px !important;
-  min-width: 230px !important;
+  border-radius: 22px !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), inset 0 1.5px 2px rgba(255, 255, 255, 0.35) !important;
+  background: rgba(20, 25, 38, 0.92) !important; /* Premium dark glass backdrop */
+  backdrop-filter: blur(50px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(50px) saturate(200%) !important;
+  padding: 10px !important;
+  min-width: 250px !important;
   
   /* Smooth Transition Dropdown */
   display: block !important;
   opacity: 0;
   visibility: hidden;
   margin-top: 2px !important;
-  transition: opacity 0.3s ease-out, margin-top 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: opacity 0.25s ease-out, margin-top 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
   pointer-events: none;
 }
 
 .dropdown-menu.ba-dropdown-menu.show {
   opacity: 1;
   visibility: visible;
-  margin-top: 22px !important; /* Elegant floating separation from navbar */
+  margin-top: 14px !important;
   pointer-events: auto;
 }
 
+/* Dropdown Headers & Dividers */
+.dropdown-menu.ba-dropdown-menu .dropdown-header {
+  color: rgba(255, 255, 255, 0.65) !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.8px !important;
+  padding: 8px 14px 4px 14px !important;
+}
+
+.dropdown-menu.ba-dropdown-menu .dropdown-divider {
+  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+  margin: 6px 0 !important;
+}
+
 /* Capsule Hover Items for Dropdowns */
+.dropdown-menu.ba-dropdown-menu .dropdown-item,
 .ba-dropdown-item {
-  padding: 10px 18px !important;
-  margin: 4px 0 !important;
-  color: var(--ba-white) !important;
-  font-size: 0.95rem;
-  font-weight: 500;
-  border-radius: 20px !important; /* Capsule shape hover */
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  background: transparent !important;
-}
-
-.ba-dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  transform: translateX(4px);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* Light Liquid Glass Dropdown Menu for Forms & Selects */
-.ba-select-toggle + .dropdown-menu.ba-dropdown-menu,
-.dropdown-menu.ba-dropdown-menu.ba-light-dropdown {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(240, 245, 252, 0.85)) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.95) !important;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12), inset 0 1.5px 2px rgba(255, 255, 255, 1) !important;
-  backdrop-filter: blur(40px) saturate(210%) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(210%) !important;
-}
-
-.ba-select-toggle + .dropdown-menu.ba-dropdown-menu .ba-dropdown-item {
-  color: #2c3e50 !important;
-}
-
-.ba-select-toggle + .dropdown-menu.ba-dropdown-menu .ba-dropdown-item:hover,
-.ba-select-toggle + .dropdown-menu.ba-dropdown-menu .ba-dropdown-item.active {
-  background: rgba(204, 227, 100, 0.35) !important;
-  color: #2b3a04 !important;
+  padding: 10px 16px !important;
+  margin: 3px 0 !important;
+  color: #ffffff !important;
+  font-size: 0.92rem !important;
   font-weight: 600 !important;
-  transform: translateX(4px);
+  border-radius: 14px !important; /* Capsule shape hover */
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  background: transparent !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.dropdown-menu.ba-dropdown-menu .dropdown-item:hover,
+.dropdown-menu.ba-dropdown-menu .dropdown-item:focus,
+.dropdown-menu.ba-dropdown-menu .dropdown-item.active,
+.ba-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+  transform: translateX(4px) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Light Liquid Glass Dropdown Styling (Matching User & QR Selector Cards) */
+.dropdown-menu.ba-dropdown-menu.ba-light-dropdown {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.45)) !important;
+  backdrop-filter: blur(30px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08), inset 0 1.5px 2px rgba(255, 255, 255, 0.95) !important;
+  border-radius: 20px !important;
+  padding: 8px !important;
+}
+
+.dropdown-menu.ba-dropdown-menu.ba-light-dropdown .dropdown-item {
+  color: #1e293b !important;
+  border-radius: 12px !important;
+  padding: 10px 14px !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+.dropdown-menu.ba-dropdown-menu.ba-light-dropdown .dropdown-item:hover,
+.dropdown-menu.ba-dropdown-menu.ba-light-dropdown .dropdown-item:focus,
+.dropdown-menu.ba-dropdown-menu.ba-light-dropdown .dropdown-item.active {
+  background: rgba(255, 255, 255, 0.6) !important;
+  color: #0f172a !important;
+  transform: translateX(4px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
+}
+
+.dropdown-menu.ba-dropdown-menu.ba-light-dropdown .dropdown-header {
+  color: #64748b !important;
+  font-weight: 700 !important;
+  font-size: 0.78rem !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+  padding: 8px 12px 4px 12px !important;
+}
+
+.dropdown-menu.ba-dropdown-menu.ba-light-dropdown .dropdown-divider {
+  border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+  margin: 6px 0 !important;
 }
 
 /* Input Fields - Glassmorphism */
@@ -192,6 +235,81 @@
   outline: none;
 }
 
+/* Glass Capsule Search Bar Styling */
+.ba-search-bar-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.ba-search-bar-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  font-size: 0.95rem;
+  pointer-events: none;
+  z-index: 2;
+  transition: color 0.25s ease;
+}
+
+.ba-glass-search-input {
+  border-radius: 50px !important; /* Full capsule shape */
+  padding-left: 44px !important;
+  padding-right: 40px !important;
+  height: 46px !important;
+  background: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow: inset 0 1.5px 3px rgba(255, 255, 255, 0.9), 0 6px 20px rgba(0, 0, 0, 0.05) !important;
+  color: #1e293b !important;
+  font-weight: 500 !important;
+  font-size: 0.95rem !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.ba-glass-search-input::placeholder {
+  color: #64748b !important;
+  opacity: 0.8;
+}
+
+.ba-glass-search-input:focus {
+  background: rgba(255, 255, 255, 0.75) !important;
+  border-color: rgba(37, 99, 235, 0.5) !important;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15), inset 0 1.5px 3px rgba(255, 255, 255, 1) !important;
+}
+
+.ba-search-bar-wrapper:focus-within .ba-search-bar-icon {
+  color: #2563eb;
+}
+
+.ba-search-clear-btn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.ba-search-clear-btn:hover {
+  color: #0f172a;
+  background: rgba(0, 0, 0, 0.12);
+}
+
 /* Card and Container Styles */
 .ba-container {
   max-width: 1250px;
@@ -202,11 +320,11 @@
   flex-direction: column;
 }
 
-.ba-card {
+.ba-card, .card.ba-card {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.65), rgba(240, 245, 252, 0.45)) !important;
   backdrop-filter: blur(35px) saturate(210%);
   -webkit-backdrop-filter: blur(35px) saturate(210%);
-  border-radius: 44px; /* More rounded container edges */
+  border-radius: 44px !important; /* More rounded container edges */
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.07), inset 0 1.5px 2px rgba(255, 255, 255, 0.95);
   padding: 35px 45px;
   margin-bottom: 20px;
@@ -349,7 +467,7 @@
 }
 
 .btn-icon-expand:hover .btn-expand-label {
-  max-width: 95px;
+  max-width: 150px;
   opacity: 1;
   margin-left: 7px;
   transform: translateX(0);
@@ -547,14 +665,15 @@
   max-width: 960px;
   flex: initial;
   align-self: center;
+  border-radius: 44px !important;
 }
 
 .qr-code-frame {
-  background: #ffffff;
+  background: #ffffff !important;
   padding: 20px;
-  border-radius: 26px;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 36px !important;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.9) !important;
 }
 
 .qr-info-column {
@@ -582,10 +701,13 @@
   font-weight: 800;
   letter-spacing: 10px;
   color: var(--ba-dark);
-  background: #f4f4f4;
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
   padding: 10px 30px;
-  border-radius: 18px;
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.06);
+  border-radius: 26px !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.04), 0 4px 15px rgba(0, 0, 0, 0.04);
   display: inline-block;
 }
 
@@ -1104,6 +1226,12 @@
 .modal-dialog {
   display: flex !important;
   align-items: center !important;
+}
+
+.modal-dialog.analytics-detail-modal,
+.analytics-detail-modal .modal-dialog {
+  max-width: 980px !important;
+  width: 95% !important;
 }
 
 .modal-content {

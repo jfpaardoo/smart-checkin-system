@@ -23,7 +23,7 @@ export default function GlassDropdown({
         <span className="text-truncate">{displayLabel}</span>
         <span className="dropdown-caret-icon ms-2">▼</span>
       </DropdownToggle>
-      <DropdownMenu className="ba-dropdown-menu w-100" style={{ maxHeight: '250px', overflowY: 'auto' }}>
+      <DropdownMenu className="ba-dropdown-menu ba-light-dropdown w-100" style={{ maxHeight: '250px', overflowY: 'auto' }}>
         {options.length > 0 ? (
           options.map((opt) => (
             <DropdownItem

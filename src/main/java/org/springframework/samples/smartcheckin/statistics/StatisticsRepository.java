@@ -9,6 +9,8 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface StatisticsRepository extends CrudRepository<PlatformStatistic, Integer> {
 
+    Optional<PlatformStatistic> findFirstByDate(LocalDate date);
+
     Optional<PlatformStatistic> findByDate(LocalDate date);
 
     @Query("SELECT p FROM PlatformStatistic p ORDER BY p.date DESC LIMIT 30")

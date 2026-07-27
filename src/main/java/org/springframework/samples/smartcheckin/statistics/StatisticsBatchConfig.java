@@ -51,7 +51,7 @@ public class StatisticsBatchConfig {
             // e.g. Count active formations
             Long activeFormations = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM formations", Long.class);
 
-            PlatformStatistic stat = statisticsRepository.findByDate(today).orElse(new PlatformStatistic());
+            PlatformStatistic stat = statisticsRepository.findFirstByDate(today).orElse(new PlatformStatistic());
             stat.setDate(today);
             stat.setTotalCheckins(totalCheckins);
             stat.setActiveFormations(activeFormations);

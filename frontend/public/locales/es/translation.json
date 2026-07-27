@@ -20,7 +20,9 @@
     "title": "Iniciar Sesión",
     "success": "Inicio de sesión exitoso",
     "error": "Intento de inicio de sesión inválido",
-    "genericError": "Ha ocurrido un error"
+    "genericError": "Ha ocurrido un error",
+    "username": "Usuario",
+    "password": "Contraseña"
   },
   "users": {
     "title": "Gestión de Usuarios",
@@ -82,7 +84,8 @@
     "deleted": "Formación eliminada correctamente",
     "deleteError": "Error al eliminar la formación",
     "connectionError": "Error de conexión. Por favor, inténtalo de nuevo.",
-    "duplicateConflict": "Los datos de esta formación entran en conflicto con un registro existente."
+    "duplicateConflict": "Los datos de esta formación entran en conflicto con un registro existente.",
+    "searchPlaceholder": "Buscar formación por nombre o descripción..."
   },
   "formationDetails": {
     "title": "Detalles de la Formación",
@@ -215,6 +218,35 @@
     "formationAttendance": "Asistencia a Formaciones",
     "attendance": "Asistencia",
     "absence": "Ausencia",
-    "daysTracked": "Días Registrados"
+    "daysTracked": "Días Registrados",
+    "overviewTab": "Vista General Plataforma",
+    "employeesTab": "Control de Empleados",
+    "exportData": "Exportar Informes",
+    "checkinExports": "Fichajes de Turno",
+    "checkinsCsv": "Fichajes (CSV)",
+    "checkinsExcel": "Fichajes (Excel)",
+    "formationExports": "Formaciones y Firmas",
+    "formationsCsv": "Formaciones y Firmas (CSV)",
+    "formationsExcel": "Formaciones y Firmas (Excel)",
+    "searchEmployee": "Buscar empleado por nombre o código...",
+    "totalEmployees": "Total Empleados",
+    "formationsCount": "Formaciones (Asistidas / Asignadas)",
+    "attendancePercentage": "Tasa de Asistencia",
+    "totalFormationTime": "Tiempo en Formaciones",
+    "actions": "Acciones",
+    "viewDetails": "Ver Detalle",
+    "attendanceRate": "Tasa de Asistencia",
+    "timeInFormations": "Tiempo en Formaciones",
+    "formationBreakdown": "Desglose de Formaciones y Permanencia",
+    "formationName": "Formación",
+    "date": "Fecha",
+    "checkIn": "Entrada",
+    "checkOut": "Salida",
+    "duration": "Permanencia",
+    "signature": "Firma Digital",
+    "signed": "Firmado",
+    "inProgress": "En Curso",
+    "pending": "Pendiente",
+    "noFormationsUser": "Sin formaciones asignadas a este empleado."
   }
 }

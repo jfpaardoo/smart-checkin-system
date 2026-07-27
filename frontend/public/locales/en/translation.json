@@ -20,7 +20,9 @@
     "title": "Login",
     "success": "Login successful",
     "error": "Invalid login attempt",
-    "genericError": "An error occurred"
+    "genericError": "An error occurred",
+    "username": "Username",
+    "password": "Password"
   },
   "users": {
     "title": "Users Management",
@@ -82,7 +84,8 @@
     "deleted": "Formation deleted successfully",
     "deleteError": "Failed to delete formation",
     "connectionError": "Connection error. Please try again.",
-    "duplicateConflict": "This formation details already conflict with an existing record."
+    "duplicateConflict": "This formation details already conflict with an existing record.",
+    "searchPlaceholder": "Search formation by name or description..."
   },
   "formationDetails": {
     "title": "Formation Details",
@@ -215,6 +218,35 @@
     "formationAttendance": "Formation Attendance",
     "attendance": "Attendance",
     "absence": "Absence",
-    "daysTracked": "Days Tracked"
+    "daysTracked": "Days Tracked",
+    "overviewTab": "Platform Overview",
+    "employeesTab": "Employee Control",
+    "exportData": "Export Reports",
+    "checkinExports": "Shift Check-ins",
+    "checkinsCsv": "Check-ins (CSV)",
+    "checkinsExcel": "Check-ins (Excel)",
+    "formationExports": "Formations & Signatures",
+    "formationsCsv": "Formations & Signatures (CSV)",
+    "formationsExcel": "Formations & Signatures (Excel)",
+    "searchEmployee": "Search employee by name or code...",
+    "totalEmployees": "Total Employees",
+    "formationsCount": "Formations (Attended / Assigned)",
+    "attendancePercentage": "Attendance Rate",
+    "totalFormationTime": "Time in Formations",
+    "actions": "Actions",
+    "viewDetails": "View Details",
+    "attendanceRate": "Attendance Rate",
+    "timeInFormations": "Time in Formations",
+    "formationBreakdown": "Formation Breakdown & Time Spent",
+    "formationName": "Formation",
+    "date": "Date",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "duration": "Time Spent",
+    "signature": "Signature",
+    "signed": "Signed",
+    "inProgress": "In Progress",
+    "pending": "Pending",
+    "noFormationsUser": "No formations assigned to this user."
   }
 }

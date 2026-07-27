@@ -1,12 +1,13 @@
+import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Button, ButtonGroup, Table } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPencil, faUsers, faTrash, faQrcode } from "@fortawesome/free-solid-svg-icons";
+import { faPencil, faUsers, faTrash, faQrcode, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import "../../static/css/admin/adminPage.css";
 import deleteFromList from "../../util/deleteFromList";
-import useFetchState from "../../util/useFetchState";
+import GlassSearchBar from "../../components/GlassSearchBar";
 import moment from "moment";
 import { TableGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
@@ -17,21 +18,36 @@ const jwt = tokenService.getLocalAccessToken();
 export default function FormationListAdmin() {
   const { t } = useTranslation();
   const toast = useToast();
-  const [formations, setFormations, loading] = useFetchState(
-    [],
-    `/api/v1/formations`,
-    jwt,
-    null,
-    null
-  );
+  const [formations, setFormations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const fetchFormations = useCallback(async (query = '') => {
+    setLoading(true);
+    try {
+      const url = query 
+        ? `/api/v1/formations?search=${encodeURIComponent(query)}`
+        : `/api/v1/formations`;
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${jwt}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setFormations(Array.isArray(data) ? data : []);
+      }
+    } catch (e) {
+      console.error("Error fetching formations list", e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchFormations(searchQuery);
+  }, [fetchFormations, searchQuery]);
 
   const reloadFormations = () => {
-    fetch("/api/v1/formations", {
-      headers: { Authorization: `Bearer ${jwt}` },
-    })
-      .then((r) => r.json())
-      .then((data) => setFormations(data))
-      .catch((e) => console.error("Error refreshing formations list via WS", e));
+    fetchFormations(searchQuery);
   };
 
   useSubscription('/topic/formations', reloadFormations);
@@ -115,34 +131,40 @@ export default function FormationListAdmin() {
   return (
     <div className="ba-container">
       <div className="ba-card">
+        <div className="ba-card-header">
+          <h2>{t('formations.title')}</h2>
+          <Button className="ba-btn-primary" tag={Link} to="/formations/new">
+            <FontAwesomeIcon icon={faPlus} className="me-1" /> {t('formations.createFormation')}
+          </Button>
+        </div>
+        
+        {/* Debounced Search Bar (1000ms delay) */}
+        <div className="mb-4">
+          <GlassSearchBar 
+            placeholder={t('formations.searchPlaceholder', 'Search formation by name or description...')}
+            onSearch={(query) => setSearchQuery(query)}
+          />
+        </div>
+
         {loading ? (
           <TableGhostLoader columns={5} rows={4} />
         ) : (
-          <>
-            <div className="ba-card-header">
-              <h2>{t('formations.title')}</h2>
-              <Button className="ba-btn-primary" tag={Link} to="/formations/new">
-                {t('formations.createFormation')}
-              </Button>
-            </div>
-            
-            <Table responsive aria-label="formations" className="ba-table">
-              <thead>
-                <tr>
-                  <th>{t('formations.name')}</th>
-                  <th>{t('formations.description')}</th>
-                  <th>{t('formations.dateTime')}</th>
-                  <th>{t('formations.attendees')}</th>
-                  <th>{t('formations.actions')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                 {formationList.length > 0 ? formationList : (
-                     <tr><td colSpan="5" className="text-center">{t('formations.noFormations')}</td></tr>
-                 )}
-              </tbody>
-            </Table>
-          </>
+          <Table responsive aria-label="formations" className="ba-table">
+            <thead>
+              <tr>
+                <th>{t('formations.name')}</th>
+                <th>{t('formations.description')}</th>
+                <th>{t('formations.dateTime')}</th>
+                <th>{t('formations.attendees')}</th>
+                <th>{t('formations.actions')}</th>
+              </tr>
+            </thead>
+            <tbody>
+               {formationList.length > 0 ? formationList : (
+                   <tr><td colSpan="5" className="text-center p-4 text-muted">{t('formations.noFormations')}</td></tr>
+               )}
+            </tbody>
+          </Table>
         )}
       </div>
     </div>

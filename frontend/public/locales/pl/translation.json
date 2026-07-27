@@ -20,7 +20,9 @@
     "title": "Zaloguj się",
     "success": "Pomyślnie zalogowano",
     "error": "Niepoprawna próba logowania",
-    "genericError": "Wystąpił błąd"
+    "genericError": "Wystąpił błąd",
+    "username": "Nazwa użytkownika",
+    "password": "Hasło"
   },
   "users": {
     "title": "Zarządzanie Użytkownikami",
@@ -82,7 +84,8 @@
     "deleted": "Szkolenie pomyślnie usunięte",
     "deleteError": "Błąd podczas usuwania szkolenia",
     "connectionError": "Błąd połączenia. Spróbuj ponownie.",
-    "duplicateConflict": "Dane tego szkolenia są w konflikcie z istniejącym wpisem."
+    "duplicateConflict": "Dane tego szkolenia są w konflikcie z istniejącym wpisem.",
+    "searchPlaceholder": "Szukaj szkolenia po nazwie lub opisie..."
   },
   "formationDetails": {
     "title": "Szczegóły Szkolenia",
@@ -215,6 +218,35 @@
     "formationAttendance": "Obecność na szkoleniach",
     "attendance": "Obecność",
     "absence": "Nieobecność",
-    "daysTracked": "Rejestrowane dni"
+    "daysTracked": "Rejestrowane dni",
+    "overviewTab": "Przegląd Platformy",
+    "employeesTab": "Kontrola Pracowników",
+    "exportData": "Eksportuj Raporty",
+    "checkinExports": "Meldunki Zmianowe",
+    "checkinsCsv": "Meldunki (CSV)",
+    "checkinsExcel": "Meldunki (Excel)",
+    "formationExports": "Szkolenia i Podpisy",
+    "formationsCsv": "Szkolenia i Podpisy (CSV)",
+    "formationsExcel": "Szkolenia i Podpisy (Excel)",
+    "searchEmployee": "Szukaj wg imienia lub kodu...",
+    "totalEmployees": "Łącznie Pracowników",
+    "formationsCount": "Szkolenia (Obecne / Przypisane)",
+    "attendancePercentage": "Frekwencja",
+    "totalFormationTime": "Czas na Szkoleniach",
+    "actions": "Akcje",
+    "viewDetails": "Zobacz Szczegóły",
+    "attendanceRate": "Frekwencja",
+    "timeInFormations": "Czas na Szkoleniach",
+    "formationBreakdown": "Szczegóły Szkoleń i Czasu",
+    "formationName": "Szkolenie",
+    "date": "Data",
+    "checkIn": "Wejście",
+    "checkOut": "Wyjście",
+    "duration": "Czas Czasu",
+    "signature": "Podpis Cyfrowy",
+    "signed": "Podpisano",
+    "inProgress": "W Trakcie",
+    "pending": "Oczekujący",
+    "noFormationsUser": "Brak przypisanych szkoleń."
   }
 }
