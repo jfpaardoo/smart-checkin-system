@@ -7,10 +7,14 @@ import { faChartLine, faFileCsv, faFileExcel, faUserCheck, faGraduationCap, faCa
 import tokenService from '../../services/token.service';
 import UserAnalyticsDetailModal from './UserAnalyticsDetailModal';
 import GlassSearchBar from '../../components/GlassSearchBar';
+import { useToast } from '../../components/ToastProvider';
+import downloadExportFile from '../../util/downloadExportFile';
+import { formatDuration } from '../../util/dateTimeUtil';
 import '../../static/css/admin/adminPage.css';
 import '../../static/css/admin/analyticsDashboard.css';
 
 export default function AnalyticsDashboard() {
+    const toast = useToast();
     const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'employees'
     const [statistics, setStatistics] = useState([]);
     const [userAnalyticsList, setUserAnalyticsList] = useState([]);
@@ -36,26 +40,35 @@ export default function AnalyticsDashboard() {
     }, [jwt]);
 
     useEffect(() => {
-        const fetchAnalytics = async () => {
+        if (!jwt) return;
+        let isMounted = true;
+
+        const loadAllAnalyticsData = async () => {
             try {
-                const req = await fetch('/api/v1/analytics', {
-                    headers: { 'Authorization': `Bearer ${jwt}` }
-                });
-                if (req.ok) {
-                    const data = await req.json();
-                    setStatistics(Array.isArray(data) ? data : []);
-                } else {
-                    setStatistics([]);
+                const [statsRes, usersRes] = await Promise.all([
+                    fetch('/api/v1/analytics', { headers: { 'Authorization': `Bearer ${jwt}` } }),
+                    fetch('/api/v1/analytics/users', { headers: { 'Authorization': `Bearer ${jwt}` } })
+                ]);
+
+                if (isMounted && statsRes.ok) {
+                    const statsData = await statsRes.json();
+                    setStatistics(Array.isArray(statsData) ? statsData : []);
+                }
+                if (isMounted && usersRes.ok) {
+                    const usersData = await usersRes.json();
+                    setUserAnalyticsList(Array.isArray(usersData) ? usersData : []);
                 }
             } catch (error) {
-                console.error("Failed to fetch analytics", error);
-                setStatistics([]);
+                console.error("Failed to load analytics concurrently", error);
             }
         };
 
-        fetchAnalytics();
-        fetchUserAnalytics();
-    }, [jwt, fetchUserAnalytics]);
+        loadAllAnalyticsData();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [jwt]);
 
     const handleOpenUserDetail = async (userId) => {
         try {
@@ -72,34 +85,8 @@ export default function AnalyticsDashboard() {
         }
     };
 
-    const handleDownloadExport = async (endpoint, defaultFilename) => {
-        try {
-            const response = await fetch(`/api/v1/exports/${endpoint}`, {
-                headers: { 'Authorization': `Bearer ${jwt}` }
-            });
-            if (response.ok) {
-                const blob = await response.blob();
-                const downloadUrl = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = downloadUrl;
-                a.download = defaultFilename;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(downloadUrl);
-            } else {
-                console.error("Export request failed with status", response.status);
-            }
-        } catch (error) {
-            console.error("Failed to download export file", error);
-        }
-    };
-
-    const formatDuration = (minutes) => {
-        if (!minutes || minutes === 0) return '0 min';
-        const hrs = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        return hrs > 0 ? `${hrs}h ${mins}m` : `${mins} min`;
+    const handleDownloadExport = (endpoint, defaultFilename) => {
+        downloadExportFile(endpoint, defaultFilename, toast, t);
     };
 
     const getAttendanceColorClass = (percentage) => {
@@ -287,7 +274,7 @@ export default function AnalyticsDashboard() {
                 {activeTab === 'employees' && (
                     <div className="mt-3">
                         {/* Search & Filter Bar with 1000ms Debounced Backend Queries */}
-                        <div className="d-flex justify-content-between align-items-center mb-4">
+                        <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
                             <GlassSearchBar 
                                 placeholder={t('analytics.searchEmployee', 'Search employee by name or code...')}
                                 onSearch={(query) => fetchUserAnalytics(query)}

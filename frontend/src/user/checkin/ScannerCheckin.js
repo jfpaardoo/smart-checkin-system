@@ -7,42 +7,8 @@ import { CardGhostLoader } from '../../components/GhostLoader';
 import GlassDropdown from '../../components/GlassDropdown';
 import tokenService from '../../services/token.service';
 import useFetchState from '../../util/useFetchState';
+import parseQrPayload from '../../util/qrPayloadUtil';
 import '../../static/css/admin/adminPage.css';
-
-// Aux helper: Parse payload from QR or 6-digit manual input
-const parseQrPayload = (rawInput, activeFormations = []) => {
-  let token = rawInput;
-  let action = null;
-  let formationId = null;
-
-  if (typeof rawInput === 'object' && rawInput !== null) {
-    token = rawInput.token || token;
-    action = rawInput.action || action;
-    formationId = rawInput.formationId || formationId;
-  } else if (typeof rawInput === 'string') {
-    try {
-      const parsed = JSON.parse(rawInput);
-      if (typeof parsed === 'object' && parsed !== null) {
-        token = parsed.token || token;
-        action = parsed.action || action;
-        formationId = parsed.formationId || formationId;
-      }
-    } catch (err) {
-      console.debug("Payload is raw TOTP token", err);
-    }
-  }
-
-  if (!action && !formationId && activeFormations && activeFormations.length > 0) {
-    action = 'formation';
-    formationId = activeFormations[0].id;
-  }
-
-  return {
-    token: String(token).trim(),
-    action: action || 'checkin',
-    formationId: formationId || null
-  };
-};
 
 // Aux helper: Post formation attendance
 const postFormationAttendance = async (formationId, jwt) => {
@@ -312,13 +278,7 @@ export default function ScannerCheckin() {
                 const val = e.target.value.replace(/\D/g, '');
                 if (val.length <= 6) setManualCode(val);
               }}
-              className="ba-input mx-auto"
-              style={{
-                fontSize: '2.2rem',
-                textAlign: 'center',
-                letterSpacing: '12px',
-                width: '240px'
-              }}
+              className="ba-input mx-auto input-totp-manual"
               autoFocus
             />
           </FormGroup>
@@ -326,8 +286,7 @@ export default function ScannerCheckin() {
           <div className="d-flex justify-content-between gap-3 mt-4">
             <button
               type="button"
-              className="ba-btn ba-btn-secondary"
-              style={{ flex: 1 }}
+              className="ba-btn ba-btn-secondary flex-grow-1"
               onClick={() => {
                 setIsManualInput(false);
                 setManualCode('');

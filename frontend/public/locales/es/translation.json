@@ -7,14 +7,32 @@
     "docs": "Documentación",
     "login": "Iniciar Sesión",
     "logout": "Cerrar Sesión",
-    "analytics": "Analíticas"
+    "analytics": "Analíticas",
+    "myProfile": "Mi Perfil"
   },
   "home": {
     "welcome": "Bienvenido a ShiftSync",
     "subtitle": "Sistema Inteligente de Fichaje y Gestión de Empleados",
     "loggedIn": "Has iniciado sesión. Accede a tu panel para ver tu información y fichar.",
     "goToDashboard": "Ir al Panel",
-    "getStarted": "Selecciona una opción del menú de navegación para comenzar."
+    "getStarted": "Selecciona una opción del menú de navegación para comenzar.",
+    "adminTitle": "Panel de Control de Administración",
+    "adminSubtitle": "Gestión global de fichajes, formaciones y analíticas en tiempo real.",
+    "userTitle": "Portal del Empleado",
+    "userSubtitle": "Acceso rápido a fichajes mediante QR y consulta de formaciones.",
+    "quickActions": "Acciones Rápidas",
+    "projectQR": "Generar Código QR",
+    "projectQRDesc": "Proyectar QR para asistencia a formación",
+    "manageFormations": "Gestionar Formaciones",
+    "manageFormationsDesc": "Crear y administrar convocatorias",
+    "viewAnalytics": "Analíticas y Reportes",
+    "viewAnalyticsDesc": "Descargar informes Excel y PDF",
+    "manageUsers": "Gestionar Usuarios",
+    "manageUsersDesc": "Administrar plantilla de empleados",
+    "scanQRNow": "Escanear QR de Formación",
+    "myProfileBtn": "Ver Mi Perfil",
+    "myFormationsBtn": "Ver Mis Formaciones",
+    "statusLabel": "Tu estado actual:"
   },
   "login": {
     "title": "Iniciar Sesión",
@@ -39,8 +57,8 @@
     "status": "Estado",
     "role": "Rol",
     "actions": "Acciones",
-    "working": "En turno",
-    "offDuty": "Fuera de turno",
+    "working": "En formación",
+    "offDuty": "Fuera de formación",
     "selectRole": "Seleccionar Rol",
     "personalCode4digits": "Código Personal (4 dígitos)",
     "roleAuthority": "Rol / Autoridad",
@@ -198,7 +216,12 @@
     "deleted": "{{entity}} eliminado correctamente",
     "deleteError": "Error al eliminar {{entity}}",
     "confirmLogout": "¿Seguro que deseas cerrar sesión?",
-    "noUserLoggedIn": "No hay ninguna sesión activa"
+    "noUserLoggedIn": "No hay ninguna sesión activa",
+    "exportSuccess": "Informe descargado con éxito",
+    "exportError": "Error al generar la descarga del informe",
+    "sessionExpired": "Sesión expirada. Por favor vuelva a iniciar sesión.",
+    "genericError": "Ha ocurrido un error en la solicitud",
+    "networkError": "Error de conexión con el servidor"
   },
   "lang": {
     "es": "Español",
@@ -248,5 +271,27 @@
     "inProgress": "En Curso",
     "pending": "Pendiente",
     "noFormationsUser": "Sin formaciones asignadas a este empleado."
+  },
+  "profile": {
+    "myProfileTitle": "Mi Perfil",
+    "personalData": "Datos Personales",
+    "myFormations": "Mis Formaciones",
+    "securityPassword": "Seguridad y Contraseña",
+    "personalInformation": "Información Personal del Usuario",
+    "myFormationHistory": "Historial de Formaciones",
+    "noFormationsYet": "No tienes ninguna formación registrada todavía.",
+    "changePasswordTitle": "Modificar Contraseña",
+    "currentPassword": "Contraseña Actual",
+    "newPassword": "Nueva Contraseña",
+    "confirmNewPassword": "Repetir Nueva Contraseña",
+    "updatePasswordBtn": "Actualizar Contraseña",
+    "updatingPassword": "Actualizando...",
+    "enterCurrentPassword": "Introduce la contraseña actual",
+    "passwordMinLength": "La nueva contraseña debe tener al menos 6 caracteres",
+    "passwordsDoNotMatch": "Las contraseñas no coinciden",
+    "passwordSuccessLogout": "Contraseña actualizada con éxito. Por seguridad, debes iniciar sesión de nuevo.",
+    "changePasswordError": "Error al cambiar contraseña",
+    "signed": "Firmado",
+    "pendingSignature": "Pendiente"
   }
 }

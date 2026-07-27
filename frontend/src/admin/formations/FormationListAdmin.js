@@ -13,11 +13,10 @@ import { TableGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
 import { useSubscription } from "../../hooks/useSubscription";
 
-const jwt = tokenService.getLocalAccessToken();
-
 export default function FormationListAdmin() {
   const { t } = useTranslation();
   const toast = useToast();
+  const jwt = tokenService.getLocalAccessToken();
   const [formations, setFormations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,7 +39,7 @@ export default function FormationListAdmin() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [jwt]);
 
   useEffect(() => {
     fetchFormations(searchQuery);

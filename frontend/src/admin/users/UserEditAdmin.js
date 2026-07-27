@@ -9,10 +9,9 @@ import useFetchState from "../../util/useFetchState";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
 
-const jwt = tokenService.getLocalAccessToken();
-
 export default function UserEditAdmin() {
   const { t } = useTranslation();
+  const jwt = tokenService.getLocalAccessToken();
   const emptyItem = {
     id: null,
     username: "",

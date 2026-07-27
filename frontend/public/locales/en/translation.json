@@ -7,14 +7,32 @@
     "docs": "Docs",
     "login": "Login",
     "logout": "Logout",
-    "analytics": "Analytics"
+    "analytics": "Analytics",
+    "myProfile": "My Profile"
   },
   "home": {
     "welcome": "Welcome to ShiftSync",
-    "subtitle": "Smart Check-in & Employee Management System",
-    "loggedIn": "You are logged in. Access your dashboard to view your info and check in/out.",
+    "subtitle": "Intelligent Employee Check-In and Formation Management System",
+    "loggedIn": "You are logged in. Access your dashboard to view your information and check in.",
     "goToDashboard": "Go to Dashboard",
-    "getStarted": "Please select an option from the navigation menu above to get started."
+    "getStarted": "Select an option from the navigation menu to get started.",
+    "adminTitle": "Admin Control Center",
+    "adminSubtitle": "Real-time management of check-ins, formations, and analytics.",
+    "userTitle": "Employee Portal",
+    "userSubtitle": "Quick access to QR check-in and formation records.",
+    "quickActions": "Quick Actions",
+    "projectQR": "Generate QR Code",
+    "projectQRDesc": "Project QR for training attendance",
+    "manageFormations": "Manage Formations",
+    "manageFormationsDesc": "Create and manage training sessions",
+    "viewAnalytics": "Analytics & Reports",
+    "viewAnalyticsDesc": "Download Excel and PDF reports",
+    "manageUsers": "Manage Users",
+    "manageUsersDesc": "Manage employee database and roles",
+    "scanQRNow": "Scan Formation QR",
+    "myProfileBtn": "View My Profile",
+    "myFormationsBtn": "View My Formations",
+    "statusLabel": "Your current status:"
   },
   "login": {
     "title": "Login",
@@ -39,8 +57,8 @@
     "status": "Status",
     "role": "Role",
     "actions": "Actions",
-    "working": "Working",
-    "offDuty": "Off-duty",
+    "working": "In Formation",
+    "offDuty": "Out of Formation",
     "selectRole": "Select Role",
     "personalCode4digits": "Personal Code (4 digits)",
     "roleAuthority": "Role / Authority",
@@ -198,7 +216,12 @@
     "deleted": "{{entity}} deleted successfully",
     "deleteError": "Failed to delete {{entity}}",
     "confirmLogout": "Are you sure you want to log out?",
-    "noUserLoggedIn": "There is no user logged in"
+    "noUserLoggedIn": "There is no user logged in",
+    "exportSuccess": "Report downloaded successfully",
+    "exportError": "Failed to download report",
+    "sessionExpired": "Session expired. Please log in again.",
+    "genericError": "An error occurred during the request",
+    "networkError": "Network connection error"
   },
   "lang": {
     "es": "Español",
@@ -247,6 +270,28 @@
     "signed": "Signed",
     "inProgress": "In Progress",
     "pending": "Pending",
-    "noFormationsUser": "No formations assigned to this user."
+    "noFormationsUser": "No formations assigned to this employee."
+  },
+  "profile": {
+    "myProfileTitle": "My Profile",
+    "personalData": "Personal Data",
+    "myFormations": "My Formations",
+    "securityPassword": "Security & Password",
+    "personalInformation": "User Personal Information",
+    "myFormationHistory": "Formations History",
+    "noFormationsYet": "No formations recorded yet.",
+    "changePasswordTitle": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password (min 6 characters)",
+    "confirmNewPassword": "Confirm New Password",
+    "updatePasswordBtn": "Update Password",
+    "updatingPassword": "Updating...",
+    "enterCurrentPassword": "Please enter your current password",
+    "passwordMinLength": "New password must be at least 6 characters long",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordSuccessLogout": "Password updated successfully. For security reasons, please log in again.",
+    "changePasswordError": "Error changing password",
+    "signed": "Signed",
+    "pendingSignature": "Pending"
   }
 }

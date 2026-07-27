@@ -14,12 +14,11 @@ import { useToast } from "../../components/ToastProvider";
 import GlassDropdown from "../../components/GlassDropdown";
 import { useSubscription } from "../../hooks/useSubscription";
 
-const jwt = tokenService.getLocalAccessToken();
-
 export default function FormationDetailsAdmin() {
   const id = getIdFromUrl(2);
   const { t } = useTranslation();
   const toast = useToast();
+  const jwt = tokenService.getLocalAccessToken();
   
   const [formation, setFormation] = useFetchState(
     null,

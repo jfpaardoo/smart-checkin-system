@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar, NavbarBrand, NavLink, NavItem, Nav, NavbarToggler, Collapse, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { Link } from 'react-router-dom';
-import { FaUsers, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen, FaChartLine } from 'react-icons/fa';
+import { FaUsers, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen, FaChartLine, FaIdCard } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import tokenService from './services/token.service';
 import jwt_decode from "jwt-decode";
@@ -70,6 +70,10 @@ function AppNavbar() {
                     <FaUser className="me-2" /> {username}
                 </DropdownToggle>
                 <DropdownMenu className="ba-dropdown-menu" end>
+                    <DropdownItem tag={Link} to="/profile" className="ba-dropdown-item d-flex align-items-center">
+                        <FaIdCard className="me-2" /> {t('nav.myProfile', 'Mi Perfil')}
+                    </DropdownItem>
+                    <DropdownItem divider />
                     <DropdownItem tag={Link} to="/logout" className="ba-dropdown-item text-danger d-flex align-items-center">
                         <FaSignOutAlt className="me-2" /> {t('nav.logout')}
                     </DropdownItem>

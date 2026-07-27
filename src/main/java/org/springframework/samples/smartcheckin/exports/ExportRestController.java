@@ -57,7 +57,7 @@ public class ExportRestController {
     public ResponseEntity<byte[]> exportUsersCsv() {
         List<User> users = (List<User>) userRepository.findAll();
         StringBuilder csvBuilder = new StringBuilder();
-        csvBuilder.append("ID,Username,PersonalCode,FirstName,LastName,Role,IsWorking\n");
+        csvBuilder.append("ID,Username,PersonalCode,FirstName,LastName,Role,CurrentlyInFormation\n");
 
         for (User u : users) {
             String role = u.getAuthority() != null ? u.getAuthority().getAuthority() : "N/A";
@@ -81,7 +81,7 @@ public class ExportRestController {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Users");
             Row headerRow = sheet.createRow(0);
-            createHeaderCells(headerRow, "ID", "Username", PERSONAL_CODE, "First Name", "Last Name", "Role / Authority", "Currently Working");
+            createHeaderCells(headerRow, "ID", "Username", PERSONAL_CODE, "First Name", "Last Name", "Role / Authority", "Currently In Formation");
 
             int rowIdx = 1;
             for (User u : users) {

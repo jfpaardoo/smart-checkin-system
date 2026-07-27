@@ -7,14 +7,32 @@
     "docs": "Documentação",
     "login": "Iniciar Sessão",
     "logout": "Terminar Sessão",
-    "analytics": "Análise"
+    "analytics": "Análise",
+    "myProfile": "Meu Perfil"
   },
   "home": {
     "welcome": "Bem-vindo ao ShiftSync",
-    "subtitle": "Sistema Inteligente de Check-in e Gestão de Colaboradores",
-    "loggedIn": "Sessão iniciada. Aceda ao seu painel para ver as suas informações e fazer check-in/out.",
+    "subtitle": "Sistema Inteligente de Registo e Gestão de Formações",
+    "loggedIn": "Sessão iniciada. Aceda ao seu painel.",
     "goToDashboard": "Ir para o Painel",
-    "getStarted": "Selecione uma opção no menu de navegação para começar."
+    "getStarted": "Selecione uma opção no menu de navegação.",
+    "adminTitle": "Centro de Controlo do Administrador",
+    "adminSubtitle": "Gestão em tempo real de registos, formações e analíticas.",
+    "userTitle": "Portal do Funcionário",
+    "userSubtitle": "Acesso rápido a registos por QR e histórico de formações.",
+    "quickActions": "Ações Rápidas",
+    "projectQR": "Gerar Código QR",
+    "projectQRDesc": "Projetar QR para presença na formação",
+    "manageFormations": "Gerir Formações",
+    "manageFormationsDesc": "Criar e gerir sessões de formação",
+    "viewAnalytics": "Analíticas e Relatórios",
+    "viewAnalyticsDesc": "Descarregar relatórios Excel e PDF",
+    "manageUsers": "Gerir Utilizadores",
+    "manageUsersDesc": "Gerir funcionários e funções",
+    "scanQRNow": "Digitalizar QR da Formação",
+    "myProfileBtn": "Ver O Meu Perfil",
+    "myFormationsBtn": "Ver As Minhas Formações",
+    "statusLabel": "O seu estado atual:"
   },
   "login": {
     "title": "Iniciar Sessão",
@@ -39,8 +57,8 @@
     "status": "Estado",
     "role": "Função",
     "actions": "Ações",
-    "working": "Em turno",
-    "offDuty": "Fora de turno",
+    "working": "Em formação",
+    "offDuty": "Fora de formação",
     "selectRole": "Selecionar Função",
     "personalCode4digits": "Código Pessoal (4 dígitos)",
     "roleAuthority": "Função / Autoridade",
@@ -193,12 +211,17 @@
     "confirm": "Confirmar",
     "yes": "Sim",
     "no": "Não",
-    "connectionError": "Erro de ligação. Por favor, tente novamente.",
+    "connectionError": "Erro de ligação. Por favor tente novamente.",
     "deleteConfirm": "Tem a certeza que deseja eliminar este {{entity}}?",
     "deleted": "{{entity}} eliminado com sucesso",
     "deleteError": "Erro ao eliminar {{entity}}",
-    "confirmLogout": "Tem certeza de que deseja sair?",
-    "noUserLoggedIn": "Nenhum usuário conectado"
+    "confirmLogout": "Tem a certeza que deseja terminar sessão?",
+    "noUserLoggedIn": "Sem sessão ativa",
+    "exportSuccess": "Relatório descarregado com sucesso",
+    "exportError": "Erro ao descarregar relatório",
+    "sessionExpired": "Sessão expirada. Por favor inicie sessão novamente.",
+    "genericError": "Ocorreu um erro no pedido",
+    "networkError": "Erro de ligação de rede"
   },
   "lang": {
     "es": "Español",
@@ -247,6 +270,28 @@
     "signed": "Assinado",
     "inProgress": "Em Curso",
     "pending": "Pendente",
-    "noFormationsUser": "Sem formações atribuídas a este empregado."
+    "noFormationsUser": "Sem formações atribuídas a este funcionário."
+  },
+  "profile": {
+    "myProfileTitle": "Meu Perfil",
+    "personalData": "Dados Pessoais",
+    "myFormations": "Minhas Formações",
+    "securityPassword": "Segurança e Palavra-passe",
+    "personalInformation": "Informações Pessoais do Utilizador",
+    "myFormationHistory": "Histórico de Formações",
+    "noFormationsYet": "Nenhuma formação registada até ao momento.",
+    "changePasswordTitle": "Alterar Palavra-passe",
+    "currentPassword": "Palavra-passe Atual",
+    "newPassword": "Nova Palavra-passe (mínimo 6 caracteres)",
+    "confirmNewPassword": "Repetir Nova Palavra-passe",
+    "updatePasswordBtn": "Atualizar Palavra-passe",
+    "updatingPassword": "A atualizar...",
+    "enterCurrentPassword": "Introduza a palavra-passe atual",
+    "passwordMinLength": "A nova palavra-passe deve ter pelo menos 6 caracteres",
+    "passwordsDoNotMatch": "As palavras-passe não coincidem",
+    "passwordSuccessLogout": "Palavra-passe atualizada com sucesso. Por razões de segurança, inicie sessão novamente.",
+    "changePasswordError": "Erro ao alterar palavra-passe",
+    "signed": "Assinado",
+    "pendingSignature": "Pendente"
   }
 }

@@ -4,18 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faGraduationCap, faClock, faTimes, faCheckCircle, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import moment from 'moment';
+import { formatDuration } from '../../util/dateTimeUtil';
 
 export default function UserAnalyticsDetailModal({ isOpen, toggle, userAnalytics }) {
     const { t } = useTranslation();
 
     if (!userAnalytics) return null;
-
-    const formatDuration = (minutes) => {
-        if (!minutes || minutes === 0) return '0 min';
-        const hrs = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        return hrs > 0 ? `${hrs}h ${mins}m` : `${mins} min`;
-    };
 
     const renderSignatureStatus = (f) => {
         if (f.hasSignature) {

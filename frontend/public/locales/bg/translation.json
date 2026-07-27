@@ -7,14 +7,32 @@
     "docs": "Документация",
     "login": "Вход",
     "logout": "Изход",
-    "analytics": "Анализи"
+    "analytics": "Анализи",
+    "myProfile": "Моят Профил"
   },
   "home": {
     "welcome": "Добре дошли в ShiftSync",
-    "subtitle": "Интелигентна Система за Отчитане на Работното Време",
-    "loggedIn": "Вие сте влезли в системата. Отидете в таблото си за управление.",
-    "goToDashboard": "Към Таблото за Управление",
-    "getStarted": "Моля, изберете опция от навигационното меню, за да започнете."
+    "subtitle": "Интелигентна Система за Отчитане и Управление на Обучения",
+    "loggedIn": "Влезли сте в системата. Влезте в таблото си.",
+    "goToDashboard": "Към Таблото",
+    "getStarted": "Изберете опция от менюто за навигация.",
+    "adminTitle": "Център за Управление на Администратора",
+    "adminSubtitle": "Управление в реално време на присъствия, обучения и анализи.",
+    "userTitle": "Портал за Служители",
+    "userSubtitle": "Бърз достъп до QR отчитане и история на обученията.",
+    "quickActions": "Бързи Действия",
+    "projectQR": "Генерирай QR Код",
+    "projectQRDesc": "Прожектирай QR код за присъствие на обучение",
+    "manageFormations": "Управление на Обучения",
+    "manageFormationsDesc": "Създаване и управление на обучения",
+    "viewAnalytics": "Анализи и Доклади",
+    "viewAnalyticsDesc": "Изтегляне на Excel и PDF доклади",
+    "manageUsers": "Управление на Потребители",
+    "manageUsersDesc": "Управление на служители и роли",
+    "scanQRNow": "Сканирай QR Код за Обучение",
+    "myProfileBtn": "Виж Моят Профил",
+    "myFormationsBtn": "Виж Моите Обучения",
+    "statusLabel": "Текущ статус:"
   },
   "login": {
     "title": "Вход",
@@ -39,8 +57,8 @@
     "status": "Статус",
     "role": "Роля",
     "actions": "Действия",
-    "working": "На смяна",
-    "offDuty": "Извън смяна",
+    "working": "В обучение",
+    "offDuty": "Извън обучение",
     "selectRole": "Избери Роля",
     "personalCode4digits": "Личен Код (4 цифри)",
     "roleAuthority": "Роля / Права",
@@ -198,7 +216,12 @@
     "deleted": "{{entity}} е изтрит успешно",
     "deleteError": "Грешка при изтриване на {{entity}}",
     "confirmLogout": "Сигурни ли сте, че искате да излезете?",
-    "noUserLoggedIn": "Няма влязъл потребител"
+    "noUserLoggedIn": "Няма влязъл потребител",
+    "exportSuccess": "Докладът е изтеглен успешно",
+    "exportError": "Грешка при изтегляне на доклада",
+    "sessionExpired": "Сесията е изтекла. Моля, влезте отново.",
+    "genericError": "Възникна грешка при заявката",
+    "networkError": "Грешка в мрежовата връзка"
   },
   "lang": {
     "es": "Español",
@@ -247,6 +270,28 @@
     "signed": "Подписано",
     "inProgress": "В процес",
     "pending": "Предстоящо",
-    "noFormationsUser": "Няма възложени обучения."
+    "noFormationsUser": "Няма назначени обучения за този служител."
+  },
+  "profile": {
+    "myProfileTitle": "Моят Профил",
+    "personalData": "Лични Данни",
+    "myFormations": "Моите Обучения",
+    "securityPassword": "Сигурност и Парола",
+    "personalInformation": "Лична Информация на Потребителя",
+    "myFormationHistory": "История на Обученията",
+    "noFormationsYet": "Все още нямате регистрирани обучения.",
+    "changePasswordTitle": "Промяна на Парола",
+    "currentPassword": "Текуща Парола",
+    "newPassword": "Нова Парола (минимум 6 символа)",
+    "confirmNewPassword": "Повторете Новата Парола",
+    "updatePasswordBtn": "Обнови Паролата",
+    "updatingPassword": "Обновяване...",
+    "enterCurrentPassword": "Въведете текущата парола",
+    "passwordMinLength": "Новата парола трябва да бъде поне 6 символа",
+    "passwordsDoNotMatch": "Паролите не съвпадат",
+    "passwordSuccessLogout": "Паролата е обновена успешно. От съображения за сигурност, моля влезте отново.",
+    "changePasswordError": "Грешка при промяна на паролата",
+    "signed": "Подписано",
+    "pendingSignature": "Предстоящо"
   }
 }

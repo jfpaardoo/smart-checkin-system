@@ -81,7 +81,7 @@ public class SecurityConfiguration {
 						.requestMatchers("/ws/**").permitAll()
 
 						// Rutas de perfil personal
-						.requestMatchers("/api/v1/users/me/**").authenticated()
+						.requestMatchers("/api/v1/users/me", "/api/v1/users/me/**").authenticated()
 
 						// Rutas de administración y HR
 						.requestMatchers("/api/v1/users/**").hasAuthority(ADMIN)

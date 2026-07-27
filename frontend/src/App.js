@@ -1,4 +1,5 @@
 import React from "react";
+import "./App.css";
 import { Route, Routes } from "react-router-dom";
 import jwt_decode from "jwt-decode";
 import { ErrorBoundary } from "react-error-boundary";
@@ -18,6 +19,7 @@ import QRGeneratorAdmin from "./admin/qr/QRGeneratorAdmin";
 import AnalyticsDashboard from "./admin/analytics/AnalyticsDashboard";
 import ScannerCheckin from "./user/checkin/ScannerCheckin";
 import UserDashboard from "./user/dashboard/UserDashboard";
+import UserProfile from "./user/profile/UserProfile";
 import { ToastProvider } from "./components/ToastProvider";
 
 function ErrorFallback({ error, resetErrorBoundary }) {
@@ -72,6 +74,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/checkin" element={<ScannerCheckin />} />
         <Route path="/dashboard" element={<UserDashboard />} />
+        <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
       </>
     )
   }

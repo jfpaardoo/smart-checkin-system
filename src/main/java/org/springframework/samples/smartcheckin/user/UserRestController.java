@@ -86,10 +86,33 @@ class UserRestController {
 		return new ResponseEntity<>(res, HttpStatus.OK);
 	}
 
+	@GetMapping("me")
+	public ResponseEntity<User> getMyProfile() {
+		User currentUser = userService.findCurrentUser();
+		return new ResponseEntity<>(currentUser, HttpStatus.OK);
+	}
+
 	@GetMapping("me/formations")
 	public ResponseEntity<List<FormationAttendance>> getMyFormations() {
 		User currentUser = userService.findCurrentUser();
 		return new ResponseEntity<>(currentUser.getFormationAttendances(), HttpStatus.OK);
+	}
+
+	@PutMapping("me/password")
+	public ResponseEntity<MessageResponse> changePassword(@RequestBody @Valid ChangePasswordRequest request) {
+		User currentUser = userService.findCurrentUser();
+		if (request.getCurrentPassword() == null || !passwordEncoder.matches(request.getCurrentPassword(), currentUser.getPassword())) {
+			return ResponseEntity.badRequest().body(new MessageResponse("La contraseña actual no es correcta."));
+		}
+		if (request.getNewPassword() == null || request.getNewPassword().trim().length() < 6) {
+			return ResponseEntity.badRequest().body(new MessageResponse("La nueva contraseña debe tener al menos 6 caracteres."));
+		}
+		if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+			return ResponseEntity.badRequest().body(new MessageResponse("La confirmación de la contraseña no coincide."));
+		}
+		currentUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
+		userService.saveUser(currentUser);
+		return ResponseEntity.ok(new MessageResponse("Contraseña actualizada con éxito."));
 	}
 
 	@GetMapping(value = "{id}")

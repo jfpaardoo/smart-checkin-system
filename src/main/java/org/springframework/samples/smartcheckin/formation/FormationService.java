@@ -64,6 +64,8 @@ public class FormationService {
                 attendanceRepository.save(att);
             }
         }
+        user.setIsWorking(true);
+        userService.saveUser(user);
         return formation;
     }
 
@@ -91,6 +93,9 @@ public class FormationService {
         att.setCheckOutDate(LocalDateTime.now(ZoneId.systemDefault()));
         att.setSignature(signature);
         attendanceRepository.save(att);
+
+        user.setIsWorking(false);
+        userService.saveUser(user);
 
         return formation;
     }

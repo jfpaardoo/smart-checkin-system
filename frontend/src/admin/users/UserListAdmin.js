@@ -10,12 +10,12 @@ import { faUsers, faFileCsv, faFileExcel, faPlus } from '@fortawesome/free-solid
 import GlassSearchBar from "../../components/GlassSearchBar";
 import { TableGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
-
-const jwt = tokenService.getLocalAccessToken();
+import downloadExportFile from "../../util/downloadExportFile";
 
 export default function UserListAdmin() {
   const { t } = useTranslation();
   const toast = useToast();
+  const jwt = tokenService.getLocalAccessToken();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,7 +38,7 @@ export default function UserListAdmin() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [jwt]);
 
   useEffect(() => {
     fetchUsers(searchQuery);
@@ -102,25 +102,8 @@ export default function UserListAdmin() {
     );
   });
 
-  const handleDownloadExport = async (endpoint, defaultFilename) => {
-    try {
-      const response = await fetch(`/api/v1/exports/${endpoint}`, {
-        headers: { 'Authorization': `Bearer ${jwt}` }
-      });
-      if (response.ok) {
-        const blob = await response.blob();
-        const downloadUrl = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = defaultFilename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(downloadUrl);
-      }
-    } catch (error) {
-      console.error("Failed to download export file", error);
-    }
+  const handleDownloadExport = (endpoint, defaultFilename) => {
+    downloadExportFile(endpoint, defaultFilename, toast, t);
   };
 
   return (

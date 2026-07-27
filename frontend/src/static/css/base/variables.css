@@ -1,0 +1,32 @@
+/* ==========================================
+   SHIFTSYNC DESIGN SYSTEM - VARIABLES & TOKENS
+   ========================================== */
+
+:root {
+  /* Brand Color Tokens */
+  --ba-primary: #cce364;        /* Pistachio Green Highlight */
+  --ba-primary-hover: #b8d24d;  /* Darker Pistachio on Hover */
+  --ba-primary-glow: rgba(204, 227, 100, 0.4);
+
+  --ba-dark: #1e293b;           /* Slate Dark Text & Caps */
+  --ba-dark-hover: #0f172a;
+  --ba-white: #ffffff;
+  --ba-border: rgba(255, 255, 255, 0.8);
+  --ba-text-muted: #64748b;
+
+  /* Glassmorphism Tokens */
+  --ba-glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.65), rgba(240, 245, 252, 0.45));
+  --ba-glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.75), rgba(240, 245, 255, 0.50));
+  --ba-glass-panel-bg: rgba(255, 255, 255, 0.65);
+  
+  --ba-glass-blur-high: blur(35px) saturate(210%);
+  --ba-glass-blur-med: blur(25px) saturate(190%);
+  --ba-glass-blur-low: blur(15px);
+
+  /* Radius Tokens */
+  --ba-radius-xl: 44px;
+  --ba-radius-lg: 28px;
+  --ba-radius-md: 20px;
+  --ba-radius-sm: 14px;
+  --ba-radius-pill: 50px;
+}

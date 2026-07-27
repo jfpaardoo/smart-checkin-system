@@ -93,6 +93,10 @@ textarea.class-form-input {
   transform: translateY(10px);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease, font-size 0.3s ease;
   pointer-events: none;
+  max-width: calc(100% - 52px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .class-form-input:focus + .class-form-label,
