@@ -8,10 +8,11 @@
     "login": "Login",
     "logout": "Logout",
     "analytics": "Analytics",
-    "myProfile": "My Profile"
+    "myProfile": "My Profile",
+    "register": "Request Registration"
   },
   "home": {
-    "welcome": "Welcome to ShiftSync",
+    "welcome": "Welcome to BA Distribution Academy",
     "subtitle": "Intelligent Employee Check-In and Formation Management System",
     "loggedIn": "You are logged in. Access your dashboard to view your information and check in.",
     "goToDashboard": "Go to Dashboard",
@@ -32,7 +33,24 @@
     "scanQRNow": "Scan Formation QR",
     "myProfileBtn": "View My Profile",
     "myFormationsBtn": "View My Formations",
-    "statusLabel": "Your current status:"
+    "statusLabel": "Your current status:",
+    "systemLive": "Live System",
+    "sessionStartedAs": "Logged in as:",
+    "projectQRBtn": "Project QR →",
+    "viewDataBtn": "View Data →",
+    "manageBtn": "Manage →",
+    "viewEmployeesBtn": "View Employees →",
+    "employeeQuickAccess": "Employee Quick Access",
+    "directQRCheckin": "Direct QR Check-in",
+    "directQRCheckinDesc": "Scan room QR code to register attendance",
+    "scanQRBtn": "Scan QR →",
+    "myProfileDesc": "View personal info and change password",
+    "goToProfileBtn": "Go to My Profile →",
+    "myFormationsDesc": "History and status of your trainings",
+    "viewFormationsBtn": "View Formations →",
+    "welcomeDesc": "Smart attendance management for trainings via QR code and digital signature.",
+    "guestWelcomeTitle": "Attendance & Formation Portal",
+    "guestWelcomeSub": "Quick and secure access to calls, QR attendance control, and digital signature."
   },
   "login": {
     "title": "Login",

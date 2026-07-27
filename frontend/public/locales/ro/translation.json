@@ -8,7 +8,8 @@
     "login": "Autentificare",
     "logout": "Deconectare",
     "analytics": "Analitice",
-    "myProfile": "Profilul Meu"
+    "myProfile": "Profilul Meu",
+    "register": "Solicită Înregistrare"
   },
   "home": {
     "welcome": "Bine ați venit la ShiftSync",
@@ -32,7 +33,24 @@
     "scanQRNow": "Scanare Cod QR Formare",
     "myProfileBtn": "Vezi Profilul Meu",
     "myFormationsBtn": "Vezi Formările Mele",
-    "statusLabel": "Statutul dvs. actual:"
+    "statusLabel": "Statutul dvs. actual:",
+    "systemLive": "Sistem În Direct",
+    "sessionStartedAs": "Autentificat ca:",
+    "projectQRBtn": "Proiectează QR →",
+    "viewDataBtn": "Vezi Date →",
+    "manageBtn": "Administrează →",
+    "viewEmployeesBtn": "Vezi Angajați →",
+    "employeeQuickAccess": "Acces Rapid Angajat",
+    "directQRCheckin": "Pontaj Direct QR",
+    "directQRCheckinDesc": "Scanează codul QR al sălii pentru a înregistra prezența",
+    "scanQRBtn": "Scanează QR →",
+    "myProfileDesc": "Consultă datele personale și schimbă parola",
+    "goToProfileBtn": "Mergi la Profilul Meu →",
+    "myFormationsDesc": "Istoric și status al cursurilor tale",
+    "viewFormationsBtn": "Vezi Cursuri →",
+    "welcomeDesc": "Gestionare inteligentă a prezenței la cursuri prin cod QR și semnătură digitală.",
+    "guestWelcomeTitle": "Portal de Prezență și Cursuri",
+    "guestWelcomeSub": "Acces rapid și sigur la convocări, control prezență QR și semnătură digitală."
   },
   "login": {
     "title": "Autentificare",

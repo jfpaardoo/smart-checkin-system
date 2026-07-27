@@ -8,10 +8,11 @@
     "login": "Anmelden",
     "logout": "Abmelden",
     "analytics": "Analytik",
-    "myProfile": "Mein Profil"
+    "myProfile": "Mein Profil",
+    "register": "Registrierung Beantragen"
   },
   "home": {
-    "welcome": "Willkommen bei ShiftSync",
+    "welcome": "Willkommen bei BA Distribution Academy",
     "subtitle": "Intelligentes Anwesenheits- und Schulungsverwaltungssystem",
     "loggedIn": "Sie sind angemeldet. Greifen Sie auf Ihr Dashboard zu.",
     "goToDashboard": "Zum Dashboard",
@@ -32,7 +33,24 @@
     "scanQRNow": "Schulungs-QR Scannen",
     "myProfileBtn": "Mein Profil Anzeigen",
     "myFormationsBtn": "Meine Schulungen Anzeigen",
-    "statusLabel": "Ihr aktueller Status:"
+    "statusLabel": "Ihr aktueller Status:",
+    "systemLive": "Live-System",
+    "sessionStartedAs": "Angemeldet als:",
+    "projectQRBtn": "QR Projizieren →",
+    "viewDataBtn": "Daten Anzeigen →",
+    "manageBtn": "Verwalten →",
+    "viewEmployeesBtn": "Mitarbeiter Anzeigen →",
+    "employeeQuickAccess": "Mitarbeiter-Schnellzugriff",
+    "directQRCheckin": "Direkte QR-Zeiterfassung",
+    "directQRCheckinDesc": "Scannen Sie den Raum-QR-Code zur Anwesenheitsregistrierung",
+    "scanQRBtn": "QR Scannen →",
+    "myProfileDesc": "Persönliche Daten einsehen und Passwort ändern",
+    "goToProfileBtn": "Zu Meinem Profil →",
+    "myFormationsDesc": "Verlauf und Status Ihrer Schulungen",
+    "viewFormationsBtn": "Schulungen Anzeigen →",
+    "welcomeDesc": "Intelligente Schulungs-Anwesenheitsverwaltung per QR-Code und digitaler Unterschrift.",
+    "guestWelcomeTitle": "Anwesenheits- & Schulungsportal",
+    "guestWelcomeSub": "Schneller und sicherer Zugriff auf Aufrufe, QR-Anwesenheitskontrolle und digitale Unterschrift."
   },
   "login": {
     "title": "Anmelden",

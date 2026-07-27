@@ -8,7 +8,8 @@
     "login": "Вход",
     "logout": "Изход",
     "analytics": "Анализи",
-    "myProfile": "Моят Профил"
+    "myProfile": "Моят Профил",
+    "register": "Заявка за Регистрация"
   },
   "home": {
     "welcome": "Добре дошли в ShiftSync",
@@ -32,7 +33,24 @@
     "scanQRNow": "Сканирай QR Код за Обучение",
     "myProfileBtn": "Виж Моят Профил",
     "myFormationsBtn": "Виж Моите Обучения",
-    "statusLabel": "Текущ статус:"
+    "statusLabel": "Текущ статус:",
+    "systemLive": "Системата е На Живо",
+    "sessionStartedAs": "Влезли сте като:",
+    "projectQRBtn": "Прожектирай QR →",
+    "viewDataBtn": "Виж Данни →",
+    "manageBtn": "Управлявай →",
+    "viewEmployeesBtn": "Виж Служители →",
+    "employeeQuickAccess": "Бърз Достъп за Служители",
+    "directQRCheckin": "Директно QR Отчитане",
+    "directQRCheckinDesc": "Сканирайте QR кода на залата, за да регистрирате присъствие",
+    "scanQRBtn": "Сканирай QR →",
+    "myProfileDesc": "Преглед на лични данни и промяна на парола",
+    "goToProfileBtn": "Към Моя Профил →",
+    "myFormationsDesc": "История и статус на вашите обучения",
+    "viewFormationsBtn": "Виж Обучения →",
+    "welcomeDesc": "Интелигентно управление на присъствието в обучения чрез QR код и дигитален подпис.",
+    "guestWelcomeTitle": "Портал за Присъствие и Обучения",
+    "guestWelcomeSub": "Бърз и сигурен достъп до призовки, QR контрол на присъствието и дигитален подпис."
   },
   "login": {
     "title": "Вход",

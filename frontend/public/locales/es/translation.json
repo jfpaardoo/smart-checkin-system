@@ -12,7 +12,7 @@
     "register": "Solicitar Registro"
   },
   "home": {
-    "welcome": "Bienvenido a ShiftSync",
+    "welcome": "Bienvenido a BA Distribution Academy",
     "subtitle": "Sistema Inteligente de Fichaje y Gestión de Empleados",
     "loggedIn": "Has iniciado sesión. Accede a tu panel para ver tu información y fichar.",
     "goToDashboard": "Ir al Panel",
@@ -48,7 +48,9 @@
     "goToProfileBtn": "Ir a Mi Perfil →",
     "myFormationsDesc": "Historial y estado de tus capacitaciones",
     "viewFormationsBtn": "Ver Formaciones →",
-    "welcomeDesc": "Plataforma de alta seguridad para la gestión automatizada de asistencia a formaciones mediante códigos QR con rotación dinámica TOTP y firma digital."
+    "welcomeDesc": "Gestión inteligente de asistencia a formaciones mediante código QR y firma digital.",
+    "guestWelcomeTitle": "Portal de Asistencia y Formaciones",
+    "guestWelcomeSub": "Acceso rápido y seguro a convocatorias, control de asistencia QR y firma digital."
   },
   "login": {
     "title": "Iniciar Sesión",

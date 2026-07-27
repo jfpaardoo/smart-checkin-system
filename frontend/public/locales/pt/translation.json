@@ -8,10 +8,11 @@
     "login": "Iniciar Sessão",
     "logout": "Terminar Sessão",
     "analytics": "Análise",
-    "myProfile": "Meu Perfil"
+    "myProfile": "Meu Perfil",
+    "register": "Solicitar Registo"
   },
   "home": {
-    "welcome": "Bem-vindo ao ShiftSync",
+    "welcome": "Bem-vindo ao BA Distribution Academy",
     "subtitle": "Sistema Inteligente de Registo e Gestão de Formações",
     "loggedIn": "Sessão iniciada. Aceda ao seu painel.",
     "goToDashboard": "Ir para o Painel",
@@ -32,7 +33,24 @@
     "scanQRNow": "Digitalizar QR da Formação",
     "myProfileBtn": "Ver O Meu Perfil",
     "myFormationsBtn": "Ver As Minhas Formações",
-    "statusLabel": "O seu estado atual:"
+    "statusLabel": "O seu estado atual:",
+    "systemLive": "Sistema Em Direto",
+    "sessionStartedAs": "Sessão iniciada como:",
+    "projectQRBtn": "Projetar QR →",
+    "viewDataBtn": "Ver Dados →",
+    "manageBtn": "Gerir →",
+    "viewEmployeesBtn": "Ver Empregados →",
+    "employeeQuickAccess": "Acesso Rápido do Empregado",
+    "directQRCheckin": "Registo Direto QR",
+    "directQRCheckinDesc": "Digitalize o código QR da sala para registar presença",
+    "scanQRBtn": "Digitalizar QR →",
+    "myProfileDesc": "Consultar dados pessoais e alterar palavra-passe",
+    "goToProfileBtn": "Ir para O Meu Perfil →",
+    "myFormationsDesc": "Histórico e estado das suas formações",
+    "viewFormationsBtn": "Ver Formações →",
+    "welcomeDesc": "Gestão inteligente de presenças em formações através de código QR e assinatura digital.",
+    "guestWelcomeTitle": "Portal de Presenças e Formações",
+    "guestWelcomeSub": "Acesso rápido e seguro a convocatórias, controlo de presenças QR e assinatura digital."
   },
   "login": {
     "title": "Iniciar Sessão",

@@ -8,10 +8,11 @@
     "login": "Se Connecter",
     "logout": "Se Déconnecter",
     "analytics": "Analytique",
-    "myProfile": "Mon Profil"
+    "myProfile": "Mon Profil",
+    "register": "Demander une Inscription"
   },
   "home": {
-    "welcome": "Bienvenue sur ShiftSync",
+    "welcome": "Bienvenue sur BA Distribution Academy",
     "subtitle": "Système Intelligent de Pointage et de Gestion des Formations",
     "loggedIn": "Vous êtes connecté. Accédez à votre tableau de bord.",
     "goToDashboard": "Aller au Tableau de Bord",
@@ -32,7 +33,24 @@
     "scanQRNow": "Scanner le QR de Formation",
     "myProfileBtn": "Voir Mon Profil",
     "myFormationsBtn": "Voir Mes Formations",
-    "statusLabel": "Votre statut actuel :"
+    "statusLabel": "Votre statut actuel :",
+    "systemLive": "Système En En Direct",
+    "sessionStartedAs": "Connecté en tant que :",
+    "projectQRBtn": "Projeter QR →",
+    "viewDataBtn": "Voir les Données →",
+    "manageBtn": "Gérer →",
+    "viewEmployeesBtn": "Voir les Employés →",
+    "employeeQuickAccess": "Accès Rapide Employé",
+    "directQRCheckin": "Pointage Direct QR",
+    "directQRCheckinDesc": "Scannez le code QR de la salle pour enregistrer votre présence",
+    "scanQRBtn": "Scanner QR →",
+    "myProfileDesc": "Consulter les données personnelles et changer le mot de passe",
+    "goToProfileBtn": "Aller à Mon Profil →",
+    "myFormationsDesc": "Historique et statut de vos formations",
+    "viewFormationsBtn": "Voir les Formations →",
+    "welcomeDesc": "Gestion intelligente des présences aux formations par code QR et signature numérique.",
+    "guestWelcomeTitle": "Portail de Présence et Formations",
+    "guestWelcomeSub": "Accès rapide et sécurisé aux convocations, contrôle de présence QR et signature numérique."
   },
   "login": {
     "title": "Connexion",

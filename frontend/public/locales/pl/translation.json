@@ -8,7 +8,8 @@
     "login": "Zaloguj się",
     "logout": "Wyloguj się",
     "analytics": "Analityka",
-    "myProfile": "Mój Profil"
+    "myProfile": "Mój Profil",
+    "register": "Złóż Wniosek o Rejestrację"
   },
   "home": {
     "welcome": "Witaj w ShiftSync",
@@ -32,7 +33,24 @@
     "scanQRNow": "Skanuj Kod QR Szkolenia",
     "myProfileBtn": "Zobacz Mój Profil",
     "myFormationsBtn": "Zobacz Moje Szkolenia",
-    "statusLabel": "Twój aktualny stan:"
+    "statusLabel": "Twój aktualny stan:",
+    "systemLive": "System Na Żywo",
+    "sessionStartedAs": "Zalogowano jako:",
+    "projectQRBtn": "Wyświetl QR →",
+    "viewDataBtn": "Zobacz Dane →",
+    "manageBtn": "Zarządzaj →",
+    "viewEmployeesBtn": "Zobacz Pracowników →",
+    "employeeQuickAccess": "Szybki Dostęp Pracownika",
+    "directQRCheckin": "Bezpośrednia Rejestracja QR",
+    "directQRCheckinDesc": "Zeskanuj kod QR sali, aby zarejestrować obecność",
+    "scanQRBtn": "Skanuj QR →",
+    "myProfileDesc": "Sprawdź dane osobowe i zmień hasło",
+    "goToProfileBtn": "Przejdź do Mojego Profilu →",
+    "myFormationsDesc": "Historia i status Twoich szkoleń",
+    "viewFormationsBtn": "Zobacz Szkolenia →",
+    "welcomeDesc": "Inteligentne zarządzanie obecnością na szkoleniach za pomocą kodu QR i podpisu cyfrowego.",
+    "guestWelcomeTitle": "Portal Obecności i Szkoleń",
+    "guestWelcomeSub": "Szybki i bezpieczny dostęp do wezwań, kontroli obecności QR oraz podpisu cyfrowego."
   },
   "login": {
     "title": "Zaloguj się",

@@ -98,7 +98,7 @@ function AppNavbar() {
                     <div className="logo-crop">
                         <img src="/ba-logo.png" alt="BA Glass" />
                     </div>
-                    ShiftSync
+                    Distribution Academy
                 </NavbarBrand>
                 <NavbarToggler onClick={toggleNavbar} className="ms-2" />
                 <Collapse isOpen={!collapsed} navbar>

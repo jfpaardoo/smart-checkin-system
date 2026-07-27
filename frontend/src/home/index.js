@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Row, Col, Button } from 'reactstrap';
-import { FaQrcode, FaChartBar, FaUsers, FaGraduationCap, FaUser, FaSignInAlt, FaShieldAlt } from 'react-icons/fa';
+import { FaQrcode, FaChartBar, FaUsers, FaGraduationCap, FaUser, FaSignInAlt, FaShieldAlt, FaUserPlus } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import tokenService from '../services/token.service';
 import '../App.css';
@@ -11,15 +11,7 @@ export default function Home() {
   const jwt = tokenService.getLocalAccessToken();
   const user = tokenService.getUser();
 
-  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
   const [userData, setUserData] = useState(null);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date().toLocaleTimeString());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     if (jwt) {
@@ -55,19 +47,12 @@ export default function Home() {
             </div>
             <div className="text-start">
               <h2 className="fw-bold mb-0 text-dark" style={{ letterSpacing: '-0.5px' }}>
-                ShiftSync
+                BA Distribution Academy
               </h2>
               <span className="text-muted small fw-semibold">
                 {t('home.subtitle', 'Sistema Inteligente de Fichaje y Gestión de Formaciones')}
               </span>
             </div>
-          </div>
-
-          <div className="d-flex align-items-center gap-2 bg-white bg-opacity-60 px-3 py-1.5 rounded-pill border shadow-xs">
-            <span className="spinner-grow spinner-grow-sm text-success" aria-hidden="true"></span>
-            <output className="small fw-bold text-secondary">{currentTime}</output>
-            <span className="text-muted">•</span>
-            <span className="small text-muted fw-semibold">{t('home.systemLive', 'Sistema En Vivo')}</span>
           </div>
         </div>
 
@@ -232,19 +217,26 @@ export default function Home() {
         {!jwt && (
           <div className="text-center py-4">
             <div className="mb-4">
-              <h2 className="fw-bold text-dark mb-2">{t('home.welcome')}</h2>
-              <p className="lead text-muted mx-auto" style={{ maxWidth: '600px' }}>
-                {t('home.welcomeDesc', 'Plataforma de alta seguridad para la gestión automatizada de asistencia a formaciones mediante códigos QR con rotación dinámica TOTP y firma digital.')}
+              <h3 className="fw-bold text-dark mb-2">{t('home.guestWelcomeTitle', 'Portal de Asistencia y Formaciones')}</h3>
+              <p className="text-muted mx-auto fs-6" style={{ maxWidth: '540px' }}>
+                {t('home.guestWelcomeSub', 'Acceso rápido y seguro a convocatorias, control de asistencia QR y firma digital.')}
               </p>
             </div>
 
-            <div className="d-flex justify-content-center gap-3 mt-4">
+            <div className="d-flex justify-content-center flex-wrap gap-3 mt-4">
               <Button
                 tag={Link}
                 to="/login"
-                className="ba-btn-primary px-5 py-3 fs-5"
+                className="ba-btn-primary px-5 py-3 fs-6 d-inline-flex align-items-center gap-2"
               >
                 <FaSignInAlt /> {t('nav.login', 'Iniciar Sesión')}
+              </Button>
+              <Button
+                tag={Link}
+                to="/register"
+                className="ba-btn-secondary px-4 py-3 fs-6 d-inline-flex align-items-center gap-2"
+              >
+                <FaUserPlus /> {t('nav.register', 'Solicitar Registro')}
               </Button>
             </div>
           </div>

@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import { useToast } from "../../components/ToastProvider";
+import { CardGhostLoader, TableGhostLoader } from "../../components/GhostLoader";
 import "../../App.css";
 import "../../components/formGenerator/css/formGenerator.css";
 
@@ -87,11 +88,7 @@ function ProfileHeader({ userData, formations, t }) {
 /* Sub-component: Personal Data Tab */
 function PersonalDataTab({ loadingUser, userData, t }) {
   if (loadingUser) {
-    return (
-      <div className="text-center py-5">
-        <Spinner color="primary" />
-      </div>
-    );
+    return <CardGhostLoader />;
   }
 
   return (
@@ -148,7 +145,7 @@ function PersonalDataTab({ loadingUser, userData, t }) {
 /* Sub-component: Formations Tab with Summary Analytics Widgets */
 function FormationsTab({ loadingFormations, formations, t }) {
   if (loadingFormations) {
-    return <div className="text-center py-5"><Spinner color="primary" /></div>;
+    return <TableGhostLoader rows={4} columns={6} />;
   }
 
   const completedFormations = formations.filter(f => f.checkOutDate && f.signature).length;

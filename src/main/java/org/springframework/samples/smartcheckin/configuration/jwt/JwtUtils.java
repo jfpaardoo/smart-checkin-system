@@ -32,7 +32,7 @@ import org.jpatterns.gof.SingletonPattern;
 public class JwtUtils {
 	private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
-	@Value("${smartcheckin.app.jwtExpirationMs}")
+	@Value("${badistributionacademy.app.jwtExpirationMs:${smartcheckin.app.jwtExpirationMs:86400000}}")
 	private int jwtExpirationMs;
 
 	private KeyPair rsaKeyPair;

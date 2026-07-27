@@ -1,4 +1,4 @@
-# Decisiones de Diseño y Arquitectura (Smart Check-in System)
+# Decisiones de Diseño y Arquitectura (BA Distribution Academy)
 
 Este documento es un registro vivo (*Architecture Decision Record* o ADR) de las decisiones arquitectónicas y tecnológicas tomadas durante el desarrollo de la aplicación de fichaje de empleados, con el fin de tener trazabilidad de nuestro diseño frente a futuras consultas técnicas.
 
