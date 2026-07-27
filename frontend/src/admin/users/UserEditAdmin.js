@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Form, Input, Label, FormGroup, Row, Col, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
+import "../../App.css";
 import "../../static/css/admin/adminPage.css";
 import getIdFromUrl from "../../util/getIdFromUrl";
 import useFetchData from "../../util/useFetchData";

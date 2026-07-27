@@ -8,6 +8,7 @@ import GlassDropdown from '../../components/GlassDropdown';
 import tokenService from '../../services/token.service';
 import useFetchState from '../../util/useFetchState';
 import parseQrPayload from '../../util/qrPayloadUtil';
+import '../../App.css';
 import '../../static/css/admin/adminPage.css';
 
 // Aux helper: Post formation attendance

@@ -10,6 +10,7 @@ import tokenService from '../../services/token.service';
 import { CardGhostLoader } from '../../components/GhostLoader';
 import GlassDropdown from '../../components/GlassDropdown';
 import { useSubscription } from '../../hooks/useSubscription';
+import '../../App.css';
 import '../../static/css/admin/adminPage.css';
 
 export default function UserDashboard() {

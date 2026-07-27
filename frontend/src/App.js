@@ -8,6 +8,7 @@ import Home from "./home";
 import PrivateRoute from "./privateRoute";
 import Login from "./auth/login";
 import Logout from "./auth/logout";
+import Register from "./auth/register/Register";
 import tokenService from "./services/token.service";
 import SwaggerDocs from "./public/swagger";
 import UserListAdmin from "./admin/users/UserListAdmin";
@@ -65,13 +66,17 @@ function App() {
   
   if (!jwt) {
     publicRoutes = (
+      <>
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </>
     )
   } else {
     userRoutes = (
       <>
         <Route path="/logout" element={<Logout />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/checkin" element={<ScannerCheckin />} />
         <Route path="/dashboard" element={<UserDashboard />} />
         <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />

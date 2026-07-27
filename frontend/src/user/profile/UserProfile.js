@@ -45,8 +45,8 @@ function ProfileHeader({ userData, formations, t }) {
             height: "76px",
             fontSize: "30px",
             background: "linear-gradient(135deg, #1e293b 0%, #334155 100%)",
-            color: "#cce364",
-            border: "2.5px solid #cce364",
+            color: "#b3c34c",
+            border: "2.5px solid #b3c34c",
           }}
         >
           {getAvatarInitial(userData)}
@@ -56,7 +56,7 @@ function ProfileHeader({ userData, formations, t }) {
             <h3 className="mb-0 text-dark fw-bold">
               {getUserFullName(userData)}
             </h3>
-            <Badge pill className="px-3 py-1 fs-6 shadow-xs text-dark" style={{ background: "#cce364" }}>
+            <Badge pill className="px-3 py-1 fs-6 shadow-xs text-dark" style={{ background: "#b3c34c" }}>
               {userData?.authority?.authority || "USER"}
             </Badge>
           </div>
@@ -74,12 +74,7 @@ function ProfileHeader({ userData, formations, t }) {
           <Button
             tag={Link}
             to="/checkin"
-            className="d-inline-flex align-items-center gap-2 px-3 py-2 fw-bold border-0 shadow-sm"
-            style={{
-              background: "#cce364",
-              color: "#1a1a1a",
-              borderRadius: "16px",
-            }}
+            className="ba-btn-primary d-inline-flex align-items-center gap-2 px-3 py-2 fw-bold"
           >
             <FaQrcode /> {t('profile.scanQR', 'Escanear QR')}
           </Button>
@@ -240,9 +235,9 @@ function FormationsTab({ loadingFormations, formations, t }) {
                     <td className="small">{att.checkInDate ? new Date(att.checkInDate).toLocaleString() : "-"}</td>
                     <td className="small">{att.checkOutDate ? new Date(att.checkOutDate).toLocaleString() : "-"}</td>
                     <td>
-                      <Badge color="light" text="dark" pill className="border px-2 py-1">
+                      <span className="ba-badge ba-badge-inactive fw-bold px-3 py-1 text-dark" style={{ color: '#1e293b' }}>
                         {calculateDuration(att.checkInDate, att.checkOutDate)}
-                      </Badge>
+                      </span>
                     </td>
                     <td>
                       {isSigned ? (

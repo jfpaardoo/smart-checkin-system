@@ -293,5 +293,24 @@
     "changePasswordError": "Erro ao alterar palavra-passe",
     "signed": "Assinado",
     "pendingSignature": "Pendente"
+  },
+  "register": {
+    "title": "Solicitação de Registo",
+    "subtitle": "Insira os seus dados de funcionário para solicitar acesso à plataforma",
+    "firstName": "Nome",
+    "lastName": "Apelidos",
+    "username": "Nome de Utilizador",
+    "personalCode": "Código Pessoal (4 dígitos)",
+    "password": "Palavra-passe",
+    "confirmPassword": "Confirmar Palavra-passe",
+    "submitBtn": "Enviar Solicitação de Registo",
+    "passwordTooShort": "A palavra-passe deve ter pelo menos 6 caracteres.",
+    "passwordMismatch": "As palavras-passe não coincidem.",
+    "invalidPersonalCode": "O código pessoal deve ter exatamente 4 dígitos.",
+    "receivedTitle": "Solicitação Enviada!",
+    "receivedDesc": "A sua solicitação foi registada com sucesso. Um administrador irá rever e ativar o seu perfil.",
+    "goToLogin": "Voltar ao Início de Sessão",
+    "alreadyHaveAccount": "Já tem uma conta ativa?",
+    "loginHere": "Iniciar Sessão"
   }
 }

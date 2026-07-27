@@ -1,3 +1,7 @@
+/* ==========================================
+   SHIFTSYNC DESIGN SYSTEM - AUTHENTICATION PAGES
+   ========================================== */
+
 .auth-page-container {
   min-height: calc(100vh - 120px);
   width: 100%;
@@ -12,6 +16,7 @@
 .auth-form-container {
   max-width: 480px;
   width: 100%;
+  min-width: 320px;
   padding: 40px 35px;
   background: rgba(255, 255, 255, 0.55) !important;
   backdrop-filter: blur(35px) saturate(210%) !important;

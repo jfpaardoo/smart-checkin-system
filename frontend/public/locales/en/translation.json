@@ -293,5 +293,24 @@
     "changePasswordError": "Error changing password",
     "signed": "Signed",
     "pendingSignature": "Pending"
+  },
+  "register": {
+    "title": "Registration Request",
+    "subtitle": "Enter your employee details to request access to the platform",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "username": "Username",
+    "personalCode": "Personal Code (4 digits)",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "submitBtn": "Submit Registration Request",
+    "passwordTooShort": "Password must be at least 6 characters long.",
+    "passwordMismatch": "Passwords do not match.",
+    "invalidPersonalCode": "Personal code must be exactly 4 digits.",
+    "receivedTitle": "Request Submitted!",
+    "receivedDesc": "Your request has been registered successfully. An administrator will review and activate your profile so you can log in.",
+    "goToLogin": "Back to Login",
+    "alreadyHaveAccount": "Already have an active account?",
+    "loginHere": "Log In"
   }
 }

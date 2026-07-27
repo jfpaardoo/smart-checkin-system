@@ -5,9 +5,9 @@
   --color-error: #dc2626;
   --color-error-background: rgba(254, 226, 226, 0.7);
   --color-border-disabled: #cbd5e1;
-  --main-button-hover-dark-color: #cce364;
-  --main-button-hover-light-color: #cce364;
-  --main-button-shadow-hover-color: rgba(0,0,0,0.1);
+  --main-button-hover-dark-color: #b3c34c;
+  --main-button-hover-light-color: #b3c34c;
+  --main-button-shadow-hover-color: rgba(179,195,76,0.3);
   --main-black: #111;
 }
 
@@ -75,8 +75,8 @@ input.class-form-input:focus,
 select.class-form-input:focus,
 textarea.class-form-input:focus {
   background: rgba(255, 255, 255, 0.75) !important;
-  border-color: rgba(204, 227, 100, 0.9) !important;
-  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 1), 0 0 0 4px rgba(204, 227, 100, 0.35) !important;
+  border-color: rgba(179, 195, 76, 0.9) !important;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 1), 0 0 0 4px rgba(179, 195, 76, 0.35) !important;
 }
 
 textarea.class-form-input {
@@ -93,10 +93,14 @@ textarea.class-form-input {
   transform: translateY(10px);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease, font-size 0.3s ease;
   pointer-events: none;
-  max-width: calc(100% - 52px);
+  max-width: calc(100% - 24px);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.class-form-input.pe-5 + .class-form-label {
+  max-width: calc(100% - 48px);
 }
 
 .class-form-input:focus + .class-form-label,
@@ -107,6 +111,7 @@ textarea.class-form-input {
   transform-origin: top left;
   color: #2b3a04;
   font-weight: 700;
+  max-width: 150%;
 }
 
 .interval-group {

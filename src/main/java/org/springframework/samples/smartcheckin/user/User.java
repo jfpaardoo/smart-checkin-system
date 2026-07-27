@@ -55,8 +55,12 @@ public class User extends BaseEntity {
 	private String lastName;
 
 	@NotNull
-	@Column(name = "is_working")
+	@Column(name = "is_working", columnDefinition = "boolean default false")
 	private Boolean isWorking = false;
+
+	@NotNull
+	@Column(name = "is_approved", columnDefinition = "boolean default true")
+	private Boolean isApproved = true;
 
 	@Column(name = "failed_login_attempts")
 	private Integer failedLoginAttempts = 0;

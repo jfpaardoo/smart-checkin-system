@@ -102,7 +102,7 @@ export default function AnalyticsDashboard() {
         : 0;
     const daysTracked = statistics.length;
 
-    const COLORS = ['#2563eb', '#10b981'];
+    const COLORS = ['#b3c34c', '#1e293b'];
 
     const pieData = statistics.length > 0 ? [
         { name: t('analytics.attendance', 'Attendance'), value: latestAttendanceRate, fill: COLORS[0] },
@@ -116,16 +116,15 @@ export default function AnalyticsDashboard() {
                 <div className="ba-card-header align-items-center">
                     <div>
                         <h2>
-                            <FontAwesomeIcon icon={faChartLine} className="me-2" style={{ color: 'var(--ba-dark)' }} /> 
+                            <FontAwesomeIcon icon={faChartLine} className="me-2" style={{ color: 'var(--ba-primary)' }} /> 
                             {t('analytics.title', 'Analytics & HR Control')}
                         </h2>
                         {/* Tab Switcher */}
-                        <Nav tabs className="border-0 mt-3">
+                        <Nav tabs className="border-0 mt-3 gap-2">
                             <NavItem>
                                 <NavLink
-                                    className={`ba-nav-link text-dark fw-bold me-2 style-cursor ${activeTab === 'overview' ? 'active bg-white shadow-sm' : ''}`}
+                                    className={`ba-tab-pill ${activeTab === 'overview' ? 'ba-tab-pill-active' : ''}`}
                                     onClick={() => setActiveTab('overview')}
-                                    style={{ cursor: 'pointer', borderRadius: '16px' }}
                                 >
                                     <FontAwesomeIcon icon={faChartLine} className="me-1" />
                                     {t('analytics.overviewTab', 'Platform Overview')}
@@ -133,9 +132,8 @@ export default function AnalyticsDashboard() {
                             </NavItem>
                             <NavItem>
                                 <NavLink
-                                    className={`ba-nav-link text-dark fw-bold style-cursor ${activeTab === 'employees' ? 'active bg-white shadow-sm' : ''}`}
+                                    className={`ba-tab-pill ${activeTab === 'employees' ? 'ba-tab-pill-active' : ''}`}
                                     onClick={() => setActiveTab('employees')}
-                                    style={{ cursor: 'pointer', borderRadius: '16px' }}
                                 >
                                     <FontAwesomeIcon icon={faUsers} className="me-1" />
                                     {t('analytics.employeesTab', 'Employee Control')}

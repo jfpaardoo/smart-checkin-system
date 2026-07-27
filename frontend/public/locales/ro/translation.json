@@ -293,5 +293,24 @@
     "changePasswordError": "Eroare la schimbarea parolei",
     "signed": "Semnat",
     "pendingSignature": "În așteptare"
+  },
+  "register": {
+    "title": "Solicitare de Înregistrare",
+    "subtitle": "Introduceți datele dvs. de angajat pentru a solicita acces la platformă",
+    "firstName": "Nume",
+    "lastName": "Prenume",
+    "username": "Nume de utilizator",
+    "personalCode": "Cod personal (4 cifre)",
+    "password": "Parolă",
+    "confirmPassword": "Confirmare parolă",
+    "submitBtn": "Trimite solicitarea de înregistrare",
+    "passwordTooShort": "Parola trebuie să aibă cel puțin 6 caractere.",
+    "passwordMismatch": "Parolele nu se potrivesc.",
+    "invalidPersonalCode": "Codul personal trebuie să aibă exact 4 cifre.",
+    "receivedTitle": "Solicitare Trimisă!",
+    "receivedDesc": "Solicitarea dvs. a fost înregistrată cu succes. Un administrator o va revizui și vă va activa profilul.",
+    "goToLogin": "Înapoi la Autentificare",
+    "alreadyHaveAccount": "Aveți deja un cont activ?",
+    "loginHere": "Autentificare"
   }
 }

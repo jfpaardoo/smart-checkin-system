@@ -291,7 +291,26 @@
     "passwordsDoNotMatch": "Hasła nie są identyczne",
     "passwordSuccessLogout": "Hasło zostało pomyślnie zaktualizowane. Ze względów bezpieczeństwa zaloguj się ponownie.",
     "changePasswordError": "Błąd podczas zmiany hasła",
-    "signed": "Podpisano",
+    "signed": "Podpisane",
     "pendingSignature": "Oczekujące"
+  },
+  "register": {
+    "title": "Wniosek o rejestrację",
+    "subtitle": "Wprowadź swoje dane pracownika, aby poprosić o dostęp do platformy",
+    "firstName": "Imię",
+    "lastName": "Nazwisko",
+    "username": "Nazwa użytkownika",
+    "personalCode": "Kod osobisty (4 cyfry)",
+    "password": "Hasło",
+    "confirmPassword": "Potwierdź hasło",
+    "submitBtn": "Wyślij wniosek o rejestrację",
+    "passwordTooShort": "Hasło musi mieć co najmniej 6 znaków.",
+    "passwordMismatch": "Hasła nie są identyczne.",
+    "invalidPersonalCode": "Kod osobisty musi składać się z dokładnie 4 cyfr.",
+    "receivedTitle": "Wniosek wysłany!",
+    "receivedDesc": "Twój wniosek został pomyślnie zarejestrowany. Administrator sprawdzi go i aktywuje Twój profil.",
+    "goToLogin": "Powrót do logowania",
+    "alreadyHaveAccount": "Masz już aktywne konto?",
+    "loginHere": "Zaloguj się"
   }
 }

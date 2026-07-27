@@ -1,109 +1,150 @@
 /* ==========================================
-   SHIFTSYNC DESIGN SYSTEM - RESPONSIVE SCREEN BREAKPOINTS
+   SHIFTSYNC DESIGN SYSTEM - RESPONSIVE BREAKPOINTS
    ========================================== */
 
-/* ------------------------------------------
-   1. DESKTOP & LARGE SCREENS (> 1200px)
-   ------------------------------------------ */
-@media (min-width: 1200px) {
-  .ba-container {
-    max-width: 1250px;
-  }
-}
-
-/* ------------------------------------------
-   2. TABLET SCREENS (768px to 1199px)
-   ------------------------------------------ */
-@media (max-width: 1199px) and (min-width: 768px) {
-  .ba-container {
-    max-width: 100%;
-    padding: 15px 20px;
-  }
-  
-  .ba-card {
-    padding: 30px 35px !important;
-  }
-
-  .analytics-kpi-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* ------------------------------------------
-   3. MOBILE & NARROW SCREENS (< 768px)
-   ------------------------------------------ */
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   .ba-navbar {
-    margin: 10px 12px !important;
-    padding: 8px 16px !important;
-    border-radius: 30px !important;
+    margin: 10px 10px !important;
+    padding: 10px 18px !important;
+    border-radius: 28px !important;
+    flex-wrap: wrap;
+  }
+
+  .ba-navbar-brand {
+    font-size: 1.15rem;
+  }
+
+  .logo-crop {
+    width: 34px;
+    height: 34px;
+    margin-right: 8px;
+  }
+
+  .logo-crop img {
+    width: 50px;
+    height: 50px;
+  }
+
+  .ba-navbar .navbar-toggler {
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 12px !important;
+    padding: 4px 8px !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  .ba-navbar .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.95%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+  }
+
+  .ba-navbar .navbar-collapse:not(.show):not(.collapsing) {
+    display: none !important;
+  }
+
+  .ba-navbar .navbar-collapse.show,
+  .ba-navbar .navbar-collapse.collapsing {
+    flex-basis: 100%;
+    width: 100%;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+    height: auto !important;
+    min-height: 0 !important;
+    gap: 4px !important;
+  }
+
+  .ba-navbar .navbar-collapse .navbar-nav {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-grow: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 2px !important;
+  }
+
+  .ba-navbar .dropdown-menu.ba-dropdown-menu {
+    position: static !important;
+    transform: none !important;
+    float: none !important;
+    width: 100% !important;
+    margin: 2px 0 !important;
+    padding: 4px 8px !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    display: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transition: none !important;
+  }
+
+  .ba-navbar .dropdown-menu.ba-dropdown-menu.show {
+    display: block !important;
+  }
+
+  .ba-navbar .nav-link,
+  .ba-navbar .dropdown-toggle {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 14px !important;
+    border-radius: 12px !important;
   }
 
   .ba-container {
-    padding: 10px 12px !important;
+    padding: 10px 12px 20px 12px;
+    min-height: auto;
   }
 
   .ba-card {
-    padding: 22px 16px !important;
+    padding: 24px 18px !important;
     border-radius: 28px !important;
+    margin-bottom: 15px;
   }
 
-  .ba-glass-card {
-    padding: 18px 14px !important;
-    border-radius: 22px !important;
+  .ba-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
 
-  .ba-glass-panel {
-    padding: 14px 12px !important;
-    border-radius: 18px !important;
+  .ba-card-header h2 {
+    font-size: 1.4rem;
   }
 
-  /* Form & Floating Label Responsive Overrides */
-  input.class-form-input {
-    padding: 14px 48px 14px 14px !important;
-    font-size: 0.95rem !important;
+  .table.ba-table {
+    border-spacing: 0 8px !important;
   }
 
-  .class-form-label {
-    max-width: calc(100% - 55px) !important;
-    font-size: 0.88rem !important;
+  .table.ba-table tbody td {
+    padding: 12px 14px !important;
+    font-size: 0.85rem;
   }
 
-  /* Search Bar & Nav Responsive Overrides */
-  .ba-search-bar-wrapper {
-    max-width: 100% !important;
-    width: 100% !important;
+  .token-display {
+    font-size: 1.8rem !important;
+    padding: 6px 16px !important;
+    letter-spacing: 4px !important;
   }
 
-  .ba-glass-search-input {
-    font-size: 0.9rem !important;
-    padding-left: 38px !important;
+  .ba-toast-container {
+    top: 80px;
+    right: 12px;
+    left: 12px;
   }
 
-  .ba-nav-link, .nav-pills .nav-link {
-    font-size: 0.85rem !important;
-    padding: 8px 12px !important;
-  }
-
-  .nav-tabs, .nav-pills {
-    flex-wrap: wrap !important;
-    gap: 8px !important;
-  }
-
-  /* Table Responsive Overrides */
-  .table-responsive {
-    border-radius: 16px !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .ba-table th, .ba-table td {
-    padding: 10px 12px !important;
-    font-size: 0.85rem !important;
-    white-space: nowrap !important;
-  }
-
-  .chart-container-wrapper {
-    height: 250px !important;
+  .ba-toast {
+    min-width: unset;
+    max-width: 100%;
   }
 }

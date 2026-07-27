@@ -2,8 +2,8 @@
 
 :root {
   --ba-dark: #1e293b;
-  --ba-green: #cce364;
-  --ba-green-glow: #b1cc3b;
+  --ba-green: #b3c34c;
+  --ba-green-glow: #9eb038;
   --ba-white: #ffffff;
   --ba-glass-border: rgba(255, 255, 255, 0.6);
   --ba-light-grey: transparent;
@@ -31,7 +31,7 @@ body::before {
   left: -10%;
   width: 55vw;
   height: 55vw;
-  background: radial-gradient(circle, rgba(204, 227, 100, 0.45) 0%, rgba(204, 227, 100, 0) 70%);
+  background: radial-gradient(circle, rgba(179, 195, 76, 0.40) 0%, rgba(179, 195, 76, 0) 70%);
   border-radius: 50%;
   filter: blur(90px);
   z-index: -1;

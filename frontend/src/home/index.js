@@ -67,7 +67,7 @@ export default function Home() {
             <span className="spinner-grow spinner-grow-sm text-success" aria-hidden="true"></span>
             <output className="small fw-bold text-secondary">{currentTime}</output>
             <span className="text-muted">•</span>
-            <span className="small text-muted fw-semibold">Sistema En Vivo</span>
+            <span className="small text-muted fw-semibold">{t('home.systemLive', 'Sistema En Vivo')}</span>
           </div>
         </div>
 
@@ -76,24 +76,26 @@ export default function Home() {
           <div>
             <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 text-start">
               <h5 className="fw-bold m-0 text-dark d-flex align-items-center gap-2">
-                <FaShieldAlt style={{ color: '#8a9e29' }} /> {t('home.quickActions', 'Acciones Rápidas')}
+                <FaShieldAlt style={{ color: 'var(--ba-primary)' }} /> {t('home.quickActions', 'Acciones Rápidas')}
               </h5>
               <span className="text-muted small">
-                Sesión iniciada como: <strong className="text-dark">@{user?.username}</strong>
+                {t('home.sessionStartedAs', 'Sesión iniciada como:')} <strong className="text-dark">@{user?.username}</strong>
               </span>
             </div>
 
             <Row className="g-3 align-items-stretch">
               <Col md={6} lg={3}>
                 <Link to="/admin/qr" className="text-decoration-none d-block h-100">
-                  <div className="p-4 ba-glass-panel h-100 d-flex flex-column align-items-center justify-content-between text-center transition-all hover-lift">
+                  <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
-                      <FaQrcode size={34} style={{ color: '#8a9e29' }} className="mb-3" />
+                      <div className="ba-action-icon-wrapper">
+                        <FaQrcode size={30} />
+                      </div>
                       <h6 className="fw-bold text-dark mb-1">{t('home.projectQR', 'Generar Código QR')}</h6>
                       <p className="small text-muted mb-0">{t('home.projectQRDesc', 'Proyectar QR para asistencia a formación')}</p>
                     </div>
-                    <span className="badge rounded-pill text-dark fw-bold px-4 py-2 mt-4 w-100" style={{ background: '#cce364', fontSize: '0.85rem' }}>
-                      Proyectar QR →
+                    <span className="ba-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
+                      {t('home.projectQRBtn', 'Proyectar QR →')}
                     </span>
                   </div>
                 </Link>
@@ -101,14 +103,16 @@ export default function Home() {
 
               <Col md={6} lg={3}>
                 <Link to="/admin/analytics" className="text-decoration-none d-block h-100">
-                  <div className="p-4 ba-glass-panel h-100 d-flex flex-column align-items-center justify-content-between text-center transition-all hover-lift">
+                  <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
-                      <FaChartBar size={34} style={{ color: '#8a9e29' }} className="mb-3" />
+                      <div className="ba-action-icon-wrapper">
+                        <FaChartBar size={30} />
+                      </div>
                       <h6 className="fw-bold text-dark mb-1">{t('home.viewAnalytics', 'Analíticas y Reportes')}</h6>
                       <p className="small text-muted mb-0">{t('home.viewAnalyticsDesc', 'Descargar informes Excel y PDF')}</p>
                     </div>
-                    <span className="badge rounded-pill text-dark fw-bold px-4 py-2 mt-4 w-100" style={{ background: '#cce364', fontSize: '0.85rem' }}>
-                      Ver Datos →
+                    <span className="ba-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
+                      {t('home.viewDataBtn', 'Ver Datos →')}
                     </span>
                   </div>
                 </Link>
@@ -116,14 +120,16 @@ export default function Home() {
 
               <Col md={6} lg={3}>
                 <Link to="/admin/formations" className="text-decoration-none d-block h-100">
-                  <div className="p-4 ba-glass-panel h-100 d-flex flex-column align-items-center justify-content-between text-center transition-all hover-lift">
+                  <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
-                      <FaGraduationCap size={34} style={{ color: '#8a9e29' }} className="mb-3" />
+                      <div className="ba-action-icon-wrapper">
+                        <FaGraduationCap size={30} />
+                      </div>
                       <h6 className="fw-bold text-dark mb-1">{t('home.manageFormations', 'Gestionar Formaciones')}</h6>
                       <p className="small text-muted mb-0">{t('home.manageFormationsDesc', 'Crear y administrar convocatorias')}</p>
                     </div>
-                    <span className="badge rounded-pill text-dark fw-bold px-4 py-2 mt-4 w-100" style={{ background: '#cce364', fontSize: '0.85rem' }}>
-                      Administrar →
+                    <span className="ba-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
+                      {t('home.manageBtn', 'Administrar →')}
                     </span>
                   </div>
                 </Link>
@@ -131,14 +137,16 @@ export default function Home() {
 
               <Col md={6} lg={3}>
                 <Link to="/admin/users" className="text-decoration-none d-block h-100">
-                  <div className="p-4 ba-glass-panel h-100 d-flex flex-column align-items-center justify-content-between text-center transition-all hover-lift">
+                  <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
-                      <FaUsers size={34} style={{ color: '#8a9e29' }} className="mb-3" />
+                      <div className="ba-action-icon-wrapper">
+                        <FaUsers size={30} />
+                      </div>
                       <h6 className="fw-bold text-dark mb-1">{t('home.manageUsers', 'Gestionar Usuarios')}</h6>
                       <p className="small text-muted mb-0">{t('home.manageUsersDesc', 'Administrar plantilla de empleados')}</p>
                     </div>
-                    <span className="badge rounded-pill text-dark fw-bold px-4 py-2 mt-4 w-100" style={{ background: '#cce364', fontSize: '0.85rem' }}>
-                      Ver Empleados →
+                    <span className="ba-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
+                      {t('home.viewEmployeesBtn', 'Ver Empleados →')}
                     </span>
                   </div>
                 </Link>
@@ -152,7 +160,7 @@ export default function Home() {
           <div>
             <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 text-start">
               <h5 className="fw-bold m-0 text-dark d-flex align-items-center gap-2">
-                <FaUser style={{ color: '#8a9e29' }} /> Acceso Rápido del Empleado
+                <FaUser style={{ color: 'var(--ba-primary)' }} /> {t('home.employeeQuickAccess', 'Acceso Rápido del Empleado')}
               </h5>
               <div className="d-flex align-items-center gap-2">
                 <span className="text-muted small">{t('home.statusLabel', 'Tu estado actual:')}</span>
@@ -166,14 +174,16 @@ export default function Home() {
               {/* Card 1: Fichaje Directo QR */}
               <Col md={4}>
                 <Link to="/checkin" className="text-decoration-none d-block h-100">
-                  <div className="p-4 ba-glass-panel h-100 d-flex flex-column align-items-center justify-content-between text-center transition-all hover-lift">
+                  <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
-                      <FaQrcode size={36} style={{ color: '#8a9e29' }} className="mb-3" />
-                      <h6 className="fw-bold text-dark mb-1">Fichaje Directo QR</h6>
-                      <p className="small text-muted mb-0">Escanea el código QR del aula para registrar asistencia</p>
+                      <div className="ba-action-icon-wrapper">
+                        <FaQrcode size={30} />
+                      </div>
+                      <h6 className="fw-bold text-dark mb-1">{t('home.directQRCheckin', 'Fichaje Directo QR')}</h6>
+                      <p className="small text-muted mb-0">{t('home.directQRCheckinDesc', 'Escanea el código QR del aula para registrar asistencia')}</p>
                     </div>
-                    <span className="badge rounded-pill text-dark fw-bold px-4 py-2 mt-4 w-100" style={{ background: '#cce364', fontSize: '0.85rem' }}>
-                      Escanear QR →
+                    <span className="ba-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
+                      {t('home.scanQRBtn', 'Escanear QR →')}
                     </span>
                   </div>
                 </Link>
@@ -182,14 +192,16 @@ export default function Home() {
               {/* Card 2: Mi Perfil */}
               <Col md={4}>
                 <Link to="/profile" className="text-decoration-none d-block h-100">
-                  <div className="p-4 ba-glass-panel h-100 d-flex flex-column align-items-center justify-content-between text-center transition-all hover-lift">
+                  <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
-                      <FaUser size={36} style={{ color: '#8a9e29' }} className="mb-3" />
+                      <div className="ba-action-icon-wrapper">
+                        <FaUser size={30} />
+                      </div>
                       <h6 className="fw-bold text-dark mb-1">{t('home.myProfileBtn', 'Ver Mi Perfil')}</h6>
-                      <p className="small text-muted mb-0">Consultar datos personales y cambiar contraseña</p>
+                      <p className="small text-muted mb-0">{t('home.myProfileDesc', 'Consultar datos personales y cambiar contraseña')}</p>
                     </div>
-                    <span className="badge rounded-pill text-dark fw-bold px-4 py-2 mt-4 w-100" style={{ background: '#cce364', fontSize: '0.85rem' }}>
-                      Ir a Mi Perfil →
+                    <span className="ba-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
+                      {t('home.goToProfileBtn', 'Ir a Mi Perfil →')}
                     </span>
                   </div>
                 </Link>
@@ -198,14 +210,16 @@ export default function Home() {
               {/* Card 3: Mis Formaciones */}
               <Col md={4}>
                 <Link to="/dashboard" className="text-decoration-none d-block h-100">
-                  <div className="p-4 ba-glass-panel h-100 d-flex flex-column align-items-center justify-content-between text-center transition-all hover-lift">
+                  <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
-                      <FaGraduationCap size={36} style={{ color: '#8a9e29' }} className="mb-3" />
+                      <div className="ba-action-icon-wrapper">
+                        <FaGraduationCap size={30} />
+                      </div>
                       <h6 className="fw-bold text-dark mb-1">{t('home.myFormationsBtn', 'Ver Mis Formaciones')}</h6>
-                      <p className="small text-muted mb-0">Historial y estado de tus capacitaciones</p>
+                      <p className="small text-muted mb-0">{t('home.myFormationsDesc', 'Historial y estado de tus capacitaciones')}</p>
                     </div>
-                    <span className="badge rounded-pill text-dark fw-bold px-4 py-2 mt-4 w-100" style={{ background: '#cce364', fontSize: '0.85rem' }}>
-                      Ver Formaciones →
+                    <span className="ba-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
+                      {t('home.viewFormationsBtn', 'Ver Formaciones →')}
                     </span>
                   </div>
                 </Link>
@@ -220,7 +234,7 @@ export default function Home() {
             <div className="mb-4">
               <h2 className="fw-bold text-dark mb-2">{t('home.welcome')}</h2>
               <p className="lead text-muted mx-auto" style={{ maxWidth: '600px' }}>
-                Plataforma de alta seguridad para la gestión automatizada de asistencia a formaciones mediante códigos QR con rotación dinámica TOTP y firma digital.
+                {t('home.welcomeDesc', 'Plataforma de alta seguridad para la gestión automatizada de asistencia a formaciones mediante códigos QR con rotación dinámica TOTP y firma digital.')}
               </p>
             </div>
 
@@ -228,14 +242,7 @@ export default function Home() {
               <Button
                 tag={Link}
                 to="/login"
-                className="px-5 py-3 fw-bold border-0 shadow-sm d-inline-flex align-items-center gap-2"
-                style={{
-                  borderRadius: '24px',
-                  background: '#cce364',
-                  color: '#1a1a1a',
-                  fontSize: '1.1rem',
-                  boxShadow: '0 6px 20px rgba(204, 227, 100, 0.4)',
-                }}
+                className="ba-btn-primary px-5 py-3 fs-5"
               >
                 <FaSignInAlt /> {t('nav.login', 'Iniciar Sesión')}
               </Button>

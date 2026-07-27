@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useToast } from "../../components/ToastProvider";
 import FormGenerator from "../../components/formGenerator/formGenerator";
 import tokenService from "../../services/token.service";
+import "../../App.css";
 import "../../static/css/auth/authButton.css";
 import { loginFormInputs } from "./form/loginFormInputs";
 

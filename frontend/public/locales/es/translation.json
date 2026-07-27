@@ -8,7 +8,8 @@
     "login": "Iniciar Sesión",
     "logout": "Cerrar Sesión",
     "analytics": "Analíticas",
-    "myProfile": "Mi Perfil"
+    "myProfile": "Mi Perfil",
+    "register": "Solicitar Registro"
   },
   "home": {
     "welcome": "Bienvenido a ShiftSync",
@@ -32,7 +33,22 @@
     "scanQRNow": "Escanear QR de Formación",
     "myProfileBtn": "Ver Mi Perfil",
     "myFormationsBtn": "Ver Mis Formaciones",
-    "statusLabel": "Tu estado actual:"
+    "statusLabel": "Tu estado actual:",
+    "systemLive": "Sistema En Vivo",
+    "sessionStartedAs": "Sesión iniciada como:",
+    "projectQRBtn": "Proyectar QR →",
+    "viewDataBtn": "Ver Datos →",
+    "manageBtn": "Administrar →",
+    "viewEmployeesBtn": "Ver Empleados →",
+    "employeeQuickAccess": "Acceso Rápido del Empleado",
+    "directQRCheckin": "Fichaje Directo QR",
+    "directQRCheckinDesc": "Escanea el código QR del aula para registrar asistencia",
+    "scanQRBtn": "Escanear QR →",
+    "myProfileDesc": "Consultar datos personales y cambiar contraseña",
+    "goToProfileBtn": "Ir a Mi Perfil →",
+    "myFormationsDesc": "Historial y estado de tus capacitaciones",
+    "viewFormationsBtn": "Ver Formaciones →",
+    "welcomeDesc": "Plataforma de alta seguridad para la gestión automatizada de asistencia a formaciones mediante códigos QR con rotación dinámica TOTP y firma digital."
   },
   "login": {
     "title": "Iniciar Sesión",
@@ -293,5 +309,24 @@
     "changePasswordError": "Error al cambiar contraseña",
     "signed": "Firmado",
     "pendingSignature": "Pendiente"
+  },
+  "register": {
+    "title": "Solicitud de Registro",
+    "subtitle": "Introduce tus datos de empleado para solicitar acceso a la plataforma",
+    "firstName": "Nombre",
+    "lastName": "Apellidos",
+    "username": "Nombre de Usuario",
+    "personalCode": "Código Personal (4 dígitos)",
+    "password": "Contraseña",
+    "confirmPassword": "Repetir Contraseña",
+    "submitBtn": "Enviar Solicitud de Registro",
+    "passwordTooShort": "La contraseña debe tener al menos 6 caracteres.",
+    "passwordMismatch": "Las contraseñas no coinciden.",
+    "invalidPersonalCode": "El código personal debe ser de exactamente 4 dígitos.",
+    "receivedTitle": "¡Solicitud Enviada!",
+    "receivedDesc": "Tu solicitud ha sido registrada correctamente. Un administrador la revisará y activará tu perfil para que puedas iniciar sesión.",
+    "goToLogin": "Volver al Inicio de Sesión",
+    "alreadyHaveAccount": "¿Ya tienes cuenta activa?",
+    "loginHere": "Iniciar Sesión"
   }
 }

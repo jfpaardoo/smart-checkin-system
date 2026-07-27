@@ -1,7 +1,8 @@
 /* ==========================================
-   SHIFTSYNC DESIGN SYSTEM - CAPSULE NAVBAR
+   SHIFTSYNC DESIGN SYSTEM - NAVBAR & DROPDOWNS
    ========================================== */
 
+/* BA Glass Navbar - Official Capsule Style */
 .ba-navbar {
   background: rgba(40, 40, 40, 0.85) !important;
   backdrop-filter: blur(60px) saturate(210%);
@@ -62,92 +63,69 @@
   transform: translateY(-1px);
 }
 
-/* Vitreous Dark & Light Dropdown Menus */
+/* Custom Dropdown Styling - Vitreous Dark Glassmorphism */
 .dropdown-menu.ba-dropdown-menu {
-  border-radius: 22px !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), inset 0 1.5px 2px rgba(255, 255, 255, 0.35) !important;
-  background: rgba(20, 25, 38, 0.92) !important;
-  backdrop-filter: blur(50px) saturate(200%) !important;
-  -webkit-backdrop-filter: blur(50px) saturate(200%) !important;
-  padding: 10px !important;
-  min-width: 250px !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), inset 0 1px 1.5px rgba(255, 255, 255, 0.4) !important;
+  background: rgba(40, 40, 40, 0.85) !important;
+  backdrop-filter: blur(60px) saturate(210%);
+  -webkit-backdrop-filter: blur(60px) saturate(210%);
+  padding: 8px !important;
+  min-width: 230px !important;
   display: block !important;
   opacity: 0;
   visibility: hidden;
   margin-top: 2px !important;
-  transition: opacity 0.25s ease-out, margin-top 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: opacity 0.3s ease-out, margin-top 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
   pointer-events: none;
 }
 
 .dropdown-menu.ba-dropdown-menu.show {
   opacity: 1;
   visibility: visible;
-  margin-top: 14px !important;
+  margin-top: 22px !important;
   pointer-events: auto;
 }
 
-.dropdown-menu.ba-dropdown-menu .dropdown-header {
-  color: rgba(255, 255, 255, 0.65) !important;
-  font-size: 0.78rem !important;
-  font-weight: 700 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.8px !important;
-  padding: 8px 14px 4px 14px !important;
-}
-
-.dropdown-menu.ba-dropdown-menu .dropdown-divider {
-  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
-  margin: 6px 0 !important;
-}
-
-.dropdown-menu.ba-dropdown-menu .dropdown-item,
+/* Capsule Hover Items for Dropdowns */
 .ba-dropdown-item {
-  padding: 10px 16px !important;
-  margin: 3px 0 !important;
-  color: #ffffff !important;
-  font-size: 0.92rem !important;
-  font-weight: 600 !important;
-  border-radius: 14px !important;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  background: transparent !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-}
-
-.dropdown-menu.ba-dropdown-menu .dropdown-item:hover,
-.dropdown-menu.ba-dropdown-menu .dropdown-item:focus,
-.dropdown-menu.ba-dropdown-menu .dropdown-item.active,
-.ba-dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.28) !important;
-  color: #ffffff !important;
-  backdrop-filter: blur(15px) !important;
-  -webkit-backdrop-filter: blur(15px) !important;
-  transform: translateX(4px) !important;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 4px 14px rgba(0, 0, 0, 0.35) !important;
-}
-
-.dropdown-menu.ba-dropdown-menu.ba-light-dropdown {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.45)) !important;
-  backdrop-filter: blur(30px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08), inset 0 1.5px 2px rgba(255, 255, 255, 0.95) !important;
+  padding: 10px 18px !important;
+  margin: 4px 0 !important;
+  color: var(--ba-white) !important;
+  font-size: 0.95rem;
+  font-weight: 500;
   border-radius: 20px !important;
-  padding: 8px !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  background: transparent !important;
 }
 
-.dropdown-menu.ba-dropdown-menu.ba-light-dropdown .dropdown-item {
-  color: #1e293b !important;
-  border-radius: 12px !important;
-  padding: 10px 14px !important;
+.ba-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  transform: translateX(4px);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Light Liquid Glass Dropdown Menu for Forms & Selects */
+.ba-select-toggle + .dropdown-menu.ba-dropdown-menu,
+.dropdown-menu.ba-dropdown-menu.ba-light-dropdown {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(240, 245, 252, 0.85)) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12), inset 0 1.5px 2px rgba(255, 255, 255, 1) !important;
+  backdrop-filter: blur(40px) saturate(210%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(210%) !important;
+}
+
+.ba-select-toggle + .dropdown-menu.ba-dropdown-menu .ba-dropdown-item {
+  color: #2c3e50 !important;
+}
+
+.ba-select-toggle + .dropdown-menu.ba-dropdown-menu .ba-dropdown-item:hover,
+.ba-select-toggle + .dropdown-menu.ba-dropdown-menu .ba-dropdown-item.active {
+  background: rgba(204, 227, 100, 0.35) !important;
+  color: #2b3a04 !important;
   font-weight: 600 !important;
-  transition: all 0.2s ease !important;
-}
-
-.dropdown-menu.ba-dropdown-menu.ba-light-dropdown .dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.6) !important;
-  color: #0f172a !important;
-  transform: translateX(4px) !important;
+  transform: translateX(4px);
 }

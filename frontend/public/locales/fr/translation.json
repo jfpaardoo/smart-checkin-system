@@ -293,5 +293,24 @@
     "changePasswordError": "Erreur lors du changement de mot de passe",
     "signed": "Signé",
     "pendingSignature": "En attente"
+  },
+  "register": {
+    "title": "Demande d'inscription",
+    "subtitle": "Entrez vos coordonnées d'employé pour demander l'accès à la plateforme",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "username": "Nom d'utilisateur",
+    "personalCode": "Code personnel (4 chiffres)",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "submitBtn": "Envoyer la demande",
+    "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères.",
+    "passwordMismatch": "Les mots de passe ne correspondent pas.",
+    "invalidPersonalCode": "Le code personnel doit comporter exactement 4 chiffres.",
+    "receivedTitle": "Demande envoyée !",
+    "receivedDesc": "Votre demande a été enregistrée. Un administrateur va la vérifier et activer votre profil.",
+    "goToLogin": "Retour à la connexion",
+    "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "loginHere": "Se connecter"
   }
 }

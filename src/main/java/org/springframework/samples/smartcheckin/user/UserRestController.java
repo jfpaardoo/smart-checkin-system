@@ -64,7 +64,7 @@ class UserRestController {
 		if (auth != null && !auth.isBlank()) {
 			res = (List<User>) userService.findAllByAuthority(auth);
 		} else {
-			res = (List<User>) userService.findAll();
+			res = (List<User>) userService.findApprovedUsers();
 		}
 
 		if (search != null && !search.isBlank()) {
@@ -120,6 +120,21 @@ class UserRestController {
 		return new ResponseEntity<>(userService.findUser(id), HttpStatus.OK);
 	}
 
+	@GetMapping("pending")
+	public ResponseEntity<List<User>> findPendingUsers() {
+		List<User> pending = (List<User>) userService.findPendingUsers();
+		return new ResponseEntity<>(pending, HttpStatus.OK);
+	}
+
+	@PutMapping("{userId}/approve")
+	public ResponseEntity<MessageResponse> approveUser(@PathVariable("userId") Integer id) {
+		User target = userService.findUser(id);
+		RestPreconditions.checkNotNull(target, "User", "ID", id);
+		target.setIsApproved(true);
+		userService.saveUser(target);
+		return ResponseEntity.ok(new MessageResponse("Usuario aprobado con éxito."));
+	}
+
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	@SuppressWarnings("squid:S4684")
@@ -127,6 +142,7 @@ class UserRestController {
 		if (user.getPassword() != null) {
 			user.setPassword(passwordEncoder.encode(user.getPassword()));
 		}
+		user.setIsApproved(true); // Direct admin creation is pre-approved
 		User savedUser = userService.saveUser(user);
 		return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
 	}

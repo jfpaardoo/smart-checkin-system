@@ -2,9 +2,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Button, ButtonGroup, Table } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPencil, faUsers, faTrash, faQrcode, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faPencil, faUsers, faTrash, faQrcode, faPlus, faGraduationCap } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
+import "../../App.css";
 import "../../static/css/admin/adminPage.css";
 import deleteFromList from "../../util/deleteFromList";
 import GlassSearchBar from "../../components/GlassSearchBar";
@@ -96,7 +97,7 @@ export default function FormationListAdmin() {
             </Button>
             <Button
               size="sm"
-              className="ba-btn-blue btn-gap btn-icon-expand"
+              className="ba-btn-secondary btn-gap btn-icon-expand"
               aria-label={"qr-" + formation.id}
               tag={Link}
               to={`/qr-generator?formationId=${formation.id}`}
@@ -131,7 +132,10 @@ export default function FormationListAdmin() {
     <div className="ba-container">
       <div className="ba-card">
         <div className="ba-card-header">
-          <h2>{t('formations.title')}</h2>
+          <h2>
+            <FontAwesomeIcon icon={faGraduationCap} style={{ color: 'var(--ba-primary)' }} className="me-2" />
+            {t('formations.title')}
+          </h2>
           <Button className="ba-btn-primary" tag={Link} to="/formations/new">
             <FontAwesomeIcon icon={faPlus} className="me-1" /> {t('formations.createFormation')}
           </Button>

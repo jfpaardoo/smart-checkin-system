@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar, NavbarBrand, NavLink, NavItem, Nav, NavbarToggler, Collapse, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { Link } from 'react-router-dom';
-import { FaUsers, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen, FaChartLine, FaIdCard } from 'react-icons/fa';
+import { FaUsers, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen, FaChartLine, FaIdCard, FaUserPlus, FaSignInAlt } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import tokenService from './services/token.service';
 import jwt_decode from "jwt-decode";
@@ -59,9 +59,18 @@ function AppNavbar() {
 
     if (!jwt) {
         publicLinks = (
-            <NavItem>
-                <NavLink className="ba-nav-link" id="login" tag={Link} to="/login">{t('nav.login')}</NavLink>
-            </NavItem>
+            <>
+                <NavItem>
+                    <NavLink className="ba-nav-link d-inline-flex align-items-center" id="register" tag={Link} to="/register">
+                        <FaUserPlus className="me-1" /> {t('nav.register', 'Solicitar Registro')}
+                    </NavLink>
+                </NavItem>
+                <NavItem>
+                    <NavLink className="ba-nav-link d-inline-flex align-items-center" id="login" tag={Link} to="/login">
+                        <FaSignInAlt className="me-1" /> {t('nav.login', 'Iniciar Sesión')}
+                    </NavLink>
+                </NavItem>
+            </>
         )
     } else {
         userLogout = (

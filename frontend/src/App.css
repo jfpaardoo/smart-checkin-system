@@ -1,23 +1,27 @@
 /* ==========================================
-   SHIFTSYNC DESIGN SYSTEM - CENTRAL INDEX
-   Modularized Architecture for High Maintainability
+   SHIFTSYNC DESIGN SYSTEM - MASTER INDEX
+   Modularized Architecture for Maximum Scalability
    ========================================== */
 
-/* 1. Base Design System & Design Tokens */
+/* 1. Base Tokens & Custom Variables */
 @import './static/css/base/variables.css';
 
-/* 2. Common Abstractions (Cards, Panels, Buttons, Badges, Tables, Inputs) */
+/* 2. Common Abstractions (Cards, Buttons, Tables, Inputs, Modals, Toast) */
 @import './static/css/base/common.css';
 
 /* 3. Layout Components (Floating Capsule Navbar & Glass Dropdowns) */
 @import './static/css/layout/navbar.css';
 
-/* 4. Feature Components (QR Camera Scanner & Generator) */
+/* 4. Authentication Pages & Form Containers */
+@import './static/css/auth/authPage.css';
+@import './static/css/auth/authButton.css';
+
+/* 5. Feature Components (QR Camera Scanner & Generator) */
 @import './static/css/components/qrScanner.css';
 
-/* 5. Responsive Screen Breakpoints (Desktop, Tablet, Mobile) */
-@import './static/css/responsive/responsive.css';
+/* 6. Admin Views & Analytics */
+@import './static/css/admin/adminPage.css';
+@import './static/css/admin/analyticsDashboard.css';
 
-.App {
-  text-align: center;
-}
+/* 7. Responsive Breakpoints (Mobile, Tablet, Desktop) */
+@import './static/css/responsive/responsive.css';
