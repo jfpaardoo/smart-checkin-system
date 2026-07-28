@@ -9,7 +9,9 @@
     "logout": "Изход",
     "analytics": "Анализи",
     "myProfile": "Моят Профил",
-    "register": "Заявка за Регистрация"
+    "register": "Заявка за Регистрация",
+    "audit": "Audit",
+    "cloudSettings": "Ajustes de Nube"
   },
   "home": {
     "welcome": "Добре дошли в ShiftSync",
@@ -43,7 +45,7 @@
     "employeeQuickAccess": "Бърз Достъп за Служители",
     "directQRCheckin": "Директно QR Отчитане",
     "directQRCheckinDesc": "Сканирайте QR кода на залата, за да регистрирате присъствие",
-    "scanQRBtn": "Сканирай QR →",
+    "scanQRBtn": "Scan QR →",
     "myProfileDesc": "Преглед на лични данни и промяна на парола",
     "goToProfileBtn": "Към Моя Профил →",
     "myFormationsDesc": "История и статус на вашите обучения",
@@ -67,7 +69,7 @@
     "addNewUser": "Добави Нов Потребител",
     "saveUser": "Запази Потребител",
     "cancel": "Отказ",
-    "personalCode": "Личен Код",
+    "personalCode": "Personal Code",
     "username": "Потребителско име",
     "firstName": "Име",
     "lastName": "Фамилия",
@@ -75,8 +77,8 @@
     "status": "Статус",
     "role": "Роля",
     "actions": "Действия",
-    "working": "В обучение",
-    "offDuty": "Извън обучение",
+    "working": "In Formation",
+    "offDuty": "Out of Formation",
     "selectRole": "Избери Роля",
     "personalCode4digits": "Личен Код (4 цифри)",
     "roleAuthority": "Роля / Права",
@@ -90,7 +92,9 @@
     "connectionError": "Грешка във връзката. Моля, опитайте отново.",
     "duplicatePersonalCode": "Личният код вече съществува за друг потребител.",
     "duplicateUsername": "Потребителското име вече съществува.",
-    "duplicateGeneric": "Възникна конфликт в базата данни."
+    "duplicateGeneric": "Възникна конфликт в базата данни.",
+    "activeEmployees": "Active Employees",
+    "pendingRequestsTab": "Pending Requests"
   },
   "formations": {
     "title": "Управление на Обучения",
@@ -99,7 +103,7 @@
     "createNew": "Създай Ново Обучение",
     "saveFormation": "Запази Обучение",
     "cancel": "Отказ",
-    "name": "Наименование",
+    "name": "Име",
     "description": "Описание",
     "dateTime": "Дата и Час",
     "attendees": "Участници",
@@ -121,7 +125,15 @@
     "deleteError": "Грешка при изтриване на обучението",
     "connectionError": "Грешка във връзката. Моля, опитайте отново.",
     "duplicateConflict": "Данните за това обучение съвпадат със съществуващ запис.",
-    "searchPlaceholder": "Търсене на обучение по име или описание..."
+    "searchPlaceholder": "Търсене на обучение по име или описание...",
+    "scheduled": "Планирана Дата",
+    "checkin": "Влизане",
+    "checkout": "Излизане",
+    "duration": "Продължителност",
+    "signature": "Цифров Подпис",
+    "document": "Documento de Formación (Opcional)",
+    "documentExists": "Ya existe un documento vinculado.",
+    "viewCurrentDocument": "Ver documento actual"
   },
   "formationDetails": {
     "title": "Детайли за Обучението",
@@ -160,7 +172,9 @@
     "userAddError": "Грешка при добавяне на потребителя.",
     "userRemoved": "Потребителят е премахнат от обучението.",
     "userRemoveError": "Грешка при премахване на потребителя.",
-    "userRemoveConfirm": "Сигурни ли сте, че искате да премахнете този участник?"
+    "userRemoveConfirm": "Сигурни ли сте, че искате да премахнете този участник?",
+    "documentation": "Documentación",
+    "viewDocumentation": "Ver Documentación"
   },
   "qr": {
     "title": "QR на Обучение",
@@ -210,13 +224,25 @@
     "signatureRequired": "Моля, поставете подпис.",
     "checkoutSuccess": "Изходът е регистриран успешно.",
     "checkoutError": "Грешка при регистриране на изхода",
-    "camera": "Камера"
+    "camera": "Камера",
+    "viewDocumentation": "Ver Documentación"
   },
   "checkin": {
     "title": "Сканер за Отчитане",
     "scanQr": "Сканирайте QR кода",
     "success": "Отчитането е успешно",
-    "error": "Грешка при отчитане"
+    "error": "Грешка при отчитане",
+    "signatureRequired": "Signature Required for Checkout",
+    "clearSignature": "Clear",
+    "confirmSignature": "Confirm Signature",
+    "manualCodeInstructions": "Enter the 6-digit code projected next to the QR.",
+    "manualCodeLabel": "6-Digit Code (from QR)",
+    "useCamera": "Use Camera",
+    "confirmCheckin": "Confirm Check-in",
+    "cameraInstructions": "Point your camera at the projected QR code.",
+    "selectCamera": "Select Camera...",
+    "manualInputPrompt": "Camera issues? Enter code manually",
+    "scannerTitle": "Check-in Scanner"
   },
   "common": {
     "save": "Запази",
@@ -296,7 +322,7 @@
     "myFormations": "Моите Обучения",
     "securityPassword": "Сигурност и Парола",
     "personalInformation": "Лична Информация на Потребителя",
-    "myFormationHistory": "История на Обученията",
+    "myFormationHistory": "Моята История на Обучения",
     "noFormationsYet": "Все още нямате регистрирани обучения.",
     "changePasswordTitle": "Промяна на Парола",
     "currentPassword": "Текуща Парола",
@@ -310,7 +336,12 @@
     "passwordSuccessLogout": "Паролата е обновена успешно. От съображения за сигурност, моля влезте отново.",
     "changePasswordError": "Грешка при промяна на паролата",
     "signed": "Подписано",
-    "pendingSignature": "Предстоящо"
+    "pendingSignature": "Предстоящо",
+    "totalFormations": "Общо Регистрирани",
+    "completedSigned": "Завършени и Подписани",
+    "accumulatedTime": "Натрупано Време",
+    "downloadCertificate": "Download Certificate PDF",
+    "scanQR": "Scan QR"
   },
   "register": {
     "title": "Заявка за Регистрация",
@@ -330,5 +361,39 @@
     "goToLogin": "Обратно към Вход",
     "alreadyHaveAccount": "Вече имате активен профил?",
     "loginHere": "Вход"
+  },
+  "audit": {
+    "title": "Audit Log",
+    "subtitle": "Проследимост на действията в системата",
+    "searchPlaceholder": "Търсене по действие, потребител или детайли...",
+    "columns": {
+      "date": "Дата и Час",
+      "action": "Действие",
+      "user": "Потребител",
+      "details": "Детайли",
+      "ip": "Изходен IP"
+    },
+    "noRecords": "Не са намерени одитни записи.",
+    "exportCSV": "Export to CSV"
+  },
+  "cloudSettings": {
+    "saveSuccess": "Ajustes de nube guardados correctamente",
+    "saveError": "Error al guardar ajustes",
+    "connectionError": "Error de conexión",
+    "backupSuccess": "Copia de seguridad realizada y subida a la nube",
+    "backupError": "Error al realizar el backup",
+    "title": "Ajustes de Nube",
+    "backingUp": "Respaldando...",
+    "forceBackupBtn": "Forzar Backup DB",
+    "description": "Configura aquí las credenciales para conectar la plataforma con la API de OneDrive (Microsoft Graph). Estas credenciales se utilizarán para subir los documentos de las formaciones y los backups de la base de datos.",
+    "providerLabel": "Proveedor de Nube Activo",
+    "comingSoon": "Próximamente",
+    "azureCredentials": "Credenciales de Microsoft Entra (Azure)",
+    "tenantIdLabel": "Tenant ID",
+    "clientIdLabel": "Client ID (App ID)",
+    "clientSecretLabel": "Client Secret",
+    "refreshTokenLabel": "Refresh Token (Larga duración)",
+    "refreshTokenHelp": "Este token se usará para obtener Access Tokens automáticamente de la Graph API sin intervención del usuario.",
+    "saveBtn": "Guardar Ajustes"
   }
 }

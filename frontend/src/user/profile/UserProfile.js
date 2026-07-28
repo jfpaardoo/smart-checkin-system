@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Row, Col, Nav, NavItem, NavLink, TabContent, TabPane, Form, Button, Table, Badge, Spinner } from "reactstrap";
-import { FaUser, FaGraduationCap, FaLock, FaKey, FaShieldAlt, FaIdCard, FaCheckCircle, FaExclamationTriangle, FaEye, FaEyeSlash, FaQrcode, FaClock, FaAward } from "react-icons/fa";
+import { FaUser, FaGraduationCap, FaLock, FaKey, FaShieldAlt, FaIdCard, FaCheckCircle, FaExclamationTriangle, FaEye, FaEyeSlash, FaQrcode, FaClock, FaAward, FaFilePdf } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
@@ -64,7 +64,7 @@ function ProfileHeader({ userData, formations, t }) {
           <div className="d-flex align-items-center gap-3 flex-wrap text-muted mt-2">
             <span>@{userData?.username}</span>
             <span>•</span>
-            <span>Código Personal: <strong>{userData?.personalCode || "----"}</strong></span>
+            <span>{t('users.personalCode', 'Código Personal')}: <strong>{userData?.personalCode || "----"}</strong></span>
             <span>•</span>
             <span className={`ba-badge ${userData?.isWorking ? 'ba-badge-active' : 'ba-badge-inactive'}`}>
               {userData?.isWorking ? t('users.working', 'En formación') : t('users.offDuty', 'Fuera de formación')}
@@ -161,6 +161,31 @@ function FormationsTab({ loadingFormations, formations, t }) {
     ? `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m` 
     : `${totalMinutes} min`;
 
+  const handleDownloadCertificate = async (attendanceId) => {
+    try {
+      const response = await fetch(`/api/v1/certificates/attendance/${attendanceId}`, {
+        headers: {
+          Authorization: `Bearer ${tokenService.getLocalAccessToken()}`
+        }
+      });
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `certificate_${attendanceId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      } else {
+        console.error("Error fetching certificate PDF");
+      }
+    } catch (error) {
+      console.error("Error downloading PDF", error);
+    }
+  };
+
   return (
     <div className="p-3">
       {/* Summary Analytics Cards */}
@@ -245,6 +270,20 @@ function FormationsTab({ loadingFormations, formations, t }) {
                         <Badge color="warning" className="d-inline-flex align-items-center gap-1 px-2 py-1">
                           <FaExclamationTriangle /> {t('profile.pendingSignature', 'Pendiente')}
                         </Badge>
+                      )}
+                    </td>
+                    <td className="text-end">
+                      {isSigned && (
+                        <Button 
+                          size="sm" 
+                          outline 
+                          color="secondary" 
+                          className="ba-action-btn-sm d-inline-flex align-items-center gap-1"
+                          onClick={() => handleDownloadCertificate(att.id)}
+                          title={t('profile.downloadCertificate', 'Descargar Certificado PDF')}
+                        >
+                          <FaFilePdf className="text-danger" /> PDF
+                        </Button>
                       )}
                     </td>
                   </tr>

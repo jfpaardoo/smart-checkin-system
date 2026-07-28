@@ -8,6 +8,7 @@ import GlassDropdown from '../../components/GlassDropdown';
 import tokenService from '../../services/token.service';
 import useFetchState from '../../util/useFetchState';
 import parseQrPayload from '../../util/qrPayloadUtil';
+import { useTranslation } from 'react-i18next';
 import '../../App.css';
 import '../../static/css/admin/adminPage.css';
 
@@ -31,9 +32,18 @@ const postFormationAttendance = async (formationId, jwt) => {
 };
 
 // Aux helper: Post work check-in / check-out
-const postWorkCheckin = async (token, signature, jwt) => {
+const postWorkCheckin = async (token, signature, jwt, userCoords = null, adminCoords = null) => {
   const body = { token };
   if (signature) body.signature = signature;
+  
+  if (userCoords) {
+      body.userLat = userCoords.lat;
+      body.userLng = userCoords.lng;
+  }
+  if (adminCoords?.adminLat) {
+      body.adminLat = adminCoords.adminLat;
+      body.adminLng = adminCoords.adminLng;
+  }
 
   const response = await fetch('/api/v1/checkins/qr-fichaje', {
     method: 'POST',
@@ -78,6 +88,7 @@ const stopScannerSafely = async (scanner) => {
 };
 
 export default function ScannerCheckin() {
+  const { t } = useTranslation();
   const toast = useToast();
   const jwt = tokenService.getLocalAccessToken();
 
@@ -138,7 +149,20 @@ export default function ScannerCheckin() {
         setSuccessModal(true);
         resetScanner();
       } else {
-        const res = await postWorkCheckin(token, signature, jwt);
+        const { adminLat, adminLng } = parseQrPayload(rawInput, formations);
+        let userCoords = null;
+        if ("geolocation" in navigator) {
+            try {
+                const pos = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 5000 });
+                });
+                userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            } catch (err) {
+                console.warn("User geolocation failed", err);
+            }
+        }
+        
+        const res = await postWorkCheckin(token, signature, jwt, userCoords, { adminLat, adminLng });
         setLoading(false);
 
         if (res.needsSignature) {
@@ -227,7 +251,7 @@ export default function ScannerCheckin() {
     if (needsSignature) {
       return (
         <div className="mt-3 text-center">
-          <h4 className="mb-4" style={{ color: '#2c3e50', fontWeight: 600 }}>Firma Requerida para Salida</h4>
+          <h4 className="mb-4" style={{ color: '#2c3e50', fontWeight: 600 }}>{t('checkin.signatureRequired', 'Firma Requerida para Salida')}</h4>
           <div className="mx-auto" style={{ backgroundColor: '#ffffff', borderRadius: '20px', border: '1.5px solid rgba(255, 255, 255, 0.8)', overflow: 'hidden', boxShadow: '0 8px 25px rgba(0, 0, 0, 0.05)', maxWidth: '450px' }}>
             <SignatureCanvas
               penColor="blue"
@@ -242,7 +266,7 @@ export default function ScannerCheckin() {
               style={{ flex: 1 }}
               onClick={() => sigCanvas.current.clear()}
             >
-              Borrar
+              {t('checkin.clearSignature', 'Borrar')}
             </button>
             <button
               type="button"
@@ -250,7 +274,7 @@ export default function ScannerCheckin() {
               style={{ flex: 2 }}
               onClick={handleSignatureSubmit}
             >
-              Confirmar Firma
+              {t('checkin.confirmSignature', 'Confirmar Firma')}
             </button>
           </div>
         </div>
@@ -261,12 +285,12 @@ export default function ScannerCheckin() {
       return (
         <Form onSubmit={handleManualSubmit} className="mt-2 text-center">
           <p className="mb-3" style={{ color: '#64748b', fontSize: '1rem', fontWeight: 500 }}>
-            Introduce el código de 6 dígitos proyectado junto al QR.
+            {t('checkin.manualCodeInstructions', 'Introduce el código de 6 dígitos proyectado junto al QR.')}
           </p>
 
           <FormGroup className="mb-4">
             <label htmlFor="manualCodeInput" className="form-label text-muted small fw-bold d-block mb-2">
-              Código de 6 Dígitos (del QR)
+              {t('checkin.manualCodeLabel', 'Código de 6 Dígitos (del QR)')}
             </label>
             <Input
               id="manualCodeInput"
@@ -294,7 +318,7 @@ export default function ScannerCheckin() {
                 toast.info('Cámara reactivada.');
               }}
             >
-              Usar Cámara
+              {t('checkin.useCamera', 'Usar Cámara')}
             </button>
             <button
               type="submit"
@@ -302,7 +326,7 @@ export default function ScannerCheckin() {
               style={{ flex: 2 }}
               disabled={manualCode.length !== 6}
             >
-              Confirmar Fichaje
+              {t('checkin.confirmCheckin', 'Confirmar Fichaje')}
             </button>
           </div>
         </Form>
@@ -312,7 +336,7 @@ export default function ScannerCheckin() {
     return (
       <div>
         <p className="text-center mb-3" style={{ color: '#64748b', fontSize: '1.05rem' }}>
-          Apunta con la cámara al código QR proyectado.
+          {t('checkin.cameraInstructions', 'Apunta con la cámara al código QR proyectado.')}
         </p>
         {cameras.length > 1 && (
           <div className="mb-3">
@@ -320,7 +344,7 @@ export default function ScannerCheckin() {
               options={cameras}
               value={selectedCameraId}
               onChange={(camId) => setSelectedCameraId(camId)}
-              placeholder="Seleccionar Cámara..."
+              placeholder={t('checkin.selectCamera', 'Seleccionar Cámara...')}
             />
           </div>
         )}
@@ -336,7 +360,7 @@ export default function ScannerCheckin() {
               toast.info('Modo manual activado: Introduce el código de 6 dígitos.');
             }}
           >
-            ¿Problemas con la cámara? Introducir código manualmente
+            {t('checkin.manualInputPrompt', '¿Problemas con la cámara? Introducir código manualmente')}
           </button>
         </div>
       </div>
@@ -347,7 +371,7 @@ export default function ScannerCheckin() {
     <div className="ba-container justify-content-center">
       <div className="ba-card p-4 p-md-5 my-auto mx-auto" style={{ maxWidth: '550px' }}>
         <h2 className="text-center mb-4" style={{ color: '#2c3e50', fontWeight: 700 }}>
-          Escáner de Fichaje
+          {t('checkin.scannerTitle', 'Escáner de Fichaje')}
         </h2>
 
         {renderMainContent()}

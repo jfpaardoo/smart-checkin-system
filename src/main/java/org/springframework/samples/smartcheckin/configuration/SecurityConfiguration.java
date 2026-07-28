@@ -88,6 +88,8 @@ public class SecurityConfiguration {
 						.requestMatchers("/api/v1/totp/**").hasAuthority(ADMIN)
 						.requestMatchers("/api/v1/analytics/**").hasAuthority(ADMIN)
 						.requestMatchers("/api/v1/exports/**").hasAuthority(ADMIN)
+						.requestMatchers("/api/v1/audit/**").hasAuthority(ADMIN)
+						.requestMatchers("/api/v1/cloud-settings/**").hasAuthority(ADMIN)
 
 						// Otras reglas de acceso para el Check-in System:
 						.requestMatchers(HttpMethod.POST, "/api/v1/checkins/qr-fichaje").permitAll()
@@ -96,6 +98,9 @@ public class SecurityConfiguration {
 						// Formaciones: crear solo ADMIN, el resto autenticado
 						.requestMatchers(HttpMethod.POST, "/api/v1/formations").hasAuthority(ADMIN)
 						.requestMatchers("/api/v1/formations/**").authenticated()
+
+						// Certificados
+						.requestMatchers("/api/v1/certificates/**").authenticated()
 
 						// El resto denegado
 						.anyRequest().denyAll())

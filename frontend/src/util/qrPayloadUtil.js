@@ -11,10 +11,15 @@ export function parseQrPayload(rawInput, activeFormations = []) {
   let action = null;
   let formationId = null;
 
+  let adminLat = null;
+  let adminLng = null;
+
   if (typeof rawInput === 'object' && rawInput !== null) {
     token = rawInput.token ?? '';
     action = rawInput.action ?? null;
     formationId = rawInput.formationId ?? null;
+    adminLat = rawInput.adminLat ?? null;
+    adminLng = rawInput.adminLng ?? null;
   } else if (typeof rawInput === 'string' && rawInput.trim().startsWith('{')) {
     try {
       const parsed = JSON.parse(rawInput);
@@ -22,6 +27,8 @@ export function parseQrPayload(rawInput, activeFormations = []) {
         token = parsed.token ?? token;
         action = parsed.action ?? action;
         formationId = parsed.formationId ?? formationId;
+        adminLat = parsed.adminLat ?? adminLat;
+        adminLng = parsed.adminLng ?? adminLng;
       }
     } catch (err) {
       console.debug('Failed to parse JSON QR payload:', err);
@@ -38,7 +45,9 @@ export function parseQrPayload(rawInput, activeFormations = []) {
   return {
     token: cleanToken,
     action: action || 'checkin',
-    formationId: formationId || null
+    formationId: formationId ? Number.parseInt(formationId, 10) : null,
+    adminLat,
+    adminLng
   };
 }
 

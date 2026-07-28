@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar, NavbarBrand, NavLink, NavItem, Nav, NavbarToggler, Collapse, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { Link } from 'react-router-dom';
-import { FaUsers, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen, FaChartLine, FaIdCard, FaUserPlus, FaSignInAlt } from 'react-icons/fa';
+import { FaUsers, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen, FaChartLine, FaIdCard, FaUserPlus, FaSignInAlt, FaShieldAlt, FaCloudUploadAlt } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import tokenService from './services/token.service';
 import jwt_decode from "jwt-decode";
@@ -43,6 +43,12 @@ function AppNavbar() {
                         </DropdownItem>
                         <DropdownItem tag={Link} to="/analytics" className="ba-dropdown-item d-flex align-items-center">
                             <FaChartLine className="me-2" /> {t('nav.analytics')}
+                        </DropdownItem>
+                        <DropdownItem tag={Link} to="/audit" className="ba-dropdown-item d-flex align-items-center">
+                            <FaShieldAlt className="me-2" /> {t('nav.audit', 'Auditoría')}
+                        </DropdownItem>
+                        <DropdownItem tag={Link} to="/admin/cloud-settings" className="ba-dropdown-item d-flex align-items-center">
+                            <FaCloudUploadAlt className="me-2" /> {t('nav.cloudSettings', 'Ajustes de Nube')}
                         </DropdownItem>
                         <DropdownItem divider />
                         <DropdownItem tag={Link} to="/qr-generator" className="ba-dropdown-item d-flex align-items-center">

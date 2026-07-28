@@ -70,6 +70,21 @@ const QRGeneratorAdmin = () => {
         }
     });
 
+    const [adminCoords, setAdminCoords] = useState(null);
+
+    useEffect(() => {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                setAdminCoords({
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                });
+            }, (error) => {
+                console.warn("Geolocation not available or permission denied", error);
+            }, { enableHighAccuracy: true });
+        }
+    }, []);
+
     const buildQrPayload = () => {
         const payload = { 
             token: totpToken, 
@@ -78,6 +93,11 @@ const QRGeneratorAdmin = () => {
         
         if (selectedFormationId) {
             payload.formationId = Number.parseInt(selectedFormationId, 10);
+        }
+
+        if (adminCoords) {
+            payload.adminLat = adminCoords.lat;
+            payload.adminLng = adminCoords.lng;
         }
         
         return JSON.stringify(payload);

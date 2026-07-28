@@ -12,4 +12,10 @@ public class QrCheckinRequest {
     private String token;
 
     private String signature;
+
+    // Geolocation data
+    private Double userLat;
+    private Double userLng;
+    private Double adminLat;
+    private Double adminLng;
 }

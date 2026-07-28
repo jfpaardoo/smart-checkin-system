@@ -1,6 +1,7 @@
 package org.springframework.samples.smartcheckin.formation;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,4 +19,6 @@ public class FormationRequest {
 
     @NotNull
     private LocalDateTime formationDate;
+
+    private List<String> existingDocumentUrls;
 }

@@ -9,7 +9,9 @@
     "logout": "Cerrar Sesión",
     "analytics": "Analíticas",
     "myProfile": "Mi Perfil",
-    "register": "Solicitar Registro"
+    "register": "Solicitar Registro",
+    "audit": "Auditoría",
+    "cloudSettings": "Ajustes de Nube"
   },
   "home": {
     "welcome": "Bienvenido a BA Distribution Academy",
@@ -90,7 +92,9 @@
     "connectionError": "Error de conexión. Por favor, inténtalo de nuevo.",
     "duplicatePersonalCode": "El Código Personal ya existe para otro usuario.",
     "duplicateUsername": "El Nombre de usuario ya existe para otro usuario.",
-    "duplicateGeneric": "Se ha producido un conflicto en la base de datos (registro duplicado)."
+    "duplicateGeneric": "Se ha producido un conflicto en la base de datos (registro duplicado).",
+    "activeEmployees": "Empleados Activos",
+    "pendingRequestsTab": "Solicitudes Pendientes"
   },
   "formations": {
     "title": "Gestión de Formaciones",
@@ -121,7 +125,15 @@
     "deleteError": "Error al eliminar la formación",
     "connectionError": "Error de conexión. Por favor, inténtalo de nuevo.",
     "duplicateConflict": "Los datos de esta formación entran en conflicto con un registro existente.",
-    "searchPlaceholder": "Buscar formación por nombre o descripción..."
+    "searchPlaceholder": "Buscar formación por nombre o descripción...",
+    "scheduled": "Fecha Programada",
+    "checkin": "Entrada",
+    "checkout": "Salida",
+    "duration": "Duración",
+    "signature": "Firma Digital",
+    "document": "Documento de Formación (Opcional)",
+    "documentExists": "Ya existe un documento vinculado.",
+    "viewCurrentDocument": "Ver documento actual"
   },
   "formationDetails": {
     "title": "Detalles de la Formación",
@@ -160,7 +172,9 @@
     "userAddError": "Error al añadir usuario.",
     "userRemoved": "Usuario eliminado de la formación.",
     "userRemoveError": "Error al eliminar usuario.",
-    "userRemoveConfirm": "¿Seguro que deseas eliminar este asistente?"
+    "userRemoveConfirm": "¿Seguro que deseas eliminar este asistente?",
+    "documentation": "Documentación",
+    "viewDocumentation": "Ver Documentación"
   },
   "qr": {
     "title": "QR de Formación",
@@ -210,13 +224,25 @@
     "signatureRequired": "Por favor proporcione su firma.",
     "checkoutSuccess": "Checkout completado con éxito.",
     "checkoutError": "Error registrando salida",
-    "camera": "Cámara"
+    "camera": "Cámara",
+    "viewDocumentation": "Ver Documentación"
   },
   "checkin": {
     "title": "Escáner de Fichaje",
     "scanQr": "Escanea el QR",
     "success": "Fichaje registrado correctamente",
-    "error": "Error al registrar el fichaje"
+    "error": "Error al registrar el fichaje",
+    "signatureRequired": "Firma Requerida para Salida",
+    "clearSignature": "Borrar",
+    "confirmSignature": "Confirmar Firma",
+    "manualCodeInstructions": "Introduce el código de 6 dígitos proyectado junto al QR.",
+    "manualCodeLabel": "Código de 6 Dígitos (del QR)",
+    "useCamera": "Usar Cámara",
+    "confirmCheckin": "Confirmar Fichaje",
+    "cameraInstructions": "Apunta con la cámara al código QR proyectado.",
+    "selectCamera": "Seleccionar Cámara...",
+    "manualInputPrompt": "¿Problemas con la cámara? Introducir código manualmente",
+    "scannerTitle": "Escáner de Fichaje"
   },
   "common": {
     "save": "Guardar",
@@ -310,7 +336,12 @@
     "passwordSuccessLogout": "Contraseña actualizada con éxito. Por seguridad, debes iniciar sesión de nuevo.",
     "changePasswordError": "Error al cambiar contraseña",
     "signed": "Firmado",
-    "pendingSignature": "Pendiente"
+    "pendingSignature": "Pendiente",
+    "totalFormations": "Total Registradas",
+    "completedSigned": "Completadas y Firmadas",
+    "accumulatedTime": "Tiempo Acumulado",
+    "downloadCertificate": "Descargar Certificado PDF",
+    "scanQR": "Escanear QR"
   },
   "register": {
     "title": "Solicitud de Registro",
@@ -330,5 +361,39 @@
     "goToLogin": "Volver al Inicio de Sesión",
     "alreadyHaveAccount": "¿Ya tienes cuenta activa?",
     "loginHere": "Iniciar Sesión"
+  },
+  "audit": {
+    "title": "Registro de Auditoría",
+    "subtitle": "Trazabilidad de acciones del sistema",
+    "searchPlaceholder": "Buscar por acción, usuario o detalles...",
+    "columns": {
+      "date": "Fecha y Hora",
+      "action": "Acción",
+      "user": "Usuario",
+      "details": "Detalles",
+      "ip": "IP Origen"
+    },
+    "noRecords": "No se encontraron registros de auditoría.",
+    "exportCSV": "Exportar a CSV"
+  },
+  "cloudSettings": {
+    "saveSuccess": "Ajustes de nube guardados correctamente",
+    "saveError": "Error al guardar ajustes",
+    "connectionError": "Error de conexión",
+    "backupSuccess": "Copia de seguridad realizada y subida a la nube",
+    "backupError": "Error al realizar el backup",
+    "title": "Ajustes de Nube",
+    "backingUp": "Respaldando...",
+    "forceBackupBtn": "Forzar Backup DB",
+    "description": "Configura aquí las credenciales para conectar la plataforma con la API de OneDrive (Microsoft Graph). Estas credenciales se utilizarán para subir los documentos de las formaciones y los backups de la base de datos.",
+    "providerLabel": "Proveedor de Nube Activo",
+    "comingSoon": "Próximamente",
+    "azureCredentials": "Credenciales de Microsoft Entra (Azure)",
+    "tenantIdLabel": "Tenant ID",
+    "clientIdLabel": "Client ID (App ID)",
+    "clientSecretLabel": "Client Secret",
+    "refreshTokenLabel": "Refresh Token (Larga duración)",
+    "refreshTokenHelp": "Este token se usará para obtener Access Tokens automáticamente de la Graph API sin intervención del usuario.",
+    "saveBtn": "Guardar Ajustes"
   }
 }

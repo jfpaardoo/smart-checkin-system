@@ -9,7 +9,9 @@
     "logout": "Terminar Sessão",
     "analytics": "Análise",
     "myProfile": "Meu Perfil",
-    "register": "Solicitar Registo"
+    "register": "Solicitar Registo",
+    "audit": "Auditoria",
+    "cloudSettings": "Ajustes de Nube"
   },
   "home": {
     "welcome": "Bem-vindo ao BA Distribution Academy",
@@ -43,7 +45,7 @@
     "employeeQuickAccess": "Acesso Rápido do Empregado",
     "directQRCheckin": "Registo Direto QR",
     "directQRCheckinDesc": "Digitalize o código QR da sala para registar presença",
-    "scanQRBtn": "Digitalizar QR →",
+    "scanQRBtn": "Ler QR →",
     "myProfileDesc": "Consultar dados pessoais e alterar palavra-passe",
     "goToProfileBtn": "Ir para O Meu Perfil →",
     "myFormationsDesc": "Histórico e estado das suas formações",
@@ -90,7 +92,9 @@
     "connectionError": "Erro de ligação. Por favor, tente novamente.",
     "duplicatePersonalCode": "O Código Pessoal já existe para outro utilizador.",
     "duplicateUsername": "O Nome de utilizador já existe para outro utilizador.",
-    "duplicateGeneric": "Ocorreu um conflito na base de dados (registo duplicado)."
+    "duplicateGeneric": "Ocorreu um conflito na base de dados (registo duplicado).",
+    "activeEmployees": "Funcionários Ativos",
+    "pendingRequestsTab": "Pedidos Pendentes"
   },
   "formations": {
     "title": "Gestão de Formações",
@@ -121,7 +125,15 @@
     "deleteError": "Erro ao eliminar a formação",
     "connectionError": "Erro de ligação. Por favor, tente novamente.",
     "duplicateConflict": "Os dados desta formação entram em conflito com um registo existente.",
-    "searchPlaceholder": "Pesquisar formação por nome ou descrição..."
+    "searchPlaceholder": "Pesquisar formação por nome ou descrição...",
+    "scheduled": "Data Programada",
+    "checkin": "Entrada",
+    "checkout": "Saída",
+    "duration": "Duração",
+    "signature": "Assinatura Digital",
+    "document": "Documento de Formación (Opcional)",
+    "documentExists": "Ya existe un documento vinculado.",
+    "viewCurrentDocument": "Ver documento actual"
   },
   "formationDetails": {
     "title": "Detalhes da Formação",
@@ -160,7 +172,9 @@
     "userAddError": "Erro ao adicionar utilizador.",
     "userRemoved": "Utilizador removido da formação.",
     "userRemoveError": "Erro ao remover utilizador.",
-    "userRemoveConfirm": "Tem a certeza que deseja remover este participante?"
+    "userRemoveConfirm": "Tem a certeza que deseja remover este participante?",
+    "documentation": "Documentación",
+    "viewDocumentation": "Ver Documentación"
   },
   "qr": {
     "title": "QR de Formação",
@@ -210,13 +224,25 @@
     "signatureRequired": "Por favor forneça a sua assinatura.",
     "checkoutSuccess": "Check-out concluído com sucesso.",
     "checkoutError": "Erro ao registar saída",
-    "camera": "Câmara"
+    "camera": "Câmara",
+    "viewDocumentation": "Ver Documentación"
   },
   "checkin": {
     "title": "Scanner de Marcação",
     "scanQr": "Leia o QR",
     "success": "Marcação registada com sucesso",
-    "error": "Erro ao registar a marcação"
+    "error": "Erro ao registar a marcação",
+    "signatureRequired": "Assinatura Necessária para Saída",
+    "clearSignature": "Limpar",
+    "confirmSignature": "Confirmar Assinatura",
+    "manualCodeInstructions": "Introduza o código de 6 dígitos projetado junto ao QR.",
+    "manualCodeLabel": "Código de 6 Dígitos (do QR)",
+    "useCamera": "Usar Câmara",
+    "confirmCheckin": "Confirmar Ponto",
+    "cameraInstructions": "Aponte a câmara para o código QR projetado.",
+    "selectCamera": "Selecionar Câmara...",
+    "manualInputPrompt": "Problemas com a câmara? Introduzir código manualmente",
+    "scannerTitle": "Leitor de Ponto"
   },
   "common": {
     "save": "Guardar",
@@ -296,8 +322,8 @@
     "myFormations": "Minhas Formações",
     "securityPassword": "Segurança e Palavra-passe",
     "personalInformation": "Informações Pessoais do Utilizador",
-    "myFormationHistory": "Histórico de Formações",
-    "noFormationsYet": "Nenhuma formação registada até ao momento.",
+    "myFormationHistory": "Meu Histórico de Formação",
+    "noFormationsYet": "Você ainda não tem formações registradas.",
     "changePasswordTitle": "Alterar Palavra-passe",
     "currentPassword": "Palavra-passe Atual",
     "newPassword": "Nova Palavra-passe (mínimo 6 caracteres)",
@@ -310,7 +336,12 @@
     "passwordSuccessLogout": "Palavra-passe atualizada com sucesso. Por razões de segurança, inicie sessão novamente.",
     "changePasswordError": "Erro ao alterar palavra-passe",
     "signed": "Assinado",
-    "pendingSignature": "Pendente"
+    "pendingSignature": "Pendente",
+    "totalFormations": "Total Registradas",
+    "completedSigned": "Concluídas e Assinadas",
+    "accumulatedTime": "Tempo Acumulado",
+    "downloadCertificate": "Download Certificate PDF",
+    "scanQR": "Ler QR"
   },
   "register": {
     "title": "Solicitação de Registo",
@@ -330,5 +361,39 @@
     "goToLogin": "Voltar ao Início de Sessão",
     "alreadyHaveAccount": "Já tem uma conta ativa?",
     "loginHere": "Iniciar Sessão"
+  },
+  "audit": {
+    "title": "Registo de Auditoria",
+    "subtitle": "Rastreabilidade das ações do sistema",
+    "searchPlaceholder": "Pesquisar por ação, utilizador ou detalhes...",
+    "columns": {
+      "date": "Data e Hora",
+      "action": "Ação",
+      "user": "Utilizador",
+      "details": "Detalhes",
+      "ip": "IP de Origem"
+    },
+    "noRecords": "Nenhum registo de auditoria encontrado.",
+    "exportCSV": "Exportar para CSV"
+  },
+  "cloudSettings": {
+    "saveSuccess": "Ajustes de nube guardados correctamente",
+    "saveError": "Error al guardar ajustes",
+    "connectionError": "Error de conexión",
+    "backupSuccess": "Copia de seguridad realizada y subida a la nube",
+    "backupError": "Error al realizar el backup",
+    "title": "Ajustes de Nube",
+    "backingUp": "Respaldando...",
+    "forceBackupBtn": "Forzar Backup DB",
+    "description": "Configura aquí las credenciales para conectar la plataforma con la API de OneDrive (Microsoft Graph). Estas credenciales se utilizarán para subir los documentos de las formaciones y los backups de la base de datos.",
+    "providerLabel": "Proveedor de Nube Activo",
+    "comingSoon": "Próximamente",
+    "azureCredentials": "Credenciales de Microsoft Entra (Azure)",
+    "tenantIdLabel": "Tenant ID",
+    "clientIdLabel": "Client ID (App ID)",
+    "clientSecretLabel": "Client Secret",
+    "refreshTokenLabel": "Refresh Token (Larga duración)",
+    "refreshTokenHelp": "Este token se usará para obtener Access Tokens automáticamente de la Graph API sin intervención del usuario.",
+    "saveBtn": "Guardar Ajustes"
   }
 }

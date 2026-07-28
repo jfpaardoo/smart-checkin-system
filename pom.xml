@@ -179,6 +179,17 @@
 			<artifactId>poi-ooxml</artifactId>
 			<version>5.2.3</version>
 		</dependency>
+		<!-- OpenPDF for Certificate Generation -->
+		<dependency>
+			<groupId>com.github.librepdf</groupId>
+			<artifactId>openpdf</artifactId>
+			<version>1.4.2</version>
+		</dependency>
+		<!-- AOP for Audit Trail -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
 		<!-- Spring Batch -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

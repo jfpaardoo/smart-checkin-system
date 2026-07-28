@@ -9,7 +9,9 @@
     "logout": "Deconectare",
     "analytics": "Analitice",
     "myProfile": "Profilul Meu",
-    "register": "Solicită Înregistrare"
+    "register": "Solicită Înregistrare",
+    "audit": "Audit",
+    "cloudSettings": "Ajustes de Nube"
   },
   "home": {
     "welcome": "Bine ați venit la ShiftSync",
@@ -43,7 +45,7 @@
     "employeeQuickAccess": "Acces Rapid Angajat",
     "directQRCheckin": "Pontaj Direct QR",
     "directQRCheckinDesc": "Scanează codul QR al sălii pentru a înregistra prezența",
-    "scanQRBtn": "Scanează QR →",
+    "scanQRBtn": "Scan QR →",
     "myProfileDesc": "Consultă datele personale și schimbă parola",
     "goToProfileBtn": "Mergi la Profilul Meu →",
     "myFormationsDesc": "Istoric și status al cursurilor tale",
@@ -67,7 +69,7 @@
     "addNewUser": "Adăugare Utilizator Nou",
     "saveUser": "Salvare Utilizator",
     "cancel": "Anulare",
-    "personalCode": "Cod Personal",
+    "personalCode": "Personal Code",
     "username": "Nume utilizator",
     "firstName": "Prenume",
     "lastName": "Nume",
@@ -75,8 +77,8 @@
     "status": "Stare",
     "role": "Rol",
     "actions": "Acțiuni",
-    "working": "În formare",
-    "offDuty": "În afara formării",
+    "working": "In Formation",
+    "offDuty": "Out of Formation",
     "selectRole": "Selectare Rol",
     "personalCode4digits": "Cod Personal (4 cifre)",
     "roleAuthority": "Rol / Autoritate",
@@ -90,7 +92,9 @@
     "connectionError": "Eroare de conexiune. Vă rugăm să încercați din nou.",
     "duplicatePersonalCode": "Codul personal există deja pentru un alt utilizator.",
     "duplicateUsername": "Numele de utilizator există deja.",
-    "duplicateGeneric": "A apărut un conflict în baza de date."
+    "duplicateGeneric": "A apărut un conflict în baza de date.",
+    "activeEmployees": "Active Employees",
+    "pendingRequestsTab": "Pending Requests"
   },
   "formations": {
     "title": "Gestionare Formări",
@@ -121,7 +125,15 @@
     "deleteError": "Eroare la ștergerea formării",
     "connectionError": "Eroare de conexiune. Vă rugăm să încercați din nou.",
     "duplicateConflict": "Datele acestei formări sunt în conflict cu o înregistrare existentă.",
-    "searchPlaceholder": "Căutare formare după nume sau descriere..."
+    "searchPlaceholder": "Căutare formare după nume sau descriere...",
+    "scheduled": "Data Programată",
+    "checkin": "Intrare",
+    "checkout": "Ieșire",
+    "duration": "Durată",
+    "signature": "Semnătură Digitală",
+    "document": "Documento de Formación (Opcional)",
+    "documentExists": "Ya existe un documento vinculado.",
+    "viewCurrentDocument": "Ver documento actual"
   },
   "formationDetails": {
     "title": "Detalii Formare",
@@ -160,7 +172,9 @@
     "userAddError": "Eroare la adăugarea utilizatorului.",
     "userRemoved": "Utilizator eliminat din formare.",
     "userRemoveError": "Eroare la eliminarea utilizatorului.",
-    "userRemoveConfirm": "Sigur doriți să eliminați acest participant?"
+    "userRemoveConfirm": "Sigur doriți să eliminați acest participant?",
+    "documentation": "Documentación",
+    "viewDocumentation": "Ver Documentación"
   },
   "qr": {
     "title": "QR Formare",
@@ -210,13 +224,25 @@
     "signatureRequired": "Vă rugăm să furnizați semnătura.",
     "checkoutSuccess": "Pontaj ieșire finalizat cu succes.",
     "checkoutError": "Eroare la înregistrarea ieșirii",
-    "camera": "Cameră"
+    "camera": "Cameră",
+    "viewDocumentation": "Ver Documentación"
   },
   "checkin": {
     "title": "Scanner Pontaj",
     "scanQr": "Scanați codul QR",
     "success": "Pontaj înregistrat cu succes",
-    "error": "Eroare la înregistrarea pontajului"
+    "error": "Eroare la înregistrarea pontajului",
+    "signatureRequired": "Signature Required for Checkout",
+    "clearSignature": "Clear",
+    "confirmSignature": "Confirm Signature",
+    "manualCodeInstructions": "Enter the 6-digit code projected next to the QR.",
+    "manualCodeLabel": "6-Digit Code (from QR)",
+    "useCamera": "Use Camera",
+    "confirmCheckin": "Confirm Check-in",
+    "cameraInstructions": "Point your camera at the projected QR code.",
+    "selectCamera": "Select Camera...",
+    "manualInputPrompt": "Camera issues? Enter code manually",
+    "scannerTitle": "Check-in Scanner"
   },
   "common": {
     "save": "Salvează",
@@ -296,8 +322,8 @@
     "myFormations": "Formările Mele",
     "securityPassword": "Securitate și Parolă",
     "personalInformation": "Informații Personale Utilizator",
-    "myFormationHistory": "Istoric Formări",
-    "noFormationsYet": "Nicio formare înregistrată încă.",
+    "myFormationHistory": "Istoricul Meu de Formare",
+    "noFormationsYet": "Nu aveți încă nicio formare înregistrată.",
     "changePasswordTitle": "Modificare Parolă",
     "currentPassword": "Parolă Actuală",
     "newPassword": "Parolă Nouă (minim 6 caractere)",
@@ -310,7 +336,12 @@
     "passwordSuccessLogout": "Parolă actualizată cu succes. Din motive de securitate, vă rugăm să vă autentificați din nou.",
     "changePasswordError": "Eroare la schimbarea parolei",
     "signed": "Semnat",
-    "pendingSignature": "În așteptare"
+    "pendingSignature": "În așteptare",
+    "totalFormations": "Total Înregistrări",
+    "completedSigned": "Finalizate și Semnate",
+    "accumulatedTime": "Timp Acumulat",
+    "downloadCertificate": "Download Certificate PDF",
+    "scanQR": "Scan QR"
   },
   "register": {
     "title": "Solicitare de Înregistrare",
@@ -330,5 +361,39 @@
     "goToLogin": "Înapoi la Autentificare",
     "alreadyHaveAccount": "Aveți deja un cont activ?",
     "loginHere": "Autentificare"
+  },
+  "audit": {
+    "title": "Audit Log",
+    "subtitle": "Trasabilitatea acțiunilor sistemului",
+    "searchPlaceholder": "Căutare după acțiune, utilizator sau detalii...",
+    "columns": {
+      "date": "Data și Ora",
+      "action": "Acțiune",
+      "user": "Utilizator",
+      "details": "Detalii",
+      "ip": "IP Sursă"
+    },
+    "noRecords": "Nu s-au găsit înregistrări de audit.",
+    "exportCSV": "Export to CSV"
+  },
+  "cloudSettings": {
+    "saveSuccess": "Ajustes de nube guardados correctamente",
+    "saveError": "Error al guardar ajustes",
+    "connectionError": "Error de conexión",
+    "backupSuccess": "Copia de seguridad realizada y subida a la nube",
+    "backupError": "Error al realizar el backup",
+    "title": "Ajustes de Nube",
+    "backingUp": "Respaldando...",
+    "forceBackupBtn": "Forzar Backup DB",
+    "description": "Configura aquí las credenciales para conectar la plataforma con la API de OneDrive (Microsoft Graph). Estas credenciales se utilizarán para subir los documentos de las formaciones y los backups de la base de datos.",
+    "providerLabel": "Proveedor de Nube Activo",
+    "comingSoon": "Próximamente",
+    "azureCredentials": "Credenciales de Microsoft Entra (Azure)",
+    "tenantIdLabel": "Tenant ID",
+    "clientIdLabel": "Client ID (App ID)",
+    "clientSecretLabel": "Client Secret",
+    "refreshTokenLabel": "Refresh Token (Larga duración)",
+    "refreshTokenHelp": "Este token se usará para obtener Access Tokens automáticamente de la Graph API sin intervención del usuario.",
+    "saveBtn": "Guardar Ajustes"
   }
 }

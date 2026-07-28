@@ -18,10 +18,12 @@ import FormationEditAdmin from "./admin/formations/FormationEditAdmin";
 import FormationDetailsAdmin from "./admin/formations/FormationDetailsAdmin";
 import QRGeneratorAdmin from "./admin/qr/QRGeneratorAdmin";
 import AnalyticsDashboard from "./admin/analytics/AnalyticsDashboard";
+import AuditDashboard from "./admin/audit/AuditDashboard";
 import ScannerCheckin from "./user/checkin/ScannerCheckin";
 import UserDashboard from "./user/dashboard/UserDashboard";
 import UserProfile from "./user/profile/UserProfile";
 import { ToastProvider } from "./components/ToastProvider";
+import CloudSettingsAdmin from "./admin/settings/CloudSettingsAdmin";
 
 function ErrorFallback({ error, resetErrorBoundary }) {
   return (
@@ -59,6 +61,8 @@ function App() {
           <Route path="/formations/:id/details" exact={true} element={<PrivateRoute><FormationDetailsAdmin /></PrivateRoute>} />
           <Route path="/qr-generator" exact={true} element={<PrivateRoute><QRGeneratorAdmin /></PrivateRoute>} />
           <Route path="/analytics" exact={true} element={<PrivateRoute><AnalyticsDashboard /></PrivateRoute>} />
+          <Route path="/audit" exact={true} element={<PrivateRoute><AuditDashboard /></PrivateRoute>} />
+          <Route path="/admin/cloud-settings" exact={true} element={<PrivateRoute><CloudSettingsAdmin /></PrivateRoute>} />
           <Route path="/docs" element={<PrivateRoute><SwaggerDocs /></PrivateRoute>} />
         </>)
     }

@@ -9,7 +9,12 @@ import org.springframework.samples.smartcheckin.model.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Table;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.FetchType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
@@ -37,8 +42,14 @@ public class Formation extends BaseEntity {
     @Future
     private LocalDateTime formationDate;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "formation_documents", joinColumns = @JoinColumn(name = "formation_id"))
+    @Column(name = "document_url", length = 1000)
+    private List<String> documentUrls = new ArrayList<>();
+
     @OneToMany(mappedBy = "formation", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnoreProperties("formation")
     private List<FormationAttendance> attendances = new ArrayList<>();
+
 
 }

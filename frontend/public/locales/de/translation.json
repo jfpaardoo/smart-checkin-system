@@ -9,7 +9,9 @@
     "logout": "Abmelden",
     "analytics": "Analytik",
     "myProfile": "Mein Profil",
-    "register": "Registrierung Beantragen"
+    "register": "Registrierung Beantragen",
+    "audit": "Audit",
+    "cloudSettings": "Ajustes de Nube"
   },
   "home": {
     "welcome": "Willkommen bei BA Distribution Academy",
@@ -43,7 +45,7 @@
     "employeeQuickAccess": "Mitarbeiter-Schnellzugriff",
     "directQRCheckin": "Direkte QR-Zeiterfassung",
     "directQRCheckinDesc": "Scannen Sie den Raum-QR-Code zur Anwesenheitsregistrierung",
-    "scanQRBtn": "QR Scannen →",
+    "scanQRBtn": "QR scannen →",
     "myProfileDesc": "Persönliche Daten einsehen und Passwort ändern",
     "goToProfileBtn": "Zu Meinem Profil →",
     "myFormationsDesc": "Verlauf und Status Ihrer Schulungen",
@@ -75,8 +77,8 @@
     "status": "Status",
     "role": "Rolle",
     "actions": "Aktionen",
-    "working": "In Schulung",
-    "offDuty": "Außerhalb Schulung",
+    "working": "In Ausbildung",
+    "offDuty": "Außerhalb der Ausbildung",
     "selectRole": "Rolle auswählen",
     "personalCode4digits": "Persönlicher Code (4 Ziffern)",
     "roleAuthority": "Rolle / Berechtigung",
@@ -90,7 +92,9 @@
     "connectionError": "Verbindungsfehler. Bitte versuchen Sie es erneut.",
     "duplicatePersonalCode": "Dieser persönliche Code existiert bereits.",
     "duplicateUsername": "Dieser Benutzername existiert bereits.",
-    "duplicateGeneric": "Datenbankkonflikt."
+    "duplicateGeneric": "Datenbankkonflikt.",
+    "activeEmployees": "Aktive Mitarbeiter",
+    "pendingRequestsTab": "Ausstehende Anfragen"
   },
   "formations": {
     "title": "Schulungsverwaltung",
@@ -121,7 +125,15 @@
     "deleteError": "Fehler beim Löschen",
     "connectionError": "Verbindungsfehler.",
     "duplicateConflict": "Konflikt mit einem bestehenden Eintrag.",
-    "searchPlaceholder": "Schulung nach Name oder Beschreibung suchen..."
+    "searchPlaceholder": "Schulung nach Name oder Beschreibung suchen...",
+    "scheduled": "Geplantes Datum",
+    "checkin": "Einchecken",
+    "checkout": "Auschecken",
+    "duration": "Dauer",
+    "signature": "Digitale Signatur",
+    "document": "Documento de Formación (Opcional)",
+    "documentExists": "Ya existe un documento vinculado.",
+    "viewCurrentDocument": "Ver documento actual"
   },
   "formationDetails": {
     "title": "Schulungsdetails",
@@ -160,7 +172,9 @@
     "userAddError": "Fehler beim Hinzufügen.",
     "userRemoved": "Benutzer entfernt.",
     "userRemoveError": "Fehler beim Entfernen.",
-    "userRemoveConfirm": "Möchten Sie diesen Teilnehmer wirklich entfernen?"
+    "userRemoveConfirm": "Möchten Sie diesen Teilnehmer wirklich entfernen?",
+    "documentation": "Documentación",
+    "viewDocumentation": "Ver Documentación"
   },
   "qr": {
     "title": "Schulungs-QR",
@@ -210,13 +224,25 @@
     "signatureRequired": "Bitte stellen Sie Ihre Unterschrift bereit.",
     "checkoutSuccess": "Ausstempeln erfolgreich.",
     "checkoutError": "Fehler beim Ausstempeln",
-    "camera": "Kamera"
+    "camera": "Kamera",
+    "viewDocumentation": "Ver Documentación"
   },
   "checkin": {
     "title": "Stempelscanner",
     "scanQr": "QR scannen",
     "success": "Stempelung erfolgreich",
-    "error": "Fehler bei der Stempelung"
+    "error": "Fehler bei der Stempelung",
+    "signatureRequired": "Unterschrift beim Auschecken erforderlich",
+    "clearSignature": "Löschen",
+    "confirmSignature": "Unterschrift bestätigen",
+    "manualCodeInstructions": "Geben Sie den 6-stelligen Code ein, der neben dem QR-Code projiziert wird.",
+    "manualCodeLabel": "6-stelliger Code (vom QR)",
+    "useCamera": "Kamera verwenden",
+    "confirmCheckin": "Check-in bestätigen",
+    "cameraInstructions": "Richten Sie Ihre Kamera auf den projizierten QR-Code.",
+    "selectCamera": "Kamera auswählen...",
+    "manualInputPrompt": "Kameraprobleme? Code manuell eingeben",
+    "scannerTitle": "Check-in Scanner"
   },
   "common": {
     "save": "Speichern",
@@ -296,8 +322,8 @@
     "myFormations": "Meine Schulungen",
     "securityPassword": "Sicherheit & Passwort",
     "personalInformation": "Persönliche Benutzerinformationen",
-    "myFormationHistory": "Schulungsverlauf",
-    "noFormationsYet": "Noch keine Schulungen registriert.",
+    "myFormationHistory": "Mein Schulungsverlauf",
+    "noFormationsYet": "Sie haben noch keine registrierten Schulungen.",
     "changePasswordTitle": "Passwort Ändern",
     "currentPassword": "Aktuelles Passwort",
     "newPassword": "Neues Passwort (mind. 6 Zeichen)",
@@ -310,7 +336,12 @@
     "passwordSuccessLogout": "Passwort erfolgreich geändert. Bitte melden Sie sich aus Sicherheitsgründen erneut an.",
     "changePasswordError": "Fehler beim Ändern des Passworts",
     "signed": "Unterzeichnet",
-    "pendingSignature": "Ausstehend"
+    "pendingSignature": "Ausstehend",
+    "totalFormations": "Insgesamt Registriert",
+    "completedSigned": "Abgeschlossen und Unterschrieben",
+    "accumulatedTime": "Gesammelte Zeit",
+    "downloadCertificate": "Download Certificate PDF",
+    "scanQR": "QR scannen"
   },
   "register": {
     "title": "Registrierungsanfrage",
@@ -330,5 +361,39 @@
     "goToLogin": "Zurück zum Login",
     "alreadyHaveAccount": "Bereits ein aktives Konto?",
     "loginHere": "Anmelden"
+  },
+  "audit": {
+    "title": "Audit-Protokoll",
+    "subtitle": "Rückverfolgbarkeit von Systemaktionen",
+    "searchPlaceholder": "Suche nach Aktion, Benutzer oder Details...",
+    "columns": {
+      "date": "Datum und Uhrzeit",
+      "action": "Aktion",
+      "user": "Benutzer",
+      "details": "Details",
+      "ip": "Quell-IP"
+    },
+    "noRecords": "Keine Audit-Einträge gefunden.",
+    "exportCSV": "Als CSV exportieren"
+  },
+  "cloudSettings": {
+    "saveSuccess": "Ajustes de nube guardados correctamente",
+    "saveError": "Error al guardar ajustes",
+    "connectionError": "Error de conexión",
+    "backupSuccess": "Copia de seguridad realizada y subida a la nube",
+    "backupError": "Error al realizar el backup",
+    "title": "Ajustes de Nube",
+    "backingUp": "Respaldando...",
+    "forceBackupBtn": "Forzar Backup DB",
+    "description": "Configura aquí las credenciales para conectar la plataforma con la API de OneDrive (Microsoft Graph). Estas credenciales se utilizarán para subir los documentos de las formaciones y los backups de la base de datos.",
+    "providerLabel": "Proveedor de Nube Activo",
+    "comingSoon": "Próximamente",
+    "azureCredentials": "Credenciales de Microsoft Entra (Azure)",
+    "tenantIdLabel": "Tenant ID",
+    "clientIdLabel": "Client ID (App ID)",
+    "clientSecretLabel": "Client Secret",
+    "refreshTokenLabel": "Refresh Token (Larga duración)",
+    "refreshTokenHelp": "Este token se usará para obtener Access Tokens automáticamente de la Graph API sin intervención del usuario.",
+    "saveBtn": "Guardar Ajustes"
   }
 }

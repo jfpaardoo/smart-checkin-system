@@ -4,6 +4,7 @@
 
 /* QR Reader Responsive Glass & Border Constraints */
 #qr-reader, #checkout-qr-reader {
+  position: relative !important;
   width: 100% !important;
   max-width: 100% !important;
   overflow: hidden !important;

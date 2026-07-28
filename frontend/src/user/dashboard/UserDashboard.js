@@ -269,6 +269,14 @@ export default function UserDashboard() {
                     </>
                   )}
 
+                  {selectedAtt.formation.documentUrl && (
+                    <div className="mb-4 text-center">
+                      <a href={selectedAtt.formation.documentUrl} target="_blank" rel="noopener noreferrer" className="ba-btn ba-btn-secondary d-inline-block w-100 py-2">
+                        {t('dashboard.viewDocumentation', 'Ver Documentación')}
+                      </a>
+                    </div>
+                  )}
+
                   <div className="d-flex justify-content-between align-items-center mt-4 pt-3" style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
                     <div>
                       <span style={{ color: '#64748b' }} className="mr-2">{t('dashboard.statusLabel')} </span>

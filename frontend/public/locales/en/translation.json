@@ -9,7 +9,9 @@
     "logout": "Logout",
     "analytics": "Analytics",
     "myProfile": "My Profile",
-    "register": "Request Registration"
+    "register": "Request Registration",
+    "audit": "Audit",
+    "cloudSettings": "Ajustes de Nube"
   },
   "home": {
     "welcome": "Welcome to BA Distribution Academy",
@@ -90,7 +92,9 @@
     "connectionError": "Connection error. Please try again.",
     "duplicatePersonalCode": "The Personal Code already exists for another user.",
     "duplicateUsername": "The Username already exists for another user.",
-    "duplicateGeneric": "A database conflict occurred (duplicated record)."
+    "duplicateGeneric": "A database conflict occurred (duplicated record).",
+    "activeEmployees": "Active Employees",
+    "pendingRequestsTab": "Pending Requests"
   },
   "formations": {
     "title": "Formations Management",
@@ -121,7 +125,15 @@
     "deleteError": "Failed to delete formation",
     "connectionError": "Connection error. Please try again.",
     "duplicateConflict": "This formation details already conflict with an existing record.",
-    "searchPlaceholder": "Search formation by name or description..."
+    "searchPlaceholder": "Search formation by name or description...",
+    "scheduled": "Scheduled Date",
+    "checkin": "Check-In",
+    "checkout": "Check-Out",
+    "duration": "Duration",
+    "signature": "Digital Signature",
+    "document": "Documento de Formación (Opcional)",
+    "documentExists": "Ya existe un documento vinculado.",
+    "viewCurrentDocument": "Ver documento actual"
   },
   "formationDetails": {
     "title": "Formation Details",
@@ -160,7 +172,9 @@
     "userAddError": "Error adding user.",
     "userRemoved": "User removed from the formation.",
     "userRemoveError": "Error removing user.",
-    "userRemoveConfirm": "Are you sure you want to remove this attendee?"
+    "userRemoveConfirm": "Are you sure you want to remove this attendee?",
+    "documentation": "Documentación",
+    "viewDocumentation": "Ver Documentación"
   },
   "qr": {
     "title": "Formation QR",
@@ -210,13 +224,25 @@
     "signatureRequired": "Please provide your signature.",
     "checkoutSuccess": "Checkout completed successfully.",
     "checkoutError": "Error registering checkout",
-    "camera": "Camera"
+    "camera": "Camera",
+    "viewDocumentation": "Ver Documentación"
   },
   "checkin": {
     "title": "Check-in Scanner",
     "scanQr": "Scan the QR",
     "success": "Check-in registered successfully",
-    "error": "Error registering check-in"
+    "error": "Error registering check-in",
+    "signatureRequired": "Signature Required for Checkout",
+    "clearSignature": "Clear",
+    "confirmSignature": "Confirm Signature",
+    "manualCodeInstructions": "Enter the 6-digit code projected next to the QR.",
+    "manualCodeLabel": "6-Digit Code (from QR)",
+    "useCamera": "Use Camera",
+    "confirmCheckin": "Confirm Check-in",
+    "cameraInstructions": "Point your camera at the projected QR code.",
+    "selectCamera": "Select Camera...",
+    "manualInputPrompt": "Camera issues? Enter code manually",
+    "scannerTitle": "Check-in Scanner"
   },
   "common": {
     "save": "Save",
@@ -296,8 +322,8 @@
     "myFormations": "My Formations",
     "securityPassword": "Security & Password",
     "personalInformation": "User Personal Information",
-    "myFormationHistory": "Formations History",
-    "noFormationsYet": "No formations recorded yet.",
+    "myFormationHistory": "My Formation History",
+    "noFormationsYet": "You don't have any registered formations yet.",
     "changePasswordTitle": "Change Password",
     "currentPassword": "Current Password",
     "newPassword": "New Password (min 6 characters)",
@@ -310,7 +336,12 @@
     "passwordSuccessLogout": "Password updated successfully. For security reasons, please log in again.",
     "changePasswordError": "Error changing password",
     "signed": "Signed",
-    "pendingSignature": "Pending"
+    "pendingSignature": "Pending",
+    "totalFormations": "Total Formations",
+    "completedSigned": "Completed and Signed",
+    "accumulatedTime": "Accumulated Time",
+    "downloadCertificate": "Download Certificate PDF",
+    "scanQR": "Scan QR"
   },
   "register": {
     "title": "Registration Request",
@@ -330,5 +361,39 @@
     "goToLogin": "Back to Login",
     "alreadyHaveAccount": "Already have an active account?",
     "loginHere": "Log In"
+  },
+  "audit": {
+    "title": "Audit Log",
+    "subtitle": "System actions traceability",
+    "searchPlaceholder": "Search by action, user or details...",
+    "columns": {
+      "date": "Date and Time",
+      "action": "Action",
+      "user": "User",
+      "details": "Details",
+      "ip": "Source IP"
+    },
+    "noRecords": "No audit records found.",
+    "exportCSV": "Export to CSV"
+  },
+  "cloudSettings": {
+    "saveSuccess": "Ajustes de nube guardados correctamente",
+    "saveError": "Error al guardar ajustes",
+    "connectionError": "Error de conexión",
+    "backupSuccess": "Copia de seguridad realizada y subida a la nube",
+    "backupError": "Error al realizar el backup",
+    "title": "Ajustes de Nube",
+    "backingUp": "Respaldando...",
+    "forceBackupBtn": "Forzar Backup DB",
+    "description": "Configura aquí las credenciales para conectar la plataforma con la API de OneDrive (Microsoft Graph). Estas credenciales se utilizarán para subir los documentos de las formaciones y los backups de la base de datos.",
+    "providerLabel": "Proveedor de Nube Activo",
+    "comingSoon": "Próximamente",
+    "azureCredentials": "Credenciales de Microsoft Entra (Azure)",
+    "tenantIdLabel": "Tenant ID",
+    "clientIdLabel": "Client ID (App ID)",
+    "clientSecretLabel": "Client Secret",
+    "refreshTokenLabel": "Refresh Token (Larga duración)",
+    "refreshTokenHelp": "Este token se usará para obtener Access Tokens automáticamente de la Graph API sin intervención del usuario.",
+    "saveBtn": "Guardar Ajustes"
   }
 }

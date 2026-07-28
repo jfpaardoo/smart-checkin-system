@@ -130,6 +130,32 @@ export default function FormationDetailsAdmin() {
           <p>{formation.description}</p>
           <h4>{t('formationDetails.dateTime')}</h4>
           <p>{moment(formation.formationDate).format('YYYY-MM-DD HH:mm')}</p>
+          {formation.documentUrls && formation.documentUrls.length > 0 && (
+            <>
+              <h4>{t('formationDetails.documentation', 'Documentación')}</h4>
+              <div className="d-flex flex-wrap gap-2 mt-2">
+                {formation.documentUrls.map((url, idx) => {
+                  const decodedUrl = decodeURIComponent(url);
+                  const parts = decodedUrl.split('/');
+                  const rawFileName = parts[parts.length - 1] || `Documento ${idx + 1}`;
+                  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_/i;
+                  const fileName = rawFileName.replace(uuidRegex, '').split('?')[0];
+
+                  return (
+                    <a
+                      key={url}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ba-btn ba-btn-secondary px-3 py-1"
+                    >
+                      {fileName}
+                    </a>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
 
         <div className="ba-card-header pt-3">
@@ -190,6 +216,36 @@ export default function FormationDetailsAdmin() {
                         >
                           {t('formationDetails.viewSignature')}
                         </Button>
+                        {att.signature && (
+                          <Button
+                            size="sm"
+                            className="ba-btn-secondary"
+                            onClick={async () => {
+                              try {
+                                const response = await fetch(`/api/v1/certificates/attendance/${att.id}`, {
+                                  headers: {
+                                    Authorization: `Bearer ${tokenService.getLocalAccessToken()}`
+                                  }
+                                });
+                                if (response.ok) {
+                                  const blob = await response.blob();
+                                  const url = window.URL.createObjectURL(blob);
+                                  const a = document.createElement('a');
+                                  a.href = url;
+                                  a.download = `certificate_${att.id}.pdf`;
+                                  document.body.appendChild(a);
+                                  a.click();
+                                  window.URL.revokeObjectURL(url);
+                                  a.remove();
+                                }
+                              } catch (error) {
+                                console.error("Error downloading PDF", error);
+                              }
+                            }}
+                          >
+                            PDF
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           className="ba-btn-danger"
