@@ -65,7 +65,7 @@ class FormationServiceTests {
 
     @Test
     void shouldNotRegisterAttendanceIfUserNotFound() {
-        when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
+        // CORRECCIÓN SONARQUBE: Eliminamos el mock a formationRepository que nunca llega a ejecutarse
         when(userService.findByPersonalCode("9999")).thenThrow(new ResourceNotFoundException("User", "personalCode", "9999"));
 
         assertThrows(ResourceNotFoundException.class, () -> formationService.registerAttendance(1, "9999"));
@@ -74,9 +74,10 @@ class FormationServiceTests {
 
     @Test
     void shouldNotRegisterAttendanceIfFormationNotFound() {
+        when(userService.findByPersonalCode("1234")).thenReturn(user);
         when(formationRepository.findById(99)).thenReturn(Optional.empty());
 
         assertThrows(IllegalArgumentException.class, () -> formationService.registerAttendance(99, "1234"));
-        verify(formationRepository, never()).save(any());
+        verify(attendanceRepository, never()).save(any());
     }
 }

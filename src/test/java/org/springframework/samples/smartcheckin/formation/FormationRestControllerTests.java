@@ -2,12 +2,13 @@ package org.springframework.samples.smartcheckin.formation;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,13 +21,16 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.samples.smartcheckin.user.UserService;
+import org.springframework.samples.smartcheckin.settings.OneDriveService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@SuppressWarnings("null")
 @WebMvcTest(value = FormationRestController.class, 
     excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebSecurityConfigurer.class), 
     excludeAutoConfiguration = { SecurityAutoConfiguration.class })
-@SuppressWarnings("null")
 class FormationRestControllerTests {
 
     @Autowired
@@ -38,6 +42,15 @@ class FormationRestControllerTests {
     @MockitoBean
     private FormationService formationService;
 
+    @MockitoBean
+    private UserService userService;
+
+    @MockitoBean
+    private SimpMessagingTemplate messagingTemplate;
+
+    @MockitoBean
+    private OneDriveService oneDriveService;
+
     private AttendRequest attendRequest;
 
     @BeforeEach
@@ -48,14 +61,16 @@ class FormationRestControllerTests {
 
     @Test
     void shouldRegisterAttendance() throws Exception {
-        doNothing().when(formationService).registerAttendance(anyInt(), anyString());
+        Formation f = new Formation();
+        f.setId(1);
+        when(formationService.registerAttendance(anyInt(), anyString())).thenReturn(f);
 
         mockMvc.perform(post("/api/v1/formations/1/attend")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(attendRequest)))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Successfully registered attendance"));
+                .andExpect(jsonPath("$.id").value(1));
     }
 
     @Test

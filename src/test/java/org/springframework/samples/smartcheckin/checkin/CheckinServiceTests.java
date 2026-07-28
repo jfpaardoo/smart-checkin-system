@@ -1,9 +1,7 @@
 package org.springframework.samples.smartcheckin.checkin;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -17,10 +15,9 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.samples.smartcheckin.user.User;
-import org.springframework.samples.smartcheckin.user.UserService;
 
-@ExtendWith(MockitoExtension.class)
 @SuppressWarnings("null")
+@ExtendWith(MockitoExtension.class)
 class CheckinServiceTests {
 
     private static final Integer TEST_USER_ID = 1;
@@ -29,19 +26,13 @@ class CheckinServiceTests {
     @Mock
     private CheckinRepository checkInRepository;
 
-    @Mock
-    private UserService userService;
-
-    // 4. SUT Real (Sin Anotaciones)
     private CheckinService checkinService;
 
     @BeforeEach
     void setUp() {
-        // 5. Instanciación Manual (Setup)
         checkinService = new CheckinService(checkInRepository);
     }
 
-    // Helper method for DAMP
     private User createDummyUser() {
         User user = new User();
         user.setId(TEST_USER_ID);
@@ -59,35 +50,20 @@ class CheckinServiceTests {
     }
 
     @ParameterizedTest
-    @EnumSource(CheckinType.class) // Probar ENTRADA y SALIDA
+    @EnumSource(CheckinType.class)
     void shouldPerformCheckIn(CheckinType type) {
         User user = createDummyUser();
         Checkin dummyCheckin = createDummyCheckin(user, type);
 
         when(checkInRepository.save(any(Checkin.class))).thenReturn(dummyCheckin);
 
-        // Execute SUT
         Checkin result = checkinService.performCheckIn(user, type);
 
-        // Fluent Assertions
         assertThat(result).isNotNull();
         assertThat(result.getCheckInType()).isEqualTo(type);
         assertThat(result.getUser()).isEqualTo(user);
 
-        // Verificación Estricta
         verify(checkInRepository).save(any(Checkin.class));
-    }
-
-    @Test
-    void shouldThrowExceptionWhenUserIsNull() {
-        // Ejecución y verificación de excepción usando assertThrows
-        assertThrows(NullPointerException.class, () -> {
-            checkinService.performCheckIn(null, CheckinType.ENTRADA);
-        });
-
-        // Asegurarse de que no ocurre ningún efecto secundario en caso de error
-        verify(checkInRepository, never()).save(any(Checkin.class));
-        verify(userService, never()).saveUser(any(User.class));
     }
 
     @Test

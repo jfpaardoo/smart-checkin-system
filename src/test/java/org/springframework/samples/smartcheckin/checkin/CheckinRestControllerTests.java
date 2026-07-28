@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -23,11 +24,13 @@ import org.springframework.http.MediaType;
 import org.springframework.samples.smartcheckin.configuration.SecurityConfiguration;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
+import org.springframework.samples.smartcheckin.formation.FormationService;
 import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -50,29 +53,34 @@ class CheckinRestControllerTests {
     @MockitoBean
     private TotpService totpService;
 
+    @MockitoBean
+    private FormationService formationService;
+
+    @MockitoBean
+    private SimpMessagingTemplate messagingTemplate;
+
     @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
     private MockMvc mockMvc;
 
-    private User currentUser;
     private Checkin dummyCheckin;
 
     @BeforeEach
     void setUp() {
-        currentUser = new User();
-        currentUser.setId(TEST_USER_ID);
-        currentUser.setUsername("worker1");
-        currentUser.setIsWorking(false);
+        User localUser = new User();
+        localUser.setId(TEST_USER_ID);
+        localUser.setUsername("worker1");
+        localUser.setIsWorking(false);
 
         dummyCheckin = new Checkin();
         dummyCheckin.setId(TEST_CHECKIN_ID);
-        dummyCheckin.setCheckInDate(LocalDateTime.now());
+        dummyCheckin.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
         dummyCheckin.setCheckInType(CheckinType.ENTRADA);
-        dummyCheckin.setUser(currentUser);
+        dummyCheckin.setUser(localUser);
 
-        when(userService.findCurrentUser()).thenReturn(currentUser);
+        when(userService.findCurrentUser()).thenReturn(localUser);
     }
 
     @Test
@@ -97,9 +105,7 @@ class CheckinRestControllerTests {
     @Test
     @WithMockUser(username = "worker1", authorities = {"USER"})
     void shouldNotRegisterCheckInWhenTypeIsMissing() throws Exception {
-        // Enviar un body vacío o incompleto (simulando error de validación)
         CheckinRequest request = new CheckinRequest();
-        // falta el tipo de checkin
 
         mockMvc.perform(post(BASE_URL)
                 .with(csrf())
@@ -107,7 +113,6 @@ class CheckinRestControllerTests {
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
                 
-        // Verificación estricta: asegurar que el servicio no se llamó
         verify(checkInService, never()).performCheckIn(any(), any());
     }
 
@@ -116,7 +121,6 @@ class CheckinRestControllerTests {
     void shouldGetMyHistorySuccessfully() throws Exception {
         when(checkInService.findByUserId(TEST_USER_ID)).thenReturn(List.of(dummyCheckin));
 
-        // Realizar petición GET
         mockMvc.perform(get(BASE_URL + "/my-history"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(1))

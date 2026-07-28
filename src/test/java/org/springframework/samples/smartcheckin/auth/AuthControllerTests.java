@@ -26,11 +26,13 @@ import org.springframework.samples.smartcheckin.auth.payload.request.LoginReques
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
 import org.springframework.samples.smartcheckin.user.UserService;
+import org.springframework.samples.smartcheckin.user.AuthoritiesService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,15 +43,12 @@ import io.qameta.allure.Owner;
 @Epic("Users & Admin Module")
 @Feature("Authentication")
 @Owner("DP1-tutors")
+@SuppressWarnings("null")
 @WebMvcTest(value = AuthController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebSecurityConfigurer.class), excludeAutoConfiguration = {
 		SecurityAutoConfiguration.class })
-@SuppressWarnings("java:S3305")
 class AuthControllerTests {
 
 	private static final String BASE_URL = "/api/v1/auth";
-
-	@SuppressWarnings("unused")
-	private final AuthController authController;
 
 	@MockitoBean
 	private AuthenticationManager authenticationManager;
@@ -60,16 +59,18 @@ class AuthControllerTests {
 	@MockitoBean
 	private UserService userService;
 
-	private final ObjectMapper objectMapper;
+	// Añadidos para satisfacer el constructor actualizado de AuthController
+	@MockitoBean
+	private AuthoritiesService authoritiesService;
 
-	private final MockMvc mockMvc;
+	@MockitoBean
+	private PasswordEncoder passwordEncoder;
 
 	@Autowired
-	public AuthControllerTests(AuthController authController, ObjectMapper objectMapper, MockMvc mockMvc) {
-		this.authController = authController;
-		this.objectMapper = objectMapper;
-		this.mockMvc = mockMvc;
-	}
+	private ObjectMapper objectMapper;
+
+	@Autowired
+	private MockMvc mockMvc;
 
 	private LoginRequest loginRequest;
 	private UserDetailsImpl userDetails;
@@ -88,7 +89,6 @@ class AuthControllerTests {
 	}
 
 	@Test
-	@SuppressWarnings("null")
 	void shouldAuthenticateUser() throws Exception {
 		Authentication auth = mock(Authentication.class);
 
@@ -103,7 +103,6 @@ class AuthControllerTests {
 	}
 
 	@Test
-	@SuppressWarnings("null")
 	void shouldValidateToken() throws Exception {
 		when(this.jwtUtils.validateJwtToken(token)).thenReturn(true);
 
@@ -113,7 +112,6 @@ class AuthControllerTests {
 	}
 
 	@Test
-	@SuppressWarnings("null")
 	void shouldNotValidateToken() throws Exception {
 		when(this.jwtUtils.validateJwtToken(token)).thenReturn(false);
 
@@ -121,5 +119,4 @@ class AuthControllerTests {
 				.param("token", token)).andExpect(status().isOk())
 				.andExpect(jsonPath("$").value(false));
 	}
-
 }
