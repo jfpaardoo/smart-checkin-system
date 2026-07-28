@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +26,6 @@ import org.springframework.samples.smartcheckin.formation.Formation;
 @RestController
 @RequestMapping("/api/v1/checkins")
 @SecurityRequirement(name = "bearerAuth")
-@Slf4j
 public class CheckinRestController {
 
     private final CheckinService checkInService;
@@ -65,13 +62,44 @@ public class CheckinRestController {
     @PostMapping("/qr-fichaje")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Object> qrCheckin(@RequestBody @Valid QrCheckinRequest request) {
+        User user = userService.findCurrentUser();
         Formation targetFormation = resolveFormation(request);
 
-        if (targetFormation == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of(MESSAGE_KEY, "Token TOTP inválido o expirado para la formación."));
+        // ==========================================
+        // FLUJO 1: EL CÓDIGO ES DE UNA FORMACIÓN
+        // ==========================================
+        if (targetFormation != null) {
+            try {
+                // Lo registramos en la formación
+                formationService.registerAttendance(targetFormation.getId(), user);
+                messagingTemplate.convertAndSend("/topic/formations", "UPDATED");
+                
+                Map<String, Object> responseBody = new HashMap<>();
+                responseBody.put("formationId", targetFormation.getId());
+                responseBody.put("formationName", targetFormation.getName());
+                
+                // Simulamos la info de Entrada para que el Frontend la lea bien
+                Map<String, String> checkinInfo = new HashMap<>();
+                checkinInfo.put("type", "ENTRADA");
+                responseBody.put("checkin", checkinInfo);
+                
+                return new ResponseEntity<>(responseBody, HttpStatus.CREATED);
+                
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of(MESSAGE_KEY, "Error al registrar en formación: " + e.getMessage()));
+            }
         }
 
+        // ==========================================
+        // FLUJO 2: EL CÓDIGO NO ES DE FORMACIÓN (Fichaje Global de la fábrica)
+        // ==========================================
+        if (!totpService.verifyToken(request.getToken())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(MESSAGE_KEY, "Código inválido o expirado."));
+        }
+
+        // Si es el global, verificamos distancia si fuera necesario
         if (isLocationInvalid(request)) {
             double distance = calculateDistance(request.getUserLat(), request.getUserLng(), 
                                                 request.getAdminLat(), request.getAdminLng());
@@ -79,18 +107,10 @@ public class CheckinRestController {
                     .body(Map.of(MESSAGE_KEY, "Demasiado lejos del punto de control. Distancia: " + Math.round(distance) + "m (Max: 50m)"));
         }
 
-        User user = userService.findCurrentUser();
-
-        // 1. Imprimir el error en consola si falla la inscripción a la formación
-        try {
-            formationService.registerAttendance(targetFormation.getId(), user);
-            messagingTemplate.convertAndSend("/topic/formations", "UPDATED");
-        } catch (Exception e) {
-            log.error("ERROR al registrar en formación (¿Usuario ya registrado o no asignado?): " + e.getMessage());
-        }
-
+        // Calculamos si entra o sale
         CheckinType type = (Boolean.TRUE.equals(user.getIsWorking())) ? CheckinType.SALIDA : CheckinType.ENTRADA;
         
+        // Exigimos firma si sale
         if (type == CheckinType.SALIDA && isSignatureMissing(request)) {
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .body(Map.of("needsSignature", true, MESSAGE_KEY, "Signature required for checkout"));
@@ -98,11 +118,8 @@ public class CheckinRestController {
 
         Checkin saved = processCheckinRecord(user, type, request.getSignature());
 
-        // 2. LA CLAVE: Devolver un JSON que contiene el ID de la formación exacta
         Map<String, Object> responseBody = new HashMap<>();
         responseBody.put("checkin", saved);
-        responseBody.put("formationId", targetFormation.getId());
-        responseBody.put("formationName", targetFormation.getName());
 
         return new ResponseEntity<>(responseBody, HttpStatus.CREATED);
     }

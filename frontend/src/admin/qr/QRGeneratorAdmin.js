@@ -22,7 +22,7 @@ const QRGeneratorAdmin = () => {
     
     const [selectedFormationId, setSelectedFormationId] = useState(initialFormationId);
     
-    // 🚀 NUEVO ESTADO: Rompe la clausura obsoleta del WebSocket
+    // Rompe la clausura del WebSocket para que pida la formación correcta siempre
     const [wsTick, setWsTick] = useState(0);
 
     const [formations] = useFetchState([], `/api/v1/formations`, jwt, null, null);
@@ -50,7 +50,7 @@ const QRGeneratorAdmin = () => {
         }
     }, [jwt, selectedFormationId]);
 
-    // Este useEffect se disparará cuando cambies de formación O cuando el WebSocket haga tick
+    // Recarga el token si cambias de formación o si el WebSocket da un toque (cada 20s)
     useEffect(() => {
         fetchCurrentToken();
     }, [fetchCurrentToken, wsTick]);
@@ -66,7 +66,7 @@ const QRGeneratorAdmin = () => {
         return () => clearInterval(interval);
     }, []);
 
-    // 🚀 FIX: El WebSocket ya no ejecuta la petición con variables atrapadas. Solo suma +1 al tick.
+    // El WebSocket ya no sobrescribe con el token global. Solo avisa de que el tiempo pasó.
     useSubscription('/topic/totp', () => {
         setWsTick(prev => prev + 1);
     });

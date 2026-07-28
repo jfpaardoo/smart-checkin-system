@@ -131,7 +131,15 @@ public class FormationService {
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
         User user = userService.findUser(userId);
         
-        attendanceRepository.findByFormationAndUser(formation, user).ifPresent(attendanceRepository::delete);
+        Optional<FormationAttendance> existing = attendanceRepository.findByFormationAndUser(formation, user);
+        
+        if (existing.isPresent()) {
+            FormationAttendance att = existing.get();
+            if (formation.getAttendances() != null) {
+                formation.getAttendances().remove(att);
+            }
+            attendanceRepository.delete(att);
+        }
     }
 
     @Transactional

@@ -155,15 +155,13 @@ export default function UserDashboard() {
     const signatureBase64 = sigCanvas.current.getCanvas().toDataURL('image/png');
     
     try {
-      // 🚀 COMPORTAMIENTO CLONADO DEL QR:
-      // Se envía SIEMPRE el formationId, sin importar si es manual o cámara.
       const payload = {
         signature: signatureBase64,
-        token: manualCheckoutCode,
-        formationId: selectedAtt?.formation?.id
+        token: manualCheckoutCode || undefined
       };
 
-      const response = await fetch('/api/v1/checkins/qr-fichaje', {
+      // EL ENDPOINT CORRECTO PARA SALIR (CHECKOUT)
+      const response = await fetch(`/api/v1/formations/${selectedAtt.formation.id}/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

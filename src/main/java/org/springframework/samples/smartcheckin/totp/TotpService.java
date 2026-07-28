@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 @Service
 public class TotpService {
@@ -64,14 +63,11 @@ public class TotpService {
             : secret + "_FORMATION_" + formIdStr;
         
         Base32 base32 = new Base32();
-        
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(rawSecret.getBytes(StandardCharsets.UTF_8));
-            // Fundamental: Codificamos en Base32 estricto en lugar de Hexadecimal
             return base32.encodeAsString(hash).replace("=", "");
-        } catch (NoSuchAlgorithmException e) {
-            // Fallback seguro en Base32
+        } catch (Exception e) {
             return base32.encodeAsString(rawSecret.getBytes(StandardCharsets.UTF_8)).replace("=", "");
         }
     }
