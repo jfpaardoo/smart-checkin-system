@@ -14,13 +14,14 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-
 import java.util.Map;
 import java.util.UUID;
 
 @Service
 @SuppressWarnings("null")
 public class OneDriveService {
+
+    private static final String SAFE_CHARS_REGEX = "[\\\\/:*?\"<>|~#%&{}]";
 
     private final CloudSettingsService cloudSettingsService;
     private final RestTemplate restTemplate = new RestTemplate();
@@ -31,7 +32,11 @@ public class OneDriveService {
     }
 
     private String getAccessToken(CloudSettings settings) {
-        String tokenUrl = "https://login.microsoftonline.com/" + settings.getOneDriveTenantId() + "/oauth2/v2.0/token";
+        String tenantId = settings.getOneDriveTenantId();
+        if (tenantId == null || tenantId.trim().isEmpty()) {
+            tenantId = "common";
+        }
+        String tokenUrl = "https://login.microsoftonline.com/" + tenantId.replaceAll("[^a-zA-Z0-9-_.]", "") + "/oauth2/v2.0/token";
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -49,8 +54,8 @@ public class OneDriveService {
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(tokenUrl, HttpMethod.POST, request, responseType);
         
         Map<String, Object> bodyRes = response.getBody();
-        if (bodyRes == null) {
-            throw new IllegalStateException("Empty response from OneDrive token endpoint");
+        if (bodyRes == null || !bodyRes.containsKey("access_token")) {
+            throw new IllegalStateException("Empty or invalid response from OneDrive token endpoint");
         }
         return (String) bodyRes.get("access_token");
     }
@@ -64,9 +69,10 @@ public class OneDriveService {
         String accessToken = getAccessToken(settings);
 
         String originalFilename = file.getOriginalFilename();
-        String uniqueFileName = UUID.randomUUID().toString() + "_" + originalFilename;
+        String safeOriginalName = originalFilename != null ? originalFilename.replaceAll(SAFE_CHARS_REGEX, "_") : "file";
+        String uniqueFileName = UUID.randomUUID().toString() + "_" + safeOriginalName;
 
-        String cleanFolderName = folderName != null ? folderName.replaceAll("[\\\\/:*?\"<>|~#%&{}]", "_").trim() : "general";
+        String cleanFolderName = folderName != null ? folderName.replaceAll(SAFE_CHARS_REGEX, "_").trim() : "general";
         if (cleanFolderName.isEmpty()) {
             cleanFolderName = "general";
         }
@@ -79,11 +85,12 @@ public class OneDriveService {
 
         HttpEntity<byte[]> request = new HttpEntity<>(file.getBytes(), headers);
 
-        org.springframework.core.ParameterizedTypeReference<Map<String, Object>> responseType = new org.springframework.core.ParameterizedTypeReference<Map<String, Object>>() {};
+        ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(uploadUrl, HttpMethod.PUT, request, responseType);
+        
         Map<String, Object> bodyRes = response.getBody();
-        if (bodyRes == null) {
-            throw new IllegalStateException("Empty response from OneDrive upload endpoint");
+        if (bodyRes == null || !bodyRes.containsKey("id")) {
+            throw new IllegalStateException("Empty or invalid response from OneDrive upload endpoint");
         }
         String itemId = (String) bodyRes.get("id");
 
@@ -91,25 +98,27 @@ public class OneDriveService {
     }
 
     private String createShareLink(String itemId, String accessToken) {
-        String linkUrl = "https://graph.microsoft.com/v1.0/me/drive/items/" + itemId + "/createLink";
+        String safeItemId = itemId != null ? itemId.replaceAll("[^a-zA-Z0-9-_]", "") : "";
+        String linkUrl = "https://graph.microsoft.com/v1.0/me/drive/items/" + safeItemId + "/createLink";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         String body = "{\"type\":\"view\",\"scope\":\"anonymous\"}";
-
         HttpEntity<String> request = new HttpEntity<>(body, headers);
 
         ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(linkUrl, HttpMethod.POST, request, responseType);
+        
         Map<String, Object> bodyRes = response.getBody();
-        if (bodyRes == null) {
-            throw new IllegalStateException("Empty response from OneDrive createLink endpoint");
+        if (bodyRes == null || !bodyRes.containsKey("link")) {
+            throw new IllegalStateException("Empty or invalid response from OneDrive createLink endpoint");
         }
+
         @SuppressWarnings("unchecked")
         Map<String, Object> linkData = (Map<String, Object>) bodyRes.get("link");
-        return (String) linkData.get("webUrl");
+        return linkData != null ? (String) linkData.get("webUrl") : null;
     }
 
     public String uploadBackup(byte[] data, String fileName) {
@@ -120,7 +129,8 @@ public class OneDriveService {
 
         String accessToken = getAccessToken(settings);
 
-        String uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/backups/" + fileName + ":/content";
+        String safeFileName = fileName != null ? fileName.replaceAll(SAFE_CHARS_REGEX, "_") : "backup.zip";
+        String uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/backups/" + safeFileName + ":/content";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -130,13 +140,13 @@ public class OneDriveService {
 
         ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(uploadUrl, HttpMethod.PUT, request, responseType);
+        
         Map<String, Object> bodyRes = response.getBody();
-        if (bodyRes == null) {
-            throw new IllegalStateException("Empty response from OneDrive upload endpoint");
+        if (bodyRes == null || !bodyRes.containsKey("id")) {
+            throw new IllegalStateException("Empty or invalid response from OneDrive upload endpoint");
         }
         String itemId = (String) bodyRes.get("id");
 
         return createShareLink(itemId, accessToken);
     }
-
 }

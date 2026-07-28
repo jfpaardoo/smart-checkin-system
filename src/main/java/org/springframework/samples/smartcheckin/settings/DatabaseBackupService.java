@@ -10,6 +10,7 @@ import org.springframework.samples.smartcheckin.formation.FormationRepository;
 import org.springframework.samples.smartcheckin.audit.AuditLogRepository;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -29,10 +30,10 @@ public class DatabaseBackupService {
 
     @Autowired
     public DatabaseBackupService(UserRepository userRepository, 
-                                 FormationRepository formationRepository,
-                                 AuditLogRepository auditLogRepository,
-                                 OneDriveService oneDriveService,
-                                 ObjectMapper objectMapper) {
+                               FormationRepository formationRepository,
+                               AuditLogRepository auditLogRepository,
+                               OneDriveService oneDriveService,
+                               ObjectMapper objectMapper) {
         this.userRepository = userRepository;
         this.formationRepository = formationRepository;
         this.auditLogRepository = auditLogRepository;
@@ -40,7 +41,7 @@ public class DatabaseBackupService {
         this.objectMapper = objectMapper;
     }
 
-    public void createAndUploadBackup() throws Exception {
+    public void createAndUploadBackup() throws IOException {
         Map<String, Object> exportData = new HashMap<>();
         exportData.put("users", userRepository.findAll());
         exportData.put("formations", formationRepository.findAll());
