@@ -70,7 +70,7 @@ export default function Home() {
 
             <Row className="g-3 align-items-stretch">
               <Col md={6} lg={3}>
-                <Link to="/admin/qr" className="text-decoration-none d-block h-100">
+                <Link to="/qr-generator" className="text-decoration-none d-block h-100">
                   <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
                       <div className="ba-action-icon-wrapper">

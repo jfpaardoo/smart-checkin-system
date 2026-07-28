@@ -1,11 +1,5 @@
 package org.springframework.samples.smartcheckin.configuration;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -38,110 +32,112 @@ import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
-	private static final String ADMIN = "ADMIN";
+    private static final String ADMIN = "ADMIN";
+    private static final String FORMATIONS_BASE = "/api/v1/formations";
+    private static final String FORMATIONS_WILDCARD = "/api/v1/formations/**";
 
-	@Bean
-	@SuppressWarnings({ "null", "java:S4502" })
-	protected SecurityFilterChain configure(HttpSecurity http, AuthEntryPointJwt unauthorizedHandler,
-			AuthTokenFilter authTokenFilter) throws Exception {
+    @Bean
+    @SuppressWarnings({ "null", "java:S4502" })
+    protected SecurityFilterChain configure(HttpSecurity http, AuthEntryPointJwt unauthorizedHandler,
+            AuthTokenFilter authTokenFilter) throws Exception {
 
-		http
-				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-				.csrf(AbstractHttpConfigurer::disable)
-				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.headers(headers -> headers
-					.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
-					.xssProtection(HeadersConfigurer.XXssConfig::disable)
-					.contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'"))
-				)
-				.exceptionHandling(exepciontHandling -> exepciontHandling.authenticationEntryPoint(unauthorizedHandler))
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .headers(headers -> headers
+                    .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
+                    .xssProtection(HeadersConfigurer.XXssConfig::disable)
+                    .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'"))
+                )
+                .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(unauthorizedHandler))
 
-				.authorizeHttpRequests(auth -> auth
-						// Recursos estáticos comunes (css, js, images, webjars…) públicos
-						.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-						// H2 Console accesible
-						.requestMatchers(PathRequest.toH2Console()).permitAll()
-						.requestMatchers("/h2-console/**").permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        // 1. Peticiones CORS Preflight (OPTIONS)
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-						// Raíz / páginas públicas
-						.requestMatchers("/", "/oups").permitAll()
+                        // 2. Recursos estáticos y consolas
+                        .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                        .requestMatchers(PathRequest.toH2Console()).permitAll()
+                        .requestMatchers("/h2-console/**", "/", "/oups").permitAll()
 
-						// Swagger / OpenAPI accesible solo por ADMIN
-						.requestMatchers(
-								"/v3/api-docs/**",
-								"/swagger-ui.html",
-								"/swagger-ui/**",
-								"/swagger-resources/**")
-						.hasAuthority(ADMIN)
+                        // 3. Swagger / OpenAPI (solo ADMIN)
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/swagger-resources/**")
+                        .hasAuthority(ADMIN)
 
-						// API pública
-						.requestMatchers("/api/v1/auth/**").permitAll()
+                        // 4. Endpoints públicos
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/api/v1/checkins/qr-fichaje").permitAll()
 
-						// WebSockets
-						.requestMatchers("/ws/**").permitAll()
+                        // 5. Perfil personal del usuario
+                        .requestMatchers("/api/v1/users/me", "/api/v1/users/me/**").authenticated()
 
-						// Rutas de perfil personal
-						.requestMatchers("/api/v1/users/me", "/api/v1/users/me/**").authenticated()
+                        // 6. Administración y HR
+                        .requestMatchers("/api/v1/users/pending", "/api/v1/users/*/approve").hasAuthority(ADMIN)
+                        .requestMatchers("/api/v1/users", "/api/v1/users/**").hasAuthority(ADMIN)
+                        .requestMatchers("/api/v1/analytics/**").hasAuthority(ADMIN)
+                        .requestMatchers("/api/v1/exports/**").hasAuthority(ADMIN)
+                        .requestMatchers("/api/v1/audit/**").hasAuthority(ADMIN)
+                        .requestMatchers("/api/v1/cloud-settings/**").hasAuthority(ADMIN)
 
-						// Rutas de administración y HR
-						.requestMatchers("/api/v1/users/**").hasAuthority(ADMIN)
-						.requestMatchers("/api/v1/totp/**").hasAuthority(ADMIN)
-						.requestMatchers("/api/v1/analytics/**").hasAuthority(ADMIN)
-						.requestMatchers("/api/v1/exports/**").hasAuthority(ADMIN)
-						.requestMatchers("/api/v1/audit/**").hasAuthority(ADMIN)
-						.requestMatchers("/api/v1/cloud-settings/**").hasAuthority(ADMIN)
+                        // 7. Formaciones (POST, PUT, DELETE restringidos a ADMIN)
+                        .requestMatchers(HttpMethod.POST, FORMATIONS_BASE).hasAuthority(ADMIN)
+                        .requestMatchers(HttpMethod.PUT, FORMATIONS_BASE, FORMATIONS_WILDCARD).hasAuthority(ADMIN)
+                        .requestMatchers(HttpMethod.DELETE, FORMATIONS_BASE, FORMATIONS_WILDCARD).hasAuthority(ADMIN)
+                        
+                        // 8. Formaciones GET y checkout permitidos para autenticados
+                        .requestMatchers(FORMATIONS_BASE, FORMATIONS_WILDCARD).authenticated()
 
-						// Otras reglas de acceso para el Check-in System:
-						.requestMatchers(HttpMethod.POST, "/api/v1/checkins/qr-fichaje").permitAll()
-						.requestMatchers("/api/v1/checkins/**").authenticated()
+                        // 9. Otros endpoints autenticados
+                        .requestMatchers("/api/v1/totp/**").authenticated()
+                        .requestMatchers("/api/v1/checkins/**").authenticated()
+                        .requestMatchers("/api/v1/certificates/**").authenticated()
 
-						// Formaciones: crear solo ADMIN, el resto autenticado
-						.requestMatchers(HttpMethod.POST, "/api/v1/formations").hasAuthority(ADMIN)
-						.requestMatchers("/api/v1/formations/**").authenticated()
+                        // 10. Denegar lo demás por defecto
+                        .anyRequest().denyAll())
 
-						// Certificados
-						.requestMatchers("/api/v1/certificates/**").authenticated()
+                .addFilterBefore(new RateLimitFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
 
-						// El resto denegado
-						.anyRequest().denyAll())
+    @Bean
+    public AuthTokenFilter authenticationJwtTokenFilter(
+            JwtUtils jwtUtils,
+            UserDetailsServiceImpl userDetailsService) {
+        return new AuthTokenFilter(jwtUtils, userDetailsService);
+    }
 
-				.addFilterBefore(new RateLimitFilter(), UsernamePasswordAuthenticationFilter.class)
-				.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
-		return http.build();
-	}
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
 
-	@Bean
-	public AuthTokenFilter authenticationJwtTokenFilter(
-			JwtUtils jwtUtils,
-			UserDetailsServiceImpl userDetailsService) {
-		return new AuthTokenFilter(jwtUtils, userDetailsService);
-	}
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-		return config.getAuthenticationManager();
-	}
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://miempresa.com"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setAllowCredentials(true);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
-
-	@Bean
-	public CorsConfigurationSource corsConfigurationSource() {
-		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://miempresa.com"));
-		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-		configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
-		configuration.setAllowCredentials(true);
-		
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", configuration);
-		return source;
-	}
-
-	@Bean
-	public RoleHierarchy roleHierarchy() {
-		return RoleHierarchyImpl.fromHierarchy("ADMIN > HR_MANAGER \n HR_MANAGER > EMPLOYEE");	}
-
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+        return RoleHierarchyImpl.fromHierarchy("ADMIN > HR_MANAGER \n HR_MANAGER > EMPLOYEE");
+    }
 }

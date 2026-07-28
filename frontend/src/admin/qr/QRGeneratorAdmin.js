@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardBody, CardTitle, FormGroup, Label } from 'reactstrap';
 import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from 'react-i18next';
@@ -14,39 +14,46 @@ const QRGeneratorAdmin = () => {
     const jwt = tokenService.getLocalAccessToken();
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
-    const initialFormationId = queryParams.get('formationId') || '';
+    const initialFormationId = queryParams.get('formationId') ? Number.parseInt(queryParams.get('formationId'), 10) : null;
 
     const [totpToken, setTotpToken] = useState(null);
     const [loading, setLoading] = useState(true);
     const [progress, setProgress] = useState(100);
     
     const [selectedFormationId, setSelectedFormationId] = useState(initialFormationId);
+    
+    // 🚀 NUEVO ESTADO: Rompe la clausura obsoleta del WebSocket
+    const [wsTick, setWsTick] = useState(0);
 
     const [formations] = useFetchState([], `/api/v1/formations`, jwt, null, null);
 
-    useEffect(() => {
-        const fetchCurrentToken = async () => {
-            try {
-                const response = await fetch('/api/v1/totp/current', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${jwt}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    setTotpToken(data.token);
+    const fetchCurrentToken = useCallback(async () => {
+        try {
+            const url = selectedFormationId 
+                ? `/api/v1/totp/current?formationId=${selectedFormationId}`
+                : '/api/v1/totp/current';
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${jwt}`,
+                    'Content-Type': 'application/json'
                 }
-            } catch (error) {
-                console.error("Error fetching initial TOTP token:", error);
-            } finally {
-                setLoading(false);
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setTotpToken(data.token);
             }
-        };
+        } catch (error) {
+            console.error("Error fetching TOTP token:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [jwt, selectedFormationId]);
 
+    // Este useEffect se disparará cuando cambies de formación O cuando el WebSocket haga tick
+    useEffect(() => {
         fetchCurrentToken();
-    }, [jwt]);
+    }, [fetchCurrentToken, wsTick]);
 
     useEffect(() => {
         const calculateProgress = () => {
@@ -59,15 +66,9 @@ const QRGeneratorAdmin = () => {
         return () => clearInterval(interval);
     }, []);
 
-    useSubscription('/topic/totp', (message) => {
-        try {
-            const data = JSON.parse(message.body);
-            if (data?.token) {
-                setTotpToken(data.token);
-            }
-        } catch (err) {
-            console.warn("Error parsing WS message for TOTP token", err);
-        }
+    // 🚀 FIX: El WebSocket ya no ejecuta la petición con variables atrapadas. Solo suma +1 al tick.
+    useSubscription('/topic/totp', () => {
+        setWsTick(prev => prev + 1);
     });
 
     const [adminCoords, setAdminCoords] = useState(null);
@@ -92,7 +93,7 @@ const QRGeneratorAdmin = () => {
         };
         
         if (selectedFormationId) {
-            payload.formationId = Number.parseInt(selectedFormationId, 10);
+            payload.formationId = selectedFormationId;
         }
 
         if (adminCoords) {
@@ -153,14 +154,16 @@ const QRGeneratorAdmin = () => {
                                         <Label for="formationId" style={{fontWeight: 600, color: '#555'}}>{t('qr.selectFormation')}</Label>
                                         <GlassDropdown
                                             options={formations.map(f => ({ value: f.id, label: f.name }))}
-                                            value={selectedFormationId}
-                                            onChange={(val) => setSelectedFormationId(String(val))}
+                                            value={selectedFormationId || ''}
+                                            onChange={(val) => {
+                                                setSelectedFormationId(val ? Number.parseInt(val, 10) : null);
+                                            }}
                                             placeholder={t('qr.selectFormationPlaceholder')}
                                         />
                                     </FormGroup>
                                 </div>
 
-                                {selectedFormationId && (
+                                {!!selectedFormationId && (
                                     <div className="w-100 text-center text-md-start mt-2">
                                         <div className="mb-3">
                                             <span 
