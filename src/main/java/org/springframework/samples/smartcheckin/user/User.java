@@ -2,17 +2,20 @@ package org.springframework.samples.smartcheckin.user;
 
 import java.util.List;
 
-import org.springframework.samples.smartcheckin.formation.Formation;
+import org.springframework.samples.smartcheckin.formation.FormationAttendance;
+
 import java.time.LocalDateTime;
 
 import org.springframework.samples.smartcheckin.model.BaseEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
@@ -25,7 +28,7 @@ import lombok.EqualsAndHashCode;
 
 @Getter
 @Setter
-@EqualsAndHashCode(callSuper = false, exclude = {"formations"})
+@EqualsAndHashCode(callSuper = false, exclude = {"formationAttendances"})
 @Entity
 @Table(name = "appusers")
 public class User extends BaseEntity {
@@ -35,7 +38,7 @@ public class User extends BaseEntity {
 	@Column(unique = true)
 	private String username;
 
-	@JsonIgnore
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	private String password;
 
 	@NotBlank
@@ -52,8 +55,12 @@ public class User extends BaseEntity {
 	private String lastName;
 
 	@NotNull
-	@Column(name = "is_working")
+	@Column(name = "is_working", columnDefinition = "boolean default false")
 	private Boolean isWorking = false;
+
+	@NotNull
+	@Column(name = "is_approved", columnDefinition = "boolean default true")
+	private Boolean isApproved = true;
 
 	@Column(name = "failed_login_attempts")
 	private Integer failedLoginAttempts = 0;
@@ -86,8 +93,8 @@ public class User extends BaseEntity {
 		return cond;
 	}
 
-	@ManyToMany(mappedBy = "attendees")
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonIgnore
-	private List<Formation> formations;
+	private List<FormationAttendance> formationAttendances;
 
 }

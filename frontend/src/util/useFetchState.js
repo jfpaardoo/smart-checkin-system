@@ -38,9 +38,9 @@ export default function useFetchState(initial, url, jwt, setMessage, setVisible,
                     .then(json => {
                         if (!ignore) {
                             if (json.message) {
-                                if (setMessage !== null) {
+                                if (typeof setMessage === "function") {
                                     setMessage(json.message);
-                                    setVisible(true);
+                                    if (typeof setVisible === "function") setVisible(true);
                                 }
                             } else {
                                 setData(json);
@@ -48,9 +48,9 @@ export default function useFetchState(initial, url, jwt, setMessage, setVisible,
                         }
                     }).catch((error_) => {
                         console.log(error_);
-                        if (setMessage !== null) {
+                        if (typeof setMessage === "function") {
                             setMessage('Failed to fetch data');
-                            setVisible(true);
+                            if (typeof setVisible === "function") setVisible(true);
                         }
                     }).finally(() => {
                         if (!ignore) {

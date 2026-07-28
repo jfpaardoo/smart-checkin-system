@@ -17,6 +17,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsServiceImpl;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -64,13 +66,13 @@ public class SecurityConfiguration {
 						// Raíz / páginas públicas
 						.requestMatchers("/", "/oups").permitAll()
 
-						// Swagger / OpenAPI accesible
+						// Swagger / OpenAPI accesible solo por ADMIN
 						.requestMatchers(
 								"/v3/api-docs/**",
 								"/swagger-ui.html",
 								"/swagger-ui/**",
 								"/swagger-resources/**")
-						.permitAll()
+						.hasAuthority(ADMIN)
 
 						// API pública
 						.requestMatchers("/api/v1/auth/**").permitAll()
@@ -78,9 +80,16 @@ public class SecurityConfiguration {
 						// WebSockets
 						.requestMatchers("/ws/**").permitAll()
 
+						// Rutas de perfil personal
+						.requestMatchers("/api/v1/users/me", "/api/v1/users/me/**").authenticated()
+
 						// Rutas de administración y HR
 						.requestMatchers("/api/v1/users/**").hasAuthority(ADMIN)
 						.requestMatchers("/api/v1/totp/**").hasAuthority(ADMIN)
+						.requestMatchers("/api/v1/analytics/**").hasAuthority(ADMIN)
+						.requestMatchers("/api/v1/exports/**").hasAuthority(ADMIN)
+						.requestMatchers("/api/v1/audit/**").hasAuthority(ADMIN)
+						.requestMatchers("/api/v1/cloud-settings/**").hasAuthority(ADMIN)
 
 						// Otras reglas de acceso para el Check-in System:
 						.requestMatchers(HttpMethod.POST, "/api/v1/checkins/qr-fichaje").permitAll()
@@ -89,6 +98,9 @@ public class SecurityConfiguration {
 						// Formaciones: crear solo ADMIN, el resto autenticado
 						.requestMatchers(HttpMethod.POST, "/api/v1/formations").hasAuthority(ADMIN)
 						.requestMatchers("/api/v1/formations/**").authenticated()
+
+						// Certificados
+						.requestMatchers("/api/v1/certificates/**").authenticated()
 
 						// El resto denegado
 						.anyRequest().denyAll())
@@ -127,5 +139,9 @@ public class SecurityConfiguration {
 		source.registerCorsConfiguration("/**", configuration);
 		return source;
 	}
+
+	@Bean
+	public RoleHierarchy roleHierarchy() {
+		return RoleHierarchyImpl.fromHierarchy("ADMIN > HR_MANAGER \n HR_MANAGER > EMPLOYEE");	}
 
 }

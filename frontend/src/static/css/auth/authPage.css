@@ -1,29 +1,45 @@
+/* ==========================================
+   SHIFTSYNC DESIGN SYSTEM - AUTHENTICATION PAGES
+   ========================================== */
+
 .auth-page-container {
-  height: 100%;
+  min-height: calc(100vh - 120px);
   width: 100%;
   display: flex;
   flex-direction: column;
-  margin-top: 10rem;
-  justify-content: space-evenly;
+  justify-content: center;
   align-items: center;
+  padding: 40px 20px;
+  box-sizing: border-box;
 }
 
-.auth-form-container{
-    max-height: 800px;
-    max-width: 500px;
-    height: 90%;
-    width: 90%;
+.auth-form-container {
+  max-width: 480px;
+  width: 100%;
+  min-width: 320px;
+  padding: 40px 35px;
+  background: rgba(255, 255, 255, 0.55) !important;
+  backdrop-filter: blur(35px) saturate(210%) !important;
+  -webkit-backdrop-filter: blur(35px) saturate(210%) !important;
+  border-radius: 36px !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 25px 60px rgba(31, 38, 135, 0.08), inset 0 1.5px 2px rgba(255, 255, 255, 0.95) !important;
 }
 
 .auth-page-container h1 {
   text-align: center;
-  font-size: 5em;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 25px;
+  letter-spacing: -0.5px;
 }
 
 .options-row {
   display: flex;
-  justify-content: space-evenly;
+  justify-content: center;
   align-items: center;
+  gap: 20px;
   width: 100%;
   margin-top: 30px;
 }
@@ -31,10 +47,6 @@
 @media screen and (max-width: 768px) {
   .options-row {
     flex-direction: column;
-    margin-top: 0;
-  }
-
-  .options-row button{
-    margin: 10px 0;
+    gap: 12px;
   }
 }

@@ -49,8 +49,7 @@ class AuthControllerTests {
 	private static final String BASE_URL = "/api/v1/auth";
 
 	@SuppressWarnings("unused")
-	@Autowired
-	private AuthController authController;
+	private final AuthController authController;
 
 	@MockitoBean
 	private AuthenticationManager authenticationManager;
@@ -61,11 +60,16 @@ class AuthControllerTests {
 	@MockitoBean
 	private UserService userService;
 
-	@Autowired
-	private ObjectMapper objectMapper;
+	private final ObjectMapper objectMapper;
+
+	private final MockMvc mockMvc;
 
 	@Autowired
-	private MockMvc mockMvc;
+	public AuthControllerTests(AuthController authController, ObjectMapper objectMapper, MockMvc mockMvc) {
+		this.authController = authController;
+		this.objectMapper = objectMapper;
+		this.mockMvc = mockMvc;
+	}
 
 	private LoginRequest loginRequest;
 	private UserDetailsImpl userDetails;

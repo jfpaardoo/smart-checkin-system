@@ -1,4 +1,4 @@
 -- One admin user, named admin1 with password 4dm1n and authority admin
 INSERT INTO authorities(id,authority) SELECT 1,'ADMIN' WHERE NOT EXISTS (SELECT 1 FROM authorities WHERE id = 1);
 INSERT INTO authorities(id,authority) SELECT 2,'USER' WHERE NOT EXISTS (SELECT 1 FROM authorities WHERE id = 2);
-INSERT INTO appusers(id,username,password,authority,personal_code,first_name,last_name,is_working) SELECT 1,'admin1','$2a$10$nMmTWAhPTqXqLDJTag3prumFrAJpsYtroxf0ojesFYq0k4PmcbWUS',1,'0001','ADMIN','SISTEMA',false WHERE NOT EXISTS (SELECT 1 FROM appusers WHERE id = 1);
+INSERT INTO appusers(id,username,password,authority,personal_code,first_name,last_name,is_working,is_approved,failed_login_attempts) SELECT 1,'admin1','$2a$10$nMmTWAhPTqXqLDJTag3prumFrAJpsYtroxf0ojesFYq0k4PmcbWUS',1,'0001','ADMIN','SISTEMA',false,true,0 WHERE NOT EXISTS (SELECT 1 FROM appusers WHERE id = 1);

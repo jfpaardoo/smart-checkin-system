@@ -64,7 +64,17 @@ public class UserService {
 	}
 
 	public Iterable<User> findAllByAuthority(String auth) {
-		return userRepository.findAllByAuthority(auth);
+		return userRepository.findAllApprovedUsersByAuthority(auth);
+	}
+
+	@Transactional(readOnly = true)
+	public Iterable<User> findPendingUsers() {
+		return userRepository.findAllPendingUsers();
+	}
+
+	@Transactional(readOnly = true)
+	public Iterable<User> findApprovedUsers() {
+		return userRepository.findAllApprovedUsers();
 	}
 
 	@Transactional

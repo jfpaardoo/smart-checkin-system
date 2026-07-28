@@ -38,7 +38,7 @@ class CheckinServiceTests {
     @BeforeEach
     void setUp() {
         // 5. Instanciación Manual (Setup)
-        checkinService = new CheckinService(checkInRepository, userService);
+        checkinService = new CheckinService(checkInRepository);
     }
 
     // Helper method for DAMP
@@ -60,7 +60,7 @@ class CheckinServiceTests {
 
     @ParameterizedTest
     @EnumSource(CheckinType.class) // Probar ENTRADA y SALIDA
-    void shouldPerformCheckInAndToggleUserStatus(CheckinType type) {
+    void shouldPerformCheckIn(CheckinType type) {
         User user = createDummyUser();
         Checkin dummyCheckin = createDummyCheckin(user, type);
 
@@ -74,11 +74,7 @@ class CheckinServiceTests {
         assertThat(result.getCheckInType()).isEqualTo(type);
         assertThat(result.getUser()).isEqualTo(user);
 
-        // Verify side effects
-        assertThat(user.getIsWorking()).isEqualTo(type == CheckinType.ENTRADA);
-
         // Verificación Estricta
-        verify(userService).saveUser(user);
         verify(checkInRepository).save(any(Checkin.class));
     }
 

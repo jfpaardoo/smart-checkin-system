@@ -1,4 +1,4 @@
-# Desglose de Tareas: ShiftSync (BA Glass)
+# Desglose de Tareas: BA Distribution Academy (BA Glass)
 
 Este documento detalla la división del proyecto en pequeñas tareas abordables en jornadas máximas de 24 horas de esfuerzo. Cada tarea define una rama de Git utilizando los prefijos estándar de la industria (Conventional Commits):
 * `feat/`: Nuevas funcionalidades.
@@ -63,11 +63,11 @@ Este documento detalla la división del proyecto en pequeñas tareas abordables 
 ## FASE 5: Frontend - Portal de Empleado (Días 8-9)
 
 ### Tarea 5.1: Escáner QR Web (PWA)
-* **Descripción:** Implementar la librería `html5-qrcode` para acceder a la cámara desde el navegador. Crear la interfaz minimalista donde el usuario escanea y pone su número de 4 dígitos.
+* **Descripción:** [COMPLETADA] Implementar la librería `html5-qrcode` para acceder a la cámara desde el navegador. Crear la interfaz minimalista donde el usuario escanea y pone su número de 4 dígitos.
 * **Rama:** `feat/ui-user-scanner`
 
 ### Tarea 5.2: Feedback Visual de Fichaje
-* **Descripción:** Conectar el escáner al endpoint de validación y mostrar pantallas limpias de ÉXITO (verde) o FRACASO (rojo) tras la lectura.
+* **Descripción:** [COMPLETADA] Implementar Dashboard de Usuario para ver sus formaciones. Al hacer checkout, mostrar un panel de firma con estética Liquid Glass en la PWA y guardar la firma gráfica.
 * **Rama:** `feat/ui-user-feedback`
 
 ---

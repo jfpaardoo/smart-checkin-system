@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { Form, Input, Label, FormGroup, Row, Col, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from "reactstrap";
+import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
+import "../../App.css";
 import "../../static/css/admin/adminPage.css";
 import getIdFromUrl from "../../util/getIdFromUrl";
 import useFetchData from "../../util/useFetchData";
@@ -8,9 +10,9 @@ import useFetchState from "../../util/useFetchState";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
 
-const jwt = tokenService.getLocalAccessToken();
-
 export default function UserEditAdmin() {
+  const { t } = useTranslation();
+  const jwt = tokenService.getLocalAccessToken();
   const emptyItem = {
     id: null,
     username: "",
@@ -66,35 +68,32 @@ export default function UserEditAdmin() {
       .then((json) => {
         if (json.message) {
           let errorMsg = json.message;
-          // Handle Spring validation map format: {field=message}
           if (errorMsg.startsWith("{") && errorMsg.endsWith("}")) {
             errorMsg = errorMsg
               .slice(1, -1)
               .split(",")
               .map(err => {
                 const [field, msg] = err.split("=");
-                const formattedField = field.trim() === "authority" ? "Role" : field.trim();
+                const formattedField = field.trim() === "authority" ? t('users.role') : field.trim();
                 return `${formattedField}: ${msg.trim()}`;
               })
               .join("\n");
-          }
-          // Handle database unique constraints (e.g. SQL duplicate key)
-          else if (errorMsg.includes("duplicate key value")) {
+          } else if (errorMsg.includes("duplicate key value")) {
             if (errorMsg.includes("personal_code") || errorMsg.includes("personalCode")) {
-              errorMsg = "The Personal Code already exists for another user.";
+              errorMsg = t('users.duplicatePersonalCode');
             } else if (errorMsg.includes("username")) {
-              errorMsg = "The Username already exists for another user.";
+              errorMsg = t('users.duplicateUsername');
             } else {
-              errorMsg = "A database conflict occurred (duplicated record).";
+              errorMsg = t('users.duplicateGeneric');
             }
           }
           toast.error(errorMsg);
         } else {
-          toast.success(user.id ? "User updated successfully" : "User created successfully");
+          toast.success(user.id ? t('users.updated') : t('users.created'));
           setTimeout(() => { window.location.href = "/users"; }, 1200);
         }
       })
-      .catch(() => toast.error("Connection error. Please try again."));
+      .catch(() => toast.error(t('users.connectionError')));
   }
 
   if (id !== "new" && loading) {
@@ -105,13 +104,13 @@ export default function UserEditAdmin() {
     <div className="ba-container justify-content-center">
       <div className="ba-card ba-card-form my-auto mx-auto">
         <div className="ba-card-header">
-          <h2>{user.id ? "Edit User" : "Add New User"}</h2>
+          <h2>{user.id ? t('users.editUser') : t('users.addNewUser')}</h2>
         </div>
         <Form onSubmit={handleSubmit}>
           <Row>
             <Col md={6}>
               <FormGroup>
-                <Label for="username">Username</Label>
+                <Label for="username">{t('users.username')}</Label>
                 <Input
                   type="text"
                   required
@@ -126,7 +125,7 @@ export default function UserEditAdmin() {
             {!user.id ? (
               <Col md={6}>
                 <FormGroup>
-                  <Label for="password">Password</Label>
+                  <Label for="password">{t('users.password')}</Label>
                   <Input
                     type="password"
                     required
@@ -140,7 +139,7 @@ export default function UserEditAdmin() {
             ) : (
               <Col md={6}>
                 <FormGroup>
-                  <Label for="personalCode">Personal Code (4 digits)</Label>
+                  <Label for="personalCode">{t('users.personalCode4digits')}</Label>
                   <Input
                     type="text"
                     inputMode="numeric"
@@ -161,7 +160,7 @@ export default function UserEditAdmin() {
           <Row>
             <Col md={6}>
               <FormGroup>
-                <Label for="firstName">First Name</Label>
+                <Label for="firstName">{t('users.firstName')}</Label>
                 <Input
                   type="text"
                   required
@@ -175,7 +174,7 @@ export default function UserEditAdmin() {
 
             <Col md={6}>
               <FormGroup>
-                <Label for="lastName">Last Name</Label>
+                <Label for="lastName">{t('users.lastName')}</Label>
                 <Input
                   type="text"
                   required
@@ -192,7 +191,7 @@ export default function UserEditAdmin() {
             {!user.id && (
               <Col md={6}>
                 <FormGroup>
-                  <Label for="personalCode">Personal Code (4 digits)</Label>
+                  <Label for="personalCode">{t('users.personalCode4digits')}</Label>
                   <Input
                     type="text"
                     inputMode="numeric"
@@ -211,14 +210,14 @@ export default function UserEditAdmin() {
 
             <Col md={user.id ? 12 : 6}>
               <FormGroup>
-                <Label for="authority">Role / Authority</Label>
+                <Label for="authority">{t('users.roleAuthority')}</Label>
                 <UncontrolledDropdown className="w-100">
                   <DropdownToggle
                     tag="button"
                     type="button"
                     className="ba-select-toggle w-100 d-flex align-items-center justify-content-between"
                   >
-                    <span>{user.authority?.authority || "Select Role"}</span>
+                    <span>{user.authority?.authority || t('users.selectRole')}</span>
                     <span className="dropdown-caret-icon">▼</span>
                   </DropdownToggle>
                   <DropdownMenu className="ba-dropdown-menu w-100">
@@ -240,10 +239,10 @@ export default function UserEditAdmin() {
 
           <div className="form-action-group">
             <button className="ba-btn-primary" type="submit">
-              Save User
+              {t('users.saveUser')}
             </button>
             <Link to="/users" className="ba-btn-secondary form-action-link">
-              Cancel
+              {t('users.cancel')}
             </Link>
           </div>
         </Form>

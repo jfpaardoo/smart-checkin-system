@@ -1,68 +1,114 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardBody, CardTitle } from 'reactstrap';
+import { Card, CardBody, CardTitle, FormGroup, Label } from 'reactstrap';
 import { QRCodeSVG } from 'qrcode.react';
+import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../../hooks/useSubscription';
+import { useLocation } from 'react-router-dom';
 import tokenService from '../../services/token.service';
 import { QRGhostLoader } from '../../components/GhostLoader';
+import useFetchState from '../../util/useFetchState';
+import GlassDropdown from '../../components/GlassDropdown';
 
 const QRGeneratorAdmin = () => {
+    const { t } = useTranslation();
+    const jwt = tokenService.getLocalAccessToken();
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const initialFormationId = queryParams.get('formationId') || '';
+
     const [totpToken, setTotpToken] = useState(null);
     const [loading, setLoading] = useState(true);
     const [progress, setProgress] = useState(100);
+    
+    const [selectedFormationId, setSelectedFormationId] = useState(initialFormationId);
 
-    const fetchCurrentToken = async () => {
-        try {
-            const jwt = tokenService.getLocalAccessToken();
-            const response = await fetch('/api/v1/totp/current', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${jwt}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setTotpToken(data.token);
-            }
-        } catch (error) {
-            console.error("Error fetching initial TOTP token:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const [formations] = useFetchState([], `/api/v1/formations`, jwt, null, null);
 
-    // Al montar el componente, obtener el token inicial para no esperar hasta 30s
     useEffect(() => {
-        fetchCurrentToken();
-    }, []);
+        const fetchCurrentToken = async () => {
+            try {
+                const response = await fetch('/api/v1/totp/current', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${jwt}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setTotpToken(data.token);
+                }
+            } catch (error) {
+                console.error("Error fetching initial TOTP token:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    // Efecto para calcular el progreso de la barra (10 segundos en total)
+        fetchCurrentToken();
+    }, [jwt]);
+
     useEffect(() => {
         const calculateProgress = () => {
-            const remainingMs = 10000 - (Date.now() % 10000);
-            setProgress((remainingMs / 10000) * 100);
+            const remainingMs = 20000 - (Date.now() % 20000);
+            setProgress((remainingMs / 20000) * 100);
         };
         
-        calculateProgress(); // cálculo inicial
-        const interval = setInterval(calculateProgress, 100); // actualización suave cada 100ms
-
+        calculateProgress();
+        const interval = setInterval(calculateProgress, 100);
         return () => clearInterval(interval);
     }, []);
 
-    // Suscripción al WebSocket para recibir los nuevos tokens en tiempo real
     useSubscription('/topic/totp', (message) => {
         try {
             const data = JSON.parse(message.body);
             if (data?.token) {
                 setTotpToken(data.token);
-                console.log("Token actualizado via WebSocket:", data.token);
             }
         } catch (err) {
             console.warn("Error parsing WS message for TOTP token", err);
         }
     });
 
-    const qrPayload = JSON.stringify({ token: totpToken, action: "checkin" });
+    const [adminCoords, setAdminCoords] = useState(null);
+
+    useEffect(() => {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                setAdminCoords({
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                });
+            }, (error) => {
+                console.warn("Geolocation not available or permission denied", error);
+            }, { enableHighAccuracy: true });
+        }
+    }, []);
+
+    const buildQrPayload = () => {
+        const payload = { 
+            token: totpToken, 
+            action: "formation" 
+        };
+        
+        if (selectedFormationId) {
+            payload.formationId = Number.parseInt(selectedFormationId, 10);
+        }
+
+        if (adminCoords) {
+            payload.adminLat = adminCoords.lat;
+            payload.adminLng = adminCoords.lng;
+        }
+        
+        return JSON.stringify(payload);
+    };
+
+    const isEnding = progress <= (3 / 20) * 100;
+    const qrOpacity = isEnding ? Math.max(0.2, progress / ((3 / 20) * 100)) : 1;
+    const fadeStyle = {
+        opacity: qrOpacity,
+        transition: 'opacity 0.2s ease-out'
+    };
 
     return (
         <div className="ba-container justify-content-center">
@@ -72,43 +118,75 @@ const QRGeneratorAdmin = () => {
                         <QRGhostLoader />
                     ) : (
                         <div className="d-flex flex-column flex-md-row align-items-center justify-content-center gap-4 gap-lg-5 py-2 my-auto">
-                            {/* Left Side: Glowing QR Code Container */}
-                            <div className="qr-code-container qr-code-frame">
-                                <QRCodeSVG 
-                                    value={qrPayload} 
-                                    size={265} 
-                                    level="M" 
-                                    marginSize={0}
-                                />
+                            
+                            <div 
+                                className="qr-code-container qr-code-frame d-flex align-items-center justify-content-center text-center" 
+                                style={{ width: '305px', height: '305px', backgroundColor: '#ffffff', borderRadius: '36px' }}
+                            >
+                                {selectedFormationId ? (
+                                    <div style={fadeStyle}>
+                                        <QRCodeSVG 
+                                            value={buildQrPayload()} 
+                                            size={265} 
+                                            level="M" 
+                                            marginSize={0}
+                                        />
+                                    </div>
+                                ) : (
+                                    <div style={{ color: '#888', fontWeight: '500' }}>
+                                        <p className="mb-0">{t('qr.selectFormationPrompt')}</p>
+                                        <p className="mb-0">{t('qr.selectFormationPrompt2')}</p>
+                                    </div>
+                                )}
                             </div>
 
-                            {/* Right Side: Title, PIN & Progress */}
                             <div className="d-flex flex-column align-items-center align-items-md-start text-center text-md-start qr-info-column">
                                 <CardTitle tag="h2" className="qr-title">
-                                    Fichaje de Empleados
+                                    {t('qr.title')}
                                 </CardTitle>
-                                <p className="qr-subtitle">
-                                    Escanea este código QR con la app para registrar tu entrada o salida.
+                                <p className="qr-subtitle mb-4">
+                                    {t('qr.subtitle')}
                                 </p>
 
-                                {/* Token Code Display */}
-                                <div className="mb-4">
-                                    <span className="token-display">
-                                        {totpToken}
-                                    </span>
+                                <div className="w-100 mb-3 text-start">
+                                    <FormGroup>
+                                        <Label for="formationId" style={{fontWeight: 600, color: '#555'}}>{t('qr.selectFormation')}</Label>
+                                        <GlassDropdown
+                                            options={formations.map(f => ({ value: f.id, label: f.name }))}
+                                            value={selectedFormationId}
+                                            onChange={(val) => setSelectedFormationId(String(val))}
+                                            placeholder={t('qr.selectFormationPlaceholder')}
+                                        />
+                                    </FormGroup>
                                 </div>
 
-                                {/* Neon Progress Bar */}
-                                <div className="progress qr-progress-bar">
-                                    <div 
-                                        className="progress-bar qr-progress-fill" 
-                                        style={{ width: `${progress}%` }}>
+                                {selectedFormationId && (
+                                    <div className="w-100 text-center text-md-start mt-2">
+                                        <div className="mb-3">
+                                            <span 
+                                                className="token-display" 
+                                                style={{ 
+                                                    fontSize: '2.2rem', 
+                                                    padding: '5px 20px',
+                                                    ...fadeStyle
+                                                }}
+                                            >
+                                                {totpToken}
+                                            </span>
+                                        </div>
+
+                                        <div className="progress qr-progress-bar">
+                                            <div 
+                                                className={`progress-bar qr-progress-fill ${isEnding ? 'ending' : ''}`}
+                                                style={{ width: `${progress}%` }}>
+                                            </div>
+                                        </div>
+                                        
+                                        <p className="qr-footer-text mt-1">
+                                            {t('qr.totpSecurity')}
+                                        </p>
                                     </div>
-                                </div>
-                                
-                                <p className="qr-footer-text">
-                                    Se actualiza automáticamente cada 10 segundos
-                                </p>
+                                )}
                             </div>
                         </div>
                     )}

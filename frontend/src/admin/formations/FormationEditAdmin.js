@@ -1,6 +1,9 @@
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Form, Input, Label, FormGroup, Row, Col } from "reactstrap";
+import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
+import "../../App.css";
 import "../../static/css/admin/adminPage.css";
 import getIdFromUrl from "../../util/getIdFromUrl";
 import useFetchState from "../../util/useFetchState";
@@ -8,14 +11,15 @@ import moment from "moment";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
 
-const jwt = tokenService.getLocalAccessToken();
-
 export default function FormationEditAdmin() {
+  const { t } = useTranslation();
+  const jwt = tokenService.getLocalAccessToken();
   const emptyItem = {
     id: null,
     name: "",
     description: "",
     formationDate: "",
+    documentUrls: [],
   };
   const id = getIdFromUrl(2);
   const toast = useToast();
@@ -27,6 +31,7 @@ export default function FormationEditAdmin() {
     null,
     id
   );
+  const [files, setFiles] = useState([]);
 
   function handleChange(event) {
     const target = event.target;
@@ -35,23 +40,42 @@ export default function FormationEditAdmin() {
     setFormation({ ...formation, [name]: value });
   }
 
+  function handleFileChange(event) {
+    setFiles(Array.from(event.target.files));
+  }
+
+  const handleRemoveExistingFile = (urlToRemove) => {
+    setFormation({
+      ...formation,
+      documentUrls: (formation.documentUrls || []).filter(url => url !== urlToRemove)
+    });
+  };
+
   function handleSubmit(event) {
     event.preventDefault();
+
+    const formData = new FormData();
+    const payload = {
+      ...formation,
+      existingDocumentUrls: formation.documentUrls || []
+    };
+    formData.append("formation", new Blob([JSON.stringify(payload)], { type: "application/json" }));
+    files.forEach(file => {
+      formData.append("files", file);
+    });
 
     fetch("/api/v1/formations" + (formation.id ? "/" + formation.id : ""), {
       method: formation.id ? "PUT" : "POST",
       headers: {
         Authorization: `Bearer ${jwt}`,
         Accept: "application/json",
-        "Content-Type": "application/json",
       },
-      body: JSON.stringify(formation),
+      body: formData,
     })
       .then((response) => response.json())
       .then((json) => {
         if (json.message) {
           let errorMsg = json.message;
-          // Handle Spring validation map format: {field=message}
           if (errorMsg.startsWith("{") && errorMsg.endsWith("}")) {
             errorMsg = errorMsg
               .slice(1, -1)
@@ -61,21 +85,18 @@ export default function FormationEditAdmin() {
                 return `${field.trim()}: ${msg.trim()}`;
               })
               .join("\n");
-          }
-          // Handle database unique constraints (e.g. SQL duplicate key)
-          else if (errorMsg.includes("duplicate key value")) {
-            errorMsg = "This formation details already conflict with an existing record.";
+          } else if (errorMsg.includes("duplicate key value")) {
+            errorMsg = t('formations.duplicateConflict');
           }
           toast.error(errorMsg);
         } else {
-          toast.success(formation.id ? "Formation updated successfully" : "Formation created successfully");
+          toast.success(formation.id ? t('formations.updated') : t('formations.created'));
           setTimeout(() => { window.location.href = "/formations"; }, 1200);
         }
       })
-      .catch(() => toast.error("Connection error. Please try again."));
+      .catch(() => toast.error(t('formations.connectionError')));
   }
 
-  // Format the date for the datetime-local input field
   const formattedDate = formation.formationDate 
     ? moment(formation.formationDate).format('YYYY-MM-DDTHH:mm') 
     : '';
@@ -88,13 +109,13 @@ export default function FormationEditAdmin() {
     <div className="ba-container justify-content-center">
       <div className="ba-card ba-card-form my-auto mx-auto">
         <div className="ba-card-header">
-          <h2>{formation.id ? "Edit Formation" : "Create New Formation"}</h2>
+          <h2>{formation.id ? t('formations.editFormation') : t('formations.createNew')}</h2>
         </div>
         <Form onSubmit={handleSubmit}>
           <Row>
             <Col md={6}>
               <FormGroup>
-                <Label for="name">Formation Name</Label>
+                <Label for="name">{t('formations.formationName')}</Label>
                 <Input
                   type="text"
                   required
@@ -108,7 +129,7 @@ export default function FormationEditAdmin() {
 
             <Col md={6}>
               <FormGroup>
-                <Label for="formationDate">Date and Time</Label>
+                <Label for="formationDate">{t('formations.dateAndTime')}</Label>
                 <Input
                   type="datetime-local"
                   required
@@ -124,7 +145,7 @@ export default function FormationEditAdmin() {
           <Row>
             <Col md={12}>
               <FormGroup>
-                <Label for="description">Description</Label>
+                <Label for="description">{t('formations.description')}</Label>
                 <Input
                   type="textarea"
                   required
@@ -138,12 +159,58 @@ export default function FormationEditAdmin() {
             </Col>
           </Row>
 
+          <Row>
+            <Col md={12}>
+              <FormGroup>
+                <Label for="file">{t('formations.document', 'Documentos de Formación (Opcional)')}</Label>
+                <Input
+                  type="file"
+                  name="files"
+                  id="file"
+                  multiple
+                  onChange={handleFileChange}
+                />
+                {formation.documentUrls && formation.documentUrls.length > 0 && (
+                  <div className="mt-3">
+                    <strong>{t('formations.currentDocuments', 'Documentos actuales vinculados:')}</strong>
+                    <ul className="list-group mt-2">
+                      {formation.documentUrls.map((url, idx) => {
+                        // Extract original name from URL if possible
+                        const decodedUrl = decodeURIComponent(url);
+                        const parts = decodedUrl.split('/');
+                        const rawFileName = parts[parts.length - 1] || `Documento ${idx + 1}`;
+                        // Strip UUID from name
+                        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_/i;
+                        const fileName = rawFileName.replace(uuidRegex, '').split('?')[0];
+
+                        return (
+                          <li key={url} className="list-group-item d-flex justify-content-between align-items-center">
+                            <a href={url} target="_blank" rel="noopener noreferrer">
+                              {fileName}
+                            </a>
+                            <button
+                              type="button"
+                              className="btn btn-danger btn-sm"
+                              onClick={() => handleRemoveExistingFile(url)}
+                            >
+                              {t('formations.removeDocument', 'Eliminar')}
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+              </FormGroup>
+            </Col>
+          </Row>
+
           <div className="form-action-group">
             <button className="ba-btn-primary" type="submit">
-              Save Formation
+              {t('formations.saveFormation')}
             </button>
             <Link to="/formations" className="ba-btn-secondary form-action-link">
-              Cancel
+              {t('formations.cancel')}
             </Link>
           </div>
         </Form>

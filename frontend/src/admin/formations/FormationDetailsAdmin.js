@@ -1,19 +1,25 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Button, Table, Form, FormGroup, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from "reactstrap";
+import { Button, Table, Form, FormGroup, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faQrcode } from "@fortawesome/free-solid-svg-icons";
+import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
+import "../../App.css";
 import "../../static/css/admin/adminPage.css";
 import getIdFromUrl from "../../util/getIdFromUrl";
 import useFetchState from "../../util/useFetchState";
 import moment from "moment";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
-
-const jwt = tokenService.getLocalAccessToken();
+import GlassDropdown from "../../components/GlassDropdown";
+import { useSubscription } from "../../hooks/useSubscription";
 
 export default function FormationDetailsAdmin() {
   const id = getIdFromUrl(2);
+  const { t } = useTranslation();
   const toast = useToast();
+  const jwt = tokenService.getLocalAccessToken();
   
   const [formation, setFormation] = useFetchState(
     null,
@@ -33,190 +39,290 @@ export default function FormationDetailsAdmin() {
   );
 
   const [selectedUserId, setSelectedUserId] = useState("");
+  const [selectedAttendance, setSelectedAttendance] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
-  const handleAddUserSuccess = () => {
-    toast.success("User added to formation");
+  const reloadFormation = () => {
     fetch(`/api/v1/formations/${id}`, {
       headers: { Authorization: `Bearer ${jwt}` },
     })
       .then((r) => r.json())
-      .then((data) => {
-        setFormation(data);
-        setSelectedUserId("");
-      });
+      .then((data) => setFormation(data))
+      .catch((e) => console.error("Error refreshing formation", e));
   };
 
-  const handleAddUser = () => {
+  useSubscription(`/topic/formations/${id}`, reloadFormation);
+  useSubscription('/topic/formations', reloadFormation);
+
+  const handleAddUser = async () => {
     if (!selectedUserId) return;
-    
-    fetch(`/api/v1/formations/${id}/users/${selectedUserId}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        Accept: "application/json",
-      },
-    })
-      .then((response) => {
-        if (response.ok) {
-          handleAddUserSuccess();
-          return null;
-        }
-        return response.json();
-      })
-      .then((json) => {
-        if (json) {
-          toast.error(json.message || "Failed to add user");
-        }
-      })
-      .catch(() => {
-        toast.error("Connection error. Please try again.");
-      });
-  };
-
-  const handleRemoveUserSuccess = () => {
-    toast.success("User removed from formation");
-    fetch(`/api/v1/formations/${id}`, {
-      headers: { Authorization: `Bearer ${jwt}` },
-    })
-      .then((r) => r.json())
-      .then((data) => setFormation(data));
-  };
-
-  const handleRemoveUser = (userId) => {
-    const performRemove = () => {
-      fetch(`/api/v1/formations/${id}/users/${userId}`, {
-        method: "DELETE",
+    try {
+      const response = await fetch(`/api/v1/formations/${id}/attendances`, {
+        method: "POST",
         headers: {
           Authorization: `Bearer ${jwt}`,
-          Accept: "application/json",
+          "Content-Type": "application/json",
         },
-      })
-        .then((response) => {
-          if (response.ok) {
-            handleRemoveUserSuccess();
-            return null;
-          }
-          return response.json();
-        })
-        .then((json) => {
-          if (json) {
-            toast.error(json.message || "Failed to remove user");
-          }
-        })
-        .catch(() => {
-          toast.error("Connection error. Please try again.");
-        });
-    };
-
-    toast.confirm("Are you sure you want to remove this user from the formation?", performRemove);
+        body: JSON.stringify({ userId: Number(selectedUserId) }),
+      });
+      if (response.ok) {
+        toast.success(t('formationDetails.userAdded'));
+        setSelectedUserId("");
+        reloadFormation();
+      } else {
+        const json = await response.json();
+        toast.error(json.message || t('formationDetails.userAddError'));
+      }
+    } catch {
+      toast.error(t('formationDetails.userAddError'));
+    }
   };
 
-  if (!formation) {
-    return <CardGhostLoader />;
-  }
+  const handleRemoveUser = async (userId) => {
+    toast.confirm(t('formationDetails.userRemoveConfirm'), async () => {
+      try {
+        const response = await fetch(`/api/v1/formations/${id}/attendances/${userId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${jwt}` },
+        });
+        if (response.ok) {
+          toast.success(t('formationDetails.userRemoved'));
+          reloadFormation();
+        } else {
+          toast.error(t('formationDetails.userRemoveError'));
+        }
+      } catch {
+        toast.error(t('formationDetails.userRemoveError'));
+      }
+    });
+  };
 
-  // Find users not currently attending
-  const attendeeIds = formation.attendees ? formation.attendees.map(u => u.id) : [];
+  const renderAttendanceBadge = (att) => {
+    if (att.checkOutDate) return <span className="badge bg-success">{t('formationDetails.statusCompleted')}</span>;
+    if (att.checkInDate)  return <span className="badge bg-warning text-dark">{t('formationDetails.statusInProgress')}</span>;
+    return <span className="badge bg-secondary">{t('formationDetails.statusPending')}</span>;
+  };
+
+  const renderModalAttendanceBadge = renderAttendanceBadge;
+
+  if (!formation) return <CardGhostLoader />;
+
+  const attendeeIds = formation.attendances ? formation.attendances.map(a => a.user.id) : [];
   const availableUsers = allUsers.filter(u => !attendeeIds.includes(u.id));
-
-  // Find selected user label for the dropdown display
-  const selectedUser = availableUsers.find(u => String(u.id) === String(selectedUserId));
-  const selectedLabel = selectedUser 
-    ? `${selectedUser.firstName} ${selectedUser.lastName} (${selectedUser.username})`
-    : "Select User to Add...";
 
   return (
     <div className="ba-container">
       <div className="ba-card">
         <div className="ba-card-header">
-          <h2>Formation Details: {formation.name}</h2>
-          <Button className="ba-btn-secondary" tag={Link} to="/formations">
-            Back to List
-          </Button>
+          <h2>{t('formationDetails.title')}: {formation.name}</h2>
+          <div className="d-flex gap-2">
+            <Button className="ba-btn-blue" tag={Link} to={`/qr-generator?formationId=${id}`} title={t('formationDetails.qrButton')}>
+              <FontAwesomeIcon icon={faQrcode} className="me-2" />{t('formationDetails.qrButton')}
+            </Button>
+            <Button className="ba-btn-secondary" tag={Link} to="/formations">
+              {t('formationDetails.backToList')}
+            </Button>
+          </div>
         </div>
 
         <div className="formation-info-box">
-          <h4>Description</h4>
+          <h4>{t('formationDetails.description')}</h4>
           <p>{formation.description}</p>
-          <h4>Date & Time</h4>
+          <h4>{t('formationDetails.dateTime')}</h4>
           <p>{moment(formation.formationDate).format('YYYY-MM-DD HH:mm')}</p>
+          {formation.documentUrls && formation.documentUrls.length > 0 && (
+            <>
+              <h4>{t('formationDetails.documentation', 'Documentación')}</h4>
+              <div className="d-flex flex-wrap gap-2 mt-2">
+                {formation.documentUrls.map((url, idx) => {
+                  const decodedUrl = decodeURIComponent(url);
+                  const parts = decodedUrl.split('/');
+                  const rawFileName = parts[parts.length - 1] || `Documento ${idx + 1}`;
+                  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_/i;
+                  const fileName = rawFileName.replace(uuidRegex, '').split('?')[0];
+
+                  return (
+                    <a
+                      key={url}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ba-btn ba-btn-secondary px-3 py-1"
+                    >
+                      {fileName}
+                    </a>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
 
         <div className="ba-card-header pt-3">
-          <h3>Attendees</h3>
+          <h3>{t('formationDetails.attendeesSection')}</h3>
           <Form inline className="formation-add-form" onSubmit={(e) => { e.preventDefault(); handleAddUser(); }}>
-            <FormGroup className="mb-2 mr-sm-2 mb-sm-0">
-              <UncontrolledDropdown className="w-100">
-                <DropdownToggle
-                  tag="button"
-                  type="button"
-                  className="ba-select-toggle d-flex align-items-center justify-content-between"
-                  style={{ minWidth: '280px' }}
-                >
-                  <span>{selectedLabel}</span>
-                  <span className="dropdown-caret-icon">▼</span>
-                </DropdownToggle>
-                <DropdownMenu className="ba-dropdown-menu w-100">
-                  {availableUsers.length > 0 ? (
-                    availableUsers.map((u) => (
-                      <DropdownItem
-                        key={u.id}
-                        className="ba-dropdown-item d-flex align-items-center justify-content-between"
-                        onClick={() => setSelectedUserId(String(u.id))}
-                      >
-                        <span>{u.firstName} {u.lastName} ({u.username})</span>
-                        {String(selectedUserId) === String(u.id) && <span className="ms-2">✓</span>}
-                      </DropdownItem>
-                    ))
-                  ) : (
-                    <DropdownItem disabled>No available users</DropdownItem>
-                  )}
-                </DropdownMenu>
-              </UncontrolledDropdown>
+            <FormGroup className="mb-2 mr-sm-2 mb-sm-0" style={{ minWidth: '280px' }}>
+              <GlassDropdown
+                options={availableUsers.map(u => ({
+                  value: u.id,
+                  label: `${u.firstName} ${u.lastName} (${u.username})`
+                }))}
+                value={selectedUserId}
+                onChange={(val) => setSelectedUserId(String(val))}
+                placeholder={t('formationDetails.selectUserToAdd')}
+              />
             </FormGroup>
             <Button className="ba-btn-primary" type="submit" disabled={!selectedUserId}>
-              Add User
+              {t('formationDetails.addUser')}
             </Button>
           </Form>
         </div>
 
-        <Table responsive className="ba-table">
+        <Table responsive className="ba-table align-middle">
           <thead>
             <tr>
-              <th>Personal Code</th>
-              <th>Name</th>
-              <th>Username</th>
-              <th>Actions</th>
+              <th>{t('formationDetails.personalCode')}</th>
+              <th>{t('formationDetails.name')}</th>
+              <th>{t('formationDetails.username')}</th>
+              <th>{t('formationDetails.checkIn')}</th>
+              <th>{t('formationDetails.checkOut')}</th>
+              <th>{t('formationDetails.status')}</th>
+              <th>{t('formationDetails.actions')}</th>
             </tr>
           </thead>
           <tbody>
-            {formation.attendees && formation.attendees.length > 0 ? (
-              formation.attendees.map((user) => (
-                <tr key={user.id}>
-                  <td>{user.personalCode}</td>
-                  <td>{user.firstName} {user.lastName}</td>
-                  <td>{user.username}</td>
-                  <td>
-                    <Button
-                      size="sm"
-                      className="ba-btn-danger"
-                      onClick={() => handleRemoveUser(user.id)}
-                    >
-                      Remove
-                    </Button>
-                  </td>
-                </tr>
-              ))
+            {formation.attendances && formation.attendances.length > 0 ? (
+              formation.attendances.map((att) => {
+                const user = att.user;
+                const isCompleted = !!att.checkOutDate;
+                const hasCheckedIn = !!att.checkInDate;
+                return (
+                  <tr key={att.id || user.id}>
+                    <td>{user.personalCode}</td>
+                    <td>{user.firstName} {user.lastName}</td>
+                    <td>{user.username}</td>
+                    <td>{hasCheckedIn ? moment(att.checkInDate).format('HH:mm:ss') : '-'}</td>
+                    <td>{isCompleted ? moment(att.checkOutDate).format('HH:mm:ss') : '-'}</td>
+                    <td>{renderAttendanceBadge(att)}</td>
+                    <td>
+                      <div className="d-flex gap-2">
+                        <Button
+                          size="sm"
+                          className="ba-btn-primary"
+                          onClick={() => {
+                            setSelectedAttendance(att);
+                            setModalOpen(true);
+                          }}
+                        >
+                          {t('formationDetails.viewSignature')}
+                        </Button>
+                        {att.signature && (
+                          <Button
+                            size="sm"
+                            className="ba-btn-secondary"
+                            onClick={async () => {
+                              try {
+                                const response = await fetch(`/api/v1/certificates/attendance/${att.id}`, {
+                                  headers: {
+                                    Authorization: `Bearer ${tokenService.getLocalAccessToken()}`
+                                  }
+                                });
+                                if (response.ok) {
+                                  const blob = await response.blob();
+                                  const url = window.URL.createObjectURL(blob);
+                                  const a = document.createElement('a');
+                                  a.href = url;
+                                  a.download = `certificate_${att.id}.pdf`;
+                                  document.body.appendChild(a);
+                                  a.click();
+                                  window.URL.revokeObjectURL(url);
+                                  a.remove();
+                                }
+                              } catch (error) {
+                                console.error("Error downloading PDF", error);
+                              }
+                            }}
+                          >
+                            PDF
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          className="ba-btn-danger"
+                          onClick={() => handleRemoveUser(user.id)}
+                        >
+                          {t('formationDetails.remove')}
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
-                <td colSpan="4" className="text-center">
-                  No attendees enrolled in this formation.
+                <td colSpan="7" className="text-center">
+                  {t('formationDetails.noAttendees')}
                 </td>
               </tr>
             )}
           </tbody>
         </Table>
       </div>
+
+      <Modal isOpen={modalOpen} toggle={() => setModalOpen(false)} centered style={{ maxWidth: '500px' }}>
+        <ModalHeader toggle={() => setModalOpen(false)} style={{ backgroundColor: '#2c3e50', color: 'white', borderBottom: 'none' }}>
+          {t('formationDetails.attendanceDetails')} - {formation?.name}
+        </ModalHeader>
+        <ModalBody className="py-4" style={{ backgroundColor: '#f4f6fa' }}>
+          {selectedAttendance && (
+            <div className="p-3" style={{ backgroundColor: 'white', borderRadius: '15px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+              <h6 className="text-muted mb-1">{t('formationDetails.formation')}:</h6>
+              <p className="mb-3" style={{ fontWeight: '600', color: '#2c3e50' }}>{formation?.name}</p>
+
+              <h6 className="text-muted mb-1">{t('formationDetails.employee')}:</h6>
+              <p className="mb-3" style={{ fontWeight: '600', color: '#2c3e50' }}>
+                {selectedAttendance.user.firstName} {selectedAttendance.user.lastName} ({selectedAttendance.user.username})
+              </p>
+
+              <h6 className="text-muted mb-1">{t('formationDetails.personalCodeLabel')}:</h6>
+              <p className="mb-3" style={{ fontWeight: '600', color: '#2c3e50' }}>{selectedAttendance.user.personalCode}</p>
+
+              <h6 className="text-muted mb-1">{t('formationDetails.statusLabel')}:</h6>
+              <div className="mb-3">{renderModalAttendanceBadge(selectedAttendance)}</div>
+
+              <h6 className="text-muted mb-1">{t('formationDetails.checkInTime')}:</h6>
+              <p className="mb-3" style={{ fontWeight: '500' }}>
+                {selectedAttendance.checkInDate ? moment(selectedAttendance.checkInDate).format('YYYY-MM-DD HH:mm:ss') : t('formationDetails.notRecorded')}
+              </p>
+
+              <h6 className="text-muted mb-1">{t('formationDetails.checkOutTime')}:</h6>
+              <p className="mb-4" style={{ fontWeight: '500' }}>
+                {selectedAttendance.checkOutDate ? moment(selectedAttendance.checkOutDate).format('YYYY-MM-DD HH:mm:ss') : t('formationDetails.notRecorded')}
+              </p>
+
+              <h6 className="text-muted mb-2">{t('formationDetails.digitalSignature')}:</h6>
+              {selectedAttendance.signature ? (
+                <div className="text-center p-2" style={{ backgroundColor: '#fff', borderRadius: '12px', border: '2px dashed #cbd5e1' }}>
+                  <img 
+                    src={selectedAttendance.signature} 
+                    alt={`Firma de ${selectedAttendance.user.firstName}`}
+                    style={{ maxWidth: '100%', maxHeight: '180px', objectFit: 'contain' }} 
+                  />
+                </div>
+              ) : (
+                <div className="alert alert-light text-center border mb-0" style={{ borderRadius: '12px' }}>
+                  <small className="text-muted">{t('formationDetails.noSignature')}</small>
+                </div>
+              )}
+            </div>
+          )}
+        </ModalBody>
+        <ModalFooter style={{ borderTop: 'none', backgroundColor: '#f4f6fa' }}>
+          <Button color="secondary" onClick={() => setModalOpen(false)} style={{ borderRadius: '20px' }}>
+            {t('formationDetails.close')}
+          </Button>
+        </ModalFooter>
+      </Modal>
     </div>
   );
 }

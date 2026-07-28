@@ -1,8 +1,8 @@
-# ShiftSync - Sistema Integrado de Fichaje y Formaciones para BA Glass
+# BA Distribution Academy - Sistema Integrado de Fichaje y Formaciones para BA Glass
 
-Sistema de control de asistencia, fichajes diarios mediante códigos QR dinámicos temporales y gestión de formaciones con panel de analítica para administradores, diseñado específicamente para las necesidades operativas de **BA Glass**.
+Sistema de control de asistencia, fichajes diarios mediante códigos QR dinámicos temporales y gestión de formaciones con panel de analítica para administradores, diseñado específicamente para las necesidades operativas de **BA Distribution Academy** (BA Glass).
 
-BA Glass es una empresa líder en la producción de envases de vidrio para alimentación y bebidas, con más de 110 años de historia. Con presencia en 7 países y 13 plantas de producción donde se fabrican más de 12 billones de envases al año, este sistema está pensado para escalar y gestionar eficientemente a sus más de 4,500 empleados, garantizando un fichaje seguro y rápido en sus instalaciones.
+BA Glass es una empresa líder en la producción de envases de vidrio para alimentación y bebidas, con más de 110 años de historia. Con presencia en 7 países y 13 plantas de producción donde se fabrican más de 12 billones de envases al año, **BA Distribution Academy** está pensado para escalar y gestionar eficientemente a sus más de 4,500 empleados, garantizando un fichaje seguro y rápido en sus instalaciones.
 
 ## Características Principales
 

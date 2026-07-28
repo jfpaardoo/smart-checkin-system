@@ -1,0 +1,148 @@
+/* ==========================================
+   SHIFTSYNC DESIGN SYSTEM - QR SCANNER & GENERATOR
+   ========================================== */
+
+/* QR Reader Responsive Glass & Border Constraints */
+#qr-reader, #checkout-qr-reader {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  border-radius: 24px !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+  background: #000000 !important;
+  margin: 0 auto !important;
+  backdrop-filter: blur(20px) !important;
+  padding: 18px !important;
+}
+
+#qr-reader video, #checkout-qr-reader video {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  object-fit: cover !important;
+  border-radius: 20px !important;
+  display: block !important;
+}
+
+#qr-reader img, #checkout-qr-reader img,
+#qr-reader canvas, #checkout-qr-reader canvas {
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: 20px !important;
+}
+
+#qr-reader__scan_region, #checkout-qr-reader__scan_region {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  overflow: hidden !important;
+}
+
+/* QR Generator Component Styles */
+.ba-card-qr {
+  max-width: 960px;
+  flex: initial;
+  align-self: center;
+}
+
+.qr-code-frame {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 26px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+}
+
+.qr-info-column {
+  max-width: 520px;
+  width: 100%;
+}
+
+.qr-title {
+  font-weight: 600;
+  color: var(--ba-dark);
+  font-size: 2.1rem;
+  letter-spacing: -0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.qr-subtitle {
+  color: #555;
+  font-size: 1.02rem;
+  line-height: 1.4;
+  margin-bottom: 1.5rem;
+}
+
+.token-display {
+  font-size: 2.8rem;
+  font-weight: 800;
+  letter-spacing: 10px;
+  color: var(--ba-dark);
+  background: #f4f4f4;
+  padding: 10px 30px;
+  border-radius: 18px;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.06);
+  display: inline-block;
+}
+
+.qr-progress-bar {
+  height: 8px;
+  border-radius: 10px;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.qr-progress-fill {
+  background: linear-gradient(90deg, var(--ba-primary, #cce364), var(--ba-primary-glow, rgba(204,227,100,0.6)));
+  transition: width 100ms linear, background 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 0 10px rgba(204, 227, 100, 0.6);
+  height: 100%;
+}
+
+.qr-progress-fill.ending {
+  background: linear-gradient(90deg, #ef4444, #f87171) !important;
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.85) !important;
+}
+
+.qr-footer-text {
+  font-size: 0.8rem;
+  color: #888;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0;
+}
+
+/* HTML5 QRCode Scanner Controls */
+#qr-reader button, #checkout-qr-reader button,
+#html5-qrcode-button-camera-start, #html5-qrcode-button-camera-stop, #html5-qrcode-button-file-selection {
+  background: rgba(204, 227, 100, 0.45) !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+  border: 1.5px solid rgba(204, 227, 100, 0.85) !important;
+  color: #2b3a04 !important;
+  border-radius: 20px !important;
+  padding: 8px 22px !important;
+  font-weight: 600 !important;
+  margin: 10px 5px !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 4px 15px rgba(204, 227, 100, 0.25) !important;
+  cursor: pointer !important;
+}
+
+#qr-reader button:hover, #checkout-qr-reader button:hover {
+  background: rgba(204, 227, 100, 0.85) !important;
+  transform: translateY(-2px) scale(1.03) !important;
+}
+
+#qr-reader__dashboard, #checkout-qr-reader__dashboard {
+  padding-top: 10px !important;
+  color: #2c3e50 !important;
+  font-weight: 500 !important;
+}

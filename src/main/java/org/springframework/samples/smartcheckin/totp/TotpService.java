@@ -21,14 +21,14 @@ public class TotpService {
 
     public TotpService() {
         DefaultCodeVerifier v = new DefaultCodeVerifier(codeGenerator, timeProvider);
-        v.setTimePeriod(10);
+        v.setTimePeriod(20);
         v.setAllowedTimePeriodDiscrepancy(1);
         this.verifier = v;
     }
 
     public String getCurrentToken() {
         try {
-            long currentBucket = Math.floorDiv(timeProvider.getTime(), 10);
+            long currentBucket = Math.floorDiv(timeProvider.getTime(), 20);
             return codeGenerator.generate(secret, currentBucket);
         } catch (Exception e) {
             throw new RuntimeException("Error generating TOTP token", e);

@@ -6,18 +6,15 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.samples.smartcheckin.user.User;
-import org.springframework.samples.smartcheckin.user.UserService;
 
 @Service
 @SuppressWarnings("null")
 public class CheckinService {
 
     private final CheckinRepository checkInRepository;
-    private final UserService userService;
 
-    public CheckinService(CheckinRepository checkInRepository, UserService userService) {
+    public CheckinService(CheckinRepository checkInRepository) {
         this.checkInRepository = checkInRepository;
-        this.userService = userService;
     }
 
     @Transactional
@@ -26,9 +23,6 @@ public class CheckinService {
         checkIn.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
         checkIn.setCheckInType(checkInType);
         checkIn.setUser(user);
-        
-        user.setIsWorking(checkInType == CheckinType.ENTRADA);
-        userService.saveUser(user);
         
         return checkInRepository.save(checkIn);
     }
