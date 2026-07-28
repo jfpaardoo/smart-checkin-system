@@ -12,8 +12,10 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Map;
 import java.util.UUID;
 
@@ -36,7 +38,12 @@ public class OneDriveService {
         if (tenantId == null || tenantId.trim().isEmpty()) {
             tenantId = "common";
         }
-        String tokenUrl = "https://login.microsoftonline.com/" + tenantId.replaceAll("[^a-zA-Z0-9-_.]", "") + "/oauth2/v2.0/token";
+        String sanitizedTenant = tenantId.replaceAll("[^a-zA-Z0-9-_.]", "");
+        
+        URI tokenUri = UriComponentsBuilder
+                .fromUriString("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token")
+                .buildAndExpand(sanitizedTenant)
+                .toUri();
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -51,7 +58,7 @@ public class OneDriveService {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
         ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
-        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(tokenUrl, HttpMethod.POST, request, responseType);
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(tokenUri, HttpMethod.POST, request, responseType);
         
         Map<String, Object> bodyRes = response.getBody();
         if (bodyRes == null || !bodyRes.containsKey("access_token")) {
@@ -77,7 +84,11 @@ public class OneDriveService {
             cleanFolderName = "general";
         }
 
-        String uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/formations/" + cleanFolderName + "/" + uniqueFileName + ":/content";
+        // Construcción segura de la URL usando plantillas de UriComponentsBuilder para evitar Path Traversal
+        URI uploadUri = UriComponentsBuilder
+                .fromUriString("https://graph.microsoft.com/v1.0/me/drive/root:/formations/{folder}/{filename}:/content")
+                .buildAndExpand(cleanFolderName, uniqueFileName)
+                .toUri();
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -86,7 +97,7 @@ public class OneDriveService {
         HttpEntity<byte[]> request = new HttpEntity<>(file.getBytes(), headers);
 
         ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
-        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(uploadUrl, HttpMethod.PUT, request, responseType);
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(uploadUri, HttpMethod.PUT, request, responseType);
         
         Map<String, Object> bodyRes = response.getBody();
         if (bodyRes == null || !bodyRes.containsKey("id")) {
@@ -99,7 +110,11 @@ public class OneDriveService {
 
     private String createShareLink(String itemId, String accessToken) {
         String safeItemId = itemId != null ? itemId.replaceAll("[^a-zA-Z0-9-_]", "") : "";
-        String linkUrl = "https://graph.microsoft.com/v1.0/me/drive/items/" + safeItemId + "/createLink";
+        
+        URI linkUri = UriComponentsBuilder
+                .fromUriString("https://graph.microsoft.com/v1.0/me/drive/items/{itemId}/createLink")
+                .buildAndExpand(safeItemId)
+                .toUri();
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -109,7 +124,7 @@ public class OneDriveService {
         HttpEntity<String> request = new HttpEntity<>(body, headers);
 
         ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
-        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(linkUrl, HttpMethod.POST, request, responseType);
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(linkUri, HttpMethod.POST, request, responseType);
         
         Map<String, Object> bodyRes = response.getBody();
         if (bodyRes == null || !bodyRes.containsKey("link")) {
@@ -130,7 +145,11 @@ public class OneDriveService {
         String accessToken = getAccessToken(settings);
 
         String safeFileName = fileName != null ? fileName.replaceAll(SAFE_CHARS_REGEX, "_") : "backup.zip";
-        String uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/backups/" + safeFileName + ":/content";
+        
+        URI uploadUri = UriComponentsBuilder
+                .fromUriString("https://graph.microsoft.com/v1.0/me/drive/root:/backups/{filename}:/content")
+                .buildAndExpand(safeFileName)
+                .toUri();
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -139,7 +158,7 @@ public class OneDriveService {
         HttpEntity<byte[]> request = new HttpEntity<>(data, headers);
 
         ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
-        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(uploadUrl, HttpMethod.PUT, request, responseType);
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(uploadUri, HttpMethod.PUT, request, responseType);
         
         Map<String, Object> bodyRes = response.getBody();
         if (bodyRes == null || !bodyRes.containsKey("id")) {
