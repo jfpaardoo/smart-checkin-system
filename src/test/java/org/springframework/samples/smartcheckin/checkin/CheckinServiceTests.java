@@ -7,11 +7,11 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.samples.smartcheckin.user.User;
@@ -26,12 +26,8 @@ class CheckinServiceTests {
     @Mock
     private CheckinRepository checkInRepository;
 
+    @InjectMocks
     private CheckinService checkinService;
-
-    @BeforeEach
-    void setUp() {
-        checkinService = new CheckinService(checkInRepository);
-    }
 
     private User createDummyUser() {
         User user = new User();
