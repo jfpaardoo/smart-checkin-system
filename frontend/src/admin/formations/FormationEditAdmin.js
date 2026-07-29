@@ -178,8 +178,7 @@ export default function FormationEditAdmin() {
                         // Extract original name from URL if possible
                         const decodedUrl = decodeURIComponent(url);
                         const parts = decodedUrl.split('/');
-                        const rawFileName = parts[parts.length - 1] || `Documento ${idx + 1}`;
-                        // Strip UUID from name
+                        const rawFileName = parts.at(-1) || `Documento ${idx + 1}`;
                         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_/i;
                         const fileName = rawFileName.replace(uuidRegex, '').split('?')[0];
 
@@ -209,7 +208,7 @@ export default function FormationEditAdmin() {
             <button className="ba-btn-primary" type="submit">
               {t('formations.saveFormation')}
             </button>
-            <Link to="/formations" className="ba-btn-secondary form-action-link">
+            <Link to={`/formations/${id}/details`} className="ba-btn-secondary form-action-link">
               {t('formations.cancel')}
             </Link>
           </div>

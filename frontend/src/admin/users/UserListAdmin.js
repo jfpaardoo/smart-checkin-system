@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Button, ButtonGroup, Table, Badge, Nav, NavItem, NavLink } from "reactstrap";
+import { Button, Table, Badge, Nav, NavItem, NavLink } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import "../../App.css";
@@ -12,6 +12,7 @@ import GlassSearchBar from "../../components/GlassSearchBar";
 import { TableGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
 import downloadExportFile from "../../util/downloadExportFile";
+import { useSubscription } from "../../hooks/useSubscription";
 
 export default function UserListAdmin() {
   const { t } = useTranslation();
@@ -61,6 +62,13 @@ export default function UserListAdmin() {
     fetchUsers(searchQuery);
     fetchPendingUsers();
   }, [fetchUsers, fetchPendingUsers, searchQuery]);
+
+  const handleWsMessage = useCallback(() => {
+    fetchUsers(searchQuery);
+    fetchPendingUsers();
+  }, [fetchUsers, fetchPendingUsers, searchQuery]);
+
+  useSubscription('/topic/users', handleWsMessage);
 
   const handleApprove = async (id) => {
     try {
@@ -115,11 +123,11 @@ export default function UserListAdmin() {
                 <FontAwesomeIcon icon={faUsers} style={{ color: 'var(--ba-primary)' }} className="me-2" /> {t('users.title', 'Gestión de Empleados')}
             </h2>
             <div className="d-flex gap-2 align-items-center flex-wrap">
-                <Button className="ba-btn-primary btn-icon-expand" onClick={() => handleDownloadExport('users/csv', 'usuarios.csv')}>
+                <Button className="ba-btn-primary btn-icon-expand btn-expand-lg" onClick={() => handleDownloadExport('users/csv', 'usuarios.csv')}>
                     <FontAwesomeIcon icon={faFileCsv} />
                     <span className="btn-expand-label">{t('analytics.exportCsv', 'Exportar CSV')}</span>
                 </Button>
-                <Button className="ba-btn-secondary btn-icon-expand" onClick={() => handleDownloadExport('users/excel', 'usuarios.xlsx')}>
+                <Button className="ba-btn-secondary btn-icon-expand btn-expand-lg" onClick={() => handleDownloadExport('users/excel', 'usuarios.xlsx')}>
                     <FontAwesomeIcon icon={faFileExcel} />
                     <span className="btn-expand-label">{t('analytics.exportExcel', 'Exportar Excel')}</span>
                 </Button>
@@ -129,7 +137,6 @@ export default function UserListAdmin() {
             </div>
         </div>
 
-        {/* Tab Navigation */}
         <Nav tabs className="mb-4 border-bottom-0 gap-2">
           <NavItem>
             <NavLink
@@ -156,7 +163,6 @@ export default function UserListAdmin() {
           </NavItem>
         </Nav>
 
-        {/* Debounced Search Bar */}
         <div className="mb-4">
           <GlassSearchBar 
             placeholder={t('analytics.searchEmployee', 'Buscar empleado por nombre o código...')}
@@ -167,41 +173,43 @@ export default function UserListAdmin() {
         {loading ? (
           <TableGhostLoader columns={7} rows={4} />
         ) : (
-          <Table responsive aria-label="users" className="ba-table">
+          <Table hover aria-label="users" className="ba-table align-middle" style={{ tableLayout: 'fixed', width: '100%' }}>
             <thead>
               <tr>
-                <th>{t('users.personalCode', 'Código')}</th>
-                <th>{t('users.username', 'Usuario')}</th>
-                <th>{t('users.firstName', 'Nombre')}</th>
-                <th>{t('users.lastName', 'Apellidos')}</th>
-                <th>{t('users.status', 'Estado')}</th>
-                <th>{t('users.role', 'Rol')}</th>
-                <th>{t('users.actions', 'Acciones')}</th>
+                <th style={{ width: '9%', paddingLeft: '1rem' }}>{t('users.personalCode', 'Código')}</th>
+                <th style={{ width: '13%' }}>{t('users.username', 'Usuario')}</th>
+                <th style={{ width: '14%' }}>{t('users.firstName', 'Nombre')}</th>
+                <th style={{ width: '14%' }}>{t('users.lastName', 'Apellidos')}</th>
+                <th style={{ width: '17%' }}>{t('users.status', 'Estado')}</th>
+                <th style={{ width: '11%' }}>{t('users.role', 'Rol')}</th>
+                <th style={{ width: '22%' }}>{t('users.actions', 'Acciones')}</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => (
                   <tr key={user.id}>
-                    <td><span className="fw-bold">{user.personalCode}</span></td>
-                    <td>{user.username}</td>
-                    <td>{user.firstName}</td>
-                    <td>{user.lastName}</td>
-                    <td>
+                    <td style={{ paddingLeft: '1rem' }}><span className="fw-bold">{user.personalCode}</span></td>
+                    <td style={{ wordBreak: 'break-word' }}>{user.username}</td>
+                    <td style={{ wordBreak: 'break-word' }}>{user.firstName}</td>
+                    <td style={{ wordBreak: 'break-word' }}>{user.lastName}</td>
+                    <td className="text-center">
                       {activeTab === 'approved' ? (
-                        <span className={`ba-badge ${user.isWorking ? 'ba-badge-active' : 'ba-badge-inactive'}`}>
+                        <span className={`ba-badge ${user.isWorking ? 'ba-badge-active' : 'ba-badge-inactive'}`} style={{ whiteSpace: 'normal', display: 'inline-block' }}>
                           {user.isWorking ? t('users.working', 'En formación') : t('users.offDuty', 'Fuera de formación')}
                         </span>
                       ) : (
-                        <span className="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold">
+                        <span className="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold" style={{ whiteSpace: 'normal', display: 'inline-block' }}>
                           {t('users.pendingApproval', 'Pendiente de Aprobación')}
                         </span>
                       )}
                     </td>
-                    <td>{user.authority?.authority || 'EMPLOYEE'}</td>
+                    <td className="fw-bold text-truncate" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }} title={user.authority?.authority || 'EMPLOYEE'}>
+                      {user.authority?.authority || 'EMPLOYEE'}
+                    </td>
                     <td>
                       {activeTab === 'approved' ? (
-                        <ButtonGroup>
+                        <div className="d-flex gap-2 flex-wrap">
                           <Button
                             size="sm"
                             className="ba-btn-secondary"
@@ -212,7 +220,7 @@ export default function UserListAdmin() {
                           </Button>
                           <Button
                             size="sm"
-                            className="ba-btn-danger btn-gap"
+                            className="ba-btn-danger"
                             onClick={() =>
                               deleteFromList(
                                 `/api/v1/users/${user.id}`,
@@ -225,9 +233,9 @@ export default function UserListAdmin() {
                           >
                             {t('users.delete', 'Eliminar')}
                           </Button>
-                        </ButtonGroup>
+                        </div>
                       ) : (
-                        <ButtonGroup>
+                        <div className="d-flex gap-2 flex-wrap">
                           <Button
                             size="sm"
                             className="ba-btn-primary d-flex align-items-center gap-1 fw-bold"
@@ -238,13 +246,13 @@ export default function UserListAdmin() {
                           </Button>
                           <Button
                             size="sm"
-                            className="ba-btn-danger btn-gap d-flex align-items-center gap-1 fw-bold"
+                            className="ba-btn-danger d-flex align-items-center gap-1 fw-bold"
                             onClick={() => handleReject(user.id)}
                           >
                             <FontAwesomeIcon icon={faTimes} />
                             {t('users.reject', 'Rechazar')}
                           </Button>
-                        </ButtonGroup>
+                        </div>
                       )}
                     </td>
                   </tr>

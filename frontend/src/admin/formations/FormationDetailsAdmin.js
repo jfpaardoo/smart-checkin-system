@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Table, Form, FormGroup, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQrcode } from "@fortawesome/free-solid-svg-icons";
+import { faQrcode, faPencil, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import "../../App.css";
@@ -97,6 +97,25 @@ export default function FormationDetailsAdmin() {
     });
   };
 
+  const handleDeleteFormation = () => {
+    toast.confirm(t('formations.deleteConfirm', '¿Seguro que deseas eliminar esta formación?'), async () => {
+      try {
+        const response = await fetch(`/api/v1/formations/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${jwt}` },
+        });
+        if (response.ok) {
+          toast.success(t('formations.deleted', 'Formación eliminada correctamente'));
+          window.location.href = "/formations";
+        } else {
+          toast.error(t('formations.deleteError', 'Error al eliminar la formación'));
+        }
+      } catch {
+        toast.error(t('formations.deleteError', 'Error al eliminar la formación'));
+      }
+    });
+  };
+
   const renderAttendanceBadge = (att) => {
     if (att.checkOutDate) return <span className="badge bg-success">{t('formationDetails.statusCompleted')}</span>;
     if (att.checkInDate)  return <span className="badge bg-warning text-dark">{t('formationDetails.statusInProgress')}</span>;
@@ -115,9 +134,15 @@ export default function FormationDetailsAdmin() {
       <div className="ba-card">
         <div className="ba-card-header">
           <h2>{t('formationDetails.title')}: {formation.name}</h2>
-          <div className="d-flex gap-2">
+          <div className="d-flex gap-2 flex-wrap">
+            <Button className="ba-btn-secondary" tag={Link} to={`/formations/${id}`} title={t('formations.edit')}>
+              <FontAwesomeIcon icon={faPencil} className="me-2" />{t('formations.edit')}
+            </Button>
             <Button className="ba-btn-blue" tag={Link} to={`/qr-generator?formationId=${id}`} title={t('formationDetails.qrButton')}>
               <FontAwesomeIcon icon={faQrcode} className="me-2" />{t('formationDetails.qrButton')}
+            </Button>
+            <Button className="ba-btn-danger" onClick={handleDeleteFormation} title={t('formations.delete')}>
+              <FontAwesomeIcon icon={faTrash} className="me-2" />{t('formations.delete')}
             </Button>
             <Button className="ba-btn-secondary" tag={Link} to="/formations">
               {t('formationDetails.backToList')}
@@ -137,7 +162,7 @@ export default function FormationDetailsAdmin() {
                 {formation.documentUrls.map((url, idx) => {
                   const decodedUrl = decodeURIComponent(url);
                   const parts = decodedUrl.split('/');
-                  const rawFileName = parts[parts.length - 1] || `Documento ${idx + 1}`;
+                  const rawFileName = parts.at(-1) || `Documento ${idx + 1}`;
                   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_/i;
                   const fileName = rawFileName.replace(uuidRegex, '').split('?')[0];
 

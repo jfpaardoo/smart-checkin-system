@@ -1,22 +1,19 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Button, ButtonGroup, Table } from "reactstrap";
+import { Button, Table } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPencil, faUsers, faTrash, faQrcode, faPlus, faGraduationCap } from "@fortawesome/free-solid-svg-icons";
+import { faUsers, faPlus, faGraduationCap } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import "../../App.css";
 import "../../static/css/admin/adminPage.css";
-import deleteFromList from "../../util/deleteFromList";
 import GlassSearchBar from "../../components/GlassSearchBar";
 import moment from "moment";
 import { TableGhostLoader } from "../../components/GhostLoader";
-import { useToast } from "../../components/ToastProvider";
 import { useSubscription } from "../../hooks/useSubscription";
 
 export default function FormationListAdmin() {
   const { t } = useTranslation();
-  const toast = useToast();
   const jwt = tokenService.getLocalAccessToken();
   const [formations, setFormations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -74,55 +71,16 @@ export default function FormationListAdmin() {
           </div>
         </td>
         <td>
-          <ButtonGroup>
-            <Button
-              size="sm"
-              className="ba-btn-secondary btn-icon-expand"
-              aria-label={"edit-" + formation.id}
-              tag={Link}
-              to={"/formations/" + formation.id}
-            >
-              <FontAwesomeIcon icon={faPencil} />
-              <span className="btn-expand-label">{t('formations.edit')}</span>
-            </Button>
-            <Button
-              size="sm"
-              className="ba-btn-primary btn-gap btn-icon-expand"
-              aria-label={"details-" + formation.id}
-              tag={Link}
-              to={"/formations/" + formation.id + "/details"}
-            >
-              <FontAwesomeIcon icon={faUsers} />
-              <span className="btn-expand-label">{t('formations.attendeesBtn')}</span>
-            </Button>
-            <Button
-              size="sm"
-              className="ba-btn-secondary btn-gap btn-icon-expand"
-              aria-label={"qr-" + formation.id}
-              tag={Link}
-              to={`/qr-generator?formationId=${formation.id}`}
-            >
-              <FontAwesomeIcon icon={faQrcode} />
-              <span className="btn-expand-label">{t('formations.qr')}</span>
-            </Button>
-            <Button
-              size="sm"
-              className="ba-btn-danger btn-gap btn-icon-expand"
-              aria-label={"delete-" + formation.id}
-              onClick={() =>
-                deleteFromList(
-                  `/api/v1/formations/${formation.id}`,
-                  formation.id,
-                  [formations, setFormations],
-                  toast,
-                  { entityName: "Formation", t }
-                )
-              }
-            >
-              <FontAwesomeIcon icon={faTrash} />
-              <span className="btn-expand-label">{t('formations.delete')}</span>
-            </Button>
-          </ButtonGroup>
+          <Button
+            size="sm"
+            className="ba-btn-primary btn-icon-expand"
+            aria-label={"details-" + formation.id}
+            tag={Link}
+            to={"/formations/" + formation.id + "/details"}
+          >
+            <FontAwesomeIcon icon={faUsers} />
+            <span className="btn-expand-label">{t('dashboard.viewDetails', 'Ver Detalles')}</span>
+          </Button>
         </td>
       </tr>
     );

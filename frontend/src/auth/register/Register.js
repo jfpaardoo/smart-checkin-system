@@ -75,7 +75,15 @@ export default function Register() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || t('register.genericError', 'Error al procesar la solicitud de registro.'));
+        let errorMsg = data.message || t('register.genericError', 'Error al procesar la solicitud de registro.');
+        
+        if (errorMsg.includes('duplicate key value') || errorMsg.includes('uk5v7b31bxs6tcvinhg22i2v029') || errorMsg.includes('personal_code')) {
+          errorMsg = t('users.duplicatePersonalCode', 'El Código Personal ya existe para otro usuario.');
+        } else if (errorMsg.includes('username')) {
+          errorMsg = t('users.duplicateUsername', 'El Nombre de usuario ya existe.');
+        }
+
+        throw new Error(errorMsg);
       }
 
       setSubmittedSuccess(true);

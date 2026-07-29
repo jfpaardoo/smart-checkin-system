@@ -889,3 +889,11 @@ select option {
   font-weight: 500 !important;
   border: none !important;
 }
+
+.btn-icon-expand.btn-expand-lg:hover {
+    max-width: 220px !important; 
+}
+
+.btn-icon-expand.btn-expand-lg:hover .btn-expand-label {
+    max-width: 200px !important;
+}

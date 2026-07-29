@@ -101,14 +101,14 @@ export default function AuditDashboard() {
         {loading ? (
           <TableGhostLoader rows={8} columns={5} />
         ) : (
-          <Table responsive hover className="ba-table">
+          <Table hover className="ba-table" style={{ tableLayout: 'fixed', width: '100%', wordBreak: 'break-word' }}>
             <thead>
               <tr>
-                <th>{t('audit.columns.date', 'Fecha y Hora')}</th>
-                <th>{t('audit.columns.action', 'Acción')}</th>
-                <th>{t('audit.columns.user', 'Usuario')}</th>
-                <th>{t('audit.columns.details', 'Detalles')}</th>
-                <th>{t('audit.columns.ip', 'IP Origen')}</th>
+                <th style={{ width: '15%' }}>{t('audit.columns.date', 'Fecha y Hora')}</th>
+                <th style={{ width: '15%' }}>{t('audit.columns.action', 'Acción')}</th>
+                <th style={{ width: '15%' }}>{t('audit.columns.user', 'Usuario')}</th>
+                <th style={{ width: '30%' }}>{t('audit.columns.details', 'Detalles')}</th>
+                <th style={{ width: '25%' }}>{t('audit.columns.ip', 'IP Origen')}</th>
               </tr>
             </thead>
             <tbody>
