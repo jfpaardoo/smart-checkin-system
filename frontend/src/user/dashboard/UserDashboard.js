@@ -99,14 +99,25 @@ export default function UserDashboard() {
         { fps: 10, qrbox: { width: 250, height: 250 } },
         (decodedText) => {
           stopScannerSafely(activeScanner);
+          try {
+            const parsed = JSON.parse(decodedText);
+            if (parsed?.token) {
+              setManualCheckoutCode(parsed.token);
+            }
+          } catch (e) {
+            console.debug("QR text is not JSON, using raw string:", e);
+            setManualCheckoutCode(decodedText);
+          }
           setStep('sign');
           toast.success(t('dashboard.qrValidated'));
         },
-        () => {}
+        (errorMessage) => {
+          console.debug("Buscando código QR...", errorMessage);
+        }
       ).then(() => {
         isScanning = true;
       }).catch(err => {
-        console.error("Error starting checkout scanner:", err);
+        console.error("Error al iniciar el escáner de checkout:", err);
       });
 
       return () => {
@@ -144,6 +155,12 @@ export default function UserDashboard() {
     const signatureBase64 = sigCanvas.current.getCanvas().toDataURL('image/png');
     
     try {
+      const payload = {
+        signature: signatureBase64,
+        token: manualCheckoutCode || undefined
+      };
+
+      // EL ENDPOINT CORRECTO PARA SALIR (CHECKOUT)
       const response = await fetch(`/api/v1/formations/${selectedAtt.formation.id}/checkout`, {
         method: "POST",
         headers: {
@@ -151,20 +168,17 @@ export default function UserDashboard() {
           "Accept": "application/json",
           "Authorization": `Bearer ${jwt}` 
         },
-        body: JSON.stringify({ signature: signatureBase64 }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || t('dashboard.checkoutError'));
       }
 
       toast.success(t('dashboard.checkoutSuccess'));
       closeDetails();
-      
-      const res = await fetch("/api/v1/users/me/formations", { headers: { "Authorization": `Bearer ${jwt}` } });
-      const data = await res.json();
-      setAttendances(data);
+      reloadUserFormations();
 
     } catch (error) {
       toast.error(error.message || t('dashboard.checkoutError'));
@@ -177,9 +191,14 @@ export default function UserDashboard() {
     }
 
     if (attendances && attendances.length > 0) {
-      const sortedAttendances = [...attendances].sort(
-        (a, b) => new Date(b.formation.formationDate) - new Date(a.formation.formationDate)
-      );
+      const sortedAttendances = [...attendances].sort((a, b) => {
+        const aCompleted = !!a.checkOutDate;
+        const bCompleted = !!b.checkOutDate;
+        if (aCompleted !== bCompleted) {
+          return aCompleted ? 1 : -1;
+        }
+        return new Date(b.formation.formationDate) - new Date(a.formation.formationDate);
+      });
 
       return (
         <div className="table-responsive">
@@ -198,7 +217,9 @@ export default function UserDashboard() {
                 const isCompleted = !!att.checkOutDate;
                 return (
                   <tr key={att.id}>
-                    <td style={{ color: '#2c3e50', fontWeight: 600 }}>{f.name}</td>
+                    <td style={{ color: '#2c3e50', fontWeight: 600 }}>
+                      {f.name} <small className="text-muted">(ID: {f.id})</small>
+                    </td>
                     <td style={{ color: '#64748b' }}>{new Date(f.formationDate).toLocaleString()}</td>
                     <td>
                       {isCompleted ? (
@@ -269,11 +290,31 @@ export default function UserDashboard() {
                     </>
                   )}
 
-                  {selectedAtt.formation.documentUrl && (
+                  {selectedAtt.formation.documentUrls && selectedAtt.formation.documentUrls.length > 0 && (
                     <div className="mb-4 text-center">
-                      <a href={selectedAtt.formation.documentUrl} target="_blank" rel="noopener noreferrer" className="ba-btn ba-btn-secondary d-inline-block w-100 py-2">
-                        {t('dashboard.viewDocumentation', 'Ver Documentación')}
-                      </a>
+                      <span className="fw-bold text-dark mb-2 d-block text-start">{t('dashboard.viewDocumentation', 'Ver Documentación')}:</span>
+                      <div className="d-flex flex-wrap gap-2 justify-content-center">
+                        {selectedAtt.formation.documentUrls.map((url, idx) => {
+                          const decodedUrl = decodeURIComponent(url);
+                          const parts = decodedUrl.split('/');
+                          const rawFileName = parts.at(-1) || `Documento ${idx + 1}`;
+                          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_/i;
+                          const fileName = rawFileName.replace(uuidRegex, '').split('?')[0];
+
+                          return (
+                            <a
+                              key={url}
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="ba-btn ba-btn-secondary px-3 py-2 text-truncate"
+                              style={{ textDecoration: 'none', maxWidth: '100%' }}
+                            >
+                              {fileName}
+                            </a>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
 

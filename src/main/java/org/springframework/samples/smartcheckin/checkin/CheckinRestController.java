@@ -1,5 +1,6 @@
 package org.springframework.samples.smartcheckin.checkin;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +33,7 @@ public class CheckinRestController {
     private final TotpService totpService;
     private final FormationService formationService;
     private final SimpMessagingTemplate messagingTemplate;
+    private static final String MESSAGE_KEY = "message";
 
     @Autowired
     public CheckinRestController(CheckinService checkInService, UserService userService, TotpService totpService, FormationService formationService, SimpMessagingTemplate messagingTemplate) {
@@ -60,60 +62,121 @@ public class CheckinRestController {
     @PostMapping("/qr-fichaje")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Object> qrCheckin(@RequestBody @Valid QrCheckinRequest request) {
-        
-        if (!totpService.verifyToken(request.getToken())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired TOTP token");
+        User user = userService.findCurrentUser();
+        Formation targetFormation = resolveFormation(request);
+
+        // ==========================================
+        // FLUJO 1: EL CÓDIGO ES DE UNA FORMACIÓN
+        // ==========================================
+        if (targetFormation != null) {
+            try {
+                // Lo registramos en la formación
+                formationService.registerAttendance(targetFormation.getId(), user);
+                messagingTemplate.convertAndSend("/topic/formations", "UPDATED");
+                
+                Map<String, Object> responseBody = new HashMap<>();
+                responseBody.put("formationId", targetFormation.getId());
+                responseBody.put("formationName", targetFormation.getName());
+                
+                // Simulamos la info de Entrada para que el Frontend la lea bien
+                Map<String, String> checkinInfo = new HashMap<>();
+                checkinInfo.put("type", "ENTRADA");
+                responseBody.put("checkin", checkinInfo);
+                
+                return new ResponseEntity<>(responseBody, HttpStatus.CREATED);
+                
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of(MESSAGE_KEY, "Error al registrar en formación: " + e.getMessage()));
+            }
         }
-        
-        // Geolocation validation (max 200m distance)
-        if (request.getUserLat() != null && request.getUserLng() != null && 
-            request.getAdminLat() != null && request.getAdminLng() != null) {
+
+        // ==========================================
+        // FLUJO 2: EL CÓDIGO NO ES DE FORMACIÓN (Fichaje Global de la fábrica)
+        // ==========================================
+        if (!totpService.verifyToken(request.getToken())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(MESSAGE_KEY, "Código inválido o expirado."));
+        }
+
+        // Si es el global, verificamos distancia si fuera necesario
+        if (isLocationInvalid(request)) {
             double distance = calculateDistance(request.getUserLat(), request.getUserLng(), 
                                                 request.getAdminLat(), request.getAdminLng());
-            if (distance > 50.0) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                                     .body(Map.of("message", "Demasiado lejos del punto de control. Distancia: " + Math.round(distance) + "m (Max: 50m)"));
-            }
-        } else {
-             // We can allow or deny if coordinates are missing. Let's allow for now as a fallback or return an error?
-             // Since the user asked to validate it dynamically, let's just log or accept if missing, but ideally we should enforce it.
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of(MESSAGE_KEY, "Demasiado lejos del punto de control. Distancia: " + Math.round(distance) + "m (Max: 50m)"));
         }
 
-        User user = userService.findCurrentUser();
-
-        try {
-            List<Formation> allFormations = formationService.findAll();
-            for (Formation f : allFormations) {
-                formationService.registerAttendance(f.getId(), user);
-            }
-            messagingTemplate.convertAndSend("/topic/formations", "UPDATED");
-        } catch (Exception e) {
-            // no hacer nada si hay error al registrar la asistencia a formaciones
-        }
-
-        CheckinType type = user.getIsWorking() != null && user.getIsWorking() ? CheckinType.SALIDA : CheckinType.ENTRADA;
+        // Calculamos si entra o sale
+        CheckinType type = (Boolean.TRUE.equals(user.getIsWorking())) ? CheckinType.SALIDA : CheckinType.ENTRADA;
         
-        if (type == CheckinType.SALIDA && (request.getSignature() == null || request.getSignature().isEmpty())) {
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of("needsSignature", true, "message", "Signature required for checkout"));
+        // Exigimos firma si sale
+        if (type == CheckinType.SALIDA && isSignatureMissing(request)) {
+            return ResponseEntity.status(HttpStatus.ACCEPTED)
+                    .body(Map.of("needsSignature", true, MESSAGE_KEY, "Signature required for checkout"));
         }
 
+        Checkin saved = processCheckinRecord(user, type, request.getSignature());
+
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("checkin", saved);
+
+        return new ResponseEntity<>(responseBody, HttpStatus.CREATED);
+    }
+
+    private Formation resolveFormation(QrCheckinRequest request) {
+        List<Formation> allFormations = formationService.findAll();
+
+        if (request.getFormationId() != null) {
+            Object reqId = request.getFormationId();
+            if (totpService.verifyToken(request.getToken(), reqId)) {
+                return allFormations.stream()
+                        .filter(f -> String.valueOf(f.getId()).equals(String.valueOf(reqId)))
+                        .findFirst()
+                        .orElse(null);
+            }
+            return null;
+        }
+
+        for (Formation f : allFormations) {
+            if (totpService.verifyToken(request.getToken(), f.getId())) {
+                return f;
+            }
+        }
+        return null;
+    }
+
+    private boolean isLocationInvalid(QrCheckinRequest request) {
+        if (request.getUserLat() == null || request.getUserLng() == null || 
+            request.getAdminLat() == null || request.getAdminLng() == null) {
+            return false;
+        }
+        double distance = calculateDistance(request.getUserLat(), request.getUserLng(), 
+                                            request.getAdminLat(), request.getAdminLng());
+        return distance > 50.0;
+    }
+
+    private boolean isSignatureMissing(QrCheckinRequest request) {
+        return request.getSignature() == null || request.getSignature().isEmpty();
+    }
+
+    private Checkin processCheckinRecord(User user, CheckinType type, String signature) {
         Checkin saved = checkInService.performCheckIn(user, type);
-        if (request.getSignature() != null && !request.getSignature().isEmpty()) {
-            saved.setSignature(request.getSignature());
+        if (signature != null && !signature.isEmpty()) {
+            saved.setSignature(signature);
             saved = checkInService.save(saved);
         }
-
-        return new ResponseEntity<>(saved, HttpStatus.CREATED);
+        return saved;
     }
 
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-        int earthRadius = 6371; // Radius of the earth in km
+        int earthRadius = 6371;
         double latDistance = Math.toRadians(lat2 - lat1);
         double lonDistance = Math.toRadians(lon2 - lon1);
         double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
                 + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
                 * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return earthRadius * c * 1000; // convert to meters
+        return earthRadius * c * 1000;
     }
 }

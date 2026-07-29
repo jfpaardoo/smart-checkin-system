@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,8 +26,8 @@ public class TotpRestController {
     }
 
     @GetMapping("/current")
-    public ResponseEntity<Map<String, String>> getCurrentToken() {
-        String token = totpService.getCurrentToken();
+    public ResponseEntity<Map<String, String>> getCurrentToken(@RequestParam(required = false) Object formationId) {
+        String token = totpService.getCurrentToken(formationId);
         Map<String, String> response = new HashMap<>();
         response.put("token", token);
         return ResponseEntity.ok(response);

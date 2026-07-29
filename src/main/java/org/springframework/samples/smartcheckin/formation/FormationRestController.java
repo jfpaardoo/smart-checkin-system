@@ -178,10 +178,12 @@ public class FormationRestController {
         }
     }
 
-    @PostMapping("/{formationId}/users/{userId}")
+    // 🚀 FIX: Cambiado a "/attendances" para coincidir con React y adaptado para recibir el JSON
+    @PostMapping("/{formationId}/attendances")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<String> addAttendee(@PathVariable Integer formationId, @PathVariable Integer userId) {
+    public ResponseEntity<String> addAttendee(@PathVariable Integer formationId, @RequestBody Map<String, Integer> payload) {
         try {
+            Integer userId = payload.get("userId");
             formationService.addAttendee(formationId, userId);
             notifyFormationsUpdate(formationId);
             return ResponseEntity.ok("Successfully added attendee");
@@ -190,7 +192,7 @@ public class FormationRestController {
         }
     }
 
-    @DeleteMapping("/{formationId}/users/{userId}")
+    @DeleteMapping("/{formationId}/attendances/{userId}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> removeAttendee(@PathVariable Integer formationId, @PathVariable Integer userId) {
         try {

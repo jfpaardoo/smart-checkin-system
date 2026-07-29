@@ -11,6 +11,8 @@ public class QrCheckinRequest {
     @Size(min = 6, max = 6, message = "TOTP token must be exactly 6 characters")
     private String token;
 
+    private Long formationId;
+
     private String signature;
 
     // Geolocation data

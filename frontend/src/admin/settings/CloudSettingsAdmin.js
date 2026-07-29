@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import useFetchState from "../../util/useFetchState";
 import { useToast } from "../../components/ToastProvider";
+import { CardGhostLoader } from "../../components/GhostLoader";
 import "../../static/css/admin/adminPage.css";
 import { FaCloudUploadAlt, FaSave, FaDatabase } from "react-icons/fa";
 
@@ -63,16 +64,16 @@ export default function CloudSettingsAdmin() {
       .finally(() => setBackingUp(false));
   }
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <CardGhostLoader />;
 
   return (
     <div className="ba-container">
       <div className="ba-card p-4 p-md-5 mx-auto" style={{ maxWidth: '800px', marginTop: '2rem' }}>
-        <div className="d-flex justify-content-between align-items-center mb-4">
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
           <h2 className="mb-0 text-dark fw-bold">
-            <FaCloudUploadAlt className="me-2 text-primary" /> {t('cloudSettings.title', 'Ajustes de Nube')}
+            <FaCloudUploadAlt className="me-2" style={{ color: 'var(--ba-primary)' }} /> {t('cloudSettings.title', 'Ajustes de Nube')}
           </h2>
-          <Button color="success" onClick={handleBackup} disabled={backingUp} className="d-flex align-items-center gap-2">
+          <Button className="ba-btn-primary d-flex align-items-center gap-2" onClick={handleBackup} disabled={backingUp}>
             <FaDatabase /> {backingUp ? t('cloudSettings.backingUp', 'Respaldando...') : t('cloudSettings.forceBackupBtn', 'Forzar Backup DB')}
           </Button>
         </div>
@@ -87,15 +88,12 @@ export default function CloudSettingsAdmin() {
               <FormGroup>
                 <Label for="provider">{t('cloudSettings.providerLabel', 'Proveedor de Nube Activo')}</Label>
                 <Input
-                  type="select"
+                  type="text"
                   name="provider"
                   id="provider"
-                  value={settings.provider || "ONEDRIVE"}
-                  onChange={handleChange}
-                >
-                  <option value="ONEDRIVE">Microsoft OneDrive</option>
-                  <option value="GOOGLE_DRIVE" disabled>Google Drive ({t('cloudSettings.comingSoon', 'Próximamente')})</option>
-                </Input>
+                  value="Microsoft OneDrive"
+                  disabled
+                />
               </FormGroup>
             </Col>
           </Row>

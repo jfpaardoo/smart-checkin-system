@@ -25,3 +25,13 @@
 
 /* 7. Responsive Breakpoints (Mobile, Tablet, Desktop) */
 @import './static/css/responsive/responsive.css';
+
+.btn-icon-expand,
+.btn-expand-label {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+}
+
+.ba-table td {
+    vertical-align: middle;
+}

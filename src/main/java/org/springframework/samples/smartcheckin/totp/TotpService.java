@@ -6,13 +6,17 @@ import dev.samstevens.totp.code.DefaultCodeGenerator;
 import dev.samstevens.totp.code.DefaultCodeVerifier;
 import dev.samstevens.totp.time.SystemTimeProvider;
 import dev.samstevens.totp.time.TimeProvider;
+import org.apache.commons.codec.binary.Base32;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 @Service
 public class TotpService {
 
-    @Value("${smartcheckin.app.totpSecret}")
+    @Value("${smartcheckin.app.totpSecret:DEFAULT_SECRET}")
     private String secret;
 
     private final TimeProvider timeProvider = new SystemTimeProvider();
@@ -27,15 +31,44 @@ public class TotpService {
     }
 
     public String getCurrentToken() {
+        return getCurrentToken((Object) null);
+    }
+
+    public String getCurrentToken(Object formationId) {
         try {
             long currentBucket = Math.floorDiv(timeProvider.getTime(), 20);
-            return codeGenerator.generate(secret, currentBucket);
+            String targetSecret = getHashedSecretForFormation(formationId);
+            return codeGenerator.generate(targetSecret, currentBucket);
         } catch (Exception e) {
             throw new RuntimeException("Error generating TOTP token", e);
         }
     }
 
     public boolean verifyToken(String token) {
-        return verifier.isValidCode(secret, token);
+        return verifyToken(token, (Object) null);
+    }
+
+    public boolean verifyToken(String token, Object formationId) {
+        if (token == null || token.trim().isEmpty()) {
+            return false;
+        }
+        String targetSecret = getHashedSecretForFormation(formationId);
+        return verifier.isValidCode(targetSecret, token);
+    }
+
+    private String getHashedSecretForFormation(Object formationId) {
+        String formIdStr = (formationId != null) ? String.valueOf(formationId).trim() : null;
+        String rawSecret = (formIdStr == null || formIdStr.isEmpty() || "null".equalsIgnoreCase(formIdStr)) 
+            ? secret 
+            : secret + "_FORMATION_" + formIdStr;
+        
+        Base32 base32 = new Base32();
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(rawSecret.getBytes(StandardCharsets.UTF_8));
+            return base32.encodeAsString(hash).replace("=", "");
+        } catch (Exception e) {
+            return base32.encodeAsString(rawSecret.getBytes(StandardCharsets.UTF_8)).replace("=", "");
+        }
     }
 }
