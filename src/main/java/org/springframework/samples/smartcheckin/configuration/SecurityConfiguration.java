@@ -74,8 +74,14 @@ public class SecurityConfiguration {
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/api/v1/checkins/qr-fichaje").permitAll()
 
-                        // 5. Perfil personal del usuario
-                        .requestMatchers("/api/v1/users/me", "/api/v1/users/me/**").authenticated()
+                        // 5. Perfil personal del usuario y configuración de 2FA
+                        .requestMatchers(
+                                "/api/v1/users/me", 
+                                "/api/v1/users/me/**",
+                                "/api/v1/users/2fa/setup",
+                                "/api/v1/users/2fa/enable",
+                                "/api/v1/users/2fa/disable"
+                        ).authenticated()
 
                         // 6. Administración y HR
                         .requestMatchers("/api/v1/users/pending", "/api/v1/users/*/approve").hasAuthority(ADMIN)

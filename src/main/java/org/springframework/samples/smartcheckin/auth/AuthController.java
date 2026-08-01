@@ -9,13 +9,16 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.smartcheckin.auth.payload.request.LoginRequest;
+import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest;
 import org.springframework.samples.smartcheckin.auth.payload.response.JwtResponse;
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
+import org.springframework.samples.smartcheckin.configuration.services.UserDetailsServiceImpl;
 import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
 import org.springframework.samples.smartcheckin.user.AuthoritiesService;
+import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -50,15 +53,21 @@ public class AuthController {
     private final JwtUtils jwtUtils;
     private final PasswordEncoder passwordEncoder;
     private final SimpMessagingTemplate messagingTemplate;
+    private final TotpService totpService;
+    private final UserDetailsServiceImpl userDetailsServiceImpl;
 
     @Autowired
-    public AuthController(AuthenticationManager authenticationManager, UserService userService, AuthoritiesService authoritiesService, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, SimpMessagingTemplate messagingTemplate) {
+    public AuthController(AuthenticationManager authenticationManager, UserService userService, 
+            AuthoritiesService authoritiesService, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, 
+            SimpMessagingTemplate messagingTemplate, TotpService totpService, UserDetailsServiceImpl userDetailsServiceImpl) {
         this.userService = userService;
         this.authoritiesService = authoritiesService;
         this.jwtUtils = jwtUtils;
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
         this.messagingTemplate = messagingTemplate;
+        this.totpService = totpService;
+        this.userDetailsServiceImpl = userDetailsServiceImpl;
     }
 
     @PostMapping("/signin")
@@ -85,6 +94,15 @@ public class AuthController {
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
+            // Si las credenciales son correctas pero el usuario tiene activado 2FA, 
+            // detenemos la emisión del JWT y exigimos el código del segundo factor.
+            if (user != null && Boolean.TRUE.equals(user.getTwoFactorEnabled())) {
+                JwtResponse challengeResponse = new JwtResponse();
+                challengeResponse.setRequiresTwoFactor(true);
+                challengeResponse.setUsername(user.getUsername());
+                return ResponseEntity.ok().body(challengeResponse);
+            }
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = jwtUtils.generateJwtToken(authentication);
 
@@ -102,6 +120,40 @@ public class AuthController {
             handleFailedLogin(user);
             return ResponseEntity.badRequest().body("Bad Credentials!");
         }
+    }
+
+    @PostMapping("/verify-2fa")
+    public ResponseEntity<Object> verifyTwoFactor(@Valid @RequestBody TwoFactorVerifyRequest request) {
+        User user = null;
+        try {
+            user = userService.findUser(request.getUsername());
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Error: User not found"));
+        }
+
+        if (user.getTwoFactorSecret() == null || !totpService.validateCode(user.getTwoFactorSecret(), request.getCode())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Código 2FA inválido o expirado."));
+        }
+
+        // Cargar UserDetailsImpl correctamente para evitar el ClassCastException en JwtUtils
+        UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsServiceImpl.loadUserByUsername(user.getUsername());
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtils.generateJwtToken(authentication);
+
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(auth -> auth.getAuthority())
+                .toList();
+
+        if (user.getFailedLoginAttempts() != null && user.getFailedLoginAttempts() > 0) {
+            user.setFailedLoginAttempts(0);
+            userService.saveUser(user);
+        }
+
+        return ResponseEntity.ok().body(new JwtResponse(jwt, user.getId().longValue(), user.getUsername(), roles));
     }
 
     @PostMapping("/signup")

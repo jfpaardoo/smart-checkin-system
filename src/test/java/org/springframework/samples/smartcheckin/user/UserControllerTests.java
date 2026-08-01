@@ -32,6 +32,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import org.springframework.samples.smartcheckin.totp.TotpService;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
@@ -61,6 +64,12 @@ class UserControllerTests {
 
 	@MockitoBean
 	private PasswordEncoder passwordEncoder;
+
+	@MockitoBean
+	private SimpMessagingTemplate simpMessagingTemplate;
+
+	@MockitoBean
+	private TotpService totpService;
 
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -231,5 +240,155 @@ class UserControllerTests {
 
 		mockMvc.perform(delete(BASE_URL + ID_PATH, TEST_USER_ID).with(csrf())).andExpect(status().isForbidden())
 				.andExpect(result -> assertTrue(result.getResolvedException() instanceof AccessDeniedException));
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldGetMyProfile() throws Exception {
+		when(userService.findCurrentUser()).thenReturn(user);
+
+		mockMvc.perform(get(BASE_URL + "/me")).andExpect(status().isOk())
+				.andExpect(jsonPath("$.username").value(user.getUsername()));
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldGetMyFormations() throws Exception {
+		user.setFormationAttendances(List.of());
+		when(userService.findCurrentUser()).thenReturn(user);
+
+		mockMvc.perform(get(BASE_URL + "/me/formations")).andExpect(status().isOk())
+				.andExpect(jsonPath(SIZE_PATH).value(0));
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldChangePasswordSuccess() throws Exception {
+		user.setPassword("encodedOld");
+		when(userService.findCurrentUser()).thenReturn(user);
+		when(passwordEncoder.matches("oldPass123", "encodedOld")).thenReturn(true);
+
+		ChangePasswordRequest req = new ChangePasswordRequest();
+		req.setCurrentPassword("oldPass123");
+		req.setNewPassword("newPass123");
+		req.setConfirmPassword("newPass123");
+
+		mockMvc.perform(put(BASE_URL + "/me/password").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldSetupTwoFactor() throws Exception {
+		when(userService.findUser(anyString())).thenReturn(user);
+
+		mockMvc.perform(post(BASE_URL + "/2fa/setup").with(csrf())).andExpect(status().isOk())
+				.andExpect(jsonPath("$.secret").exists())
+				.andExpect(jsonPath("$.qrUri").exists());
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldEnableTwoFactorSuccess() throws Exception {
+		user.setTwoFactorSecret("SECRET");
+		when(userService.findUser(anyString())).thenReturn(user);
+		when(totpService.validateCode("SECRET", "123456")).thenReturn(true);
+
+		org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest req = new org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest();
+		req.setCode("123456");
+
+		mockMvc.perform(post(BASE_URL + "/2fa/enable").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldDisableTwoFactor() throws Exception {
+		when(userService.findUser(anyString())).thenReturn(user);
+
+		mockMvc.perform(post(BASE_URL + "/2fa/disable").with(csrf())).andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldFindPendingUsers() throws Exception {
+		when(userService.findPendingUsers()).thenReturn(List.of(user));
+
+		mockMvc.perform(get(BASE_URL + "/pending")).andExpect(status().isOk())
+				.andExpect(jsonPath(SIZE_PATH).value(1));
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldFindAllWithSearchAndRole() throws Exception {
+		User searchUser = new User();
+		searchUser.setId(5);
+		searchUser.setUsername("specialSearch");
+		searchUser.setFirstName("John");
+		searchUser.setLastName("Doe");
+		searchUser.setPersonalCode("9999");
+		searchUser.setAuthority(auth);
+
+		when(userService.findApprovedUsers()).thenReturn(List.of(user, searchUser));
+
+		mockMvc.perform(get(BASE_URL).param("search", "special")).andExpect(status().isOk())
+				.andExpect(jsonPath(SIZE_PATH).value(1))
+				.andExpect(jsonPath("$[0].username").value("specialSearch"));
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldFailChangePasswordWrongCurrentPassword() throws Exception {
+		user.setPassword("encodedOld");
+		when(userService.findCurrentUser()).thenReturn(user);
+		when(passwordEncoder.matches("wrongPass", "encodedOld")).thenReturn(false);
+
+		ChangePasswordRequest req = new ChangePasswordRequest();
+		req.setCurrentPassword("wrongPass");
+		req.setNewPassword("newPass123");
+		req.setConfirmPassword("newPass123");
+
+		mockMvc.perform(put(BASE_URL + "/me/password").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldFailChangePasswordShortNewPassword() throws Exception {
+		user.setPassword("encodedOld");
+		when(userService.findCurrentUser()).thenReturn(user);
+		when(passwordEncoder.matches("oldPass123", "encodedOld")).thenReturn(true);
+
+		ChangePasswordRequest req = new ChangePasswordRequest();
+		req.setCurrentPassword("oldPass123");
+		req.setNewPassword("123");
+		req.setConfirmPassword("123");
+
+		mockMvc.perform(put(BASE_URL + "/me/password").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldFailChangePasswordMismatchConfirm() throws Exception {
+		user.setPassword("encodedOld");
+		when(userService.findCurrentUser()).thenReturn(user);
+		when(passwordEncoder.matches("oldPass123", "encodedOld")).thenReturn(true);
+
+		ChangePasswordRequest req = new ChangePasswordRequest();
+		req.setCurrentPassword("oldPass123");
+		req.setNewPassword("newPass123");
+		req.setConfirmPassword("different123");
+
+		mockMvc.perform(put(BASE_URL + "/me/password").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldApproveUser() throws Exception {
+		when(userService.findUser(TEST_USER_ID)).thenReturn(user);
+
+		mockMvc.perform(put(BASE_URL + "/{userId}/approve", TEST_USER_ID).with(csrf())).andExpect(status().isOk());
 	}
 }

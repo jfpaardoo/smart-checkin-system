@@ -1,16 +1,23 @@
 package org.springframework.samples.smartcheckin.user;
 
+import java.security.Principal;
+import java.security.SecureRandom;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.validation.Valid;
 
+import org.apache.commons.codec.binary.Base32;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest;
 import org.springframework.samples.smartcheckin.auth.payload.response.MessageResponse;
 import org.springframework.samples.smartcheckin.exceptions.AccessDeniedException;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
+import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.springframework.samples.smartcheckin.util.RestPreconditions;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,16 +42,19 @@ class UserRestController {
     private final AuthoritiesService authService;
     private final PasswordEncoder passwordEncoder;
     private final SimpMessagingTemplate messagingTemplate;
-	private static final String TOPIC_UPDATE_USERS = "/topic/users";
-	private static final String UPDATE = "update";
+    private final TotpService totpService;
+    private static final String TOPIC_UPDATE_USERS = "/topic/users";
+    private static final String UPDATE = "update";
+	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     @Autowired
     public UserRestController(UserService userService, AuthoritiesService authService, 
-            PasswordEncoder passwordEncoder, SimpMessagingTemplate messagingTemplate) {
+            PasswordEncoder passwordEncoder, SimpMessagingTemplate messagingTemplate, TotpService totpService) {
         this.userService = userService;
         this.authService = authService;
         this.passwordEncoder = passwordEncoder;
         this.messagingTemplate = messagingTemplate;
+        this.totpService = totpService;
     }
 
     @GetMapping
@@ -105,6 +115,45 @@ class UserRestController {
         return ResponseEntity.ok(new MessageResponse("Contraseña actualizada con éxito."));
     }
 
+    @PostMapping("2fa/setup")
+    public ResponseEntity<Map<String, String>> setupTwoFactor(Principal principal) {
+        User user = userService.findUser(principal.getName());
+        // Generar secreto base32 de 16 caracteres aleatorios para TOTP
+        byte[] buffer = new byte[10];
+        SECURE_RANDOM.nextBytes(buffer);
+        String secret = new Base32().encodeAsString(buffer).replace("=", "");
+        
+        user.setTwoFactorSecret(secret);
+        userService.saveUser(user);
+        
+        String qrUri = String.format("otpauth://totp/SmartCheckin:%s?secret=%s&issuer=BAGlass", user.getUsername(), secret);
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("secret", secret);
+        response.put("qrUri", qrUri);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("2fa/enable")
+    public ResponseEntity<MessageResponse> enableTwoFactor(@RequestBody @Valid TwoFactorVerifyRequest request, Principal principal) {
+        User user = userService.findUser(principal.getName());
+        if (user.getTwoFactorSecret() != null && totpService.validateCode(user.getTwoFactorSecret(), request.getCode())) {
+            user.setTwoFactorEnabled(true);
+            userService.saveUser(user);
+            return ResponseEntity.ok(new MessageResponse("2FA activado correctamente."));
+        }
+        return ResponseEntity.badRequest().body(new MessageResponse("Código de verificación incorrecto."));
+    }
+
+    @PostMapping("2fa/disable")
+    public ResponseEntity<MessageResponse> disableTwoFactor(Principal principal) {
+        User user = userService.findUser(principal.getName());
+        user.setTwoFactorEnabled(false);
+        user.setTwoFactorSecret(null);
+        userService.saveUser(user);
+        return ResponseEntity.ok(new MessageResponse("2FA desactivado correctamente."));
+    }
+
     @GetMapping(value = "{id}")
     public ResponseEntity<User> findById(@PathVariable("id") Integer id) {
         return new ResponseEntity<>(userService.findUser(id), HttpStatus.OK);
@@ -163,5 +212,4 @@ class UserRestController {
         } else
             throw new AccessDeniedException("You can't delete yourself!");
     }
-
 }
