@@ -1,24 +1,34 @@
+/* eslint-disable testing-library/prefer-screen-queries */
 const { test, expect } = require('@playwright/test');
 
 test.describe('Flujo de Aprobación por Administrador (Admin Approval E2E)', () => {
 
   test('Debe permitir al Administrador ver la pestaña de solicitudes pendientes y aprobar a un empleado', async ({ page }) => {
-    
-    // Mock /users/me porque el layout verifica al usuario actual para mantener la sesión
-    await page.route('/api/v1/users/me', async (route) => {
+
+    // Interceptar validación de token JWT — el endpoint real devuelve un booleano crudo
+    await page.route('**/api/v1/auth/validate**', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ 
-          id: 1, 
-          username: 'admin', 
-          authority: { authority: 'ADMIN' } 
-        }),
+        body: JSON.stringify(true),
       });
     });
 
-    // Mock user list and pending user list APIs
-    await page.route('/api/v1/users?*', async (route) => {
+    // Interceptar API de datos propios
+    await page.route('**/api/v1/users/me', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ id: 1, username: 'admin', authority: { authority: 'ADMIN' } }),
+      });
+    });
+
+    await page.route('**/api/v1/users/me/formations', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+    });
+
+    // Interceptar API de lista de usuarios aprobados
+    await page.route('**/api/v1/users?*', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -28,7 +38,7 @@ test.describe('Flujo de Aprobación por Administrador (Admin Approval E2E)', () 
       });
     });
 
-    await page.route('/api/v1/users', async (route) => {
+    await page.route('**/api/v1/users', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -38,7 +48,8 @@ test.describe('Flujo de Aprobación por Administrador (Admin Approval E2E)', () 
       });
     });
 
-    await page.route('/api/v1/users/pending', async (route) => {
+    // Interceptar API de usuarios pendientes
+    await page.route('**/api/v1/users/pending', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -48,7 +59,8 @@ test.describe('Flujo de Aprobación por Administrador (Admin Approval E2E)', () 
       });
     });
 
-    await page.route('/api/v1/users/2/approve', async (route) => {
+    // Interceptar API de aprobación del empleado
+    await page.route('**/api/v1/users/2/approve', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -56,35 +68,38 @@ test.describe('Flujo de Aprobación por Administrador (Admin Approval E2E)', () 
       });
     });
 
-    // Mock Admin token in localStorage (JWT con rol ADMIN y fecha de expiración en el año 9999)
+    // Inyectar Admin JWT en localStorage
     const validAdminJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImF1dGhvcml0aWVzIjpbIkFETUlOIl0sImV4cCI6MjUzNDAyMzAwNzk5fQ.mock";
     await page.addInitScript((token) => {
       window.localStorage.setItem('jwt', JSON.stringify(token));
     }, validAdminJwt);
 
-    // 1. Ir a la raíz de la aplicación
+    // 1. Cargar aplicación en la raíz
     await page.goto('/');
 
-    // 2. Navegar orgánicamente interactuando con el Navbar del Administrador
-    await page.click('a:has-text("Administration"), a:has-text("Administración")'); 
-    
-    // Esperar a que la opción del menú desplegable esté visible y hacer clic
-    const usersLink = page.locator('text=/Usuarios|Users/i').first();
+    // 2. Abrir menú de Administración en el Navbar
+    const adminMenu = page.getByRole('button', { name: /administration|administración/i }).or(page.getByRole('link', { name: /administration|administración/i }));
+    await expect(adminMenu).toBeVisible();
+    await adminMenu.click();
+
+    // Hacer clic en la opción "Usuarios" / "Empleados"
+    const usersLink = page.getByRole('menuitem', { name: /usuarios|users|empleados/i }).or(page.getByRole('link', { name: /usuarios|users|empleados/i }));
     await expect(usersLink).toBeVisible();
     await usersLink.click();
 
-    // Confirmar que el router de React ha cambiado la URL a /users
+    // Confirmar cambio de URL
     await page.waitForURL('**/users');
 
-    // 3. Ya en la página, esperar y cambiar a la pestaña de solicitudes pendientes
-    const pendingTab = page.locator('text=/Solicitudes Pendientes|Pending Requests/i');
-    await expect(pendingTab).toBeVisible();
+    // 3. Cambiar a la pestaña "Solicitudes Pendientes"
+    const pendingTab = page.getByRole('tab', { name: /solicitudes pendientes|pending requests/i }).or(page.getByText(/solicitudes pendientes|pending requests/i));
+    await expect(pendingTab).toBeVisible({ timeout: 15000 });
     await pendingTab.click();
 
-    // Verify pending user appears in table
-    await expect(page.locator('td', { hasText: 'nuevoempleado' })).toBeVisible();
+    // 4. Verificar que el usuario pendiente figura en la tabla
+    await expect(page.getByRole('cell', { name: 'nuevoempleado' })).toBeVisible();
 
-    // Click Approve button
-    await page.click('button:has-text("Aprobar"), button:has-text("Approve")');
+    // 5. Hacer clic en el botón Aprobar
+    const approveBtn = page.getByRole('button', { name: /aprobar|approve/i }).first();
+    await approveBtn.click();
   });
 });

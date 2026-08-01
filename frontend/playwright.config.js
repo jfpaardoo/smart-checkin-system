@@ -2,7 +2,7 @@ const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
   testDir: './e2e', // Apunta exactamente a la carpeta e2e
-  testMatch: /.*\.spec\.js$/, // Solo ejecutará archivos que terminen en .spec.js dentro de e2e
+  testMatch: /\.spec\.js$/, // Regex optimizada sin el '.*' inicial para evitar backtracking
   timeout: 60 * 1000,
   expect: {
     timeout: 10000
