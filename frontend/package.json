@@ -41,6 +41,7 @@
     "web-vitals": "^3.1.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "identity-obj-proxy": "^3.0.0",
     "msw": "^1.2.1",
     "nth-check": "^2.1.1",
@@ -52,6 +53,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "test:e2e": "playwright test --test-dir=e2e",
     "coverage": "react-scripts test --coverage --watchAll --collectCoverageFrom='!src/{index,reportWebVitals,error-page,App}.{js,jsx}'",
     "eject": "react-scripts eject"
   },
