@@ -25,8 +25,8 @@ public class TotpService {
 
     public TotpService() {
         DefaultCodeVerifier v = new DefaultCodeVerifier(codeGenerator, timeProvider);
-        v.setTimePeriod(20);
-        v.setAllowedTimePeriodDiscrepancy(1);
+        v.setTimePeriod(30); // Estándar de 30s compatible con Google Authenticator / Authy
+        v.setAllowedTimePeriodDiscrepancy(1); // Permite un margen de desfase de 1 intervalo (±30s)
         this.verifier = v;
     }
 
@@ -36,7 +36,7 @@ public class TotpService {
 
     public String getCurrentToken(Object formationId) {
         try {
-            long currentBucket = Math.floorDiv(timeProvider.getTime(), 20);
+            long currentBucket = Math.floorDiv(timeProvider.getTime(), 30);
             String targetSecret = getHashedSecretForFormation(formationId);
             return codeGenerator.generate(targetSecret, currentBucket);
         } catch (Exception e) {
@@ -58,10 +58,10 @@ public class TotpService {
 
     private String getHashedSecretForFormation(Object formationId) {
         String formIdStr = (formationId != null) ? String.valueOf(formationId).trim() : null;
-        String rawSecret = (formIdStr == null || formIdStr.isEmpty() || "null".equalsIgnoreCase(formIdStr)) 
-            ? secret 
-            : secret + "_FORMATION_" + formIdStr;
-        
+        String rawSecret = (formIdStr == null || formIdStr.isEmpty() || "null".equalsIgnoreCase(formIdStr))
+                ? secret
+                : secret + "_FORMATION_" + formIdStr;
+
         Base32 base32 = new Base32();
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -70,5 +70,12 @@ public class TotpService {
         } catch (Exception e) {
             return base32.encodeAsString(rawSecret.getBytes(StandardCharsets.UTF_8)).replace("=", "");
         }
+    }
+
+    public boolean validateCode(String twoFactorSecret, String code) {
+        if (twoFactorSecret == null || twoFactorSecret.trim().isEmpty() || code == null || code.trim().isEmpty()) {
+            return false;
+        }
+        return verifier.isValidCode(twoFactorSecret, code);
     }
 }

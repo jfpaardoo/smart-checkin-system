@@ -7,6 +7,8 @@ import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import java.time.LocalDateTime;
 
 import org.springframework.samples.smartcheckin.model.BaseEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,68 +35,81 @@ import lombok.EqualsAndHashCode;
 @Table(name = "appusers")
 public class User extends BaseEntity {
 
-	@NotBlank
-	@Size(min = 1, max = 255)
-	@Column(unique = true)
-	private String username;
+    @NotBlank
+    @Size(min = 1, max = 255)
+    @Column(unique = true)
+    private String username;
 
-	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-	private String password;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String password;
 
-	@NotBlank
-	@Size(min = 4, max = 4)
-	@Column(unique = true, length = 4)
-	private String personalCode;
+    @NotBlank
+    @Size(min = 4, max = 4)
+    @Column(unique = true, length = 4)
+    private String personalCode;
 
-	@NotBlank
-	@Size(max = 255)
-	private String firstName;
+    @NotBlank
+    @Size(max = 255)
+    private String firstName;
 
-	@NotBlank
-	@Size(max = 255)
-	private String lastName;
+    @NotBlank
+    @Size(max = 255)
+    private String lastName;
 
-	@NotNull
-	@Column(name = "is_working", columnDefinition = "boolean default false")
-	private Boolean isWorking = false;
+    @NotNull
+    @Column(name = "is_working", columnDefinition = "boolean default false")
+    private Boolean isWorking = false;
 
-	@NotNull
-	@Column(name = "is_approved", columnDefinition = "boolean default true")
-	private Boolean isApproved = true;
+    @NotNull
+    @Column(name = "is_approved", columnDefinition = "boolean default true")
+    private Boolean isApproved = true;
 
-	@Column(name = "failed_login_attempts")
-	private Integer failedLoginAttempts = 0;
+    @Column(name = "failed_login_attempts")
+    private Integer failedLoginAttempts = 0;
 
-	@Column(name = "account_locked_until")
-	private LocalDateTime accountLockedUntil;
+    @Column(name = "account_locked_until")
+    private LocalDateTime accountLockedUntil;
 
-	@Transient
-	public String getEmployeeBlock() {
-		String fName = this.firstName != null ? this.firstName.replace(" ", "_") : "";
-		String lName = this.lastName != null ? this.lastName.replace(" ", "_") : "";
-		return String.format("%s_%s_%s", this.personalCode, fName, lName);
-	}
+    @Column(name = "two_factor_enabled")
+    private Boolean twoFactorEnabled = false;
 
-	@NotNull
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "authority")
-	Authorities authority;
+    @Column(name = "two_factor_secret")
+    private String twoFactorSecret;
 
-	public Boolean hasAuthority(String auth) {
-		return authority.getAuthority().equals(auth);
-	}
+    @Transient
+    public String getEmployeeBlock() {
+        String fName = this.firstName != null ? this.firstName.replace(" ", "_") : "";
+        String lName = this.lastName != null ? this.lastName.replace(" ", "_") : "";
+        return String.format("%s_%s_%s", this.personalCode, fName, lName);
+    }
 
-	public Boolean hasAnyAuthority(String... authorities) {
-		Boolean cond = false;
-		for (String auth : authorities) {
-			if (auth.equals(authority.getAuthority()))
-				cond = true;
-		}
-		return cond;
-	}
+    @NotNull
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "authority")
+    Authorities authority;
 
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonIgnore
-	private List<FormationAttendance> formationAttendances;
+    public Boolean hasAuthority(String auth) {
+        return authority.getAuthority().equals(auth);
+    }
 
+    public Boolean hasAnyAuthority(String... authorities) {
+        Boolean cond = false;
+        for (String auth : authorities) {
+            if (auth.equals(authority.getAuthority()))
+                cond = true;
+        }
+        return cond;
+    }
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<FormationAttendance> formationAttendances;
+
+    @JsonIgnore
+    public List<GrantedAuthority> getAuthorities() {
+        if (authority != null && authority.getAuthority() != null) {
+            return List.of(new SimpleGrantedAuthority(authority.getAuthority()));
+        }
+        return List.of();
+    }
 }

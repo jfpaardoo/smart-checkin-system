@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Row, Col, Nav, NavItem, NavLink, TabContent, TabPane, Form, Button, Table, Badge, Spinner } from "reactstrap";
-import { FaUser, FaGraduationCap, FaLock, FaKey, FaShieldAlt, FaIdCard, FaCheckCircle, FaExclamationTriangle, FaEye, FaEyeSlash, FaQrcode, FaClock, FaAward, FaFilePdf } from "react-icons/fa";
+import { Row, Col, Nav, NavItem, NavLink, TabContent, TabPane, Form, Button, Table, Badge, Spinner, Input, Label, FormGroup } from "reactstrap";
+import { FaUser, FaGraduationCap, FaLock, FaKey, FaShieldAlt, FaIdCard, FaCheckCircle, FaExclamationTriangle, FaEye, FaEyeSlash, FaQrcode, FaClock, FaAward, FaFilePdf, FaShieldVirus } from "react-icons/fa";
+import { QRCodeSVG } from "qrcode.react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
@@ -297,7 +298,7 @@ function FormationsTab({ loadingFormations, formations, t }) {
   );
 }
 
-/* Sub-component: Password Security Tab with Floating Labels */
+/* Sub-component: Password Security & 2FA Tab */
 function PasswordSecurityTab({
   passwordForm,
   setPasswordForm,
@@ -309,17 +310,160 @@ function PasswordSecurityTab({
   setShowNewPassword,
   showConfirmPassword,
   setShowConfirmPassword,
+  userData,
+  setUserData,
   t,
 }) {
+  const toast = useToast();
+  const jwt = tokenService.getLocalAccessToken();
+
+  const [setupData, setSetupData] = useState(null);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [loading2FA, setLoading2FA] = useState(false);
+
+  const handleStartSetup = async () => {
+    setLoading2FA(true);
+    try {
+      const res = await fetch("/api/v1/users/2fa/setup", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${jwt}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSetupData(data);
+      } else {
+        toast.error(data.message || "Error al iniciar configuración 2FA.");
+      }
+    } catch (err) {
+      toast.error(err.message || "Error de conexión.");
+    } finally {
+      setLoading2FA(false);
+    }
+  };
+
+  const handleConfirmEnable = async (e) => {
+    e.preventDefault();
+    if (verificationCode.length !== 6) {
+      toast.error("El código debe tener 6 dígitos.");
+      return;
+    }
+    setLoading2FA(true);
+    try {
+      const res = await fetch("/api/v1/users/2fa/enable", {
+        method: "POST",
+        headers: { 
+          Authorization: `Bearer ${jwt}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ code: verificationCode })
+      });
+      if (res.ok) {
+        setUserData({ ...userData, twoFactorEnabled: true });
+        setSetupData(null);
+        setVerificationCode("");
+        toast.success("¡Autenticación de Doble Factor activada con éxito!");
+      } else {
+        const data = await res.json();
+        toast.error(data.message || "Código incorrecto.");
+      }
+    } catch (err) {
+      toast.error(err.message || "Error de conexión.");
+    } finally {
+      setLoading2FA(false);
+    }
+  };
+
+  const handleDisable = async () => {
+    toast.confirm("¿Seguro que deseas desactivar la autenticación de doble factor?", async () => {
+      try {
+        const res = await fetch("/api/v1/users/2fa/disable", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${jwt}` }
+        });
+        if (res.ok) {
+          setUserData({ ...userData, twoFactorEnabled: false });
+          setSetupData(null);
+          toast.success("2FA desactivado correctamente.");
+        } else {
+          toast.error("Error al desactivar 2FA.");
+        }
+      } catch (err) {
+        toast.error(err.message || "Error de conexión.");
+      }
+    });
+  };
+
   return (
     <div className="p-3">
       <div className="mx-auto" style={{ maxWidth: "560px" }}>
+        
+        {/* Card: 2FA Configuration */}
+        <div className="p-4 ba-glass-card mb-4">
+          <h5 className="fw-bold mb-3 d-flex align-items-center text-dark">
+            <FaShieldVirus className="me-2" style={{ color: "#8a9e29" }} /> Autenticación de Doble Factor (2FA)
+          </h5>
+
+          {userData?.twoFactorEnabled ? (
+            <div>
+              <p className="text-success fw-bold mb-3 small">✓ El doble factor está actualmente activado en tu cuenta.</p>
+              <Button className="ba-btn-danger w-100 py-2 fw-bold" style={{ borderRadius: "12px" }} onClick={handleDisable}>
+                Desactivar 2FA
+              </Button>
+            </div>
+          ) : (
+            <div>
+              {!setupData ? (
+                <div>
+                  <p className="text-muted small mb-3">Protege tu cuenta añadiendo un código de verificación de 6 dígitos generado por tu app de autenticación (Google Authenticator, Authy).</p>
+                  <Button className="ba-btn-primary w-100 py-2 fw-bold" style={{ borderRadius: "12px" }} onClick={handleStartSetup} disabled={loading2FA}>
+                    {loading2FA ? <Spinner size="sm" /> : "Configurar 2FA"}
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <p className="fw-bold mb-2 small text-dark">1. Escanea este código QR con tu app de autenticación:</p>
+                  <div className="bg-white p-3 d-inline-block rounded-3 shadow-sm mb-3">
+                    <QRCodeSVG value={setupData.qrUri} size={160} />
+                  </div>
+                  <p className="text-muted small mb-3">O introduce la clave secreta manualmente: <br /><code>{setupData.secret}</code></p>
+                  
+                  <Form onSubmit={handleConfirmEnable} className="mx-auto">
+                    <FormGroup className="mb-3 text-start">
+                      <Label for="verificationCode" className="small fw-bold">2. Introduce el código de 6 dígitos:</Label>
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength="6"
+                        id="verificationCode"
+                        placeholder="000000"
+                        value={verificationCode}
+                        onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ""))}
+                        required
+                        style={{ textAlign: 'center', fontSize: '1.2rem', letterSpacing: '0.3rem', borderRadius: '12px' }}
+                      />
+                    </FormGroup>
+                    <div className="d-flex gap-2 justify-content-center">
+                      <Button className="ba-btn-primary py-2 px-3 fw-bold" type="submit" disabled={loading2FA} style={{ borderRadius: '12px' }}>
+                        Confirmar y Activar
+                      </Button>
+                      <Button className="ba-btn-secondary py-2 px-3" type="button" onClick={() => setSetupData(null)} style={{ borderRadius: '12px' }}>
+                        Cancelar
+                      </Button>
+                    </div>
+                  </Form>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Card: Password Change */}
         <div className="p-4 ba-glass-card">
           <h5 className="fw-bold mb-4 d-flex align-items-center text-dark">
             <FaLock className="me-2" style={{ color: "#8a9e29" }} /> {t('profile.changePasswordTitle', 'Modificar Contraseña')}
           </h5>
           <Form onSubmit={handlePasswordChangeSubmit}>
-            {/* Floating Label: Contraseña Actual */}
+            {/* Contraseña Actual */}
             <div className="class-form-group mb-4" style={{ marginTop: "15px" }}>
               <input
                 className="class-form-input pe-5"
@@ -338,13 +482,12 @@ function PasswordSecurityTab({
                 type="button"
                 className="password-eye-btn text-secondary me-2"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                title={showCurrentPassword ? "Ocultar" : "Mostrar"}
               >
                 {showCurrentPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
               </button>
             </div>
 
-            {/* Floating Label: Nueva Contraseña */}
+            {/* Nueva Contraseña */}
             <div className="class-form-group mb-4">
               <input
                 className="class-form-input pe-5"
@@ -364,13 +507,12 @@ function PasswordSecurityTab({
                 type="button"
                 className="password-eye-btn text-secondary me-2"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                title={showNewPassword ? "Ocultar" : "Mostrar"}
               >
                 {showNewPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
               </button>
             </div>
 
-            {/* Floating Label: Repetir Nueva Contraseña */}
+            {/* Repetir Nueva Contraseña */}
             <div className="class-form-group mb-4">
               <input
                 className="class-form-input pe-5"
@@ -390,7 +532,6 @@ function PasswordSecurityTab({
                 type="button"
                 className="password-eye-btn text-secondary me-2"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                title={showConfirmPassword ? "Ocultar" : "Mostrar"}
               >
                 {showConfirmPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
               </button>
@@ -420,6 +561,7 @@ function PasswordSecurityTab({
             </Button>
           </Form>
         </div>
+
       </div>
     </div>
   );
@@ -623,6 +765,8 @@ export default function UserProfile() {
               setShowNewPassword={setShowNewPassword}
               showConfirmPassword={showConfirmPassword}
               setShowConfirmPassword={setShowConfirmPassword}
+              userData={userData}
+              setUserData={setUserData}
               t={t}
             />
           </TabPane>
