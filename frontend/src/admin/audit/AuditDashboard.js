@@ -22,6 +22,7 @@ export default function AuditDashboard() {
 
   useEffect(() => {
     let subscription = null;
+    let auditSub = null;
     if (isConnected && stompClient) {
       subscription = stompClient.subscribe('/topic/alerts', (message) => {
         if (message.body) {
@@ -30,11 +31,17 @@ export default function AuditDashboard() {
           fetchLogs();
         }
       });
+      auditSub = stompClient.subscribe('/topic/audit', () => {
+        fetchLogs();
+      });
     }
 
     return () => {
       if (subscription) {
         subscription.unsubscribe();
+      }
+      if (auditSub) {
+        auditSub.unsubscribe();
       }
     };
   }, [isConnected, stompClient, toast]);
@@ -105,18 +112,59 @@ export default function AuditDashboard() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'audit_logs.pdf';
+        a.download = `audit-log-${new Date().toISOString().split('T')[0]}.pdf`;
         document.body.appendChild(a);
         a.click();
-        window.URL.revokeObjectURL(url);
         a.remove();
+        window.URL.revokeObjectURL(url);
+        toast.success(t('common.exportSuccess', 'Informe descargado con éxito'));
       } else {
-        toast.error('Error generating PDF');
+        toast.error(t('common.exportError', 'Error al generar la descarga del informe'));
       }
     } catch (error) {
-      console.error("Error downloading PDF", error);
-      toast.error('Network error generating PDF');
+      console.error('Error exporting PDF:', error);
+      toast.error(t('common.networkError', 'Error de conexión con el servidor'));
     }
+  };
+
+  const EXACT_MATCHES = {
+    'User successfully checked in': ['audit.details.checkinSuccess', 'Usuario fichó entrada correctamente'],
+    'User successfully checked out with signature': ['audit.details.checkoutSuccess', 'Usuario fichó salida correctamente con firma'],
+    'User logged in successfully': ['audit.details.loginSuccess', 'Usuario inició sesión correctamente'],
+    'User logged in successfully using 2FA': ['audit.details.loginSuccess2FA', 'Usuario inició sesión correctamente usando 2FA'],
+    'User changed their password': ['audit.details.passwordChange', 'El usuario cambió su contraseña'],
+    'User enabled Two-Factor Authentication': ['audit.details.2faEnable', 'Usuario habilitó la autenticación en dos pasos'],
+    'User disabled Two-Factor Authentication': ['audit.details.2faDisable', 'Usuario deshabilitó la autenticación en dos pasos'],
+    'Database backup triggered': ['audit.details.dbBackup', 'Se inició copia de seguridad de la base de datos'],
+    'User saved/updated': ['audit.details.userSavedNoName', 'Usuario guardado/actualizado'],
+    'Formation created/updated': ['audit.details.formationSavedNoName', 'Formación guardada/actualizada']
+  };
+
+  const PREFIX_MATCHES = [
+    { prefix: 'Data exported via method: ', key: 'audit.details.dataExported', defaultText: 'Datos exportados mediante método: {{method}}', paramName: 'method' },
+    { prefix: 'User deleted: ID ', key: 'audit.details.userDeleted', defaultText: 'Usuario eliminado: ID {{id}}', paramName: 'id' },
+    { prefix: 'User saved/updated: ', key: 'audit.details.userSaved', defaultText: 'Usuario guardado/actualizado: {{user}}', paramName: 'user' },
+    { prefix: 'Formation created/updated: ', key: 'audit.details.formationSaved', defaultText: 'Formación guardada/actualizada: {{form}}', paramName: 'form' },
+    { prefix: 'Formation deleted: ID ', key: 'audit.details.formationDeleted', defaultText: 'Formación eliminada: ID {{id}}', paramName: 'id' },
+    { prefix: 'Failed login attempt for user: ', key: 'audit.details.failedLogin', defaultText: 'Intento de login fallido para el usuario: {{user}}', paramName: 'user' }
+  ];
+
+  const formatDetails = (details) => {
+    if (!details) return '';
+    
+    if (EXACT_MATCHES[details]) {
+      const [key, fallback] = EXACT_MATCHES[details];
+      return t(key, fallback);
+    }
+
+    for (const { prefix, key, defaultText, paramName } of PREFIX_MATCHES) {
+      if (details.startsWith(prefix)) {
+        const paramValue = details.replace(prefix, '');
+        return t(key, defaultText, { [paramName]: paramValue });
+      }
+    }
+    
+    return details;
   };
 
   return (
@@ -173,11 +221,11 @@ export default function AuditDashboard() {
                   </td>
                   <td>
                     <Badge color={getActionColor(log.action)} pill className="px-3 py-2 fw-semibold text-wrap" style={{ wordBreak: 'break-all', minWidth: '100px' }}>
-                      {log.action}
+                      {t(`audit.actions.${log.action}`, log.action)}
                     </Badge>
                   </td>
                   <td className="fw-bold text-dark">{log.username}</td>
-                  <td className="text-muted small">{log.details}</td>
+                  <td className="text-muted small">{formatDetails(log.details)}</td>
                   <td><code className="text-secondary bg-light px-2 py-1 rounded">{log.ipAddress || 'N/A'}</code></td>
                 </tr>
               ))}

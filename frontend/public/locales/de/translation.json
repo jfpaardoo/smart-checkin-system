@@ -96,7 +96,11 @@
     "duplicateUsername": "Dieser Benutzername existiert bereits.",
     "duplicateGeneric": "Datenbankkonflikt.",
     "activeEmployees": "Aktive Mitarbeiter",
-    "pendingRequestsTab": "Ausstehende Anfragen"
+    "pendingRequestsTab": "Ausstehende Anfragen",
+    "userEntity": "Benutzer",
+    "registrationRequest": "Registrierungsanfrage",
+    "approvedSuccess": "Mitarbeiter erfolgreich genehmigt und aktiviert.",
+    "approveError": "Fehler bei der Genehmigung des Mitarbeiters."
   },
   "formations": {
     "title": "Schulungsverwaltung",
@@ -265,7 +269,7 @@
     "yes": "Ja",
     "no": "Nein",
     "connectionError": "Verbindungsfehler. Bitte versuchen Sie es erneut.",
-    "deleteConfirm": "Sind Sie sicher, dass Sie diese {{entity}} löschen möchten?",
+    "deleteConfirm": "Sind Sie sicher, dass Sie {{entity}} löschen möchten?",
     "deleted": "{{entity}} erfolgreich gelöscht",
     "deleteError": "Fehler beim Löschen von {{entity}}",
     "confirmLogout": "Sind Sie sicher, dass Sie sich abmelden möchten?",
@@ -366,7 +370,7 @@
     "codeMustBe6Digits": "Der Code muss 6-stellig sein.",
     "twoFactorEnableSuccess": "Zwei-Faktor-Authentifizierung erfolgreich aktiviert!",
     "incorrectCode": "Falscher Code.",
-    "disable2FAConfirm": "Sind Sie sicher, dass Sie die Zwei-Faktor-Authentifizierung deaktivieren möchten?",
+    "disable2FAPrompt": "Geben Sie den 2FA-Code ein, um die Deaktivierung zu bestätigen:",
     "twoFactorDisableSuccess": "2FA erfolgreich deaktiviert.",
     "twoFactorDisableError": "Fehler beim Deaktivieren von 2FA."
   },
@@ -401,7 +405,39 @@
       "ip": "Quell-IP"
     },
     "noRecords": "Keine Audit-Einträge gefunden.",
-    "exportCSV": "In CSV exportieren"
+    "exportCSV": "In CSV exportieren",
+    "actions": {
+      "USER_SAVE": "BENUTZER SPEICHERN",
+      "FORMATION_SAVE": "SCHULUNG SPEICHERN",
+      "FORMATION_DELETE": "SCHULUNG LÖSCHEN",
+      "CHECKIN_SUCCESS": "CHECK-IN ERFOLGREICH",
+      "CHECKOUT_SUCCESS": "CHECK-OUT ERFOLGREICH",
+      "LOGIN_SUCCESS": "LOGIN ERFOLGREICH",
+      "PASSWORD_CHANGE": "PASSWORTÄNDERUNG",
+      "2FA_ENABLE": "2FA AKTIVIEREN",
+      "2FA_DISABLE": "2FA DEAKTIVIEREN",
+      "USER_DELETE": "BENUTZER LÖSCHEN",
+      "DATA_EXPORT": "DATEN EXPORTIEREN",
+      "BRUTE_FORCE_ATTACK": "BRUTE-FORCE-ANGRIFF"
+    },
+    "details": {
+      "dataExported": "Daten exportiert über Methode: {{method}}",
+      "userDeleted": "Benutzer gelöscht: ID {{id}}",
+      "userSaved": "Benutzer gespeichert/aktualisiert: {{user}}",
+      "formationSaved": "Schulung gespeichert/aktualisiert: {{form}}",
+      "formationDeleted": "Schulung gelöscht: ID {{id}}",
+      "failedLogin": "Fehlgeschlagener Anmeldeversuch für Benutzer: {{user}}",
+      "checkinSuccess": "Benutzer erfolgreich eingecheckt",
+      "checkoutSuccess": "Benutzer erfolgreich ausgecheckt mit Unterschrift",
+      "loginSuccess": "Benutzer erfolgreich angemeldet",
+      "loginSuccess2FA": "Benutzer erfolgreich mit 2FA angemeldet",
+      "passwordChange": "Benutzer hat sein Passwort geändert",
+      "2faEnable": "Benutzer hat die Zwei-Faktor-Authentifizierung aktiviert",
+      "2faDisable": "Benutzer hat die Zwei-Faktor-Authentifizierung deaktiviert",
+      "dbBackup": "Datenbank-Backup ausgelöst",
+      "userSavedNoName": "Benutzer gespeichert/aktualisiert",
+      "formationSavedNoName": "Schulung erstellt/aktualisiert"
+    }
   },
   "cloudSettings": {
     "saveSuccess": "Cloud-Einstellungen erfolgreich gespeichert",

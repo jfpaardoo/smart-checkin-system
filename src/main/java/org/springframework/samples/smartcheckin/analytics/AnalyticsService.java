@@ -39,6 +39,9 @@ public class AnalyticsService {
         List<UserAnalyticsDTO> dtos = new ArrayList<>();
 
         for (User user : users) {
+            if (user.getAuthority() != null && "ADMIN".equals(user.getAuthority().getAuthority())) {
+                continue; // Exclude ADMIN users from the list
+            }
             dtos.add(buildUserAnalyticsDTO(user, false));
         }
 

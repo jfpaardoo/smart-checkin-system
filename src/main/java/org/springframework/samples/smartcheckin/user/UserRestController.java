@@ -146,12 +146,15 @@ class UserRestController {
     }
 
     @PostMapping("2fa/disable")
-    public ResponseEntity<MessageResponse> disableTwoFactor(Principal principal) {
+    public ResponseEntity<MessageResponse> disableTwoFactor(@RequestBody @Valid TwoFactorVerifyRequest request, Principal principal) {
         User user = userService.findUser(principal.getName());
-        user.setTwoFactorEnabled(false);
-        user.setTwoFactorSecret(null);
-        userService.saveUser(user);
-        return ResponseEntity.ok(new MessageResponse("2FA desactivado correctamente."));
+        if (user.getTwoFactorSecret() != null && totpService.validateCode(user.getTwoFactorSecret(), request.getCode())) {
+            user.setTwoFactorEnabled(false);
+            user.setTwoFactorSecret(null);
+            userService.saveUser(user);
+            return ResponseEntity.ok(new MessageResponse("2FA desactivado correctamente."));
+        }
+        return ResponseEntity.badRequest().body(new MessageResponse("Código de verificación incorrecto."));
     }
 
     @GetMapping(value = "{id}")

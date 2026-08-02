@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, CardBody, CardTitle, FormGroup, Label } from 'reactstrap';
+import { CardTitle, FormGroup, Label } from 'reactstrap';
 import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -113,8 +113,8 @@ const QRGeneratorAdmin = () => {
 
     return (
         <div className="ba-container justify-content-center">
-            <Card className="ba-card ba-card-qr p-4 p-md-5 my-auto mx-auto">
-                <CardBody className="p-2 d-flex flex-column justify-content-center my-auto">
+            <div className="ba-card ba-card-qr p-4 p-md-5 my-auto mx-auto">
+                <div className="card-body p-2 d-flex flex-column justify-content-center my-auto">
                     {loading ? (
                         <QRGhostLoader />
                     ) : (
@@ -193,8 +193,8 @@ const QRGeneratorAdmin = () => {
                             </div>
                         </div>
                     )}
-                </CardBody>
-            </Card>
+                </div>
+            </div>
         </div>
     );
 };

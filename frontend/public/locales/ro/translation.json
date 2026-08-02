@@ -96,7 +96,11 @@
     "duplicateUsername": "Numele de utilizator există deja.",
     "duplicateGeneric": "A apărut un conflict în baza de date.",
     "activeEmployees": "Angajați Activi",
-    "pendingRequestsTab": "Solicitări În Așteptare"
+    "pendingRequestsTab": "Solicitări În Așteptare",
+    "userEntity": "Utilizator",
+    "registrationRequest": "Cerere de înregistrare",
+    "approvedSuccess": "Angajat aprobat și activat cu succes.",
+    "approveError": "Eroare la aprobarea angajatului."
   },
   "formations": {
     "title": "Gestionare Formări",
@@ -265,7 +269,7 @@
     "yes": "Da",
     "no": "Nu",
     "connectionError": "Eroare de conexiune. Vă rugăm să încercați din nou.",
-    "deleteConfirm": "Sigur doriți să ștergeți acest {{entity}}?",
+    "deleteConfirm": "Sunteți sigur că doriți să ștergeți: {{entity}}?",
     "deleted": "{{entity}} șters cu succes",
     "deleteError": "Eroare la ștergerea {{entity}}",
     "confirmLogout": "Sigur doriți să vă deconectați?",
@@ -366,7 +370,7 @@
     "codeMustBe6Digits": "Codul trebuie să aibă 6 cifre.",
     "twoFactorEnableSuccess": "Autentificarea cu doi factori a fost activată cu succes!",
     "incorrectCode": "Cod incorect.",
-    "disable2FAConfirm": "Sunteți sigur că doriți să dezactivați autentificarea cu doi factori?",
+    "disable2FAPrompt": "Introduceți codul 2FA pentru a confirma dezactivarea:",
     "twoFactorDisableSuccess": "2FA a fost dezactivată cu succes.",
     "twoFactorDisableError": "Eroare la dezactivarea 2FA."
   },
@@ -401,7 +405,39 @@
       "ip": "IP Sursă"
     },
     "noRecords": "Nu s-au găsit înregistrări de audit.",
-    "exportCSV": "Exportă în CSV"
+    "exportCSV": "Exportă în CSV",
+    "actions": {
+      "USER_SAVE": "SALVEAZĂ UTILIZATOR",
+      "FORMATION_SAVE": "SALVEAZĂ FORMARE",
+      "FORMATION_DELETE": "ȘTERGE FORMARE",
+      "CHECKIN_SUCCESS": "CHECK-IN REUȘIT",
+      "CHECKOUT_SUCCESS": "CHECK-OUT REUȘIT",
+      "LOGIN_SUCCESS": "LOGARE REUȘITĂ",
+      "PASSWORD_CHANGE": "SCHIMBARE PAROLĂ",
+      "2FA_ENABLE": "ACTIVEAZĂ 2FA",
+      "2FA_DISABLE": "DEZACTIVEAZĂ 2FA",
+      "USER_DELETE": "ȘTERGE UTILIZATOR",
+      "DATA_EXPORT": "EXPORT DATE",
+      "BRUTE_FORCE_ATTACK": "ATAC BRUTE FORCE"
+    },
+    "details": {
+      "dataExported": "Date exportate prin metoda: {{method}}",
+      "userDeleted": "Utilizator șters: ID {{id}}",
+      "userSaved": "Utilizator salvat/actualizat: {{user}}",
+      "formationSaved": "Formare salvată/actualizată: {{form}}",
+      "formationDeleted": "Formare ștearsă: ID {{id}}",
+      "failedLogin": "Încercare de logare eșuată pentru utilizatorul: {{user}}",
+      "checkinSuccess": "Utilizatorul s-a înregistrat cu succes",
+      "checkoutSuccess": "Utilizatorul a părăsit cu succes cu semnătură",
+      "loginSuccess": "Utilizatorul s-a logat cu succes",
+      "loginSuccess2FA": "Utilizatorul s-a logat cu succes folosind 2FA",
+      "passwordChange": "Utilizatorul și-a schimbat parola",
+      "2faEnable": "Utilizatorul a activat Autentificarea cu Doi Factori",
+      "2faDisable": "Utilizatorul a dezactivat Autentificarea cu Doi Factori",
+      "dbBackup": "Backup baza de date declanșat",
+      "userSavedNoName": "Utilizator salvat/actualizat",
+      "formationSavedNoName": "Formare creată/actualizată"
+    }
   },
   "cloudSettings": {
     "saveSuccess": "Setările cloud au fost salvate cu succes",

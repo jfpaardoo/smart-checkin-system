@@ -68,7 +68,7 @@ export default function Login() {
   async function handleVerify2FA(e) {
     e.preventDefault();
     if (totpCode.length !== 6) {
-      toast.error("El código 2FA debe tener 6 dígitos.");
+      toast.error(t('profile.codeMustBe6Digits', "El código debe tener 6 dígitos."));
       return;
     }
 

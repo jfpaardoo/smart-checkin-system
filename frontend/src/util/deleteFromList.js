@@ -21,8 +21,8 @@ export default function deleteFromList(url, id, [state, setState], toast, option
     const t = options.t;
 
     const confirmMsg = t
-        ? t(`${entityName.toLowerCase()}s.deleteConfirm`, { defaultValue: `Are you sure you want to delete this ${entityName.toLowerCase()}?` })
-        : `Are you sure you want to delete this ${entityName.toLowerCase()}?`;
+        ? (options.confirmMessage || t(`common.deleteConfirm`, { defaultValue: `¿Estás seguro de que quieres eliminar: ${entityName}?`, entity: entityName }))
+        : (options.confirmMessage || `¿Estás seguro de que quieres eliminar: ${entityName}?`);
 
     toast.confirm(confirmMsg, () => {
         fetch(url, {
@@ -42,14 +42,14 @@ export default function deleteFromList(url, id, [state, setState], toast, option
                         setState(state.filter((i) => i.id !== id));
                     }
                     const successMsg = t
-                        ? t(`${entityName.toLowerCase()}s.deleted`, { defaultValue: `${entityName} deleted successfully` })
+                        ? t('common.deleted', { defaultValue: `${entityName} deleted successfully`, entity: entityName })
                         : `${entityName} deleted successfully`;
                     toast.success(successMsg);
                 } else {
                     return response.json().then((json) => {
                         const errorMsg = t
-                            ? t(`${entityName.toLowerCase()}s.deleteError`, { defaultValue: `Failed to delete ${entityName.toLowerCase()}` })
-                            : json.message || `Failed to delete ${entityName.toLowerCase()}`;
+                            ? t('common.deleteError', { defaultValue: `Failed to delete ${entityName}`, entity: entityName })
+                            : json.message || `Failed to delete ${entityName}`;
                         toast.error(json.message || errorMsg);
                     });
                 }

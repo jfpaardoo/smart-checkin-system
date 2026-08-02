@@ -21,6 +21,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
+import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest;
 import org.springframework.samples.smartcheckin.configuration.SecurityConfiguration;
 import org.springframework.samples.smartcheckin.exceptions.AccessDeniedException;
 import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
@@ -294,7 +295,7 @@ class UserControllerTests {
 		when(userService.findUser(anyString())).thenReturn(user);
 		when(totpService.validateCode("SECRET", "123456")).thenReturn(true);
 
-		org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest req = new org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest();
+		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
 		req.setCode("123456");
 
 		mockMvc.perform(post(BASE_URL + "/2fa/enable").with(csrf()).contentType(MediaType.APPLICATION_JSON)
@@ -304,9 +305,15 @@ class UserControllerTests {
 	@Test
 	@WithMockUser("admin")
 	void shouldDisableTwoFactor() throws Exception {
+		user.setTwoFactorSecret("SECRET");
 		when(userService.findUser(anyString())).thenReturn(user);
+		when(totpService.validateCode("SECRET", "123456")).thenReturn(true);
 
-		mockMvc.perform(post(BASE_URL + "/2fa/disable").with(csrf())).andExpect(status().isOk());
+		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
+		req.setCode("123456");
+
+		mockMvc.perform(post(BASE_URL + "/2fa/disable").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isOk());
 	}
 
 	@Test
@@ -391,7 +398,7 @@ class UserControllerTests {
 		when(userService.findUser(anyString())).thenReturn(user);
 		when(totpService.validateCode("SECRET", "123456")).thenReturn(false); // Wrong code
 
-		org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest req = new org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest();
+		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
 		req.setCode("123456");
 
 		mockMvc.perform(post(BASE_URL + "/2fa/enable").with(csrf()).contentType(MediaType.APPLICATION_JSON)
@@ -442,6 +449,86 @@ class UserControllerTests {
 
 		mockMvc.perform(get(BASE_URL)).andExpect(status().isOk())
 				.andExpect(jsonPath(SIZE_PATH).value(1));
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldUpdateUserEmptyPassword() throws Exception {
+		User aux = new User();
+		aux.setUsername(UPDATED);
+		aux.setPassword("");
+		aux.setFirstName("PRUEBA");
+		aux.setLastName("TEST");
+		aux.setPersonalCode("5678");
+		aux.setIsWorking(false);
+		aux.setAuthority(auth);
+
+		doReturn(user).when(this.userService).findUser(TEST_USER_ID);
+		doReturn(user).when(this.userService).updateUser(any(User.class), any(Integer.class));
+
+		mockMvc.perform(put(BASE_URL + ID_PATH, TEST_USER_ID).with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(aux))).andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldFindAllWithSearchFirstName() throws Exception {
+		User searchUser = new User();
+		searchUser.setId(5);
+		searchUser.setUsername("other");
+		searchUser.setFirstName("SpecialName");
+		searchUser.setLastName("Doe");
+		searchUser.setPersonalCode("9999");
+		searchUser.setAuthority(auth);
+
+		when(userService.findApprovedUsers()).thenReturn(List.of(user, searchUser));
+
+		mockMvc.perform(get(BASE_URL).param("search", "specialname")).andExpect(status().isOk())
+				.andExpect(jsonPath(SIZE_PATH).value(1))
+				.andExpect(jsonPath("$[0].firstName").value("SpecialName"));
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldFailChangePasswordNullCurrentPassword() throws Exception {
+		when(userService.findCurrentUser()).thenReturn(user);
+
+		ChangePasswordRequest req = new ChangePasswordRequest();
+		req.setCurrentPassword(null);
+		req.setNewPassword("newPass123");
+		req.setConfirmPassword("newPass123");
+
+		mockMvc.perform(put(BASE_URL + "/me/password").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldFailChangePasswordNullNewPassword() throws Exception {
+		user.setPassword("encodedOld");
+		when(userService.findCurrentUser()).thenReturn(user);
+		when(passwordEncoder.matches("oldPass123", "encodedOld")).thenReturn(true);
+
+		ChangePasswordRequest req = new ChangePasswordRequest();
+		req.setCurrentPassword("oldPass123");
+		req.setNewPassword(null);
+		req.setConfirmPassword(null);
+
+		mockMvc.perform(put(BASE_URL + "/me/password").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldFailEnableTwoFactorNullSecret() throws Exception {
+		user.setTwoFactorSecret(null);
+		when(userService.findUser(anyString())).thenReturn(user);
+
+		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
+		req.setCode("123456");
+
+		mockMvc.perform(post(BASE_URL + "/2fa/enable").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest());
 	}
 
 	@Test

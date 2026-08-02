@@ -313,6 +313,109 @@ class FormationRestControllerTests {
 
 	@Test
 	@WithMockUser(authorities = {"ADMIN"})
+	void testUpdateFormationRemovesFileOneDriveException() throws Exception {
+		Formation existing = new Formation();
+		existing.setId(1);
+		existing.setName("Java 101");
+		existing.setDescription("Intro to Java");
+		existing.getDocumentUrls().add("file1.pdf||http://onedrive.link/file1.pdf||item123");
+
+		FormationRequest req = new FormationRequest();
+		req.setName("Java 101 Updated");
+		req.setDescription("Intro to Java");
+		req.setFormationDate(java.time.LocalDateTime.now());
+		req.setExistingDocumentUrls(List.of());
+
+		MockMultipartFile jsonPart = new MockMultipartFile(
+				"formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
+
+		when(formationService.findById(1)).thenReturn(Optional.of(existing));
+		when(formationService.updateFormation(any(Formation.class), eq(1))).thenReturn(existing);
+		
+		doThrow(new RuntimeException("Delete error")).when(oneDriveService).deleteFile(anyString());
+
+		MockHttpServletRequestBuilder builder = 
+				MockMvcRequestBuilders.multipart(BASE_URL + "/1")
+				.file(jsonPart).with(csrf());
+		builder.with(request -> { request.setMethod("PUT"); return request; });
+
+		// It should catch the exception, log it, and continue, so it will still be OK.
+		mockMvc.perform(builder).andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser(authorities = {"ADMIN"})
+	void testUpdateFormationUploadFileOneDriveException() throws Exception {
+		FormationRequest req = new FormationRequest();
+		req.setName("Spring Security Updated");
+		req.setDescription("Updated Course");
+		req.setFormationDate(java.time.LocalDateTime.now());
+		req.setExistingDocumentUrls(List.of());
+
+		MockMultipartFile jsonPart = new MockMultipartFile(
+				"formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
+		MockMultipartFile filePart = new MockMultipartFile(
+				"files", "doc2.pdf", MediaType.APPLICATION_PDF_VALUE, "content2".getBytes());
+
+		when(formationService.findById(1)).thenReturn(Optional.of(formation));
+		when(oneDriveService.uploadFile(any(), anyString())).thenThrow(new RuntimeException("Upload error"));
+		when(formationService.updateFormation(any(Formation.class), eq(1))).thenReturn(formation);
+
+		MockHttpServletRequestBuilder builder = 
+				MockMvcRequestBuilders.multipart(BASE_URL + "/1")
+				.file(jsonPart).file(filePart).with(csrf());
+		builder.with(request -> { request.setMethod("PUT"); return request; });
+
+		// It catches exception, logs it, and continues.
+		mockMvc.perform(builder).andExpect(status().isOk());
+	}
+	
+	@Test
+	@WithMockUser(authorities = {"ADMIN"})
+	void testCreateFormationEmptyFile() throws Exception {
+		FormationRequest req = new FormationRequest();
+		req.setName("Spring Security 101");
+		req.setDescription("Security Course");
+		req.setFormationDate(java.time.LocalDateTime.now());
+
+		MockMultipartFile jsonPart = new MockMultipartFile(
+				"formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
+		MockMultipartFile filePart = new MockMultipartFile(
+				"files", "doc.pdf", MediaType.APPLICATION_PDF_VALUE, new byte[0]); // empty file
+
+		when(formationService.saveFormation(any(Formation.class))).thenReturn(formation);
+
+		mockMvc.perform(MockMvcRequestBuilders.multipart(BASE_URL)
+				.file(jsonPart).file(filePart).with(csrf()))
+				.andExpect(status().isOk());
+
+		// Verify uploadFile is not called for empty file
+		verify(oneDriveService, never()).uploadFile(any(), anyString());
+	}
+	
+	@Test
+	@WithMockUser(authorities = {"ADMIN"})
+	void testCreateFormationUploadFileOneDriveException() throws Exception {
+		FormationRequest req = new FormationRequest();
+		req.setName("Spring Security 101");
+		req.setDescription("Security Course");
+		req.setFormationDate(java.time.LocalDateTime.now());
+
+		MockMultipartFile jsonPart = new MockMultipartFile(
+				"formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
+		MockMultipartFile filePart = new MockMultipartFile(
+				"files", "doc.pdf", MediaType.APPLICATION_PDF_VALUE, "content".getBytes());
+
+		when(oneDriveService.uploadFile(any(), anyString())).thenThrow(new RuntimeException("Upload error"));
+		when(formationService.saveFormation(any(Formation.class))).thenReturn(formation);
+
+		mockMvc.perform(MockMvcRequestBuilders.multipart(BASE_URL)
+				.file(jsonPart).file(filePart).with(csrf()))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser(authorities = {"ADMIN"})
 	void testDeleteFormationSuccess() throws Exception {
 		doNothing().when(formationService).deleteFormation(1);
 

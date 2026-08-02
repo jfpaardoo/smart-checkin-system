@@ -370,7 +370,7 @@ export default function ScannerCheckin() {
 
         <Modal isOpen={successModal} toggle={closeSuccessModal} centered style={{ maxWidth: '500px' }}>
           <ModalHeader toggle={closeSuccessModal} className="border-0 pb-0">
-              <span className="fw-bold" style={{ color: '#2c3e50', fontSize: '1.2rem' }}>Inscripción Confirmada</span>
+              <span className="fw-bold" style={{ color: '#2c3e50', fontSize: '1.2rem' }}>{t('checkin.enrollmentConfirmed', 'Inscripción Confirmada')}</span>
           </ModalHeader>
           <ModalBody className="text-center py-4">
             {formationDetails && (
@@ -390,7 +390,7 @@ export default function ScannerCheckin() {
                   }}
                 >
                   <p className="mb-0" style={{ fontWeight: 500, color: '#2c3e50' }}>
-                    Asistencia inscrita a las {new Date().toLocaleTimeString()}
+                    {t('checkin.attendanceRegisteredAt', 'Asistencia inscrita a las')} {new Date().toLocaleTimeString()}
                   </p>
                 </div>
               </>
@@ -398,7 +398,7 @@ export default function ScannerCheckin() {
           </ModalBody>
           <ModalFooter className="justify-content-center border-0 pt-0">
             <button className="ba-btn ba-btn-primary px-5 py-2 rounded-pill" onClick={closeSuccessModal}>
-              Volver al Inicio
+              {t('dashboard.close', 'Volver al Inicio')}
             </button>
           </ModalFooter>
         </Modal>
