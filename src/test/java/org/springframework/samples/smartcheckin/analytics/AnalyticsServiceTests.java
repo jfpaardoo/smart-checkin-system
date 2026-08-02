@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -146,7 +147,7 @@ class AnalyticsServiceTests {
 
 		FormationAttendance attInProgress = new FormationAttendance();
 		attInProgress.setFormation(f1);
-		attInProgress.setCheckInDate(LocalDateTime.now());
+		attInProgress.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
 
 		Formation f2 = new Formation();
 		f2.setId(11);

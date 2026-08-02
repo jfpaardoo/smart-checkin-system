@@ -118,7 +118,7 @@ public class AuthController {
             return ResponseEntity.ok().body(new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), roles));
         }catch(BadCredentialsException exception){
             handleFailedLogin(user);
-            return ResponseEntity.badRequest().body("Bad Credentials!");
+            return ResponseEntity.badRequest().body(new MessageResponse("Bad Credentials!"));
         }
     }
 
@@ -194,7 +194,7 @@ public class AuthController {
     private ResponseEntity<Object> checkLockout(User user) {
         if (user != null && user.getAccountLockedUntil() != null) {
             if (user.getAccountLockedUntil().isAfter(LocalDateTime.now(java.time.ZoneId.systemDefault()))) {
-                return ResponseEntity.status(403).body("Account is locked due to too many failed attempts. Try again later.");
+                return ResponseEntity.status(403).body(new MessageResponse("Account is locked due to too many failed attempts. Try again later."));
             } else {
                 user.setAccountLockedUntil(null);
                 user.setFailedLoginAttempts(0);

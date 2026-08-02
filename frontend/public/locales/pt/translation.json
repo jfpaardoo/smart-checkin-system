@@ -60,7 +60,9 @@
     "error": "Tentativa de sessão inválida",
     "genericError": "Ocorreu um erro",
     "username": "Nome de Utilizador",
-    "password": "Palavra-passe"
+    "password": "Palavra-passe",
+    "badCredentials": "Nome de utilizador ou palavra-passe incorretos",
+    "accountLocked": "A conta está bloqueada devido a muitas tentativas falhas. Tente novamente mais tarde."
   },
   "users": {
     "title": "Gestão de Utilizadores",

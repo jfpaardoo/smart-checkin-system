@@ -44,18 +44,22 @@ export default function Login() {
         if (data.requiresTwoFactor) {
           setRequires2FA(true);
           setUsername2FA(data.username);
-          toast.info("Introduce el código de tu aplicación de autenticación (2FA).");
+          toast.info(t('login.2faInfo', "Introduce el código de tu aplicación de autenticación (2FA)."));
         } else {
-          toast.success(t('login.success'));
+          toast.success(t('login.success', 'Sesión iniciada con éxito'));
           tokenService.setUser(data);
           tokenService.updateLocalAccessToken(data.token);
           setTimeout(() => { window.location.href = "/"; }, 1000);
         }
+      } else if (data.message === "Bad Credentials!") {
+        throw new Error(t('login.badCredentials', 'Usuario o contraseña incorrectos'));
+      } else if (data.message?.includes("Account is locked")) {
+        throw new Error(t('login.accountLocked', 'La cuenta está bloqueada por demasiados intentos. Inténtalo más tarde.'));
       } else {
-        throw new Error(data.message || t('login.error'));
+        throw new Error(data.message || t('login.error', 'Error al iniciar sesión'));
       }
     } catch (error) {
-      toast.error(error.message || t('login.genericError'));
+      toast.error(error.message || t('login.genericError', 'Ha ocurrido un error inesperado.'));
     } finally {
       setLoading(false);
     }

@@ -5,16 +5,39 @@ import tokenService from '../../services/token.service';
 import { TableGhostLoader } from '../../components/GhostLoader';
 import moment from 'moment';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '../../components/ToastProvider';
+import { useWebSocket } from '../../context/WebSocketProvider';
 
 export default function AuditDashboard() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const { t } = useTranslation();
+  const toast = useToast();
+  const { stompClient, isConnected } = useWebSocket();
 
   useEffect(() => {
     fetchLogs();
   }, []);
+
+  useEffect(() => {
+    let subscription = null;
+    if (isConnected && stompClient) {
+      subscription = stompClient.subscribe('/topic/alerts', (message) => {
+        if (message.body) {
+          toast.error(message.body);
+          // Optionally, refresh logs when an alert happens
+          fetchLogs();
+        }
+      });
+    }
+
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
+  }, [isConnected, stompClient, toast]);
 
   const fetchLogs = async () => {
     try {
@@ -70,6 +93,32 @@ export default function AuditDashboard() {
     }
   };
 
+  const handleDownloadPdf = async () => {
+    try {
+      const response = await fetch('/api/v1/exports/audit/pdf', {
+        headers: {
+          Authorization: `Bearer ${tokenService.getLocalAccessToken()}`
+        }
+      });
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'audit_logs.pdf';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      } else {
+        toast.error('Error generating PDF');
+      }
+    } catch (error) {
+      console.error("Error downloading PDF", error);
+      toast.error('Network error generating PDF');
+    }
+  };
+
   return (
     <div className="ba-container">
       <div className="ba-card">
@@ -78,9 +127,14 @@ export default function AuditDashboard() {
             <FaShieldAlt style={{ color: "var(--ba-primary)" }} className="me-2" />
             {t('audit.title', 'Registro de Auditoría')}
           </h2>
-          <button className="btn ba-btn-primary d-flex align-items-center gap-2" onClick={handleDownloadCsv}>
-            <FaDownload /> {t('audit.exportCSV', 'Exportar a CSV')}
-          </button>
+          <div className="d-flex gap-2">
+            <button className="btn ba-btn-primary d-flex align-items-center gap-2" onClick={handleDownloadCsv}>
+              <FaDownload /> {t('audit.exportCSV', 'Exportar a CSV')}
+            </button>
+            <button className="btn ba-btn-secondary d-flex align-items-center gap-2" onClick={handleDownloadPdf}>
+              <FaDownload /> {t('audit.exportPDF', 'Exportar a PDF')}
+            </button>
+          </div>
         </div>
         
         <div className="mb-4">
@@ -118,7 +172,7 @@ export default function AuditDashboard() {
                     {moment(log.timestamp).format('DD/MM/YYYY HH:mm:ss')}
                   </td>
                   <td>
-                    <Badge color={getActionColor(log.action)} pill className="px-3 py-2 fw-semibold">
+                    <Badge color={getActionColor(log.action)} pill className="px-3 py-2 fw-semibold text-wrap" style={{ wordBreak: 'break-all', minWidth: '100px' }}>
                       {log.action}
                     </Badge>
                   </td>

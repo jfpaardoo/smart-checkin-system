@@ -60,7 +60,9 @@
     "error": "Niepoprawna próba logowania",
     "genericError": "Wystąpił błąd",
     "username": "Nazwa użytkownika",
-    "password": "Hasło"
+    "password": "Hasło",
+    "badCredentials": "Nieprawidłowa nazwa użytkownika lub hasło",
+    "accountLocked": "Konto jest zablokowane z powodu zbyt wielu nieudanych prób. Spróbuj ponownie później."
   },
   "users": {
     "title": "Zarządzanie Użytkownikami",

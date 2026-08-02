@@ -60,7 +60,9 @@
     "error": "Ungültiger Anmeldeversuch",
     "genericError": "Ein Fehler ist aufgetreten",
     "username": "Benutzername",
-    "password": "Passwort"
+    "password": "Passwort",
+    "badCredentials": "Benutzername oder Passwort falsch",
+    "accountLocked": "Das Konto ist aufgrund zu vieler fehlgeschlagener Versuche gesperrt. Versuchen Sie es später noch einmal."
   },
   "users": {
     "title": "Benutzerverwaltung",

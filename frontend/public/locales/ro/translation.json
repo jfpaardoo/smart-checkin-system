@@ -60,7 +60,9 @@
     "error": "Tentativă de autentificare nevalidă",
     "genericError": "A apărut o eroare",
     "username": "Nume de utilizator",
-    "password": "Parolă"
+    "password": "Parolă",
+    "badCredentials": "Nume de utilizator sau parolă incorecte",
+    "accountLocked": "Contul este blocat din cauza a prea multe încercări eșuate. Încercați din nou mai târziu."
   },
   "users": {
     "title": "Gestionare Utilizatori",

@@ -145,6 +145,63 @@ class OneDriveServiceTests {
         verifyNoInteractions(restTemplate);
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    void testUploadFileInvalidTokenResponse() {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId("client_id");
+        // null tenant should use "common"
+        settings.setOneDriveTenantId(null);
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(Map.of(), HttpStatus.OK);
+        
+        when(restTemplate.exchange(
+                eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class),
+                eq("common")
+        )).thenReturn(tokenEntity);
+
+        MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
+        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadFile(file, ""));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testUploadFileInvalidUploadResponse() {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId("client_id");
+        settings.setOneDriveTenantId("tenant");
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+
+        Map<String, Object> tokenResponse = Map.of("access_token", "token123");
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+        
+        when(restTemplate.exchange(
+                eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class),
+                eq("tenant")
+        )).thenReturn(tokenEntity);
+
+        ResponseEntity<Map<String, Object>> uploadEntity = new ResponseEntity<>(Map.of(), HttpStatus.OK);
+
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.PUT),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class),
+                anyString(),
+                anyString()
+        )).thenReturn(uploadEntity);
+
+        MockMultipartFile file = new MockMultipartFile("file", (String)null, "text/plain", "content".getBytes());
+        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadFile(file, null));
+    }
+
     @Test
     void testDeleteFileWithoutSettings() {
         when(cloudSettingsService.getSettings()).thenReturn(null);
@@ -224,5 +281,216 @@ class OneDriveServiceTests {
         )).thenThrow(new RestClientException("Graph API Error"));
 
         assertDoesNotThrow(() -> oneDriveService.deleteFile("errorItem"));
+    }
+
+    @Test
+    void testUploadBackupFailsWhenNoSettings() {
+        when(cloudSettingsService.getSettings()).thenReturn(null);
+        byte[] data = "test data".getBytes();
+        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadBackup(data, "test.zip"));
+    }
+
+    @Test
+    void testUploadBackupFailsWhenNoClientId() {
+        CloudSettings settings = new CloudSettings();
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+        byte[] data = "test data".getBytes();
+        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadBackup(data, "test.zip"));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testUploadBackupWithNullFileName() {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId("client_id");
+        settings.setOneDriveClientSecret("secret");
+        settings.setOneDriveRefreshToken("refresh");
+        settings.setOneDriveTenantId("tenant");
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+
+        Map<String, Object> tokenResponse = Map.of("access_token", "token123");
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+        
+        when(restTemplate.exchange(
+                eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class),
+                eq("tenant")
+        )).thenReturn(tokenEntity);
+
+        Map<String, Object> uploadResponse = Map.of("id", "item123");
+        ResponseEntity<Map<String, Object>> uploadEntity = new ResponseEntity<>(uploadResponse, HttpStatus.OK);
+
+        when(restTemplate.exchange(
+                eq("https://graph.microsoft.com/v1.0/me/drive/root:/backups/{filename}:/content"),
+                eq(HttpMethod.PUT),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class),
+                eq("backup.zip")
+        )).thenReturn(uploadEntity);
+
+        Map<String, Object> linkResponse = Map.of("link", Map.of("webUrl", "http://onedrive.link/test"));
+        ResponseEntity<Map<String, Object>> linkEntity = new ResponseEntity<>(linkResponse, HttpStatus.OK);
+
+        when(restTemplate.exchange(
+                eq("https://graph.microsoft.com/v1.0/me/drive/items/{itemId}/createLink"),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class),
+                eq("item123")
+        )).thenReturn(linkEntity);
+
+        String result = oneDriveService.uploadBackup("test data".getBytes(), null);
+        assertEquals("http://onedrive.link/test", result);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testCreateShareLinkEmptyResponse() {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId("client_id");
+        settings.setOneDriveClientSecret("secret");
+        settings.setOneDriveRefreshToken("refresh");
+        settings.setOneDriveTenantId("tenant");
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+
+        Map<String, Object> tokenResponse = Map.of("access_token", "token123");
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class),
+                eq("tenant")
+        )).thenReturn(tokenEntity);
+
+        Map<String, Object> uploadResponse = Map.of("id", "item123");
+        ResponseEntity<Map<String, Object>> uploadEntity = new ResponseEntity<>(uploadResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                eq("https://graph.microsoft.com/v1.0/me/drive/root:/formations/{folder}/{filename}:/content"),
+                eq(HttpMethod.PUT),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class),
+                eq("folder"),
+                anyString()
+        )).thenReturn(uploadEntity);
+
+        ResponseEntity<Map<String, Object>> emptyLinkEntity = new ResponseEntity<>(Map.of(), HttpStatus.OK);
+        when(restTemplate.exchange(
+                eq("https://graph.microsoft.com/v1.0/me/drive/items/{itemId}/createLink"),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class),
+                eq("item123")
+        )).thenReturn(emptyLinkEntity);
+
+        MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
+        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadFile(file, "folder"));
+    }
+
+    @Test
+    void testDeleteFileNullOrEmpty() {
+        oneDriveService.deleteFile(null);
+        oneDriveService.deleteFile("");
+        oneDriveService.deleteFile("   ");
+        verifyNoInteractions(cloudSettingsService);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testDeleteFileDirectHttpLink() {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId("client_id");
+        settings.setOneDriveClientSecret("secret");
+        settings.setOneDriveRefreshToken("refresh");
+        settings.setOneDriveTenantId("tenant");
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+        
+        Map<String, Object> tokenResponse = Map.of("access_token", "token123");
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class),
+                eq("tenant")
+        )).thenReturn(tokenEntity);
+
+        oneDriveService.deleteFile("http://onedrive.com/file");
+        // We only expect a call to getAccessToken via restTemplate.exchange, but no DELETE call
+        verify(restTemplate, never()).exchange(
+                eq("https://graph.microsoft.com/v1.0/me/drive/items/{fileId}"),
+                eq(HttpMethod.DELETE),
+                any(HttpEntity.class),
+                eq(Void.class),
+                anyString()
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testDeleteFileWithTwoParts() {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId("client_id");
+        settings.setOneDriveClientSecret("secret");
+        settings.setOneDriveRefreshToken("refresh");
+        settings.setOneDriveTenantId("tenant");
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+
+        Map<String, Object> tokenResponse = Map.of("access_token", "token123");
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class),
+                eq("tenant")
+        )).thenReturn(tokenEntity);
+
+        when(restTemplate.exchange(
+                eq("https://graph.microsoft.com/v1.0/me/drive/items/{fileId}"),
+                eq(HttpMethod.DELETE),
+                any(HttpEntity.class),
+                eq(Void.class),
+                eq("item456")
+        )).thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+
+        assertDoesNotThrow(() -> oneDriveService.deleteFile("test.txt||item456"));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testUploadBackupEmptyResponse() {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId("client_id");
+        settings.setOneDriveClientSecret("secret");
+        settings.setOneDriveRefreshToken("refresh");
+        settings.setOneDriveTenantId("tenant");
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+
+        Map<String, Object> tokenResponse = Map.of("access_token", "token123");
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+        
+        when(restTemplate.exchange(
+                eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class),
+                eq("tenant")
+        )).thenReturn(tokenEntity);
+
+        ResponseEntity<Map<String, Object>> emptyUploadEntity = new ResponseEntity<>(Map.of(), HttpStatus.OK);
+
+        when(restTemplate.exchange(
+                eq("https://graph.microsoft.com/v1.0/me/drive/root:/backups/{filename}:/content"),
+                eq(HttpMethod.PUT),
+                any(HttpEntity.class),
+                any(ParameterizedTypeReference.class),
+                eq("test.zip")
+        )).thenReturn(emptyUploadEntity);
+
+        byte[] data = "test".getBytes();
+        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadBackup(data, "test.zip"));
     }
 }

@@ -4,11 +4,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.samples.smartcheckin.settings.OneDriveService;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
@@ -248,7 +251,7 @@ class FormationServiceTests {
         User user = new User();
         user.setId(10);
 
-        java.time.LocalDateTime date = java.time.LocalDateTime.now().minusHours(1);
+        LocalDateTime date = LocalDateTime.now(ZoneId.systemDefault()).minusHours(1);
         FormationAttendance att = new FormationAttendance();
         att.setCheckInDate(date);
 
@@ -267,7 +270,7 @@ class FormationServiceTests {
         formation.setName("Physics with file");
         
         org.springframework.web.multipart.MultipartFile mockFile = 
-            new org.springframework.mock.web.MockMultipartFile("file", "test.pdf", "application/pdf", new byte[]{1, 2, 3});
+            new MockMultipartFile("file", "test.pdf", "application/pdf", new byte[]{1, 2, 3});
 
         when(oneDriveService.uploadFile(mockFile, "formations")).thenReturn("https://onedrive.live.com/test.pdf");
         when(formationRepository.save(any(Formation.class))).thenReturn(formation);
@@ -288,8 +291,8 @@ class FormationServiceTests {
         Formation updatedDetails = new Formation();
         updatedDetails.setName("New");
 
-        org.springframework.mock.web.MockMultipartFile mockFile = 
-            new org.springframework.mock.web.MockMultipartFile("file", "new.pdf", "application/pdf", new byte[]{4, 5, 6});
+        MockMultipartFile mockFile = 
+            new MockMultipartFile("file", "new.pdf", "application/pdf", new byte[]{4, 5, 6});
 
         when(formationRepository.findById(1)).thenReturn(Optional.of(existing));
         when(oneDriveService.uploadFile(mockFile, "formations")).thenReturn("https://onedrive.live.com/new.pdf");

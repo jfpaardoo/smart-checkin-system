@@ -676,8 +676,8 @@ export default function UserProfile() {
         }
         toast.success(t('profile.passwordSuccessLogout', 'Contraseña actualizada con éxito. Por seguridad, debes iniciar sesión de nuevo.'));
         setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
-        tokenService.removeUser();
         setTimeout(() => {
+          tokenService.removeUser();
           window.location.href = "/login";
         }, 1500);
       })
