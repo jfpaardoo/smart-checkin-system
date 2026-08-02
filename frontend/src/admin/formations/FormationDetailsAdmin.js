@@ -45,6 +45,27 @@ export default function FormationDetailsAdmin() {
   const [documentModalOpen, setDocumentModalOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState({ url: "", name: "", type: "unknown" });
 
+  const getEmbedUrl = (url) => {
+    if (!url) return "";
+    let embedUrl = url;
+    
+    // Convert standard OneDrive sharing links to embed links
+    if (embedUrl.includes("onedrive.live.com")) {
+      embedUrl = embedUrl.replace("/redir?", "/embed?").replace("/view.aspx?", "/embed?");
+      embedUrl = embedUrl.replace("onedrive.live.com/?", "onedrive.live.com/embed?");
+      
+      // If it's successfully converted to an /embed? URL, do NOT append action=embedview
+      if (embedUrl.includes("/embed?")) {
+        return embedUrl;
+      }
+    }
+    
+    if (!embedUrl.includes("action=embedview")) {
+      return embedUrl.includes("?") ? `${embedUrl}&action=embedview` : `${embedUrl}?action=embedview`;
+    }
+    return embedUrl;
+  };
+
   const reloadFormation = () => {
     fetch(`/api/v1/formations/${id}`, {
       headers: { Authorization: `Bearer ${jwt}` },
@@ -329,7 +350,7 @@ export default function FormationDetailsAdmin() {
       </div>
 
       {/* Pop-up Profesional */}
-      <Modal isOpen={documentModalOpen} toggle={() => setDocumentModalOpen(false)} size="md" centered>
+      <Modal isOpen={documentModalOpen} toggle={() => setDocumentModalOpen(false)} size="lg" centered>
         <ModalHeader toggle={() => setDocumentModalOpen(false)} style={{ backgroundColor: '#2c3e50', color: 'white', borderBottom: 'none' }}>
           <div className="text-truncate" style={{ maxWidth: '400px' }}>
             <FontAwesomeIcon icon={getFileIconAndType(selectedDocument.name).icon} className="me-2" style={{ color: getFileIconAndType(selectedDocument.name).color }} />
@@ -339,8 +360,30 @@ export default function FormationDetailsAdmin() {
         <ModalBody className="p-4 text-center bg-light">
           <div className="p-4 bg-white rounded shadow-sm border">
             <h5 className="text-dark mb-3 text-break"><strong>{selectedDocument.name}</strong></h5>
+            
+            {(!selectedDocument.url.includes("onedrive.live.com") && !selectedDocument.url.includes("1drv.ms") && !selectedDocument.url.includes("sharepoint.com")) ? (
+              <div className="mb-4" style={{ height: "500px", width: "100%", overflow: "hidden", borderRadius: "8px", border: "1px solid #dee2e6" }}>
+                <iframe 
+                  src={getEmbedUrl(selectedDocument.url)} 
+                  width="100%" 
+                  height="100%" 
+                  style={{ border: 'none' }}
+                  title={selectedDocument.name}
+                  allowFullScreen
+                ></iframe>
+              </div>
+            ) : (
+              <div className="mb-4 d-flex flex-column align-items-center justify-content-center" style={{ height: "300px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px dashed #ced4da" }}>
+                <FontAwesomeIcon icon={getFileIconAndType(selectedDocument.name).icon} style={{ fontSize: "60px", color: getFileIconAndType(selectedDocument.name).color, marginBottom: "15px" }} />
+                <h5 className="text-muted">{t('formationDetails.previewNotAvailable', 'Previsualización no disponible')}</h5>
+                <p className="text-muted small text-center px-4">
+                  {t('formationDetails.cspMessage', 'Por políticas de seguridad de Microsoft OneDrive, este documento no puede incrustarse directamente aquí.')}
+                </p>
+              </div>
+            )}
+            
             <p className="text-muted small mb-4">
-              {t('formationDetails.cloudDocDescription', 'Este documento está almacenado de forma segura en OneDrive. Debido a las políticas de seguridad en la nube, puedes abrirlo directamente en una pestaña dedicada o descargarlo con un solo clic.')}
+              {t('formationDetails.cloudDocDescription', 'Este documento está almacenado de forma segura en la nube. Haz clic en el botón inferior para abrirlo.')}
             </p>
             <a
               href={selectedDocument.url}

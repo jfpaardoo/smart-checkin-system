@@ -21,25 +21,14 @@ export default function AuditDashboard() {
   }, []);
 
   useEffect(() => {
-    let subscription = null;
     let auditSub = null;
     if (isConnected && stompClient) {
-      subscription = stompClient.subscribe('/topic/alerts', (message) => {
-        if (message.body) {
-          toast.error(message.body);
-          // Optionally, refresh logs when an alert happens
-          fetchLogs();
-        }
-      });
       auditSub = stompClient.subscribe('/topic/audit', () => {
         fetchLogs();
       });
     }
 
     return () => {
-      if (subscription) {
-        subscription.unsubscribe();
-      }
       if (auditSub) {
         auditSub.unsubscribe();
       }
@@ -65,6 +54,8 @@ export default function AuditDashboard() {
   };
 
   const getActionColor = (action) => {
+    if (action.includes('SECURITY_ANOMALY')) return 'danger';
+    if (action.includes('FAILED')) return 'warning';
     if (action.includes('SAVE')) return 'primary';
     if (action.includes('DELETE')) return 'danger';
     if (action.includes('SUCCESS')) return 'success';
@@ -215,8 +206,8 @@ export default function AuditDashboard() {
             </thead>
             <tbody>
               {filteredLogs.map(log => (
-                <tr key={log.id}>
-                  <td className="text-muted small fw-medium">
+                <tr key={log.id} className={log.action === 'SECURITY_ANOMALY' ? 'table-danger border-danger' : ''}>
+                  <td className={`small fw-medium ${log.action === 'SECURITY_ANOMALY' ? 'text-danger fw-bold' : 'text-muted'}`}>
                     {moment(log.timestamp).format('DD/MM/YYYY HH:mm:ss')}
                   </td>
                   <td>
