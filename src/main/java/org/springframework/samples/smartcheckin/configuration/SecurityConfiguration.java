@@ -103,6 +103,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/v1/totp/**").authenticated()
                         .requestMatchers("/api/v1/checkins/**").authenticated()
                         .requestMatchers("/api/v1/certificates/**").authenticated()
+                        .requestMatchers("/api/v1/push/**").authenticated()
 
                         // 10. Denegar lo demás por defecto
                         .anyRequest().denyAll())

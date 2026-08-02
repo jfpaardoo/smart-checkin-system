@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.samples.smartcheckin.push.PushNotificationService;
 import org.springframework.samples.smartcheckin.settings.OneDriveService;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
@@ -22,16 +23,19 @@ public class FormationService {
     private final FormationAttendanceRepository attendanceRepository;
     private final UserService userService;
     private final OneDriveService oneDriveService;
+    private final PushNotificationService pushNotificationService;
 
     @Autowired
     public FormationService(FormationRepository formationRepository, 
                             FormationAttendanceRepository attendanceRepository, 
                             UserService userService,
-                            OneDriveService oneDriveService) {
+                            OneDriveService oneDriveService,
+                            PushNotificationService pushNotificationService) {
         this.formationRepository = formationRepository;
         this.attendanceRepository = attendanceRepository;
         this.userService = userService;
         this.oneDriveService = oneDriveService;
+        this.pushNotificationService = pushNotificationService;
     }
 
     private static final String FORMATION_NOT_FOUND_MSG = "Formation not found";
@@ -173,6 +177,15 @@ public class FormationService {
             att.setFormation(formation);
             att.setUser(user);
             attendanceRepository.save(att);
+
+            // Send push notification to the assigned user
+            try {
+                pushNotificationService.sendToUser(user, 
+                    "Nueva formación asignada",
+                    "Se te ha asignado la formación: " + formation.getName());
+            } catch (Exception e) {
+                // Non-critical: don't let push failure block the assignment
+            }
         }
     }
 
