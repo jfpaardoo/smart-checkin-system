@@ -1,6 +1,7 @@
 package org.springframework.samples.smartcheckin.push;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -8,7 +9,6 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
@@ -18,6 +18,7 @@ import org.springframework.samples.smartcheckin.configuration.services.UserDetai
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SuppressWarnings("null")
@@ -27,22 +28,22 @@ class PushNotificationControllerTests {
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockitoBean
     private PushSubscriptionRepository subscriptionRepository;
 
-    @Mock
+    @MockitoBean
     private PushNotificationService pushNotificationService;
 
-    @Mock
+    @MockitoBean
     private UserService userService;
 
-    @Mock
+    @MockitoBean
     private JwtUtils jwtUtils;
 
-    @Mock
+    @MockitoBean
     private UserDetailsServiceImpl userDetailsService;
 
-    @Mock
+    @MockitoBean
     private AuthEntryPointJwt authEntryPointJwt;
 
     private User testUser;
@@ -87,6 +88,7 @@ class PushNotificationControllerTests {
             """;
 
         mockMvc.perform(post("/api/v1/push/subscribe")
+                .with(csrf()) // Soluciona el error 403 Forbidden
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
                 .andExpect(status().isOk());
@@ -115,6 +117,7 @@ class PushNotificationControllerTests {
             """;
 
         mockMvc.perform(post("/api/v1/push/subscribe")
+                .with(csrf()) // Soluciona el error 403 Forbidden
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
                 .andExpect(status().isOk());
@@ -128,6 +131,7 @@ class PushNotificationControllerTests {
         String body = "{\"endpoint\": \"https://fcm.googleapis.com/fcm/send/abc123\"}";
 
         mockMvc.perform(post("/api/v1/push/unsubscribe")
+                .with(csrf()) // Soluciona el error 403 Forbidden
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
                 .andExpect(status().isOk());
@@ -148,6 +152,7 @@ class PushNotificationControllerTests {
             """;
 
         mockMvc.perform(post("/api/v1/push/subscribe")
+                .with(csrf()) // Evita que salte el 403 CSRF antes que el 401 Unauthorized
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
                 .andExpect(status().isUnauthorized());

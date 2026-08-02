@@ -3,15 +3,25 @@ package org.springframework.samples.smartcheckin.push;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.Security;
+import java.util.Base64;
 import java.util.List;
 import java.util.Collections;
 
+import org.bouncycastle.jce.interfaces.ECPublicKey;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.spec.ECNamedCurveGenParameterSpec;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -19,6 +29,7 @@ import nl.martijndwars.webpush.PushService;
 
 @SuppressWarnings("null")
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class PushNotificationServiceTests {
 
     @Mock
@@ -30,6 +41,28 @@ class PushNotificationServiceTests {
     @InjectMocks
     private PushNotificationService pushNotificationService;
 
+    private static String VALID_P256DH;
+    private static String VALID_AUTH;
+
+    @BeforeAll
+    static void beforeAll() throws Exception {
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
+        
+        // Generar dinámicamente un punto de curva elíptica matemáticamente válido
+        // para que la librería web-push no explote al inicializar "Notification"
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance("ECDSA", "BC");
+        kpg.initialize(new ECNamedCurveGenParameterSpec("prime256v1"));
+        KeyPair kp = kpg.generateKeyPair();
+        byte[] pubKey = ((ECPublicKey) kp.getPublic()).getQ().getEncoded(false);
+        VALID_P256DH = Base64.getUrlEncoder().withoutPadding().encodeToString(pubKey);
+        
+        // Generar auth secreto de 16 bytes
+        byte[] auth = new byte[16];
+        VALID_AUTH = Base64.getUrlEncoder().withoutPadding().encodeToString(auth);
+    }
+
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(pushNotificationService, "vapidPublicKey", "testPublicKey");
@@ -38,38 +71,36 @@ class PushNotificationServiceTests {
     }
 
     @Test
-    void getVapidPublicKey_returnsConfiguredKey() {
+    void getVapidPublicKeyReturnsConfiguredKey() {
         assertEquals("testPublicKey", pushNotificationService.getVapidPublicKey());
     }
 
     @Test
-    void sendToUser_sendsToAllSubscriptions() throws Exception {
+    void sendToUserSendsToAllSubscriptions() {
         User user = new User();
         user.setUsername("testuser");
 
         PushSubscriptionEntity sub1 = new PushSubscriptionEntity();
         sub1.setEndpoint("https://push.example.com/sub1");
-        sub1.setP256dh("p256dh1");
-        sub1.setAuth("auth1");
+        sub1.setP256dh(VALID_P256DH);
+        sub1.setAuth(VALID_AUTH);
         sub1.setUser(user);
 
         PushSubscriptionEntity sub2 = new PushSubscriptionEntity();
         sub2.setEndpoint("https://push.example.com/sub2");
-        sub2.setP256dh("p256dh2");
-        sub2.setAuth("auth2");
+        sub2.setP256dh(VALID_P256DH);
+        sub2.setAuth(VALID_AUTH);
         sub2.setUser(user);
 
         when(subscriptionRepository.findByUser(user)).thenReturn(List.of(sub1, sub2));
 
         pushNotificationService.sendToUser(user, "Test Title", "Test Body");
 
-        // Both subscriptions should trigger a send attempt
-        // Since pushService.send() will throw (invalid keys in test), we just verify no crash
         verify(subscriptionRepository).findByUser(user);
     }
 
     @Test
-    void sendToUser_noSubscriptions_doesNothing() {
+    void sendToUserNoSubscriptionsDoesNothing() {
         User user = new User();
         user.setUsername("lonely");
 
@@ -82,41 +113,53 @@ class PushNotificationServiceTests {
     }
 
     @Test
-    void sendNotification_handlesExceptionGracefully() throws Exception {
+    void sendNotificationHandlesExceptionGracefully() {
         PushSubscriptionEntity sub = new PushSubscriptionEntity();
         sub.setEndpoint("https://push.example.com/endpoint123");
-        sub.setP256dh("fakep256dh");
-        sub.setAuth("fakeauth");
+        sub.setP256dh(VALID_P256DH);
+        sub.setAuth(VALID_AUTH);
 
-        doThrow(new RuntimeException("Network error")).when(pushService).send(any());
+        try {
+            doThrow(new RuntimeException("Network error")).when(pushService).send(any());
+        } catch (Exception e) {
+            // Ignorado mock config
+        }
 
-        // Should not throw
         assertDoesNotThrow(() -> 
             pushNotificationService.sendNotification(sub, "Title", "Body"));
     }
 
     @Test
-    void sendNotification_removes410Subscription() throws Exception {
+    void sendNotificationRemoves410Subscription() {
         PushSubscriptionEntity sub = new PushSubscriptionEntity();
         sub.setEndpoint("https://push.example.com/stale-endpoint");
-        sub.setP256dh("fakep256dh");
-        sub.setAuth("fakeauth");
+        sub.setP256dh(VALID_P256DH);
+        sub.setAuth(VALID_AUTH);
 
-        doThrow(new RuntimeException("410 Gone")).when(pushService).send(any());
+        try {
+            doThrow(new RuntimeException("410 Gone")).when(pushService).send(any());
+        } catch (Exception e) {
+            // Ignorado mock config
+        }
 
         pushNotificationService.sendNotification(sub, "Title", "Body");
 
+        // Al haber generado claves dinámicas válidas, ahora SÍ llega a ejecutarse el mock y por tanto invoca al borrado
         verify(subscriptionRepository).delete(sub);
     }
 
     @Test
-    void sendNotification_doesNotRemoveNon410Subscription() throws Exception {
+    void sendNotificationDoesNotRemoveNon410Subscription() {
         PushSubscriptionEntity sub = new PushSubscriptionEntity();
         sub.setEndpoint("https://push.example.com/valid-endpoint");
-        sub.setP256dh("fakep256dh");
-        sub.setAuth("fakeauth");
+        sub.setP256dh(VALID_P256DH);
+        sub.setAuth(VALID_AUTH);
 
-        doThrow(new RuntimeException("503 Service Unavailable")).when(pushService).send(any());
+        try {
+            doThrow(new RuntimeException("503 Service Unavailable")).when(pushService).send(any());
+        } catch (Exception e) {
+            // Ignorado mock config
+        }
 
         pushNotificationService.sendNotification(sub, "Title", "Body");
 
@@ -124,31 +167,39 @@ class PushNotificationServiceTests {
     }
 
     @Test
-    void sendNotification_handlesNullTitle() throws Exception {
+    void sendNotificationHandlesNullTitle() {
         PushSubscriptionEntity sub = new PushSubscriptionEntity();
         sub.setEndpoint("https://push.example.com/null-title");
-        sub.setP256dh("fakep256dh");
-        sub.setAuth("fakeauth");
+        sub.setP256dh(VALID_P256DH);
+        sub.setAuth(VALID_AUTH);
 
-        doThrow(new RuntimeException("some error")).when(pushService).send(any());
+        try {
+            doThrow(new RuntimeException("some error")).when(pushService).send(any());
+        } catch (Exception e) {
+            // Ignorado mock config
+        }
 
         assertDoesNotThrow(() ->
             pushNotificationService.sendNotification(sub, null, null));
     }
 
     @Test
-    void sendNotification_handlesInterruptedException() throws Exception {
+    void sendNotificationHandlesInterruptedException() {
         PushSubscriptionEntity sub = new PushSubscriptionEntity();
         sub.setEndpoint("https://push.example.com/interrupted");
-        sub.setP256dh("fakep256dh");
-        sub.setAuth("fakeauth");
+        sub.setP256dh(VALID_P256DH);
+        sub.setAuth(VALID_AUTH);
 
-        doThrow(new InterruptedException("Thread interrupted")).when(pushService).send(any());
+        try {
+            doThrow(new InterruptedException("Thread interrupted")).when(pushService).send(any());
+        } catch (Exception e) {
+            // Ignorado mock config
+        }
 
         pushNotificationService.sendNotification(sub, "Title", "Body");
 
+        // Al ejecutarse con éxito el mock, interceptará correctamente la interrupción.
         assertTrue(Thread.currentThread().isInterrupted());
-        // Clear the interrupt flag for other tests
         Thread.interrupted();
     }
 }
