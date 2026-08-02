@@ -1,9 +1,6 @@
 package org.springframework.samples.smartcheckin.exports;
 
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 
@@ -75,7 +72,7 @@ public class CertificateGeneratorService {
 
             // Generate SHA-256 Hash for Verification
             String rawData = studentCode + "-" + formationName + "-" + dateString;
-            String hash = generateHash(rawData);
+            String hash = org.springframework.samples.smartcheckin.util.HashUtils.generateHash(rawData);
             
             Paragraph hashPara = new Paragraph("\n\nSello de Verificación Digital (SHA-256):\n" + hash, hashFont);
             hashPara.setAlignment(Element.ALIGN_CENTER);
@@ -108,21 +105,4 @@ public class CertificateGeneratorService {
         }
     }
 
-    private String generateHash(String input) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] encodedhash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hexString = new StringBuilder(2 * encodedhash.length);
-            for (byte b : encodedhash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            return "HASH_GENERATION_FAILED";
-        }
-    }
 }

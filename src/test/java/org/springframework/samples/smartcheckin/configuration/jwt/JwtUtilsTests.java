@@ -57,5 +57,52 @@ class JwtUtilsTests {
 	void testValidateInvalidJwtToken() {
 		assertFalse(jwtUtils.validateJwtToken("invalid.jwt.token"));
 		assertFalse(jwtUtils.validateJwtToken(""));
+		assertFalse(jwtUtils.validateJwtToken(null)); // IllegalArgumentException
+	}
+
+	@Test
+	void testSignatureException() {
+		// Generate a token with a different key
+		io.jsonwebtoken.security.Keys.keyPairFor(io.jsonwebtoken.SignatureAlgorithm.RS256);
+		java.security.KeyPair otherKeyPair = io.jsonwebtoken.security.Keys.keyPairFor(io.jsonwebtoken.SignatureAlgorithm.RS256);
+		String token = io.jsonwebtoken.Jwts.builder()
+				.setSubject("test")
+				.signWith(otherKeyPair.getPrivate(), io.jsonwebtoken.SignatureAlgorithm.RS256)
+				.compact();
+		assertFalse(jwtUtils.validateJwtToken(token));
+	}
+
+	@Test
+	@SuppressWarnings("null")
+	void testExpiredJwtException() {
+		java.security.KeyPair keyPair = (java.security.KeyPair) ReflectionTestUtils.getField(jwtUtils, "rsaKeyPair");
+		assertNotNull(keyPair);
+		String token = io.jsonwebtoken.Jwts.builder()
+				.setSubject("test")
+				.setIssuedAt(new java.util.Date(System.currentTimeMillis() - 10000))
+				.setExpiration(new java.util.Date(System.currentTimeMillis() - 5000))
+				.signWith(keyPair.getPrivate(), io.jsonwebtoken.SignatureAlgorithm.RS256)
+				.compact();
+		assertFalse(jwtUtils.validateJwtToken(token));
+	}
+
+	@Test
+	void testUnsupportedJwtException() {
+		// Unsecured JWT (no signature)
+		String token = io.jsonwebtoken.Jwts.builder()
+				.setSubject("test")
+				.compact();
+		assertFalse(jwtUtils.validateJwtToken(token));
+	}
+
+	@Test
+	void testInitKeysNoSuchAlgorithmException() {
+		try (org.mockito.MockedStatic<java.security.KeyPairGenerator> mockedStatic = mockStatic(java.security.KeyPairGenerator.class)) {
+			mockedStatic.when(() -> java.security.KeyPairGenerator.getInstance("RSA"))
+					.thenThrow(new java.security.NoSuchAlgorithmException("RSA not found"));
+			
+			RuntimeException exception = assertThrows(RuntimeException.class, () -> jwtUtils.initKeys());
+			assertTrue(exception.getMessage().contains("Failed to generate RSA Key Pair"));
+		}
 	}
 }

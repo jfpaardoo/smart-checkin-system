@@ -19,6 +19,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.validation.constraints.Size;
 
+import lombok.EqualsAndHashCode;
+
 /**
  * Simple JavaBean domain object adds a name property to <code>BaseEntity</code>. Used as
  * a base class for objects needing these properties.
@@ -27,6 +29,7 @@ import jakarta.validation.constraints.Size;
  * @author Juergen Hoeller
  */
 @MappedSuperclass
+@EqualsAndHashCode(callSuper = true)
 public class NamedEntity extends BaseEntity {
 
     @Size(min = 3, max = 50)

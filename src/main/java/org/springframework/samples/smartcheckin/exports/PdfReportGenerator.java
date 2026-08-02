@@ -1,9 +1,6 @@
 package org.springframework.samples.smartcheckin.exports;
 
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.awt.Color;
@@ -73,7 +70,7 @@ public class PdfReportGenerator {
 
             document.add(table);
 
-            String hash = generateHash(rawDataForHash.toString());
+            String hash = org.springframework.samples.smartcheckin.util.HashUtils.generateHash(rawDataForHash.toString());
             Paragraph hashPara = new Paragraph("\n\nSello de Verificación Digital (SHA-256):\n" + hash, hashFont);
             hashPara.setAlignment(Element.ALIGN_CENTER);
             document.add(hashPara);
@@ -91,24 +88,6 @@ public class PdfReportGenerator {
             PdfPCell cell = new PdfPCell(new Phrase(header, font));
             cell.setHorizontalAlignment(Element.ALIGN_CENTER);
             table.addCell(cell);
-        }
-    }
-
-    private String generateHash(String input) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] encodedhash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hexString = new StringBuilder(2 * encodedhash.length);
-            for (byte b : encodedhash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            return "HASH_GENERATION_FAILED";
         }
     }
 
