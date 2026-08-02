@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Table, Form, FormGroup, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQrcode, faPencil, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faQrcode, faPencil, faTrash, faExternalLinkAlt, faFilePdf, faFileLines, faFileImage, faFile } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import "../../App.css";
@@ -41,6 +41,9 @@ export default function FormationDetailsAdmin() {
   const [selectedUserId, setSelectedUserId] = useState("");
   const [selectedAttendance, setSelectedAttendance] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  
+  const [documentModalOpen, setDocumentModalOpen] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState({ url: "", name: "", type: "unknown" });
 
   const reloadFormation = () => {
     fetch(`/api/v1/formations/${id}`, {
@@ -124,6 +127,25 @@ export default function FormationDetailsAdmin() {
 
   const renderModalAttendanceBadge = renderAttendanceBadge;
 
+  const getFileIconAndType = (fileName) => {
+    const lowerName = fileName.toLowerCase();
+    if (lowerName.endsWith('.pdf')) {
+      return { icon: faFilePdf, color: '#e74c3c', type: 'pdf' };
+    } else if (['.txt', '.doc', '.docx', '.odt', '.log'].some(ext => lowerName.endsWith(ext))) {
+      return { icon: faFileLines, color: '#3498db', type: 'document' };
+    } else if (['.png', '.jpg', '.jpeg', '.webp', '.gif'].some(ext => lowerName.endsWith(ext))) {
+      return { icon: faFileImage, color: '#2ecc71', type: 'image' };
+    }
+    return { icon: faFile, color: '#95a5a6', type: 'other' };
+  };
+
+  const openDocumentModal = (e, url, fileName) => {
+    e.currentTarget.blur();
+    const fileInfo = getFileIconAndType(fileName);
+    setSelectedDocument({ url, name: fileName, type: fileInfo.type });
+    setDocumentModalOpen(true);
+  };
+
   if (!formation) return <CardGhostLoader />;
 
   const attendeeIds = formation.attendances ? formation.attendances.map(a => a.user.id) : [];
@@ -132,19 +154,22 @@ export default function FormationDetailsAdmin() {
   return (
     <div className="ba-container">
       <div className="ba-card">
-        <div className="ba-card-header">
-          <h2>{t('formationDetails.title')}: {formation.name}</h2>
-          <div className="d-flex gap-2 flex-wrap">
-            <Button className="ba-btn-secondary" tag={Link} to={`/formations/${id}`} title={t('formations.edit')}>
-              <FontAwesomeIcon icon={faPencil} className="me-2" />{t('formations.edit')}
+        {/* Cabecera optimizada con flex-nowrap para garantizar una única línea en pantallas de escritorio */}
+        <div className="ba-card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <h2 className="mb-0 text-truncate flex-grow-1" style={{ minWidth: '250px' }} title={`${t('formationDetails.title')}: ${formation.name}`}>
+            {t('formationDetails.title')}: {formation.name}
+          </h2>
+          <div className="d-flex flex-nowrap gap-2 align-items-center">
+            <Button size="sm" className="ba-btn-secondary px-3 py-2 text-nowrap" tag={Link} to={`/formations/${id}`} title={t('formations.edit')}>
+              <FontAwesomeIcon icon={faPencil} className="me-1" />{t('formations.edit')}
             </Button>
-            <Button className="ba-btn-blue" tag={Link} to={`/qr-generator?formationId=${id}`} title={t('formationDetails.qrButton')}>
-              <FontAwesomeIcon icon={faQrcode} className="me-2" />{t('formationDetails.qrButton')}
+            <Button size="sm" className="ba-btn-blue px-3 py-2 text-nowrap" tag={Link} to={`/qr-generator?formationId=${id}`} title={t('formationDetails.qrButton')}>
+              <FontAwesomeIcon icon={faQrcode} className="me-1" />{t('formationDetails.qrButton')}
             </Button>
-            <Button className="ba-btn-danger" onClick={handleDeleteFormation} title={t('formations.delete')}>
-              <FontAwesomeIcon icon={faTrash} className="me-2" />{t('formations.delete')}
+            <Button size="sm" className="ba-btn-danger px-3 py-2 text-nowrap" onClick={handleDeleteFormation} title={t('formations.delete')}>
+              <FontAwesomeIcon icon={faTrash} className="me-1" />{t('formations.delete')}
             </Button>
-            <Button className="ba-btn-secondary" tag={Link} to="/formations">
+            <Button size="sm" className="ba-btn-secondary px-3 py-2 text-nowrap" tag={Link} to="/formations">
               {t('formationDetails.backToList')}
             </Button>
           </div>
@@ -155,38 +180,47 @@ export default function FormationDetailsAdmin() {
           <p>{formation.description}</p>
           <h4>{t('formationDetails.dateTime')}</h4>
           <p>{moment(formation.formationDate).format('YYYY-MM-DD HH:mm')}</p>
+
           {formation.documentUrls && formation.documentUrls.length > 0 && (
-            <>
-              <h4>{t('formationDetails.documentation', 'Documentación')}</h4>
+            <div className="formation-document-section mt-4">
+              <h4>{t('formationDetails.documentation', 'Documentación Adjunta')}</h4>
               <div className="d-flex flex-wrap gap-2 mt-2">
-                {formation.documentUrls.map((url, idx) => {
-                  const decodedUrl = decodeURIComponent(url);
-                  const parts = decodedUrl.split('/');
-                  const rawFileName = parts.at(-1) || `Documento ${idx + 1}`;
-                  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_/i;
-                  const fileName = rawFileName.replace(uuidRegex, '').split('?')[0];
+                {formation.documentUrls.map((item) => {
+                  let fileName = "Documento";
+                  let url = item;
+
+                  if (item.includes("||")) {
+                    const parts = item.split("||");
+                    fileName = parts[0];
+                    url = parts[1];
+                  } else {
+                    const decoded = decodeURIComponent(item);
+                    const segments = decoded.split('/');
+                    fileName = segments.at(-1)?.split('?')[0] || "Documento";
+                  }
+
+                  const fileMeta = getFileIconAndType(fileName);
 
                   return (
-                    <a
-                      key={url}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ba-btn ba-btn-secondary px-3 py-1"
+                    <Button
+                      key={item}
+                      className="ba-btn ba-btn-blue px-3 py-2 d-flex align-items-center gap-2"
+                      onClick={(e) => openDocumentModal(e, url, fileName)}
                     >
-                      {fileName}
-                    </a>
+                      <FontAwesomeIcon icon={fileMeta.icon} style={{ color: fileMeta.color }} />
+                      <span className="text-truncate" style={{ maxWidth: '200px' }}>{fileName}</span>
+                    </Button>
                   );
                 })}
               </div>
-            </>
+            </div>
           )}
         </div>
 
         <div className="ba-card-header pt-3">
           <h3>{t('formationDetails.attendeesSection')}</h3>
-          <Form inline className="formation-add-form" onSubmit={(e) => { e.preventDefault(); handleAddUser(); }}>
-            <FormGroup className="mb-2 mr-sm-2 mb-sm-0" style={{ minWidth: '280px' }}>
+          <Form className="formation-add-form d-flex gap-2 align-items-center" onSubmit={(e) => { e.preventDefault(); handleAddUser(); }}>
+            <FormGroup className="mb-0" style={{ minWidth: '280px' }}>
               <GlassDropdown
                 options={availableUsers.map(u => ({
                   value: u.id,
@@ -294,6 +328,39 @@ export default function FormationDetailsAdmin() {
         </Table>
       </div>
 
+      {/* Pop-up Profesional */}
+      <Modal isOpen={documentModalOpen} toggle={() => setDocumentModalOpen(false)} size="md" centered>
+        <ModalHeader toggle={() => setDocumentModalOpen(false)} style={{ backgroundColor: '#2c3e50', color: 'white', borderBottom: 'none' }}>
+          <div className="text-truncate" style={{ maxWidth: '400px' }}>
+            <FontAwesomeIcon icon={getFileIconAndType(selectedDocument.name).icon} className="me-2" style={{ color: getFileIconAndType(selectedDocument.name).color }} />
+            {selectedDocument.name}
+          </div>
+        </ModalHeader>
+        <ModalBody className="p-4 text-center bg-light">
+          <div className="p-4 bg-white rounded shadow-sm border">
+            <h5 className="text-dark mb-3 text-break"><strong>{selectedDocument.name}</strong></h5>
+            <p className="text-muted small mb-4">
+              {t('formationDetails.cloudDocDescription', 'Este documento está almacenado de forma segura en OneDrive. Debido a las políticas de seguridad en la nube, puedes abrirlo directamente en una pestaña dedicada o descargarlo con un solo clic.')}
+            </p>
+            <a
+              href={selectedDocument.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-primary ba-btn-blue px-4 py-2 d-inline-flex align-items-center gap-2"
+            >
+              <FontAwesomeIcon icon={faExternalLinkAlt} />
+              {t('common.openSecure', 'Abrir / Ver Documento en la Nube')}
+            </a>
+          </div>
+        </ModalBody>
+        <ModalFooter style={{ backgroundColor: '#f4f6fa', borderTop: 'none' }}>
+          <Button color="secondary" onClick={(e) => { e.currentTarget.blur(); setDocumentModalOpen(false); }} style={{ borderRadius: '20px' }}>
+            {t('formationDetails.close')}
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* Modal para detalles de asistencia y firma */}
       <Modal isOpen={modalOpen} toggle={() => setModalOpen(false)} centered style={{ maxWidth: '500px' }}>
         <ModalHeader toggle={() => setModalOpen(false)} style={{ backgroundColor: '#2c3e50', color: 'white', borderBottom: 'none' }}>
           {t('formationDetails.attendanceDetails')} - {formation?.name}

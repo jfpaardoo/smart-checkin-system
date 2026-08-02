@@ -332,10 +332,10 @@ function PasswordSecurityTab({
       if (res.ok) {
         setSetupData(data);
       } else {
-        toast.error(data.message || "Error al iniciar configuración 2FA.");
+        toast.error(data.message || t('profile.twoFactorSetupError', 'Error al iniciar configuración 2FA.'));
       }
     } catch (err) {
-      toast.error(err.message || "Error de conexión.");
+      toast.error(err.message || t('profile.connectionError', 'Error de conexión.'));
     } finally {
       setLoading2FA(false);
     }
@@ -344,7 +344,7 @@ function PasswordSecurityTab({
   const handleConfirmEnable = async (e) => {
     e.preventDefault();
     if (verificationCode.length !== 6) {
-      toast.error("El código debe tener 6 dígitos.");
+      toast.error(t('profile.codeMustBe6Digits', 'El código debe tener 6 dígitos.'));
       return;
     }
     setLoading2FA(true);
@@ -361,20 +361,20 @@ function PasswordSecurityTab({
         setUserData({ ...userData, twoFactorEnabled: true });
         setSetupData(null);
         setVerificationCode("");
-        toast.success("¡Autenticación de Doble Factor activada con éxito!");
+        toast.success(t('profile.twoFactorEnableSuccess', '¡Autenticación de Doble Factor activada con éxito!'));
       } else {
         const data = await res.json();
-        toast.error(data.message || "Código incorrecto.");
+        toast.error(data.message || t('profile.incorrectCode', 'Código incorrecto.'));
       }
     } catch (err) {
-      toast.error(err.message || "Error de conexión.");
+      toast.error(err.message || t('profile.connectionError', 'Error de conexión.'));
     } finally {
       setLoading2FA(false);
     }
   };
 
   const handleDisable = async () => {
-    toast.confirm("¿Seguro que deseas desactivar la autenticación de doble factor?", async () => {
+    toast.confirm(t('profile.disable2FAConfirm', '¿Seguro que deseas desactivar la autenticación de doble factor?'), async () => {
       try {
         const res = await fetch("/api/v1/users/2fa/disable", {
           method: "POST",
@@ -383,12 +383,12 @@ function PasswordSecurityTab({
         if (res.ok) {
           setUserData({ ...userData, twoFactorEnabled: false });
           setSetupData(null);
-          toast.success("2FA desactivado correctamente.");
+          toast.success(t('profile.twoFactorDisableSuccess', '2FA desactivado correctamente.'));
         } else {
-          toast.error("Error al desactivar 2FA.");
+          toast.error(t('profile.twoFactorDisableError', 'Error al desactivar 2FA.'));
         }
       } catch (err) {
-        toast.error(err.message || "Error de conexión.");
+        toast.error(err.message || t('profile.connectionError', 'Error de conexión.'));
       }
     });
   };
@@ -400,36 +400,36 @@ function PasswordSecurityTab({
         {/* Card: 2FA Configuration */}
         <div className="p-4 ba-glass-card mb-4">
           <h5 className="fw-bold mb-3 d-flex align-items-center text-dark">
-            <FaShieldVirus className="me-2" style={{ color: "#8a9e29" }} /> Autenticación de Doble Factor (2FA)
+            <FaShieldVirus className="me-2" style={{ color: "#8a9e29" }} /> {t('profile.twoFactorTitle', 'Autenticación de Doble Factor (2FA)')}
           </h5>
 
           {userData?.twoFactorEnabled ? (
             <div>
-              <p className="text-success fw-bold mb-3 small">✓ El doble factor está actualmente activado en tu cuenta.</p>
+              <p className="text-success fw-bold mb-3 small">{t('profile.twoFactorActive', '✓ El doble factor está actualmente activado en tu cuenta.')}</p>
               <Button className="ba-btn-danger w-100 py-2 fw-bold" style={{ borderRadius: "12px" }} onClick={handleDisable}>
-                Desactivar 2FA
+                {t('profile.disable2FA', 'Desactivar 2FA')}
               </Button>
             </div>
           ) : (
             <div>
               {!setupData ? (
                 <div>
-                  <p className="text-muted small mb-3">Protege tu cuenta añadiendo un código de verificación de 6 dígitos generado por tu app de autenticación (Google Authenticator, Authy).</p>
+                  <p className="text-muted small mb-3">{t('profile.twoFactorDesc', 'Protege tu cuenta añadiendo un código de verificación de 6 dígitos generado por tu app de autenticación (Google Authenticator, Authy).')}</p>
                   <Button className="ba-btn-primary w-100 py-2 fw-bold" style={{ borderRadius: "12px" }} onClick={handleStartSetup} disabled={loading2FA}>
-                    {loading2FA ? <Spinner size="sm" /> : "Configurar 2FA"}
+                    {loading2FA ? <Spinner size="sm" /> : t('profile.setup2FA', 'Configurar 2FA')}
                   </Button>
                 </div>
               ) : (
                 <div className="text-center">
-                  <p className="fw-bold mb-2 small text-dark">1. Escanea este código QR con tu app de autenticación:</p>
+                  <p className="fw-bold mb-2 small text-dark">{t('profile.twoFactorStep1', '1. Escanea este código QR con tu app de autenticación:')}</p>
                   <div className="bg-white p-3 d-inline-block rounded-3 shadow-sm mb-3">
                     <QRCodeSVG value={setupData.qrUri} size={160} />
                   </div>
-                  <p className="text-muted small mb-3">O introduce la clave secreta manualmente: <br /><code>{setupData.secret}</code></p>
+                  <p className="text-muted small mb-3">{t('profile.twoFactorSecretManual', 'O introduce la clave secreta manualmente:')} <br /><code>{setupData.secret}</code></p>
                   
                   <Form onSubmit={handleConfirmEnable} className="mx-auto">
                     <FormGroup className="mb-3 text-start">
-                      <Label for="verificationCode" className="small fw-bold">2. Introduce el código de 6 dígitos:</Label>
+                      <Label for="verificationCode" className="small fw-bold">{t('profile.twoFactorStep2', '2. Introduce el código de 6 dígitos:')}</Label>
                       <Input
                         type="text"
                         inputMode="numeric"
@@ -444,10 +444,10 @@ function PasswordSecurityTab({
                     </FormGroup>
                     <div className="d-flex gap-2 justify-content-center">
                       <Button className="ba-btn-primary py-2 px-3 fw-bold" type="submit" disabled={loading2FA} style={{ borderRadius: '12px' }}>
-                        Confirmar y Activar
+                        {t('profile.confirmAndEnable', 'Confirmar y Activar')}
                       </Button>
                       <Button className="ba-btn-secondary py-2 px-3" type="button" onClick={() => setSetupData(null)} style={{ borderRadius: '12px' }}>
-                        Cancelar
+                        {t('profile.cancel', 'Cancelar')}
                       </Button>
                     </div>
                   </Form>

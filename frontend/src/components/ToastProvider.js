@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 const ToastContext = createContext(null);
 
@@ -45,6 +46,7 @@ export function ToastProvider({ children }) {
  * Individual Toast notification rendered inside the container.
  */
 function ToastItem({ toast, onRemove }) {
+  const { t } = useTranslation();
   const [exiting, setExiting] = useState(false);
   const timerRef = useRef(null);
   const DURATION = 4000;
@@ -95,10 +97,10 @@ function ToastItem({ toast, onRemove }) {
       {toast.type === "confirm" && (
         <div className="ba-toast-actions">
           <button className="ba-toast-btn ba-toast-btn-yes" onClick={handleConfirm}>
-            Yes
+            {t('common.yes', 'Sí')}
           </button>
           <button className="ba-toast-btn ba-toast-btn-no" onClick={handleClose}>
-            No
+            {t('common.no', 'No')}
           </button>
         </div>
       )}

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Form, Input, Label, FormGroup, Row, Col } from "reactstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFilePdf, faFileLines, faFileImage, faFile } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import "../../App.css";
@@ -49,6 +51,41 @@ export default function FormationEditAdmin() {
       ...formation,
       documentUrls: (formation.documentUrls || []).filter(url => url !== urlToRemove)
     });
+  };
+
+  const getCleanFileNameAndType = (item) => {
+    try {
+      let url = item;
+      let originalName = "";
+
+      if (item.includes("||")) {
+        const parts = item.split("||");
+        originalName = parts[0];
+        url = parts[1];
+      } else {
+        const decoded = decodeURIComponent(item);
+        const segments = decoded.split('/');
+        const rawFileName = segments.at(-1)?.split('?')[0] || "Documento";
+        const uuidPrefixRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_/i;
+        originalName = uuidPrefixRegex.test(rawFileName) ? rawFileName.replace(uuidPrefixRegex, '') : rawFileName;
+      }
+
+      if (originalName.startsWith("IQ") || originalName.length > 30) {
+        originalName = "Documento Adjunto.pdf";
+      }
+
+      const lower = originalName.toLowerCase();
+      if (lower.endsWith('.pdf') || lower.includes('pdf')) {
+        return { name: originalName, url, icon: faFilePdf, color: '#e74c3c' };
+      } else if (['.txt', '.doc', '.docx', '.odt', '.log'].some(ext => lower.endsWith(ext)) || lower.includes('txt') || lower.includes('doc')) {
+        return { name: originalName, url, icon: faFileLines, color: '#3498db' };
+      } else if (['.png', '.jpg', '.jpeg', '.webp', '.gif'].some(ext => lower.endsWith(ext)) || lower.includes('png') || lower.includes('jpg')) {
+        return { name: originalName, url, icon: faFileImage, color: '#2ecc71' };
+      }
+      return { name: originalName, url, icon: faFilePdf, color: '#e74c3c' };
+    } catch {
+      return { name: "Documento Adjunto", url: item, icon: faFile, color: '#95a5a6' };
+    }
   };
 
   function handleSubmit(event) {
@@ -174,23 +211,19 @@ export default function FormationEditAdmin() {
                   <div className="mt-3">
                     <strong>{t('formations.currentDocuments', 'Documentos actuales vinculados:')}</strong>
                     <ul className="list-group mt-2">
-                      {formation.documentUrls.map((url, idx) => {
-                        // Extract original name from URL if possible
-                        const decodedUrl = decodeURIComponent(url);
-                        const parts = decodedUrl.split('/');
-                        const rawFileName = parts.at(-1) || `Documento ${idx + 1}`;
-                        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_/i;
-                        const fileName = rawFileName.replace(uuidRegex, '').split('?')[0];
+                      {formation.documentUrls.map((item) => {
+                        const fileInfo = getCleanFileNameAndType(item);
 
                         return (
-                          <li key={url} className="list-group-item d-flex justify-content-between align-items-center">
-                            <a href={url} target="_blank" rel="noopener noreferrer">
-                              {fileName}
+                          <li key={item} className="list-group-item d-flex justify-content-between align-items-center">
+                            <a href={fileInfo.url} target="_blank" rel="noopener noreferrer" className="d-flex align-items-center gap-2 text-decoration-none text-truncate" style={{ maxWidth: '350px' }}>
+                              <FontAwesomeIcon icon={fileInfo.icon} style={{ color: fileInfo.color }} />
+                              <span className="text-truncate">{fileInfo.name}</span>
                             </a>
                             <button
                               type="button"
                               className="btn btn-danger btn-sm"
-                              onClick={() => handleRemoveExistingFile(url)}
+                              onClick={() => handleRemoveExistingFile(item)}
                             >
                               {t('formations.removeDocument', 'Eliminar')}
                             </button>

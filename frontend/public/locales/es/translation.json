@@ -242,7 +242,14 @@
     "cameraInstructions": "Apunta con la cámara al código QR proyectado.",
     "selectCamera": "Seleccionar Cámara...",
     "manualInputPrompt": "¿Problemas con la cámara? Introducir código manualmente",
-    "scannerTitle": "Escáner de Fichaje"
+    "scannerTitle": "Escáner de Fichaje",
+    "signatureRequiredInfo": "Se requiere su firma para registrar la salida.",
+    "processError": "Error al procesar la solicitud.",
+    "checkinRecorded": "Entrada registrada",
+    "checkoutRecorded": "Salida registrada",
+    "qrDetected": "Código QR detectado.",
+    "codeMustBe6Digits": "El código debe tener 6 dígitos.",
+    "provideSignature": "Por favor proporcione su firma."
   },
   "common": {
     "save": "Guardar",
@@ -341,7 +348,25 @@
     "completedSigned": "Completadas y Firmadas",
     "accumulatedTime": "Tiempo Acumulado",
     "downloadCertificate": "Descargar Certificado PDF",
-    "scanQR": "Escanear QR"
+    "scanQR": "Escanear QR",
+    "twoFactorTitle": "Autenticación de Doble Factor (2FA)",
+    "twoFactorActive": "✓ El doble factor está actualmente activado en tu cuenta.",
+    "disable2FA": "Desactivar 2FA",
+    "twoFactorDesc": "Protege tu cuenta añadiendo un código de verificación de 6 dígitos generado por tu app de autenticación (Google Authenticator, Authy).",
+    "setup2FA": "Configurar 2FA",
+    "twoFactorStep1": "1. Escanea este código QR con tu app de autenticación:",
+    "twoFactorSecretManual": "O introduce la clave secreta manualmente:",
+    "twoFactorStep2": "2. Introduce el código de 6 dígitos:",
+    "confirmAndEnable": "Confirmar y Activar",
+    "cancel": "Cancelar",
+    "twoFactorSetupError": "Error al iniciar configuración 2FA.",
+    "connectionError": "Error de conexión.",
+    "codeMustBe6Digits": "El código debe tener 6 dígitos.",
+    "twoFactorEnableSuccess": "¡Autenticación de Doble Factor activada con éxito!",
+    "incorrectCode": "Código incorrecto.",
+    "disable2FAConfirm": "¿Seguro que deseas desactivar la autenticación de doble factor?",
+    "twoFactorDisableSuccess": "2FA desactivado correctamente.",
+    "twoFactorDisableError": "Error al desactivar 2FA."
   },
   "register": {
     "title": "Solicitud de Registro",

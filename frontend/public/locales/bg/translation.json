@@ -10,8 +10,8 @@
     "analytics": "Анализи",
     "myProfile": "Моят Профил",
     "register": "Заявка за Регистрация",
-    "audit": "Audit",
-    "cloudSettings": "Ajustes de Nube"
+    "audit": "Одитен Журнал",
+    "cloudSettings": "Облачни Настройки"
   },
   "home": {
     "welcome": "Добре дошли в ShiftSync",
@@ -45,7 +45,7 @@
     "employeeQuickAccess": "Бърз Достъп за Служители",
     "directQRCheckin": "Директно QR Отчитане",
     "directQRCheckinDesc": "Сканирайте QR кода на залата, за да регистрирате присъствие",
-    "scanQRBtn": "Scan QR →",
+    "scanQRBtn": "Сканирай QR →",
     "myProfileDesc": "Преглед на лични данни и промяна на парола",
     "goToProfileBtn": "Към Моя Профил →",
     "myFormationsDesc": "История и статус на вашите обучения",
@@ -69,7 +69,7 @@
     "addNewUser": "Добави Нов Потребител",
     "saveUser": "Запази Потребител",
     "cancel": "Отказ",
-    "personalCode": "Personal Code",
+    "personalCode": "Личен Код",
     "username": "Потребителско име",
     "firstName": "Име",
     "lastName": "Фамилия",
@@ -77,8 +77,8 @@
     "status": "Статус",
     "role": "Роля",
     "actions": "Действия",
-    "working": "In Formation",
-    "offDuty": "Out of Formation",
+    "working": "В Обучение",
+    "offDuty": "Извън Обучение",
     "selectRole": "Избери Роля",
     "personalCode4digits": "Личен Код (4 цифри)",
     "roleAuthority": "Роля / Права",
@@ -93,8 +93,8 @@
     "duplicatePersonalCode": "Личният код вече съществува за друг потребител.",
     "duplicateUsername": "Потребителското име вече съществува.",
     "duplicateGeneric": "Възникна конфликт в базата данни.",
-    "activeEmployees": "Active Employees",
-    "pendingRequestsTab": "Pending Requests"
+    "activeEmployees": "Активни Служители",
+    "pendingRequestsTab": "Чакащи Заявки"
   },
   "formations": {
     "title": "Управление на Обучения",
@@ -131,9 +131,9 @@
     "checkout": "Излизане",
     "duration": "Продължителност",
     "signature": "Цифров Подпис",
-    "document": "Documento de Formación (Opcional)",
-    "documentExists": "Ya existe un documento vinculado.",
-    "viewCurrentDocument": "Ver documento actual"
+    "document": "Документ за Обучение (По избор)",
+    "documentExists": "Вече има свързан документ.",
+    "viewCurrentDocument": "Преглед на текущия документ"
   },
   "formationDetails": {
     "title": "Детайли за Обучението",
@@ -173,8 +173,8 @@
     "userRemoved": "Потребителят е премахнат от обучението.",
     "userRemoveError": "Грешка при премахване на потребителя.",
     "userRemoveConfirm": "Сигурни ли сте, че искате да премахнете този участник?",
-    "documentation": "Documentación",
-    "viewDocumentation": "Ver Documentación"
+    "documentation": "Документация",
+    "viewDocumentation": "Преглед на Документацията"
   },
   "qr": {
     "title": "QR на Обучение",
@@ -225,24 +225,31 @@
     "checkoutSuccess": "Изходът е регистриран успешно.",
     "checkoutError": "Грешка при регистриране на изхода",
     "camera": "Камера",
-    "viewDocumentation": "Ver Documentación"
+    "viewDocumentation": "Преглед на Документацията"
   },
   "checkin": {
     "title": "Сканер за Отчитане",
     "scanQr": "Сканирайте QR кода",
     "success": "Отчитането е успешно",
     "error": "Грешка при отчитане",
-    "signatureRequired": "Signature Required for Checkout",
-    "clearSignature": "Clear",
-    "confirmSignature": "Confirm Signature",
-    "manualCodeInstructions": "Enter the 6-digit code projected next to the QR.",
-    "manualCodeLabel": "6-Digit Code (from QR)",
-    "useCamera": "Use Camera",
-    "confirmCheckin": "Confirm Check-in",
-    "cameraInstructions": "Point your camera at the projected QR code.",
-    "selectCamera": "Select Camera...",
-    "manualInputPrompt": "Camera issues? Enter code manually",
-    "scannerTitle": "Check-in Scanner"
+    "signatureRequired": "Изисква се Дигитален Подпис за Изход",
+    "clearSignature": "Изчисти",
+    "confirmSignature": "Потвърди Подписа",
+    "manualCodeInstructions": "Въведете 6-цифрения код, прожектиран до QR кода.",
+    "manualCodeLabel": "6-цифрен Код (от QR)",
+    "useCamera": "Използвай Камера",
+    "confirmCheckin": "Потвърди Отчитането",
+    "cameraInstructions": "Насочете камерата към прожектирания QR код.",
+    "selectCamera": "Избор на камера...",
+    "manualInputPrompt": "Проблем с камерата? Въведете кода ръчно",
+    "scannerTitle": "Скенер за регистрация",
+    "signatureRequiredInfo": "Изисква се вашият подпис за регистриране на излизане.",
+    "processError": "Грешка при обработка на заявката.",
+    "checkinRecorded": "Регистрирано влизане",
+    "checkoutRecorded": "Регистрирано излизане",
+    "qrDetected": "Открит е QR код.",
+    "codeMustBe6Digits": "Кодът трябва да съдържа 6 цифри.",
+    "provideSignature": "Моля, предоставете вашия подпис."
   },
   "common": {
     "save": "Запази",
@@ -340,8 +347,26 @@
     "totalFormations": "Общо Регистрирани",
     "completedSigned": "Завършени и Подписани",
     "accumulatedTime": "Натрупано Време",
-    "downloadCertificate": "Download Certificate PDF",
-    "scanQR": "Scan QR"
+    "downloadCertificate": "Изтегляне на сертификат PDF",
+    "scanQR": "Сканиране на QR",
+    "twoFactorTitle": "Двуфакторна автентикация (2FA)",
+    "twoFactorActive": "✓ Двуфакторната автентикация в момента е активирана за вашия профил.",
+    "disable2FA": "Деактивиране на 2FA",
+    "twoFactorDesc": "Защитете профила си, като добавите 6-цифрен код за потвърждение, генериран от вашето приложение за автентикация (Google Authenticator, Authy).",
+    "setup2FA": "Настройка на 2FA",
+    "twoFactorStep1": "1. Сканирайте този QR код с вашето приложение за автентикация:",
+    "twoFactorSecretManual": "Или въведете тайния ключ ръчно:",
+    "twoFactorStep2": "2. Въведете 6-цифрения код:",
+    "confirmAndEnable": "Потвърждаване и активиране",
+    "cancel": "Отказ",
+    "twoFactorSetupError": "Грешка при стартиране на настройката на 2FA.",
+    "connectionError": "Грешка във връзката.",
+    "codeMustBe6Digits": "Кодът трябва да съдържа 6 цифри.",
+    "twoFactorEnableSuccess": "Двуфакторната автентикация е активирана успешно!",
+    "incorrectCode": "Грешен код.",
+    "disable2FAConfirm": "Сигурни ли сте, че искате да деактивирате двуфакторната автентикация?",
+    "twoFactorDisableSuccess": "2FA е деактивирана успешно.",
+    "twoFactorDisableError": "Грешка при деактивиране на 2FA."
   },
   "register": {
     "title": "Заявка за Регистрация",
@@ -363,7 +388,7 @@
     "loginHere": "Вход"
   },
   "audit": {
-    "title": "Audit Log",
+    "title": "Одитен Журнал",
     "subtitle": "Проследимост на действията в системата",
     "searchPlaceholder": "Търсене по действие, потребител или детайли...",
     "columns": {
@@ -374,26 +399,26 @@
       "ip": "Изходен IP"
     },
     "noRecords": "Не са намерени одитни записи.",
-    "exportCSV": "Export to CSV"
+    "exportCSV": "Експортиране в CSV"
   },
   "cloudSettings": {
-    "saveSuccess": "Ajustes de nube guardados correctamente",
-    "saveError": "Error al guardar ajustes",
-    "connectionError": "Error de conexión",
-    "backupSuccess": "Copia de seguridad realizada y subida a la nube",
-    "backupError": "Error al realizar el backup",
-    "title": "Ajustes de Nube",
-    "backingUp": "Respaldando...",
-    "forceBackupBtn": "Forzar Backup DB",
-    "description": "Configura aquí las credenciales para conectar la plataforma con la API de OneDrive (Microsoft Graph). Estas credenciales se utilizarán para subir los documentos de las formaciones y los backups de la base de datos.",
-    "providerLabel": "Proveedor de Nube Activo",
-    "comingSoon": "Próximamente",
-    "azureCredentials": "Credenciales de Microsoft Entra (Azure)",
+    "saveSuccess": "Облачните настройки са запазени успешно",
+    "saveError": "Грешка при запазване на настройките",
+    "connectionError": "Грешка във връзката",
+    "backupSuccess": "Резервното копие е създадено и качено в облака",
+    "backupError": "Грешка при създаване на резервно копие",
+    "title": "Облачни Настройки",
+    "backingUp": "Създаване на резервно копие...",
+    "forceBackupBtn": "Принудително Резервно Копие",
+    "description": "Конфигурирайте тук идентификационните данни за връзка с OneDrive API (Microsoft Graph). Тези данни ще се използват за качване на документи за обучения и резервни копия на базата данни.",
+    "providerLabel": "Активен Облачен Доставчик",
+    "comingSoon": "Очаквайте скоро",
+    "azureCredentials": "Идентификационни данни за Microsoft Entra (Azure)",
     "tenantIdLabel": "Tenant ID",
     "clientIdLabel": "Client ID (App ID)",
     "clientSecretLabel": "Client Secret",
-    "refreshTokenLabel": "Refresh Token (Larga duración)",
-    "refreshTokenHelp": "Este token se usará para obtener Access Tokens automáticamente de la Graph API sin intervención del usuario.",
-    "saveBtn": "Guardar Ajustes"
+    "refreshTokenLabel": "Refresh Token (Дълготраен)",
+    "refreshTokenHelp": "Този токен ще се използва за автоматично получаване на Access Tokens от Graph API без намеса на потребителя.",
+    "saveBtn": "Запази Настройките"
   }
 }

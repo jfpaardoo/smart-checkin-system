@@ -88,7 +88,7 @@ export default function ScannerCheckin() {
         if (parsed.formationId) payload.formationId = parsed.formationId;
         if (parsed.adminLat) payload.adminLat = parsed.adminLat;
         if (parsed.adminLng) payload.adminLng = parsed.adminLng;
-      } catch (e) {
+      } catch {
         // Entrada manual (solo 6 números), el backend deducirá el resto.
         payload.token = rawInput;
       }
@@ -123,7 +123,7 @@ export default function ScannerCheckin() {
         if (data.needsSignature) {
           setPendingToken(payload.token);
           setNeedsSignature(true);
-          toast.info('Se requiere su firma para registrar la salida.');
+          toast.info(t('checkin.signatureRequiredInfo', 'Se requiere su firma para registrar la salida.'));
           setLoading(false);
           return;
         }
@@ -131,7 +131,7 @@ export default function ScannerCheckin() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Error al procesar la solicitud');
+        throw new Error(errorData.message || t('checkin.processError', 'Error al procesar la solicitud'));
       }
 
       const data = await response.json();
@@ -139,14 +139,14 @@ export default function ScannerCheckin() {
       
       // Pintamos la modal de éxito con el nombre real de la formación devuelto por el backend
       setFormationDetails({
-        name: data.formationName || 'Formación',
-        description: data.checkin?.type === 'ENTRADA' ? 'Entrada registrada' : 'Salida registrada'
+        name: data.formationName || t('formations.title', 'Formación'),
+        description: data.checkin?.type === 'ENTRADA' ? t('checkin.checkinRecorded', 'Entrada registrada') : t('checkin.checkoutRecorded', 'Salida registrada')
       });
       setSuccessModal(true);
       resetScanner();
     } catch (error) {
       setLoading(false);
-      toast.error(error.message || 'Error al procesar la solicitud');
+      toast.error(error.message || t('checkin.processError', 'Error al procesar la solicitud'));
     }
   };
 
@@ -159,7 +159,7 @@ export default function ScannerCheckin() {
       scannedRef.current = true;
 
       stopScannerSafely(html5QrcodeRef.current);
-      toast.success('Código QR detectado.');
+      toast.success(t('checkin.qrDetected', 'Código QR detectado.'));
       handleCheckinExecution(decodedText);
     };
 
@@ -187,7 +187,7 @@ export default function ScannerCheckin() {
   const handleManualSubmit = (e) => {
     e.preventDefault();
     if (manualCode.length !== 6) {
-      toast.error('El código debe tener 6 dígitos.');
+      toast.error(t('checkin.codeMustBe6Digits', 'El código debe tener 6 dígitos.'));
       return;
     }
     // Pasamos el código puro. El backend buscará a qué formación pertenece.
@@ -196,7 +196,7 @@ export default function ScannerCheckin() {
 
   const handleSignatureSubmit = () => {
     if (sigCanvas.current.isEmpty()) {
-      toast.error('Por favor proporcione su firma.');
+      toast.error(t('checkin.provideSignature', 'Por favor proporcione su firma.'));
       return;
     }
     const signatureBase64 = sigCanvas.current.getCanvas().toDataURL('image/png');
@@ -282,7 +282,7 @@ export default function ScannerCheckin() {
               onClick={() => {
                 setIsManualInput(false);
                 setManualCode('');
-                toast.info('Cámara reactivada.');
+                toast.info(t('dashboard.cameraReactivated', 'Cámara reactivada.'));
               }}
             >
               <FontAwesomeIcon icon={faCamera} className="me-2" />
@@ -334,7 +334,7 @@ export default function ScannerCheckin() {
             style={{ fontSize: '0.95rem', fontWeight: 600 }}
             onClick={() => {
               setIsManualInput(true);
-              toast.info('Modo manual activado: Introduce el código de 6 dígitos.');
+              toast.info(t('dashboard.manualActivated', 'Modo manual activado: Introduce el código de 6 dígitos.'));
             }}
           >
             <FontAwesomeIcon icon={faKeyboard} className="me-2" />

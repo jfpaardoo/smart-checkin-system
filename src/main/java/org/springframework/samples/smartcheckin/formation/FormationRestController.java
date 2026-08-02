@@ -113,6 +113,35 @@ public class FormationRestController {
         return ResponseEntity.ok(saved);
     }
 
+    private void syncDocumentsOnUpdate(Formation existing, FormationRequest request, List<MultipartFile> files) {
+        List<String> toKeep = request.getExistingDocumentUrls() != null ? request.getExistingDocumentUrls() : List.of();
+        
+        List<String> removedDocs = new ArrayList<>(existing.getDocumentUrls());
+        removedDocs.removeAll(toKeep);
+        for (String removedDoc : removedDocs) {
+            try {
+                oneDriveService.deleteFile(removedDoc);
+            } catch (Exception e) {
+                log.warn("Error deleting removed document from OneDrive: {}", e.getMessage());
+            }
+        }
+
+        existing.getDocumentUrls().retainAll(toKeep);
+        
+        if (files != null) {
+            for (MultipartFile file : files) {
+                if (file != null && !file.isEmpty()) {
+                    try {
+                        String link = oneDriveService.uploadFile(file, request.getName());
+                        existing.getDocumentUrls().add(link);
+                    } catch (Exception e) {
+                        log.error("Error uploading file: {}", e.getMessage(), e);
+                    }
+                }
+            }
+        }
+    }
+
     @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Formation> updateFormation(
@@ -127,25 +156,7 @@ public class FormationRestController {
         existing.setDescription(request.getDescription());
         existing.setFormationDate(request.getFormationDate());
         
-        // Retain only existing URLs that are still present in the request
-        List<String> toKeep = request.getExistingDocumentUrls();
-        if (toKeep == null) {
-            toKeep = new ArrayList<>();
-        }
-        existing.getDocumentUrls().retainAll(toKeep);
-        
-        if (files != null && !files.isEmpty()) {
-            for (MultipartFile file : files) {
-                if (file != null && !file.isEmpty()) {
-                    try {
-                        String link = oneDriveService.uploadFile(file, request.getName());
-                        existing.getDocumentUrls().add(link);
-                    } catch (Exception e) {
-                        log.error("Error uploading file: {}", e.getMessage(), e);
-                    }
-                }
-            }
-        }
+        syncDocumentsOnUpdate(existing, request, files);
         
         Formation saved = formationService.updateFormation(existing, id);
         notifyFormationsUpdate(saved.getId());
