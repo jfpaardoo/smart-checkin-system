@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.samples.smartcheckin.audit.AnomalyDetectionService;
 import org.springframework.samples.smartcheckin.auth.payload.request.LoginRequest;
 import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest;
 import org.springframework.samples.smartcheckin.auth.payload.response.JwtResponse;
@@ -41,6 +42,7 @@ import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -55,11 +57,14 @@ public class AuthController {
     private final SimpMessagingTemplate messagingTemplate;
     private final TotpService totpService;
     private final UserDetailsServiceImpl userDetailsServiceImpl;
+    private final AnomalyDetectionService anomalyDetectionService;
+    private final HttpServletRequest request;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager, UserService userService, 
             AuthoritiesService authoritiesService, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, 
-            SimpMessagingTemplate messagingTemplate, TotpService totpService, UserDetailsServiceImpl userDetailsServiceImpl) {
+            SimpMessagingTemplate messagingTemplate, TotpService totpService, UserDetailsServiceImpl userDetailsServiceImpl,
+            AnomalyDetectionService anomalyDetectionService, HttpServletRequest request) {
         this.userService = userService;
         this.authoritiesService = authoritiesService;
         this.jwtUtils = jwtUtils;
@@ -68,6 +73,8 @@ public class AuthController {
         this.messagingTemplate = messagingTemplate;
         this.totpService = totpService;
         this.userDetailsServiceImpl = userDetailsServiceImpl;
+        this.anomalyDetectionService = anomalyDetectionService;
+        this.request = request;
     }
 
     @PostMapping("/signin")
@@ -117,7 +124,8 @@ public class AuthController {
 
             return ResponseEntity.ok().body(new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), roles));
         }catch(BadCredentialsException exception){
-            handleFailedLogin(user);
+            String ipAddress = request.getRemoteAddr();
+            handleFailedLogin(user, loginRequest.getUsername(), ipAddress);
             return ResponseEntity.badRequest().body(new MessageResponse("Bad Credentials!"));
         }
     }
@@ -204,7 +212,7 @@ public class AuthController {
         return null;
     }
 
-    private void handleFailedLogin(User user) {
+    private void handleFailedLogin(User user, String username, String ipAddress) {
         if (user != null) {
             int attempts = user.getFailedLoginAttempts() == null ? 0 : user.getFailedLoginAttempts();
             attempts++;
@@ -213,6 +221,11 @@ public class AuthController {
                 user.setAccountLockedUntil(LocalDateTime.now(ZoneId.systemDefault()).plusMinutes(15));
             }
             userService.saveUser(user);
+            
+            anomalyDetectionService.recordFailedLogin(user.getUsername(), ipAddress, attempts);
+        } else {
+            // Unregistered user attempted login
+            anomalyDetectionService.recordFailedLogin(username, ipAddress, 1);
         }
     }
 

@@ -1,14 +1,13 @@
 package org.springframework.samples.smartcheckin.auth;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.doReturn;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 import java.util.List;
 
@@ -22,12 +21,18 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
+import org.springframework.samples.smartcheckin.audit.AnomalyDetectionService;
 import org.springframework.samples.smartcheckin.auth.payload.request.LoginRequest;
+import org.springframework.samples.smartcheckin.auth.payload.request.SignupRequest;
+import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest;
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
 import org.springframework.samples.smartcheckin.user.UserService;
+import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.samples.smartcheckin.user.AuthoritiesService;
+import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.core.Authentication;
@@ -37,6 +42,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsServiceImpl;
+import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
 import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
@@ -80,6 +86,9 @@ class AuthControllerTests {
 	@MockitoBean
 	private UserDetailsServiceImpl userDetailsService;
 
+	@MockitoBean
+	private AnomalyDetectionService anomalyDetectionService;
+
 	@Autowired
 	private ObjectMapper objectMapper;
 
@@ -118,7 +127,7 @@ class AuthControllerTests {
 
 	@Test
 	void shouldNotAuthenticateUnapprovedUser() throws Exception {
-		org.springframework.samples.smartcheckin.user.User unapprovedUser = new org.springframework.samples.smartcheckin.user.User();
+		User unapprovedUser = new User();
 		unapprovedUser.setIsApproved(false);
 		when(userService.findUser(loginRequest.getUsername())).thenReturn(unapprovedUser);
 
@@ -129,7 +138,7 @@ class AuthControllerTests {
 
 	@Test
 	void shouldNotAuthenticateLockedUser() throws Exception {
-		org.springframework.samples.smartcheckin.user.User lockedUser = new org.springframework.samples.smartcheckin.user.User();
+		User lockedUser = new User();
 		lockedUser.setIsApproved(true);
 		lockedUser.setAccountLockedUntil(java.time.LocalDateTime.now().plusMinutes(10));
 		when(userService.findUser(loginRequest.getUsername())).thenReturn(lockedUser);
@@ -141,7 +150,7 @@ class AuthControllerTests {
 
 	@Test
 	void shouldChallengeTwoFactorAuthentication() throws Exception {
-		org.springframework.samples.smartcheckin.user.User user2fa = new org.springframework.samples.smartcheckin.user.User();
+		User user2fa = new User();
 		user2fa.setIsApproved(true);
 		user2fa.setTwoFactorEnabled(true);
 		user2fa.setUsername("owner");
@@ -158,21 +167,26 @@ class AuthControllerTests {
 
 	@Test
 	void shouldHandleBadCredentials() throws Exception {
+		User user = new User();
+		user.setUsername(loginRequest.getUsername());
+		when(userService.findUser(loginRequest.getUsername())).thenReturn(user);
 		when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-				.thenThrow(new org.springframework.security.authentication.BadCredentialsException("Bad Credentials"));
+				.thenThrow(new BadCredentialsException("Bad Credentials"));
 
 		mockMvc.perform(post(BASE_URL + "/signin").with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest)))
 				.andExpect(status().isBadRequest());
+				
+		verify(anomalyDetectionService).recordFailedLogin(eq(loginRequest.getUsername()), any(), eq(1));
 	}
 
 	@Test
 	void shouldVerifyTwoFactorSuccess() throws Exception {
-		org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest req = new org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest();
+		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
 		req.setUsername("user1");
 		req.setCode("123456");
 
-		org.springframework.samples.smartcheckin.user.User user = new org.springframework.samples.smartcheckin.user.User();
+		User user = new User();
 		user.setId(1);
 		user.setUsername("user1");
 		user.setTwoFactorSecret("SECRET");
@@ -190,11 +204,11 @@ class AuthControllerTests {
 
 	@Test
 	void shouldVerifyTwoFactorInvalidCode() throws Exception {
-		org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest req = new org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest();
+		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
 		req.setUsername("user1");
 		req.setCode("000000");
 
-		org.springframework.samples.smartcheckin.user.User user = new org.springframework.samples.smartcheckin.user.User();
+		User user = new User();
 		user.setUsername("user1");
 		user.setTwoFactorSecret("SECRET");
 
@@ -208,15 +222,15 @@ class AuthControllerTests {
 
 	@Test
 	void shouldRegisterUserSuccess() throws Exception {
-		org.springframework.samples.smartcheckin.auth.payload.request.SignupRequest signup = new org.springframework.samples.smartcheckin.auth.payload.request.SignupRequest();
+		SignupRequest signup = new SignupRequest();
 		signup.setUsername("newuser");
 		signup.setPassword("password");
 		signup.setPersonalCode("9999");
 		signup.setFirstName("New");
 		signup.setLastName("User");
 
-		when(userService.findUser("newuser")).thenThrow(new org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException("User", "username", "newuser"));
-		when(authoritiesService.findByAuthority("EMPLOYEE")).thenReturn(new org.springframework.samples.smartcheckin.user.Authorities());
+		when(userService.findUser("newuser")).thenThrow(new ResourceNotFoundException("User", "username", "newuser"));
+		when(authoritiesService.findByAuthority("EMPLOYEE")).thenReturn(new Authorities());
 
 		mockMvc.perform(post(BASE_URL + "/signup").with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(signup)))
@@ -244,14 +258,14 @@ class AuthControllerTests {
 	@Test
 	@WithMockUser
 	void shouldNotRegisterExistingUser() throws Exception {
-		org.springframework.samples.smartcheckin.auth.payload.request.SignupRequest signup = new org.springframework.samples.smartcheckin.auth.payload.request.SignupRequest();
+		SignupRequest signup = new SignupRequest();
 		signup.setUsername("existinguser");
 		signup.setPassword("password");
 		signup.setPersonalCode("9999");
 		signup.setFirstName("New");
 		signup.setLastName("User");
 
-		org.springframework.samples.smartcheckin.user.User existing = new org.springframework.samples.smartcheckin.user.User();
+		User existing = new User();
 		existing.setUsername("existinguser");
 
 		when(userService.findUser("existinguser")).thenReturn(existing);
@@ -264,14 +278,14 @@ class AuthControllerTests {
 	@Test
 	@WithMockUser
 	void shouldLockUserAfterFiveFailedLogins() throws Exception {
-		org.springframework.samples.smartcheckin.user.User user = new org.springframework.samples.smartcheckin.user.User();
+		User user = new User();
 		user.setUsername(loginRequest.getUsername());
 		user.setFailedLoginAttempts(4);
 		user.setIsApproved(true);
 
 		when(userService.findUser(loginRequest.getUsername())).thenReturn(user);
 		when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-				.thenThrow(new org.springframework.security.authentication.BadCredentialsException("Bad Credentials"));
+				.thenThrow(new BadCredentialsException("Bad Credentials"));
 
 		mockMvc.perform(post(BASE_URL + "/signin").with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest)))
@@ -281,7 +295,7 @@ class AuthControllerTests {
 	@Test
 	@WithMockUser
 	void shouldUnlockExpiredLockout() throws Exception {
-		org.springframework.samples.smartcheckin.user.User user = new org.springframework.samples.smartcheckin.user.User();
+		User user = new User();
 		user.setUsername(loginRequest.getUsername());
 		user.setIsApproved(true);
 		user.setAccountLockedUntil(java.time.LocalDateTime.now().minusMinutes(1)); // Expired lockout

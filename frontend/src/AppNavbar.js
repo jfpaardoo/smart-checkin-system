@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import tokenService from './services/token.service';
 import jwt_decode from "jwt-decode";
 import LanguageSwitcher from './components/LanguageSwitcher';
+import { useToast } from './components/ToastProvider';
+import { useWebSocket } from './context/WebSocketProvider';
 
 function AppNavbar() {
     const { t } = useTranslation();
@@ -13,8 +15,26 @@ function AppNavbar() {
     const [username, setUsername] = useState("");
     const jwt = tokenService.getLocalAccessToken();
     const [collapsed, setCollapsed] = useState(true);
+    const toast = useToast();
+    const { stompClient, isConnected } = useWebSocket();
 
     const toggleNavbar = () => setCollapsed(!collapsed);
+
+    useEffect(() => {
+        let subscription = null;
+        if (isConnected && stompClient && jwt) {
+            subscription = stompClient.subscribe('/topic/alerts', (message) => {
+                if (message.body) {
+                    toast.error(message.body);
+                }
+            });
+        }
+        return () => {
+            if (subscription) {
+                subscription.unsubscribe();
+            }
+        };
+    }, [isConnected, stompClient, jwt, toast]);
 
     useEffect(() => {
         if (jwt) {
