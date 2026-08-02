@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.smartcheckin.auth.payload.response.JwtResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @Aspect
 @Component
@@ -18,11 +19,13 @@ public class AuditAspect {
 
     private final AuditLogRepository auditLogRepository;
     private final HttpServletRequest request;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Autowired
-    public AuditAspect(AuditLogRepository auditLogRepository, HttpServletRequest request) {
+    public AuditAspect(AuditLogRepository auditLogRepository, HttpServletRequest request, SimpMessagingTemplate messagingTemplate) {
         this.auditLogRepository = auditLogRepository;
         this.request = request;
+        this.messagingTemplate = messagingTemplate;
     }
 
     private void logAudit(String action, String details) {
@@ -32,6 +35,7 @@ public class AuditAspect {
 
         AuditLog log = new AuditLog(action, username, details, ipAddress);
         auditLogRepository.save(log);
+        messagingTemplate.convertAndSend("/topic/audit", "NEW_LOG");
     }
 
     // Intercept user creation/update
@@ -137,7 +141,7 @@ public class AuditAspect {
     }
 
     // Intercept data exports
-    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.exports.ExportRestController.*(..))", returning = "result")
+    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.exports.ExportRestController.*(..)) || execution(* org.springframework.samples.smartcheckin.audit.AuditController.exportAuditCsv(..))", returning = "result")
     public void logDataExport(JoinPoint joinPoint, Object result) {
         if (result instanceof ResponseEntity<?> responseEntity && responseEntity.getStatusCode().is2xxSuccessful()) {
             String methodName = joinPoint.getSignature().getName();

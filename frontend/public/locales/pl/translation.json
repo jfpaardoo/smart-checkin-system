@@ -96,7 +96,11 @@
     "duplicateUsername": "Nazwa użytkownika już istnieje dla innego użytkownika.",
     "duplicateGeneric": "Wystąpił konflikt w bazie danych (zduplikowany wpis).",
     "activeEmployees": "Aktywni Pracownicy",
-    "pendingRequestsTab": "Oczekujące Wnioski"
+    "pendingRequestsTab": "Oczekujące Wnioski",
+    "userEntity": "Użytkownik",
+    "registrationRequest": "Wniosek o rejestrację",
+    "approvedSuccess": "Pracownik został pomyślnie zatwierdzony i aktywowany.",
+    "approveError": "Błąd podczas zatwierdzania pracownika."
   },
   "formations": {
     "title": "Zarządzanie Szkoleniami",
@@ -265,7 +269,7 @@
     "yes": "Tak",
     "no": "Nie",
     "connectionError": "Błąd połączenia. Spróbuj ponownie.",
-    "deleteConfirm": "Czy na pewno chcesz usunąć tę pozycję {{entity}}?",
+    "deleteConfirm": "Czy na pewno chcesz usunąć: {{entity}}?",
     "deleted": "{{entity}} usunięto pomyślnie",
     "deleteError": "Błąd podczas usuwania {{entity}}",
     "confirmLogout": "Czy na pewno chcesz się wylogować?",
@@ -366,7 +370,7 @@
     "codeMustBe6Digits": "Kod musi składać się z 6 cyfr.",
     "twoFactorEnableSuccess": "Uwierzytelnianie dwuargumentowe zostało pomyślnie włączone!",
     "incorrectCode": "Nieprawidłowy kod.",
-    "disable2FAConfirm": "Czy na pewno chcesz wyłączyć uwierzytelnianie dwuargumentowe?",
+    "disable2FAPrompt": "Wprowadź kod 2FA, aby potwierdzić dezaktywację:",
     "twoFactorDisableSuccess": "2FA zostało pomyślnie wyłączone.",
     "twoFactorDisableError": "Błąd podczas wyłączania 2FA."
   },
@@ -401,7 +405,39 @@
       "ip": "IP Źródłowe"
     },
     "noRecords": "Nie znaleziono wpisów audytowych.",
-    "exportCSV": "Eksportuj do CSV"
+    "exportCSV": "Eksportuj do CSV",
+    "actions": {
+      "USER_SAVE": "ZAPISZ UŻYTKOWNIKA",
+      "FORMATION_SAVE": "ZAPISZ SZKOLENIE",
+      "FORMATION_DELETE": "USUŃ SZKOLENIE",
+      "CHECKIN_SUCCESS": "CHECK-IN ZAKOŃCZONY",
+      "CHECKOUT_SUCCESS": "CHECK-OUT ZAKOŃCZONY",
+      "LOGIN_SUCCESS": "LOGOWANIE ZAKOŃCZONE",
+      "PASSWORD_CHANGE": "ZMIANA HASŁA",
+      "2FA_ENABLE": "WŁĄCZ 2FA",
+      "2FA_DISABLE": "WYŁĄCZ 2FA",
+      "USER_DELETE": "USUŃ UŻYTKOWNIKA",
+      "DATA_EXPORT": "EKSPORT DANYCH",
+      "BRUTE_FORCE_ATTACK": "ATAK BRUTE FORCE"
+    },
+    "details": {
+      "dataExported": "Dane wyeksportowane metodą: {{method}}",
+      "userDeleted": "Użytkownik usunięty: ID {{id}}",
+      "userSaved": "Użytkownik zapisany/zaktualizowany: {{user}}",
+      "formationSaved": "Szkolenie zapisane/zaktualizowane: {{form}}",
+      "formationDeleted": "Szkolenie usunięte: ID {{id}}",
+      "failedLogin": "Nieudana próba logowania dla użytkownika: {{user}}",
+      "checkinSuccess": "Użytkownik pomyślnie zameldowany",
+      "checkoutSuccess": "Użytkownik pomyślnie wymeldowany z podpisem",
+      "loginSuccess": "Użytkownik zalogował się pomyślnie",
+      "loginSuccess2FA": "Użytkownik zalogował się pomyślnie używając 2FA",
+      "passwordChange": "Użytkownik zmienił hasło",
+      "2faEnable": "Użytkownik włączył uwierzytelnianie dwuskładnikowe",
+      "2faDisable": "Użytkownik wyłączył uwierzytelnianie dwuskładnikowe",
+      "dbBackup": "Kopia zapasowa bazy danych uruchomiona",
+      "userSavedNoName": "Użytkownik zapisany/zaktualizowany",
+      "formationSavedNoName": "Szkolenie utworzone/zaktualizowane"
+    }
   },
   "cloudSettings": {
     "saveSuccess": "Ustawienia chmury zostały pomyślnie zapisane",

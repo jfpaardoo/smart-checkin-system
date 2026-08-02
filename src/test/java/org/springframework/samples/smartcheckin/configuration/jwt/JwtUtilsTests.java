@@ -3,14 +3,22 @@ package org.springframework.samples.smartcheckin.configuration.jwt;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
 import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
 class JwtUtilsTests {
 
@@ -63,11 +71,11 @@ class JwtUtilsTests {
 	@Test
 	void testSignatureException() {
 		// Generate a token with a different key
-		io.jsonwebtoken.security.Keys.keyPairFor(io.jsonwebtoken.SignatureAlgorithm.RS256);
-		java.security.KeyPair otherKeyPair = io.jsonwebtoken.security.Keys.keyPairFor(io.jsonwebtoken.SignatureAlgorithm.RS256);
-		String token = io.jsonwebtoken.Jwts.builder()
+		Keys.keyPairFor(SignatureAlgorithm.RS256);
+		KeyPair otherKeyPair = Keys.keyPairFor(SignatureAlgorithm.RS256);
+		String token = Jwts.builder()
 				.setSubject("test")
-				.signWith(otherKeyPair.getPrivate(), io.jsonwebtoken.SignatureAlgorithm.RS256)
+				.signWith(otherKeyPair.getPrivate(), SignatureAlgorithm.RS256)
 				.compact();
 		assertFalse(jwtUtils.validateJwtToken(token));
 	}
@@ -75,7 +83,7 @@ class JwtUtilsTests {
 	@Test
 	@SuppressWarnings("null")
 	void testExpiredJwtException() {
-		java.security.KeyPair keyPair = (java.security.KeyPair) ReflectionTestUtils.getField(jwtUtils, "rsaKeyPair");
+		KeyPair keyPair = (KeyPair) ReflectionTestUtils.getField(jwtUtils, "rsaKeyPair");
 		assertNotNull(keyPair);
 		String token = io.jsonwebtoken.Jwts.builder()
 				.setSubject("test")
@@ -97,9 +105,9 @@ class JwtUtilsTests {
 
 	@Test
 	void testInitKeysNoSuchAlgorithmException() {
-		try (org.mockito.MockedStatic<java.security.KeyPairGenerator> mockedStatic = mockStatic(java.security.KeyPairGenerator.class)) {
-			mockedStatic.when(() -> java.security.KeyPairGenerator.getInstance("RSA"))
-					.thenThrow(new java.security.NoSuchAlgorithmException("RSA not found"));
+		try (MockedStatic<KeyPairGenerator> mockedStatic = mockStatic(KeyPairGenerator.class)) {
+			mockedStatic.when(() -> KeyPairGenerator.getInstance("RSA"))
+					.thenThrow(new NoSuchAlgorithmException("RSA not found"));
 			
 			RuntimeException exception = assertThrows(RuntimeException.class, () -> jwtUtils.initKeys());
 			assertTrue(exception.getMessage().contains("Failed to generate RSA Key Pair"));

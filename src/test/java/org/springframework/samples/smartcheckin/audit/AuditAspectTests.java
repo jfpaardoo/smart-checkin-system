@@ -15,18 +15,22 @@ import org.springframework.samples.smartcheckin.auth.payload.response.JwtRespons
 import org.aspectj.lang.Signature;
 import java.util.List;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 @SuppressWarnings({"null", "unused"})
 class AuditAspectTests {
 
 	private AuditLogRepository auditLogRepository;
+	private SimpMessagingTemplate messagingTemplate;
 	private AuditAspect aspect;
 
 	@BeforeEach
 	void setUp() {
 		auditLogRepository = mock(AuditLogRepository.class);
+		messagingTemplate = mock(SimpMessagingTemplate.class);
 		HttpServletRequest request = mock(HttpServletRequest.class);
 		when(request.getRemoteAddr()).thenReturn("127.0.0.1");
-		aspect = new AuditAspect(auditLogRepository, request);
+		aspect = new AuditAspect(auditLogRepository, request, messagingTemplate);
 
 		SecurityContext securityContext = mock(SecurityContext.class);
 		Authentication authentication = mock(Authentication.class);

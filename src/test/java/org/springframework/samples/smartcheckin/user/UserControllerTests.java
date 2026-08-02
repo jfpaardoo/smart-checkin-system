@@ -21,6 +21,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
+import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest;
 import org.springframework.samples.smartcheckin.configuration.SecurityConfiguration;
 import org.springframework.samples.smartcheckin.exceptions.AccessDeniedException;
 import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
@@ -294,7 +295,7 @@ class UserControllerTests {
 		when(userService.findUser(anyString())).thenReturn(user);
 		when(totpService.validateCode("SECRET", "123456")).thenReturn(true);
 
-		org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest req = new org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest();
+		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
 		req.setCode("123456");
 
 		mockMvc.perform(post(BASE_URL + "/2fa/enable").with(csrf()).contentType(MediaType.APPLICATION_JSON)
@@ -304,9 +305,15 @@ class UserControllerTests {
 	@Test
 	@WithMockUser("admin")
 	void shouldDisableTwoFactor() throws Exception {
+		user.setTwoFactorSecret("SECRET");
 		when(userService.findUser(anyString())).thenReturn(user);
+		when(totpService.validateCode("SECRET", "123456")).thenReturn(true);
 
-		mockMvc.perform(post(BASE_URL + "/2fa/disable").with(csrf())).andExpect(status().isOk());
+		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
+		req.setCode("123456");
+
+		mockMvc.perform(post(BASE_URL + "/2fa/disable").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isOk());
 	}
 
 	@Test
@@ -391,7 +398,7 @@ class UserControllerTests {
 		when(userService.findUser(anyString())).thenReturn(user);
 		when(totpService.validateCode("SECRET", "123456")).thenReturn(false); // Wrong code
 
-		org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest req = new org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest();
+		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
 		req.setCode("123456");
 
 		mockMvc.perform(post(BASE_URL + "/2fa/enable").with(csrf()).contentType(MediaType.APPLICATION_JSON)
@@ -517,7 +524,7 @@ class UserControllerTests {
 		user.setTwoFactorSecret(null);
 		when(userService.findUser(anyString())).thenReturn(user);
 
-		org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest req = new org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest();
+		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
 		req.setCode("123456");
 
 		mockMvc.perform(post(BASE_URL + "/2fa/enable").with(csrf()).contentType(MediaType.APPLICATION_JSON)

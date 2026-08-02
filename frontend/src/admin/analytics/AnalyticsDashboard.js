@@ -145,17 +145,19 @@ export default function AnalyticsDashboard() {
                     {/* Export Dropdown Menu */}
                     <div className="d-flex gap-2">
                         <UncontrolledDropdown>
-                            <DropdownToggle className="ba-select-toggle d-inline-flex align-items-center gap-2">
-                                <FontAwesomeIcon icon={faDownload} />
-                                {t('analytics.exportData', 'Export Reports')}
+                            <DropdownToggle caret color="light" className="ba-select-toggle d-inline-flex align-items-center justify-content-between gap-2">
+                                <FontAwesomeIcon icon={faDownload} style={{ color: 'var(--ba-primary)' }} />
+                                <span className="fw-bold" style={{ color: '#2c3e50' }}>{t('analytics.exportData', 'Export Reports')}</span>
                             </DropdownToggle>
-                            <DropdownMenu end className="ba-dropdown-menu ba-light-dropdown">
+                            <DropdownMenu end className="ba-dropdown-menu shadow border-0 rounded-3">
                                 <DropdownItem header className="fw-bold text-muted">{t('analytics.formationExports', 'Formations & Signatures')}</DropdownItem>
-                                <DropdownItem onClick={() => handleDownloadExport('formations/csv', 'formaciones_firmas.csv')}>
-                                    <FontAwesomeIcon icon={faFileCsv} className="me-2 text-info" /> {t('analytics.formationsCsv', 'Formations & Signatures (CSV)')}
+                                <DropdownItem onClick={() => handleDownloadExport('formations/csv', 'formaciones_firmas.csv')} className="py-2 ba-dropdown-item">
+                                    <FontAwesomeIcon icon={faFileCsv} className="me-2" style={{ color: 'var(--ba-primary)' }} /> 
+                                    <span className="fw-bold" style={{ color: '#2c3e50' }}>{t('analytics.formationsCsv', 'Formations & Signatures (CSV)')}</span>
                                 </DropdownItem>
-                                <DropdownItem onClick={() => handleDownloadExport('formations/excel', 'formaciones_firmas.xlsx')}>
-                                    <FontAwesomeIcon icon={faFileExcel} className="me-2 text-success" /> {t('analytics.formationsExcel', 'Formations & Signatures (Excel)')}
+                                <DropdownItem onClick={() => handleDownloadExport('formations/excel', 'formaciones_firmas.xlsx')} className="py-2 ba-dropdown-item">
+                                    <FontAwesomeIcon icon={faFileExcel} className="me-2 text-success" /> 
+                                    <span className="fw-bold" style={{ color: '#2c3e50' }}>{t('analytics.formationsExcel', 'Formations & Signatures (Excel)')}</span>
                                 </DropdownItem>
                             </DropdownMenu>
                         </UncontrolledDropdown>

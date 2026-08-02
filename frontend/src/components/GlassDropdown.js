@@ -1,5 +1,6 @@
 import React from 'react';
 import { UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { useTranslation } from 'react-i18next';
 
 export default function GlassDropdown({ 
   options = [], 
@@ -9,6 +10,7 @@ export default function GlassDropdown({
   className = "",
   disabled = false 
 }) {
+  const { t } = useTranslation();
   const selectedOption = options.find(opt => String(opt.value) === String(value));
   const displayLabel = selectedOption ? selectedOption.label : placeholder;
 
@@ -37,7 +39,7 @@ export default function GlassDropdown({
             </DropdownItem>
           ))
         ) : (
-          <DropdownItem disabled>No hay opciones disponibles</DropdownItem>
+          <DropdownItem disabled>{t('common.noData', 'No hay opciones disponibles')}</DropdownItem>
         )}
       </DropdownMenu>
     </UncontrolledDropdown>

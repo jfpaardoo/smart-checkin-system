@@ -96,7 +96,11 @@
     "duplicateUsername": "Потребителското име вече съществува.",
     "duplicateGeneric": "Възникна конфликт в базата данни.",
     "activeEmployees": "Активни Служители",
-    "pendingRequestsTab": "Чакащи Заявки"
+    "pendingRequestsTab": "Чакащи Заявки",
+    "userEntity": "Потребител",
+    "registrationRequest": "Заявка за регистрация",
+    "approvedSuccess": "Служителят е одобрен и активиран успешно.",
+    "approveError": "Грешка при одобряването на служител."
   },
   "formations": {
     "title": "Управление на Обучения",
@@ -265,7 +269,7 @@
     "yes": "Да",
     "no": "Не",
     "connectionError": "Грешка във връзката. Моля, опитайте отново.",
-    "deleteConfirm": "Сигурни ли сте, че искате да изтриете {{entity}}?",
+    "deleteConfirm": "Сигурни ли сте, че искате да изтриете: {{entity}}?",
     "deleted": "{{entity}} е изтрит успешно",
     "deleteError": "Грешка при изтриване на {{entity}}",
     "confirmLogout": "Сигурни ли сте, че искате да излезете?",
@@ -366,7 +370,7 @@
     "codeMustBe6Digits": "Кодът трябва да съдържа 6 цифри.",
     "twoFactorEnableSuccess": "Двуфакторната автентикация е активирана успешно!",
     "incorrectCode": "Грешен код.",
-    "disable2FAConfirm": "Сигурни ли сте, че искате да деактивирате двуфакторната автентикация?",
+    "disable2FAPrompt": "Въведете 2FA кода, за да потвърдите деактивирането:",
     "twoFactorDisableSuccess": "2FA е деактивирана успешно.",
     "twoFactorDisableError": "Грешка при деактивиране на 2FA."
   },
@@ -401,7 +405,39 @@
       "ip": "Изходен IP"
     },
     "noRecords": "Не са намерени одитни записи.",
-    "exportCSV": "Експортиране в CSV"
+    "exportCSV": "Експортиране в CSV",
+    "actions": {
+      "USER_SAVE": "ЗАПАЗИ ПОТРЕБИТЕЛ",
+      "FORMATION_SAVE": "ЗАПАЗИ ОБУЧЕНИЕ",
+      "FORMATION_DELETE": "ИЗТРИЙ ОБУЧЕНИЕ",
+      "CHECKIN_SUCCESS": "УСПЕШЕН CHECK-IN",
+      "CHECKOUT_SUCCESS": "УСПЕШЕН CHECK-OUT",
+      "LOGIN_SUCCESS": "УСПЕШЕН ВХОД",
+      "PASSWORD_CHANGE": "ПРОМЯНА НА ПАРОЛА",
+      "2FA_ENABLE": "АКТИВИРАЙ 2FA",
+      "2FA_DISABLE": "ДЕАКТИВИРАЙ 2FA",
+      "USER_DELETE": "ИЗТРИЙ ПОТРЕБИТЕЛ",
+      "DATA_EXPORT": "ЕКСПОРТ НА ДАННИ",
+      "BRUTE_FORCE_ATTACK": "BRUTE FORCE АТАКА"
+    },
+    "details": {
+      "dataExported": "Данните са експортирани чрез метод: {{method}}",
+      "userDeleted": "Изтрит потребител: ID {{id}}",
+      "userSaved": "Запазен/Актуализиран потребител: {{user}}",
+      "formationSaved": "Запазено/Актуализирано обучение: {{form}}",
+      "formationDeleted": "Изтрито обучение: ID {{id}}",
+      "failedLogin": "Неуспешен опит за влизане за потребител: {{user}}",
+      "checkinSuccess": "Потребителят се регистрира успешно",
+      "checkoutSuccess": "Потребителят напусна успешно с подпис",
+      "loginSuccess": "Потребителят влезе успешно",
+      "loginSuccess2FA": "Потребителят влезе успешно с 2FA",
+      "passwordChange": "Потребителят промени паролата си",
+      "2faEnable": "Потребителят активира двуфакторна автентикация",
+      "2faDisable": "Потребителят деактивира двуфакторна автентикация",
+      "dbBackup": "Стартирано е архивиране на базата данни",
+      "userSavedNoName": "Запазен/Актуализиран потребител",
+      "formationSavedNoName": "Създадено/Актуализирано обучение"
+    }
   },
   "cloudSettings": {
     "saveSuccess": "Облачните настройки са запазени успешно",

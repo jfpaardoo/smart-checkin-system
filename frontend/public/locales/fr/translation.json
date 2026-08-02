@@ -96,7 +96,11 @@
     "duplicateUsername": "Le nom d'utilisateur existe déjà.",
     "duplicateGeneric": "Conflit de base de données.",
     "activeEmployees": "Employés Actifs",
-    "pendingRequestsTab": "Demandes en attente"
+    "pendingRequestsTab": "Demandes en attente",
+    "userEntity": "Utilisateur",
+    "registrationRequest": "Demande d'inscription",
+    "approvedSuccess": "Employé approuvé et activé avec succès.",
+    "approveError": "Erreur lors de l'approbation de l'employé."
   },
   "formations": {
     "title": "Gestion des Formations",
@@ -265,7 +269,7 @@
     "yes": "Oui",
     "no": "Non",
     "connectionError": "Erreur de connexion. Veuillez réessayer.",
-    "deleteConfirm": "Voulez-vous vraiment supprimer cet objet {{entity}} ?",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer : {{entity}} ?",
     "deleted": "{{entity}} supprimé avec succès",
     "deleteError": "Erreur lors de la suppression de {{entity}}",
     "confirmLogout": "Êtes-vous sûr de vouloir vous déconnecter ?",
@@ -366,7 +370,7 @@
     "codeMustBe6Digits": "Le code doit comporter 6 chiffres.",
     "twoFactorEnableSuccess": "Authentification à deux facteurs activée avec succès !",
     "incorrectCode": "Code incorrect.",
-    "disable2FAConfirm": "Êtes-vous sûr de vouloir désactiver l'authentification à deux facteurs ?",
+    "disable2FAPrompt": "Entrez le code 2FA pour confirmer la désactivation :",
     "twoFactorDisableSuccess": "2FA désactivée avec succès.",
     "twoFactorDisableError": "Erreur lors de la désactivation de la 2FA."
   },
@@ -401,7 +405,39 @@
       "ip": "IP Source"
     },
     "noRecords": "Aucun enregistrement d'audit trouvé.",
-    "exportCSV": "Exporter en CSV"
+    "exportCSV": "Exporter en CSV",
+    "actions": {
+      "USER_SAVE": "SAUVEGARDER L'UTILISATEUR",
+      "FORMATION_SAVE": "SAUVEGARDER LA FORMATION",
+      "FORMATION_DELETE": "SUPPRIMER LA FORMATION",
+      "CHECKIN_SUCCESS": "SUCCÈS DU CHECK-IN",
+      "CHECKOUT_SUCCESS": "SUCCÈS DU CHECK-OUT",
+      "LOGIN_SUCCESS": "CONNEXION RÉUSSIE",
+      "PASSWORD_CHANGE": "MOT DE PASSE MODIFIÉ",
+      "2FA_ENABLE": "ACTIVER 2FA",
+      "2FA_DISABLE": "DÉSACTIVER 2FA",
+      "USER_DELETE": "SUPPRIMER L'UTILISATEUR",
+      "DATA_EXPORT": "EXPORTER LES DONNÉES",
+      "BRUTE_FORCE_ATTACK": "ATTAQUE PAR FORCE BRUTE"
+    },
+    "details": {
+      "dataExported": "Données exportées via la méthode : {{method}}",
+      "userDeleted": "Utilisateur supprimé : ID {{id}}",
+      "userSaved": "Utilisateur enregistré/mis à jour : {{user}}",
+      "formationSaved": "Formation enregistrée/mise à jour : {{form}}",
+      "formationDeleted": "Formation supprimée : ID {{id}}",
+      "failedLogin": "Tentative de connexion échouée pour l'utilisateur : {{user}}",
+      "checkinSuccess": "L'utilisateur s'est enregistré avec succès",
+      "checkoutSuccess": "L'utilisateur a fait son check-out avec signature avec succès",
+      "loginSuccess": "Utilisateur connecté avec succès",
+      "loginSuccess2FA": "Utilisateur connecté avec succès avec 2FA",
+      "passwordChange": "L'utilisateur a changé son mot de passe",
+      "2faEnable": "L'utilisateur a activé l'authentification à deux facteurs",
+      "2faDisable": "L'utilisateur a désactivé l'authentification à deux facteurs",
+      "dbBackup": "Sauvegarde de la base de données déclenchée",
+      "userSavedNoName": "Utilisateur enregistré/mis à jour",
+      "formationSavedNoName": "Formation créée/mise à jour"
+    }
   },
   "cloudSettings": {
     "saveSuccess": "Paramètres cloud enregistrés avec succès",

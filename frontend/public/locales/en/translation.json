@@ -96,7 +96,11 @@
     "duplicateUsername": "The Username already exists for another user.",
     "duplicateGeneric": "A database conflict occurred (duplicated record).",
     "activeEmployees": "Active Employees",
-    "pendingRequestsTab": "Pending Requests"
+    "pendingRequestsTab": "Pending Requests",
+    "userEntity": "User",
+    "registrationRequest": "Registration request",
+    "approvedSuccess": "Employee approved and activated successfully.",
+    "approveError": "Error approving employee."
   },
   "formations": {
     "title": "Formations Management",
@@ -265,7 +269,7 @@
     "yes": "Yes",
     "no": "No",
     "connectionError": "Connection error. Please try again.",
-    "deleteConfirm": "Are you sure you want to delete this {{entity}}?",
+    "deleteConfirm": "Are you sure you want to delete: {{entity}}?",
     "deleted": "{{entity}} deleted successfully",
     "deleteError": "Failed to delete {{entity}}",
     "confirmLogout": "Are you sure you want to log out?",
@@ -366,7 +370,7 @@
     "codeMustBe6Digits": "The code must be 6 digits.",
     "twoFactorEnableSuccess": "Two-factor authentication successfully enabled!",
     "incorrectCode": "Incorrect code.",
-    "disable2FAConfirm": "Are you sure you want to disable two-factor authentication?",
+    "disable2FAPrompt": "Enter 2FA code to confirm deactivation:",
     "twoFactorDisableSuccess": "2FA successfully disabled.",
     "twoFactorDisableError": "Error disabling 2FA."
   },
@@ -401,7 +405,39 @@
       "ip": "Source IP"
     },
     "noRecords": "No audit records found.",
-    "exportCSV": "Export to CSV"
+    "exportCSV": "Export to CSV",
+    "actions": {
+      "USER_SAVE": "USER_SAVE",
+      "FORMATION_SAVE": "FORMATION_SAVE",
+      "FORMATION_DELETE": "FORMATION_DELETE",
+      "CHECKIN_SUCCESS": "CHECKIN_SUCCESS",
+      "CHECKOUT_SUCCESS": "CHECKOUT_SUCCESS",
+      "LOGIN_SUCCESS": "LOGIN_SUCCESS",
+      "PASSWORD_CHANGE": "PASSWORD_CHANGE",
+      "2FA_ENABLE": "2FA_ENABLE",
+      "2FA_DISABLE": "2FA_DISABLE",
+      "USER_DELETE": "USER_DELETE",
+      "DATA_EXPORT": "DATA_EXPORT",
+      "BRUTE_FORCE_ATTACK": "BRUTE_FORCE_ATTACK"
+    },
+    "details": {
+      "dataExported": "Data exported via method: {{method}}",
+      "userDeleted": "User deleted: ID {{id}}",
+      "userSaved": "User saved/updated: {{user}}",
+      "formationSaved": "Formation saved/updated: {{form}}",
+      "formationDeleted": "Formation deleted: ID {{id}}",
+      "failedLogin": "Failed login attempt for user: {{user}}",
+      "checkinSuccess": "User successfully checked in",
+      "checkoutSuccess": "User successfully checked out with signature",
+      "loginSuccess": "User logged in successfully",
+      "loginSuccess2FA": "User logged in successfully using 2FA",
+      "passwordChange": "User changed their password",
+      "2faEnable": "User enabled Two-Factor Authentication",
+      "2faDisable": "User disabled Two-Factor Authentication",
+      "dbBackup": "Database backup triggered",
+      "userSavedNoName": "User saved/updated",
+      "formationSavedNoName": "Formation created/updated"
+    }
   },
   "cloudSettings": {
     "saveSuccess": "Cloud settings saved successfully",
