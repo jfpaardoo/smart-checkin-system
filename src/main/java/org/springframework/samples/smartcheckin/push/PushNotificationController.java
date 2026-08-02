@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/push")
@@ -43,8 +44,16 @@ public class PushNotificationController {
     public ResponseEntity<Void> subscribe(@RequestBody PushSubscriptionDTO dto) {
         User user = userService.findCurrentUser();
 
-        // Avoid duplicate subscriptions for the same endpoint
-        if (subscriptionRepository.findByEndpoint(dto.getEndpoint()).isPresent()) {
+        // If the browser (endpoint) is already subscribed, update the user it belongs to
+        // This is crucial for when different users log in on the same browser
+        Optional<PushSubscriptionEntity> existingOpt = subscriptionRepository.findByEndpoint(dto.getEndpoint());
+        if (existingOpt.isPresent()) {
+            PushSubscriptionEntity existing = existingOpt.get();
+            if (existing.getUser() == null || !existing.getUser().getId().equals(user.getId())) {
+                existing.setUser(user);
+                subscriptionRepository.save(existing);
+                log.info("Push subscription transferred to user: {}", user.getUsername());
+            }
             return ResponseEntity.ok().build();
         }
 

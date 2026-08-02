@@ -1,15 +1,13 @@
 /* eslint-disable no-restricted-globals */
 /* Service Worker for BA Distribution Academy PWA */
-/* Handles Web Push notifications */
 
 self.addEventListener('push', function(event) {
   if (!event.data) return;
-
+  
   const data = (() => {
     try {
       return event.data.json();
     } catch (parseError) {
-      console.warn('Push payload not JSON, using as text:', parseError.message);
       return {
         title: 'Distribution Academy',
         body: event.data.text(),
@@ -29,9 +27,20 @@ self.addEventListener('push', function(event) {
     }
   };
 
-  event.waitUntil(
-    self.registration.showNotification(data.title || 'Distribution Academy', options)
-  );
+  // 1. Mostrar la notificación nativa en el SO
+  const notificationPromise = self.registration.showNotification(data.title || 'Distribution Academy', options);
+
+  // 2. Enviar el mensaje a la pestaña de React para que actualice la campanita
+  const notifyReactPromise = self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'PUSH_RECEIVED',
+        payload: data
+      });
+    });
+  });
+
+  event.waitUntil(Promise.all([notificationPromise, notifyReactPromise]));
 });
 
 self.addEventListener('notificationclick', function(event) {

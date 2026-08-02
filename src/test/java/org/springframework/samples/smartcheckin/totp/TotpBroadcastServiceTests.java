@@ -30,14 +30,14 @@ class TotpBroadcastServiceTests {
     }
 
     @Test
-    void testBroadcastTokenIfChanged_NullToken() {
+    void testBroadcastTokenIfChangedNullToken() {
         when(totpService.getCurrentToken()).thenReturn(null);
         totpBroadcastService.broadcastTokenIfChanged();
         verify(messagingTemplate, never()).convertAndSend(anyString(), any(Map.class));
     }
 
     @Test
-    void testBroadcastTokenIfChanged_SameToken() {
+    void testBroadcastTokenIfChangedSameToken() {
         ReflectionTestUtils.setField(totpBroadcastService, "lastBroadcastedToken", "TOKEN123");
         when(totpService.getCurrentToken()).thenReturn("TOKEN123");
         totpBroadcastService.broadcastTokenIfChanged();
@@ -45,7 +45,7 @@ class TotpBroadcastServiceTests {
     }
 
     @Test
-    void testBroadcastTokenIfChanged_DifferentToken() {
+    void testBroadcastTokenIfChangedDifferentToken() {
         ReflectionTestUtils.setField(totpBroadcastService, "lastBroadcastedToken", "TOKEN123");
         when(totpService.getCurrentToken()).thenReturn("TOKEN456");
         totpBroadcastService.broadcastTokenIfChanged();
@@ -54,7 +54,7 @@ class TotpBroadcastServiceTests {
     }
 
     @Test
-    void testBroadcastTokenIfChanged_Exception() {
+    void testBroadcastTokenIfChangedException() {
         when(totpService.getCurrentToken()).thenThrow(new RuntimeException("Simulated exception"));
         // Method catches exception and logs it, should not propagate
         totpBroadcastService.broadcastTokenIfChanged();

@@ -35,6 +35,8 @@ export default function FormationEditAdmin() {
   );
   const [files, setFiles] = useState([]);
 
+  const [isSaving, setIsSaving] = useState(false);
+
   function handleChange(event) {
     const target = event.target;
     const value = target.value;
@@ -90,6 +92,7 @@ export default function FormationEditAdmin() {
 
   function handleSubmit(event) {
     event.preventDefault();
+    setIsSaving(true);
 
     const formData = new FormData();
     const payload = {
@@ -126,12 +129,16 @@ export default function FormationEditAdmin() {
             errorMsg = t('formations.duplicateConflict');
           }
           toast.error(errorMsg);
+          setIsSaving(false);
         } else {
           toast.success(formation.id ? t('formations.updated') : t('formations.created'));
           setTimeout(() => { window.location.href = "/formations"; }, 1200);
         }
       })
-      .catch(() => toast.error(t('formations.connectionError')));
+      .catch(() => {
+        toast.error(t('formations.connectionError'));
+        setIsSaving(false);
+      });
   }
 
   const formattedDate = formation.formationDate 
@@ -237,11 +244,22 @@ export default function FormationEditAdmin() {
             </Col>
           </Row>
 
-          <div className="form-action-group">
-            <button className="ba-btn-primary" type="submit">
-              {t('formations.saveFormation')}
+          <div className="form-action-group mt-4 d-flex gap-3">
+            <button className="ba-btn-primary position-relative" type="submit" disabled={isSaving} style={{ minWidth: '150px' }}>
+              {isSaving ? (
+                <div className="d-flex align-items-center justify-content-center gap-2">
+                  <span className="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                  <span>{t('formations.saving', 'Guardando...')}</span>
+                </div>
+              ) : (
+                t('formations.saveFormation')
+              )}
             </button>
-            <Link to={`/formations/${id}/details`} className="ba-btn-secondary form-action-link">
+            <Link 
+              to={`/formations/${id}/details`} 
+              className={`ba-btn-secondary form-action-link ${isSaving ? 'disabled pe-none opacity-50' : ''}`}
+              aria-disabled={isSaving}
+            >
               {t('formations.cancel')}
             </Link>
           </div>

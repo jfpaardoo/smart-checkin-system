@@ -103,6 +103,7 @@ class PushNotificationControllerTests {
 
         PushSubscriptionEntity existing = new PushSubscriptionEntity();
         existing.setEndpoint("https://fcm.googleapis.com/fcm/send/abc123");
+        existing.setUser(testUser);
         when(subscriptionRepository.findByEndpoint("https://fcm.googleapis.com/fcm/send/abc123"))
             .thenReturn(Optional.of(existing));
 

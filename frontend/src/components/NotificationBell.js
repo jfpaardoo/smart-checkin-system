@@ -5,10 +5,6 @@ import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../hooks/useSubscription';
 import tokenService from '../services/token.service';
 
-/**
- * Converts a VAPID Base64URL-encoded public key to a Uint8Array
- * required by the PushManager.subscribe() API.
- */
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replaceAll('-', '+').replaceAll('_', '/');
@@ -26,7 +22,7 @@ export default function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Use the existing useSubscription hook to listen for WebSocket alerts
+  // 1. Escuchar WebSockets (Para Alertas de Seguridad Globales)
   const handleAlert = useCallback((message) => {
     if (message.body) {
       const newNotif = {
@@ -42,7 +38,34 @@ export default function NotificationBell() {
 
   useSubscription('/topic/alerts', handleAlert);
 
-  // Subscribe to Web Push on mount (once, when jwt is available)
+  // 2. Escuchar mensajes internos desde el Service Worker (Para Push locales como Formaciones)
+  useEffect(() => {
+    const handleServiceWorkerMessage = (event) => {
+      if (event?.data?.type === 'PUSH_RECEIVED') {
+        const payload = event.data.payload;
+        const newNotif = {
+          id: Date.now(),
+          text: payload.body || payload.title || 'Nueva notificación',
+          timestamp: new Date(),
+          read: false
+        };
+        setNotifications(prev => [newNotif, ...prev].slice(0, 50));
+        setUnreadCount(prev => prev + 1);
+      }
+    };
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
+    }
+
+    return () => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.removeEventListener('message', handleServiceWorkerMessage);
+      }
+    };
+  }, []);
+
+  // 3. Suscripción a Web Push
   const subscribeToPush = useCallback(async () => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
 
@@ -50,14 +73,12 @@ export default function NotificationBell() {
       const registration = await navigator.serviceWorker.register('/sw.js');
       await navigator.serviceWorker.ready;
 
-      // Get VAPID public key from backend
       const response = await fetch('/api/v1/push/vapid-key', {
         headers: { Authorization: `Bearer ${jwt}` }
       });
       if (!response.ok) return;
       const { publicKey } = await response.json();
 
-      // Check existing subscription
       let subscription = await registration.pushManager.getSubscription();
       if (!subscription) {
         const permission = await Notification.requestPermission();
@@ -69,7 +90,6 @@ export default function NotificationBell() {
         });
       }
 
-      // Send subscription to backend
       await fetch('/api/v1/push/subscribe', {
         method: 'POST',
         headers: {
@@ -101,50 +121,58 @@ export default function NotificationBell() {
   };
 
   return (
-    <UncontrolledDropdown nav inNavbar>
+    <UncontrolledDropdown nav inNavbar direction="down">
       <DropdownToggle nav className="ba-nav-link position-relative d-inline-flex align-items-center" onClick={markAllRead}>
-        <FaBell size={18} />
+        <FaBell size={20} />
         {unreadCount > 0 && (
           <Badge
             color="danger"
             pill
             className="position-absolute"
-            style={{ top: '2px', right: '-2px', fontSize: '0.65rem', padding: '2px 5px' }}
+            style={{ top: '0', right: '-5px', fontSize: '0.65rem', padding: '2px 5px' }}
           >
             {unreadCount > 99 ? '99+' : unreadCount}
           </Badge>
         )}
       </DropdownToggle>
-      <DropdownMenu className="ba-dropdown-menu" end style={{ minWidth: '320px', maxHeight: '400px', overflowY: 'auto' }}>
-        <DropdownItem header className="d-flex justify-content-between align-items-center">
-          <strong>{t('notifications.title', 'Notificaciones')}</strong>
-          {notifications.length > 0 && (
-            <button
-              type="button"
-              className="btn btn-link btn-sm text-primary p-0"
-              onClick={clearAll}
-            >
-              {t('notifications.clearAll', 'Limpiar todo')}
-            </button>
-          )}
+      <DropdownMenu className="ba-dropdown-menu" end style={{ minWidth: '320px', maxHeight: '60vh', overflowY: 'auto', position: 'absolute', padding: 0 }}>
+        <DropdownItem header style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', margin: 0 }}>
+          <div className="d-flex justify-content-between align-items-center w-100">
+            <strong style={{ color: 'rgba(255,255,255,0.9)' }}>{t('notifications.title', 'Notificaciones')}</strong>
+            {notifications.length > 0 && (
+              <button
+                type="button"
+                className="btn btn-link btn-sm p-0 ms-3"
+                style={{ color: '#4db8ff', textDecoration: 'none', fontWeight: 500 }}
+                onClick={clearAll}
+              >
+                {t('notifications.clearAll', 'Limpiar todo')}
+              </button>
+            )}
+          </div>
         </DropdownItem>
-        <DropdownItem divider />
         {notifications.length === 0 ? (
-          <DropdownItem disabled className="text-center text-muted py-3">
-            <FaBell className="mb-1" style={{ opacity: 0.3, fontSize: '1.5rem' }} />
-            <div className="small mt-1">{t('notifications.empty', 'Sin notificaciones')}</div>
+          <DropdownItem disabled className="text-center py-4" style={{ backgroundColor: 'transparent' }}>
+            <FaBell className="mb-2" style={{ opacity: 0.2, fontSize: '2rem', color: 'rgba(255,255,255,0.6)' }} />
+            <div className="small mt-1" style={{ color: 'rgba(255,255,255,0.6)' }}>{t('notifications.empty', 'Sin notificaciones')}</div>
           </DropdownItem>
         ) : (
           notifications.map(n => (
             <DropdownItem 
               key={n.id} 
-              className={`py-2 ${!n.read ? 'bg-light' : ''}`}
-              style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}
+              className={`py-3 px-3`}
+              style={{ 
+                whiteSpace: 'normal', 
+                wordBreak: 'break-word', 
+                backgroundColor: !n.read ? 'rgba(255,255,255,0.08)' : 'transparent',
+                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                transition: 'background-color 0.2s ease'
+              }}
             >
-              <div className="small fw-semibold" style={{ color: !n.read ? '#e74c3c' : '#2c3e50' }}>
+              <div className="small fw-semibold mb-1" style={{ color: !n.read ? '#ffffff' : 'rgba(255,255,255,0.7)', lineHeight: '1.4' }}>
                 {n.text}
               </div>
-              <div className="text-muted" style={{ fontSize: '0.7rem' }}>
+              <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>
                 {n.timestamp.toLocaleTimeString()}
               </div>
             </DropdownItem>
