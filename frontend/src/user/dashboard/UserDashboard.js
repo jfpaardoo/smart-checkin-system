@@ -294,17 +294,26 @@ export default function UserDashboard() {
                     <div className="mb-4 text-center">
                       <span className="fw-bold text-dark mb-2 d-block text-start">{t('dashboard.viewDocumentation', 'Ver Documentación')}:</span>
                       <div className="d-flex flex-wrap gap-2 justify-content-center">
-                        {selectedAtt.formation.documentUrls.map((url, idx) => {
-                          const decodedUrl = decodeURIComponent(url);
-                          const parts = decodedUrl.split('/');
-                          const rawFileName = parts.at(-1) || `Documento ${idx + 1}`;
-                          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_/i;
-                          const fileName = rawFileName.replace(uuidRegex, '').split('?')[0];
+                        {selectedAtt.formation.documentUrls.map((item, idx) => {
+                          let fileName;
+                          let targetUrl = item;
+
+                          if (item.includes("||")) {
+                            const parts = item.split("||");
+                            fileName = parts[0];
+                            targetUrl = parts[1];
+                          } else {
+                            const decodedUrl = decodeURIComponent(item);
+                            const parts = decodedUrl.split('/');
+                            const rawFileName = parts.at(-1) || `Documento ${idx + 1}`;
+                            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_/i;
+                            fileName = rawFileName.replace(uuidRegex, '').split('?')[0];
+                          }
 
                           return (
                             <a
-                              key={url}
-                              href={url}
+                              key={item}
+                              href={targetUrl}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="ba-btn ba-btn-secondary px-3 py-2 text-truncate"

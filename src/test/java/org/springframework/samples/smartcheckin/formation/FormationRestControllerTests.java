@@ -34,8 +34,12 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.springframework.samples.smartcheckin.SmartcheckinApplication;
+import org.springframework.test.context.ContextConfiguration;
+
 @SuppressWarnings("null")
 @WebMvcTest(controllers = FormationRestController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebSecurityConfigurer.class), excludeAutoConfiguration = SecurityConfiguration.class)
+@ContextConfiguration(classes = SmartcheckinApplication.class)
 class FormationRestControllerTests {
 
 	private static final String BASE_URL = "/api/v1/formations";
@@ -185,6 +189,39 @@ class FormationRestControllerTests {
 		builder.with(request -> { request.setMethod("PUT"); return request; });
 
 		mockMvc.perform(builder).andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser(authorities = {"ADMIN"})
+	void testUpdateFormationRemovesFileTriggersOneDriveDelete() throws Exception {
+		Formation existing = new Formation();
+		existing.setId(1);
+		existing.setName("Java 101");
+		existing.setDescription("Intro to Java");
+		existing.getDocumentUrls().add("file1.pdf||http://onedrive.link/file1.pdf||item123");
+		existing.getDocumentUrls().add("file2.pdf||http://onedrive.link/file2.pdf||item456");
+
+		FormationRequest req = new FormationRequest();
+		req.setName("Java 101 Updated");
+		req.setDescription("Intro to Java");
+		req.setFormationDate(java.time.LocalDateTime.now());
+		req.setExistingDocumentUrls(List.of("file1.pdf||http://onedrive.link/file1.pdf||item123"));
+
+		MockMultipartFile jsonPart = new MockMultipartFile(
+				"formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
+
+		when(formationService.findById(1)).thenReturn(Optional.of(existing));
+		when(formationService.updateFormation(any(Formation.class), eq(1))).thenReturn(existing);
+
+		MockHttpServletRequestBuilder builder = 
+				MockMvcRequestBuilders.multipart(BASE_URL + "/1")
+				.file(jsonPart).with(csrf());
+		builder.with(request -> { request.setMethod("PUT"); return request; });
+
+		mockMvc.perform(builder).andExpect(status().isOk());
+
+		verify(oneDriveService, times(1)).deleteFile("file2.pdf||http://onedrive.link/file2.pdf||item456");
+		verify(oneDriveService, never()).deleteFile("file1.pdf||http://onedrive.link/file1.pdf||item123");
 	}
 
 	@Test

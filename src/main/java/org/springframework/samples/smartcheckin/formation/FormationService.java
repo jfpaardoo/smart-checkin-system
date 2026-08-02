@@ -1,15 +1,18 @@
 package org.springframework.samples.smartcheckin.formation;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.samples.smartcheckin.settings.OneDriveService;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @SuppressWarnings("null")
@@ -18,20 +21,32 @@ public class FormationService {
     private final FormationRepository formationRepository;
     private final FormationAttendanceRepository attendanceRepository;
     private final UserService userService;
+    private final OneDriveService oneDriveService;
 
     @Autowired
     public FormationService(FormationRepository formationRepository, 
                             FormationAttendanceRepository attendanceRepository, 
-                            UserService userService) {
+                            UserService userService,
+                            OneDriveService oneDriveService) {
         this.formationRepository = formationRepository;
         this.attendanceRepository = attendanceRepository;
         this.userService = userService;
+        this.oneDriveService = oneDriveService;
     }
 
     private static final String FORMATION_NOT_FOUND_MSG = "Formation not found";
 
     @Transactional
     public Formation saveFormation(Formation formation) {
+        return formationRepository.save(formation);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Formation saveFormation(Formation formation, MultipartFile file) throws IOException {
+        if (file != null && !file.isEmpty()) {
+            String fileUrl = oneDriveService.uploadFile(file, "formations");
+            formation.getDocumentUrls().add(fileUrl);
+        }
         return formationRepository.save(formation);
     }
 
@@ -107,6 +122,42 @@ public class FormationService {
         toUpdate.setName(formation.getName());
         toUpdate.setDescription(formation.getDescription());
         toUpdate.setFormationDate(formation.getFormationDate());
+        
+        if (formation.getDocumentUrls() != null && toUpdate.getDocumentUrls() != formation.getDocumentUrls()) {
+            toUpdate.getDocumentUrls().clear();
+            toUpdate.getDocumentUrls().addAll(formation.getDocumentUrls());
+        }
+
+        return formationRepository.save(toUpdate);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Formation updateFormation(Formation formationDetails, Integer id, MultipartFile file) throws IOException {
+        Formation toUpdate = formationRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
+        
+        toUpdate.setName(formationDetails.getName());
+        toUpdate.setDescription(formationDetails.getDescription());
+        toUpdate.setFormationDate(formationDetails.getFormationDate());
+
+        if (file != null && !file.isEmpty()) {
+            // Sincronización en cascada: Limpiamos los ficheros anteriores de la nube si procede
+            if (toUpdate.getDocumentUrls() != null) {
+                for (String oldUrl : toUpdate.getDocumentUrls()) {
+                    try {
+                        oneDriveService.deleteFile(oldUrl);
+                    } catch (Exception e) {
+                        // Continuamos de forma defensiva
+                    }
+                }
+                toUpdate.getDocumentUrls().clear();
+            }
+            
+            // Subir nuevo fichero a OneDrive y añadirlo a la colección
+            String newFileUrl = oneDriveService.uploadFile(file, "formations");
+            toUpdate.getDocumentUrls().add(newFileUrl);
+        }
+
         return formationRepository.save(toUpdate);
     }
 
@@ -149,6 +200,17 @@ public class FormationService {
 
         if (formation.getAttendances() != null && !formation.getAttendances().isEmpty()) {
             throw new IllegalArgumentException("No se puede eliminar la formación porque contiene usuarios inscritos. Elimine primero a los asistentes.");
+        }
+
+        // Sincronización en cascada: Eliminar todos los documentos adjuntos de OneDrive asociados
+        if (formation.getDocumentUrls() != null) {
+            for (String docUrl : formation.getDocumentUrls()) {
+                try {
+                    oneDriveService.deleteFile(docUrl);
+                } catch (Exception e) {
+                    // Registro defensivo para no bloquear el borrado local de base de datos
+                }
+            }
         }
 
         formationRepository.delete(formation);

@@ -15,9 +15,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.UUID;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @SuppressWarnings("null")
 public class OneDriveService {
 
@@ -37,7 +39,6 @@ public class OneDriveService {
             tenantId = "common";
         }
         
-        // Uso de variables nativas de RestTemplate para evitar vulnerabilidades de Path Traversal
         String tokenUrl = "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token";
         
         HttpHeaders headers = new HttpHeaders();
@@ -54,7 +55,6 @@ public class OneDriveService {
 
         ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
         
-        // Pasamos el tenantId como parámetro seguro al final
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
                 tokenUrl, HttpMethod.POST, request, responseType, tenantId);
         
@@ -74,15 +74,13 @@ public class OneDriveService {
         String accessToken = getAccessToken(settings);
 
         String originalFilename = file.getOriginalFilename();
-        String safeOriginalName = originalFilename != null ? originalFilename.replaceAll(SAFE_CHARS_REGEX, "_") : "file";
-        String uniqueFileName = UUID.randomUUID().toString() + "_" + safeOriginalName;
+        String safeFileName = originalFilename != null ? originalFilename.replaceAll(SAFE_CHARS_REGEX, "_") : "file";
 
         String cleanFolderName = folderName != null ? folderName.replaceAll(SAFE_CHARS_REGEX, "_").trim() : "general";
         if (cleanFolderName.isEmpty()) {
             cleanFolderName = "general";
         }
 
-        // El String literal con placeholders satisface a SonarQube y no rompe los ':' de Graph API
         String uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/formations/{folder}/{filename}:/content";
 
         HttpHeaders headers = new HttpHeaders();
@@ -93,9 +91,8 @@ public class OneDriveService {
 
         ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
         
-        // Los parámetros se inyectan y codifican de forma segura automáticamente
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                uploadUrl, HttpMethod.PUT, request, responseType, cleanFolderName, uniqueFileName);
+                uploadUrl, HttpMethod.PUT, request, responseType, cleanFolderName, safeFileName);
         
         Map<String, Object> bodyRes = response.getBody();
         if (bodyRes == null || !bodyRes.containsKey("id")) {
@@ -103,11 +100,12 @@ public class OneDriveService {
         }
         String itemId = (String) bodyRes.get("id");
 
-        return createShareLink(itemId, accessToken);
+        String shareLink = createShareLink(itemId, accessToken);
+        
+        return originalFilename + "||" + shareLink + "||" + itemId;
     }
 
     private String createShareLink(String itemId, String accessToken) {
-        // Eliminamos el regex destructivo del itemId para no borrar el "!" de las cuentas personales
         String linkUrl = "https://graph.microsoft.com/v1.0/me/drive/items/{itemId}/createLink";
 
         HttpHeaders headers = new HttpHeaders();
@@ -161,5 +159,48 @@ public class OneDriveService {
         String itemId = (String) bodyRes.get("id");
 
         return createShareLink(itemId, accessToken);
+    }
+
+    public void deleteFile(String fileIdOrUrl) {
+        if (fileIdOrUrl == null || fileIdOrUrl.trim().isEmpty()) {
+            return;
+        }
+
+        CloudSettings settings = cloudSettingsService.getSettings();
+        if (settings == null || settings.getOneDriveClientId() == null) {
+            return;
+        }
+
+        try {
+            String accessToken = getAccessToken(settings);
+            
+            String fileId = fileIdOrUrl.trim();
+            if (fileIdOrUrl.contains("||")) {
+                String[] parts = fileIdOrUrl.split("\\|\\|");
+                if (parts.length >= 3 && parts[2] != null && !parts[2].trim().isEmpty()) {
+                    fileId = parts[2].trim();
+                } else if (parts.length >= 2 && parts[1] != null && !parts[1].trim().isEmpty()) {
+                    fileId = parts[1].trim();
+                } else if (parts.length >= 1 && parts[0] != null && !parts[0].trim().isEmpty()) {
+                    fileId = parts[0].trim();
+                }
+            }
+
+            if (fileId.startsWith("http://") || fileId.startsWith("https://")) {
+                log.warn("Advertencia: No se puede eliminar el archivo de OneDrive directamente con una URL web sin itemId: " + fileId);
+                return;
+            }
+
+            String deleteUrl = "https://graph.microsoft.com/v1.0/me/drive/items/{fileId}";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(accessToken);
+
+            HttpEntity<Void> request = new HttpEntity<>(headers);
+
+            restTemplate.exchange(deleteUrl, HttpMethod.DELETE, request, Void.class, fileId);
+        } catch (Exception e) {
+            log.warn("Advertencia: No se pudo eliminar el archivo en OneDrive: " + e.getMessage());
+        }
     }
 }

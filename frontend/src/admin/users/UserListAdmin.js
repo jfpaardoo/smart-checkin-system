@@ -227,7 +227,7 @@ export default function UserListAdmin() {
                                 user.id,
                                 [users, setUsers],
                                 toast,
-                                { entityName: "User", t }
+                                { entityName: t('users.userEntity', 'Usuario'), t }
                               )
                             }
                           >
