@@ -23,6 +23,8 @@ import org.springframework.samples.smartcheckin.formation.FormationRepository;
 import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserRepository;
+import org.springframework.samples.smartcheckin.audit.AuditLog;
+import org.springframework.samples.smartcheckin.audit.AuditLogRepository;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -44,6 +46,12 @@ class ExportRestControllerTests {
 
 	@MockitoBean
 	private UserRepository userRepository;
+
+	@MockitoBean
+	private AuditLogRepository auditLogRepository;
+
+	@MockitoBean
+	private PdfReportGenerator pdfReportGenerator;
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -95,10 +103,22 @@ class ExportRestControllerTests {
 	}
 
 	@Test
-	@WithMockUser(authorities = {"ADMIN"})
-	void testExportUsersExcel() throws Exception {
+	@WithMockUser(authorities = "ADMIN")
+	void shouldExportUsersExcel() throws Exception {
 		when(userRepository.findAll()).thenReturn(List.of(user));
+
 		mockMvc.perform(get(BASE_URL + "/users/excel"))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser(authorities = "ADMIN")
+	void shouldExportAuditPdf() throws Exception {
+		AuditLog log = new AuditLog("TEST_ACTION", "admin", "details", "127.0.0.1");
+		when(auditLogRepository.findAll()).thenReturn(List.of(log));
+		when(pdfReportGenerator.generateAuditLogPdf(any())).thenReturn(new byte[]{1, 2, 3});
+
+		mockMvc.perform(get(BASE_URL + "/audit/pdf"))
 				.andExpect(status().isOk());
 	}
 
@@ -129,9 +149,49 @@ class ExportRestControllerTests {
 	@Test
 	@WithMockUser(authorities = {"ADMIN"})
 	void testExportFormationsExcel() throws Exception {
-		when(formationRepository.findAll()).thenReturn(List.of(formation));
-		when(attendanceRepository.findAll()).thenReturn(List.of(attendance));
+		when(formationRepository.findAll()).thenReturn(List.of(formation, new Formation()));
+		FormationAttendance nullAttendance = new FormationAttendance();
+		nullAttendance.setUser(null);
+		nullAttendance.setFormation(null);
+		when(attendanceRepository.findAll()).thenReturn(List.of(attendance, nullAttendance));
 		mockMvc.perform(get(BASE_URL + "/formations/excel"))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser(authorities = {"ADMIN"})
+	void testExportFormationsCsvWithNulls() throws Exception {
+		FormationAttendance nullAttendance = new FormationAttendance();
+		nullAttendance.setUser(null);
+		nullAttendance.setFormation(null);
+		when(attendanceRepository.findAll()).thenReturn(List.of(attendance, nullAttendance));
+		mockMvc.perform(get(BASE_URL + "/formations/csv"))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser(authorities = {"ADMIN"})
+	void testExportUsersCsvAndExcelWithNulls() throws Exception {
+		User nullUser = new User();
+		nullUser.setAuthority(null);
+		when(userRepository.findAll()).thenReturn(List.of(user, nullUser));
+		
+		mockMvc.perform(get(BASE_URL + "/users/csv"))
+				.andExpect(status().isOk());
+		mockMvc.perform(get(BASE_URL + "/users/excel"))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser(authorities = {"ADMIN"})
+	void testExportCheckinsCsvAndExcelWithNulls() throws Exception {
+		Checkin nullCheckin = new Checkin();
+		nullCheckin.setUser(null);
+		when(checkinRepository.findAll()).thenReturn(List.of(checkin, nullCheckin));
+		
+		mockMvc.perform(get(BASE_URL + "/checkins/csv"))
+				.andExpect(status().isOk());
+		mockMvc.perform(get(BASE_URL + "/checkins/excel"))
 				.andExpect(status().isOk());
 	}
 }

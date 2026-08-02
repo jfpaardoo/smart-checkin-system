@@ -96,7 +96,7 @@ test.describe('Flujo de Activación de 2FA y Verificación TOTP (2FA Setup E2E)'
     await page.locator('input#verificationCode').fill('123456');
 
     // 7. Confirmar y activar
-    const confirmBtn = page.getByRole('button', { name: /confirmar y activar|confirm & enable/i });
+    const confirmBtn = page.getByRole('button', { name: /confirmar y activar|confirm and enable/i });
     await confirmBtn.click();
 
     // 8. Validar el mensaje de éxito

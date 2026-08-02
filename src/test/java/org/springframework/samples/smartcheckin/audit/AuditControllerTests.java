@@ -41,7 +41,14 @@ class AuditControllerTests {
 	void testExportAuditCsv() throws Exception {
 		AuditLog log = new AuditLog("USER_SAVE", "user1", "details", "127.0.0.1");
 		when(auditLogRepository.findAllByOrderByTimestampDesc()).thenReturn(List.of(log));
+		mockMvc.perform(get(BASE_URL + "/csv")).andExpect(status().isOk());
+	}
 
+	@Test
+	@WithMockUser(authorities = {"ADMIN"})
+	void testExportAuditCsvWithNullFields() throws Exception {
+		AuditLog log = new AuditLog(null, null, null, null);
+		when(auditLogRepository.findAllByOrderByTimestampDesc()).thenReturn(List.of(log));
 		mockMvc.perform(get(BASE_URL + "/csv")).andExpect(status().isOk());
 	}
 }

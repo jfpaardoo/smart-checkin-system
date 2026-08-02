@@ -386,6 +386,66 @@ class UserControllerTests {
 
 	@Test
 	@WithMockUser("admin")
+	void shouldFailEnableTwoFactor() throws Exception {
+		user.setTwoFactorSecret("SECRET");
+		when(userService.findUser(anyString())).thenReturn(user);
+		when(totpService.validateCode("SECRET", "123456")).thenReturn(false); // Wrong code
+
+		org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest req = new org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest();
+		req.setCode("123456");
+
+		mockMvc.perform(post(BASE_URL + "/2fa/enable").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldCreateUserNullPassword() throws Exception {
+		User aux = new User();
+		aux.setUsername("PruebaNullPass");
+		// No password set
+		aux.setFirstName("PRUEBA");
+		aux.setLastName("TEST");
+		aux.setPersonalCode("5678");
+		aux.setIsWorking(false);
+		aux.setAuthority(auth);
+		
+		when(userService.saveUser(any(User.class))).thenReturn(aux);
+
+		mockMvc.perform(post(BASE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(aux))).andExpect(status().isCreated());
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldUpdateUserNullPassword() throws Exception {
+		User aux = new User();
+		aux.setUsername(UPDATED);
+		aux.setPassword(null);
+		aux.setFirstName("PRUEBA");
+		aux.setLastName("TEST");
+		aux.setPersonalCode("5678");
+		aux.setIsWorking(false);
+		aux.setAuthority(auth);
+
+		doReturn(user).when(this.userService).findUser(TEST_USER_ID);
+		doReturn(user).when(this.userService).updateUser(any(User.class), any(Integer.class));
+
+		mockMvc.perform(put(BASE_URL + ID_PATH, TEST_USER_ID).with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(aux))).andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldFindAllWithoutSearch() throws Exception {
+		when(userService.findApprovedUsers()).thenReturn(List.of(user));
+
+		mockMvc.perform(get(BASE_URL)).andExpect(status().isOk())
+				.andExpect(jsonPath(SIZE_PATH).value(1));
+	}
+
+	@Test
+	@WithMockUser("admin")
 	void shouldApproveUser() throws Exception {
 		when(userService.findUser(TEST_USER_ID)).thenReturn(user);
 

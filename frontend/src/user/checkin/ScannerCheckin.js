@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { Form, FormGroup, Input, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import { Form, FormGroup, Input, Modal, ModalHeader, ModalBody, ModalFooter, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import SignatureCanvas from 'react-signature-canvas';
 import { useToast } from '../../components/ToastProvider';
 import { CardGhostLoader } from '../../components/GhostLoader';
@@ -310,18 +310,31 @@ export default function ScannerCheckin() {
         {cameras.length > 1 && (
           <div className="mb-3 text-start">
              <label className="form-label text-muted small fw-bold d-block mb-2">
-              {t('checkin.selectCamera', 'Seleccionar Cámara')}
+              {t('checkin.selectCamera', 'Seleccionar Cámara...')}
             </label>
-            <Input
-              type="select"
-              value={selectedCameraId}
-              onChange={(e) => setSelectedCameraId(e.target.value)}
-              className="ba-input"
-            >
-              {cameras.map(cam => (
-                <option key={cam.value} value={cam.value}>{cam.label}</option>
-              ))}
-            </Input>
+            <UncontrolledDropdown className="w-100">
+              <DropdownToggle
+                caret
+                className="ba-select-toggle w-100 d-flex align-items-center justify-content-between"
+                color="light"
+              >
+                <span className="text-truncate">
+                  {cameras.find(c => c.value === selectedCameraId)?.label || t('checkin.selectCamera')}
+                </span>
+              </DropdownToggle>
+              <DropdownMenu className="ba-dropdown-menu w-100">
+                {cameras.map(cam => (
+                  <DropdownItem
+                    key={cam.value}
+                    onClick={() => setSelectedCameraId(cam.value)}
+                    active={selectedCameraId === cam.value}
+                    className="ba-dropdown-item"
+                  >
+                    {cam.label}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </UncontrolledDropdown>
           </div>
         )}
 
@@ -349,7 +362,7 @@ export default function ScannerCheckin() {
     <div className="ba-container justify-content-center">
       <div className="ba-card p-4 p-md-5 my-auto mx-auto" style={{ maxWidth: '550px' }}>
         <h2 className="text-center mb-4" style={{ color: '#2c3e50', fontWeight: 700 }}>
-          <FontAwesomeIcon icon={faQrcode} className="me-2 text-primary" />
+          <FontAwesomeIcon icon={faQrcode} className="me-2" style={{ color: "var(--ba-primary)" }} />
           {t('checkin.scannerTitle', 'Escáner de Fichaje')}
         </h2>
 

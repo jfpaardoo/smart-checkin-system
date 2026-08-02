@@ -145,4 +145,11 @@
   padding-top: 10px !important;
   color: #2c3e50 !important;
   font-weight: 500 !important;
+  display: none !important;
+}
+
+#qr-reader__dashboard_section_csr,
+#qr-reader__dashboard_section_swaplink,
+#qr-reader__header_message {
+  display: none !important;
 }

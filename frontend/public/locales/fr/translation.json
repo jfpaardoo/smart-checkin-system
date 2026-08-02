@@ -60,7 +60,9 @@
     "error": "Tentative de connexion invalide",
     "genericError": "Une erreur est survenue",
     "username": "Nom d'utilisateur",
-    "password": "Mot de passe"
+    "password": "Mot de passe",
+    "badCredentials": "Nom d'utilisateur ou mot de passe incorrect",
+    "accountLocked": "Le compte est bloqué suite à un trop grand nombre de tentatives infructueuses. Veuillez réessayer plus tard."
   },
   "users": {
     "title": "Gestion des Utilisateurs",

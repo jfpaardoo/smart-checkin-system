@@ -8,6 +8,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.samples.smartcheckin.auth.payload.response.JwtResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Aspect
@@ -82,5 +84,70 @@ public class AuditAspect {
     @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.checkin.CheckinService.checkOut(..))", returning = "result")
     public void logCheckOut(JoinPoint joinPoint, Object result) {
         logAudit("CHECKOUT_SUCCESS", "User successfully checked out with signature");
+    }
+
+    // Intercept successful logins
+    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.auth.AuthController.authenticateUser(..))", returning = "result")
+    public void logLoginSuccess(JoinPoint joinPoint, Object result) {
+        if (result instanceof ResponseEntity<?> responseEntity && responseEntity.getStatusCode().is2xxSuccessful()) {
+            Object body = responseEntity.getBody();
+            if (body instanceof JwtResponse jwtResponse && !Boolean.TRUE.equals(jwtResponse.getRequiresTwoFactor())) {
+                logAudit("LOGIN_SUCCESS", "User logged in successfully");
+            }
+        }
+    }
+
+    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.auth.AuthController.verifyTwoFactor(..))", returning = "result")
+    public void logTwoFactorLoginSuccess(JoinPoint joinPoint, Object result) {
+        if (result instanceof ResponseEntity<?> responseEntity && responseEntity.getStatusCode().is2xxSuccessful()) {
+            logAudit("LOGIN_SUCCESS", "User logged in successfully using 2FA");
+        }
+    }
+
+    // Intercept password changes
+    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.user.UserRestController.changePassword(..))", returning = "result")
+    public void logPasswordChange(JoinPoint joinPoint, Object result) {
+        if (result instanceof ResponseEntity<?> responseEntity && responseEntity.getStatusCode().is2xxSuccessful()) {
+            logAudit("PASSWORD_CHANGE", "User changed their password");
+        }
+    }
+
+    // Intercept 2FA enable
+    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.user.UserRestController.enableTwoFactor(..))", returning = "result")
+    public void logTwoFactorEnable(JoinPoint joinPoint, Object result) {
+        if (result instanceof ResponseEntity<?> responseEntity && responseEntity.getStatusCode().is2xxSuccessful()) {
+            logAudit("2FA_ENABLE", "User enabled Two-Factor Authentication");
+        }
+    }
+
+    // Intercept 2FA disable
+    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.user.UserRestController.disableTwoFactor(..))", returning = "result")
+    public void logTwoFactorDisable(JoinPoint joinPoint, Object result) {
+        if (result instanceof ResponseEntity<?> responseEntity && responseEntity.getStatusCode().is2xxSuccessful()) {
+            logAudit("2FA_DISABLE", "User disabled Two-Factor Authentication");
+        }
+    }
+
+    // Intercept user deletion
+    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.user.UserService.deleteUser(..))")
+    public void logUserDelete(JoinPoint joinPoint) {
+        Object[] args = joinPoint.getArgs();
+        String userId = args.length > 0 ? args[0].toString() : "unknown";
+        logAudit("USER_DELETE", "User deleted: ID " + userId);
+    }
+
+    // Intercept data exports
+    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.exports.ExportRestController.*(..))", returning = "result")
+    public void logDataExport(JoinPoint joinPoint, Object result) {
+        if (result instanceof ResponseEntity<?> responseEntity && responseEntity.getStatusCode().is2xxSuccessful()) {
+            String methodName = joinPoint.getSignature().getName();
+            logAudit("DATA_EXPORT", "Data exported via method: " + methodName);
+        }
+    }
+
+    // Intercept Database backup
+    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.settings.DatabaseBackupService.triggerBackup(..))")
+    public void logDatabaseBackup(JoinPoint joinPoint) {
+        logAudit("DATA_EXPORT", "Database backup triggered");
     }
 }

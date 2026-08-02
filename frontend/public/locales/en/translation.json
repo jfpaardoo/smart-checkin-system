@@ -60,7 +60,9 @@
     "error": "Invalid login attempt",
     "genericError": "An error occurred",
     "username": "Username",
-    "password": "Password"
+    "password": "Password",
+    "badCredentials": "Incorrect username or password",
+    "accountLocked": "Account is locked due to too many failed attempts. Try again later."
   },
   "users": {
     "title": "Users Management",

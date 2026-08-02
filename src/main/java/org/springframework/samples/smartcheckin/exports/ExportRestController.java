@@ -20,6 +20,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserRepository;
+import org.springframework.samples.smartcheckin.audit.AuditLog;
+import org.springframework.samples.smartcheckin.audit.AuditLogRepository;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -31,6 +33,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 
 @RestController
+@SuppressWarnings("null")
 @RequestMapping("/api/v1/exports")
 public class ExportRestController {
 
@@ -38,18 +41,23 @@ public class ExportRestController {
     private final FormationAttendanceRepository attendanceRepository;
     private final FormationRepository formationRepository;
     private final UserRepository userRepository;
+    private final AuditLogRepository auditLogRepository;
+    private final PdfReportGenerator pdfReportGenerator;
     private static final String PERSONAL_CODE = "Personal Code";
     
-
     @Autowired
     public ExportRestController(CheckinRepository checkinRepository,
                                 FormationAttendanceRepository attendanceRepository,
                                 FormationRepository formationRepository,
-                                UserRepository userRepository) {
+                                UserRepository userRepository,
+                                AuditLogRepository auditLogRepository,
+                                PdfReportGenerator pdfReportGenerator) {
         this.checkinRepository = checkinRepository;
         this.attendanceRepository = attendanceRepository;
         this.formationRepository = formationRepository;
         this.userRepository = userRepository;
+        this.auditLogRepository = auditLogRepository;
+        this.pdfReportGenerator = pdfReportGenerator;
     }
 
     @GetMapping("/users/csv")
@@ -87,7 +95,7 @@ public class ExportRestController {
             for (User u : users) {
                 Row row = sheet.createRow(rowIdx++);
                 String role = u.getAuthority() != null ? u.getAuthority().getAuthority() : "N/A";
-                row.createCell(0).setCellValue(u.getId());
+                row.createCell(0).setCellValue(u.getId() != null ? u.getId() : 0);
                 row.createCell(1).setCellValue(u.getUsername() != null ? u.getUsername() : "");
                 row.createCell(2).setCellValue(u.getPersonalCode() != null ? u.getPersonalCode() : "");
                 row.createCell(3).setCellValue(u.getFirstName() != null ? u.getFirstName() : "");
@@ -109,11 +117,13 @@ public class ExportRestController {
         csvBuilder.append("ID,User,PersonalCode,Direction,Timestamp\n");
 
         for (Checkin checkin : checkins) {
-            csvBuilder.append(checkin.getId()).append(",")
-                    .append(checkin.getUser().getUsername()).append(",")
-                    .append(checkin.getUser().getPersonalCode()).append(",")
-                    .append(checkin.getCheckInType()).append(",")
-                    .append(checkin.getCheckInDate()).append("\n");
+            String username = checkin.getUser() != null && checkin.getUser().getUsername() != null ? checkin.getUser().getUsername() : "N/A";
+            String pCode = checkin.getUser() != null && checkin.getUser().getPersonalCode() != null ? checkin.getUser().getPersonalCode() : "N/A";
+            csvBuilder.append(checkin.getId() != null ? checkin.getId() : 0).append(",")
+                    .append(username).append(",")
+                    .append(pCode).append(",")
+                    .append(checkin.getCheckInType() != null ? checkin.getCheckInType().name() : "N/A").append(",")
+                    .append(checkin.getCheckInDate() != null ? checkin.getCheckInDate().toString() : "N/A").append("\n");
         }
 
         return createCsvResponse(csvBuilder.toString(), "checkins.csv");
@@ -132,11 +142,13 @@ public class ExportRestController {
             int rowIdx = 1;
             for (Checkin checkin : checkins) {
                 Row row = sheet.createRow(rowIdx++);
-                row.createCell(0).setCellValue(checkin.getId());
-                row.createCell(1).setCellValue(checkin.getUser().getUsername());
-                row.createCell(2).setCellValue(checkin.getUser().getPersonalCode());
-                row.createCell(3).setCellValue(checkin.getCheckInType().name());
-                row.createCell(4).setCellValue(checkin.getCheckInDate().toString());
+                String username = checkin.getUser() != null && checkin.getUser().getUsername() != null ? checkin.getUser().getUsername() : "N/A";
+                String pCode = checkin.getUser() != null && checkin.getUser().getPersonalCode() != null ? checkin.getUser().getPersonalCode() : "N/A";
+                row.createCell(0).setCellValue(checkin.getId() != null ? checkin.getId() : 0);
+                row.createCell(1).setCellValue(username);
+                row.createCell(2).setCellValue(pCode);
+                row.createCell(3).setCellValue(checkin.getCheckInType() != null ? checkin.getCheckInType().name() : "N/A");
+                row.createCell(4).setCellValue(checkin.getCheckInDate() != null ? checkin.getCheckInDate().toString() : "N/A");
             }
 
             workbook.write(out);
@@ -208,8 +220,8 @@ public class ExportRestController {
         int rIdx = 1;
         for (Formation f : formations) {
             Row r = summarySheet.createRow(rIdx++);
-            r.createCell(0).setCellValue(f.getId());
-            r.createCell(1).setCellValue(f.getName());
+            r.createCell(0).setCellValue(f.getId() != null ? f.getId() : 0);
+            r.createCell(1).setCellValue(f.getName() != null ? f.getName() : "N/A");
             r.createCell(2).setCellValue(f.getFormationDate() != null ? f.getFormationDate().toString() : "N/A");
 
             List<FormationAttendance> fAtts = f.getAttendances();
@@ -303,11 +315,28 @@ public class ExportRestController {
         }
     }
 
-    private ResponseEntity<byte[]> createCsvResponse(String csvContent, String filename) {
+    private ResponseEntity<byte[]> createCsvResponse(String content, String filename) {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename);
-        headers.setContentType(MediaType.parseMediaType("text/csv"));
-        return ResponseEntity.ok().headers(headers).body(csvContent.getBytes());
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(content.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @GetMapping("/audit/pdf")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<byte[]> exportAuditPdf() {
+        List<AuditLog> logs = (List<AuditLog>) auditLogRepository.findAll();
+        byte[] pdfBytes = pdfReportGenerator.generateAuditLogPdf(logs);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"audit_log.pdf\"");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
     }
 
     private ResponseEntity<byte[]> createExcelResponse(byte[] bytes, String filename) {

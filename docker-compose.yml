@@ -16,5 +16,12 @@ services:
     ports:
       - "8082:8080"
 
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - "1025:1025" # smtp server
+      - "8025:8025" # web ui
+    restart: always
+
 volumes:
   postgres-data:

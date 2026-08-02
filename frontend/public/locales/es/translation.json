@@ -60,7 +60,9 @@
     "error": "Intento de inicio de sesión inválido",
     "genericError": "Ha ocurrido un error",
     "username": "Usuario",
-    "password": "Contraseña"
+    "password": "Contraseña",
+    "badCredentials": "Usuario o contraseña incorrectos",
+    "accountLocked": "La cuenta está bloqueada por demasiados intentos. Inténtalo más tarde."
   },
   "users": {
     "title": "Gestión de Usuarios",

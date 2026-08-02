@@ -195,6 +195,17 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-batch</artifactId>
 		</dependency>
+		<!-- JavaMailSender for automated reports -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+		<!-- XChart for backend chart generation in PDF -->
+		<dependency>
+			<groupId>org.knowm.xchart</groupId>
+			<artifactId>xchart</artifactId>
+			<version>3.8.4</version>
+		</dependency>
 		<!-- jpatterns -->
 		<dependency>
 			<groupId>org.jpatterns</groupId>
