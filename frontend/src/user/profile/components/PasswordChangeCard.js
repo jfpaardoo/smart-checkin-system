@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, Button, Spinner } from "reactstrap";
+import { Form, Spinner } from "reactstrap";
 import { FaLock, FaKey, FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function PasswordChangeCard({
@@ -95,17 +95,10 @@ export default function PasswordChangeCard({
           </button>
         </div>
 
-        <Button
+        <button
           type="submit"
           disabled={submittingPassword}
-          className="w-100 py-3 fw-bold border-0 shadow-sm mt-2"
-          style={{
-            borderRadius: "16px",
-            background: "#cce364",
-            color: "#1a1a1a",
-            boxShadow: "0 6px 20px rgba(204, 227, 100, 0.4)",
-            fontSize: "1rem",
-          }}
+          className="ba-btn-primary w-100 py-3 fw-bold mt-3"
         >
           {submittingPassword ? (
             <>
@@ -116,7 +109,7 @@ export default function PasswordChangeCard({
               <FaKey className="me-2" /> {t('profile.updatePasswordBtn', 'Actualizar Contraseña')}
             </>
           )}
-        </Button>
+        </button>
       </Form>
     </div>
   );

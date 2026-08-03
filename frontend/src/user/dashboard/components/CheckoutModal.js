@@ -23,7 +23,8 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
     selectedCameraId,
     setSelectedCameraId,
     isScannerReady,
-    resetScannerState
+    resetScannerState,
+    stopScannerSafely
   } = useQrScanner('checkout-qr-reader', isOpen && step === 'scan' && !isManualCheckout, (decodedText) => {
     try {
       const parsed = JSON.parse(decodedText);
@@ -39,6 +40,10 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
   });
 
   const handleClose = () => {
+    // Nuke the scanner container *before* React unmounts it to prevent removeChild errors
+    const el = document.getElementById('checkout-qr-reader');
+    if (el) el.innerHTML = '';
+    stopScannerSafely();
     setStep('details');
     setIsManualCheckout(false);
     setValidatedToken('');
@@ -100,7 +105,7 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
             )}
           </div>
           {!selectedAtt.checkOutDate && (
-            <button className="ba-btn ba-btn-primary m-0" onClick={() => setStep('scan')}>
+            <button type="button" className="ba-btn ba-btn-primary m-0" onClick={() => setStep('scan')}>
               {t('dashboard.checkout')}
             </button>
           )}
@@ -126,24 +131,18 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
               </div>
             )}
             
-            <div 
-              id="checkout-qr-reader" 
-              className="mx-auto mb-3"
-              style={{ 
-                width: '100%', 
-                maxWidth: '400px', 
-                borderRadius: '24px', 
-                overflow: 'hidden', 
-                border: '2px solid rgba(255, 255, 255, 0.5)',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.08)'
-              }}
-            >
-              {!isScannerReady && (
-                <div className="p-5 text-center text-muted">
-                  <FontAwesomeIcon icon={faCamera} className="fa-spin mb-2" size="2x" />
-                  <p className="mb-0">{t('checkin.startingCamera', 'Iniciando cámara...')}</p>
-                </div>
-              )}
+            {/* Loading indicator — outside #checkout-qr-reader so React and the library don't conflict */}
+            {!isScannerReady && (
+              <div className="p-5 text-center text-muted">
+                <FontAwesomeIcon icon={faCamera} className="fa-spin mb-2" size="2x" />
+                <p className="mb-0">{t('checkin.startingCamera', 'Iniciando cámara...')}</p>
+              </div>
+            )}
+
+            {/* Stable outer div — React owns this wrapper; the library fully owns #checkout-qr-reader */}
+            <div style={{ width: '100%', maxWidth: '400px', borderRadius: '24px', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.5)', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', margin: '0 auto 12px' }}>
+              {/* This div is intentionally EMPTY from React's perspective. html5-qrcode manages its DOM. */}
+              <div id="checkout-qr-reader" style={{ width: '100%' }} />
             </div>
 
             <div className="text-center mt-3">

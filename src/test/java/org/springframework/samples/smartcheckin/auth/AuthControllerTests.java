@@ -9,6 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -94,10 +96,17 @@ class AuthControllerTests {
 	private JwtBlacklistService jwtBlacklistService;
 
 	@Autowired
+	@SuppressWarnings("java:S6813")
 	private ObjectMapper objectMapper;
 
 	@Autowired
+	@SuppressWarnings("java:S6813")
 	private MockMvc mockMvc;
+
+	private static final String PASSWORD = "password";
+	private static final String USER1 = "user1";
+	private static final String SECRET = "SECRET";
+	private static final String SIGNIN_URL = BASE_URL + "/signin";
 
 	private LoginRequest loginRequest;
 	private UserDetailsImpl userDetails;
@@ -107,7 +116,7 @@ class AuthControllerTests {
 	void setup() {
 		loginRequest = new LoginRequest();
 		loginRequest.setUsername("owner");
-		loginRequest.setPassword("password");
+		loginRequest.setPassword(PASSWORD);
 
 		userDetails = new UserDetailsImpl(1, loginRequest.getUsername(), loginRequest.getPassword(),
 				List.of(new SimpleGrantedAuthority("OWNER")));
@@ -123,7 +132,7 @@ class AuthControllerTests {
 		when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
 		doReturn(userDetails).when(auth).getPrincipal();
 
-		mockMvc.perform(post(BASE_URL + "/signin").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(SIGNIN_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest))).andExpect(status().isOk())
 				.andExpect(jsonPath("$.username").value(loginRequest.getUsername()))
 				.andExpect(jsonPath("$.id").value(userDetails.getId())).andExpect(jsonPath("$.token").value(token));
@@ -135,7 +144,7 @@ class AuthControllerTests {
 		unapprovedUser.setIsApproved(false);
 		when(userService.findUser(loginRequest.getUsername())).thenReturn(unapprovedUser);
 
-		mockMvc.perform(post(BASE_URL + "/signin").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(SIGNIN_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest)))
 				.andExpect(status().isForbidden());
 	}
@@ -144,10 +153,10 @@ class AuthControllerTests {
 	void shouldNotAuthenticateLockedUser() throws Exception {
 		User lockedUser = new User();
 		lockedUser.setIsApproved(true);
-		lockedUser.setAccountLockedUntil(java.time.LocalDateTime.now().plusMinutes(10));
+		lockedUser.setAccountLockedUntil(LocalDateTime.now(ZoneId.systemDefault()).plusMinutes(10));
 		when(userService.findUser(loginRequest.getUsername())).thenReturn(lockedUser);
 
-		mockMvc.perform(post(BASE_URL + "/signin").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(SIGNIN_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest)))
 				.andExpect(status().isForbidden());
 	}
@@ -163,7 +172,7 @@ class AuthControllerTests {
 		Authentication auth = mock(Authentication.class);
 		when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
 
-		mockMvc.perform(post(BASE_URL + "/signin").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(SIGNIN_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.requiresTwoFactor").value(true));
@@ -177,7 +186,7 @@ class AuthControllerTests {
 		when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
 				.thenThrow(new BadCredentialsException("Bad Credentials"));
 
-		mockMvc.perform(post(BASE_URL + "/signin").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(SIGNIN_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest)))
 				.andExpect(status().isBadRequest());
 				
@@ -187,17 +196,17 @@ class AuthControllerTests {
 	@Test
 	void shouldVerifyTwoFactorSuccess() throws Exception {
 		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
-		req.setUsername("user1");
+		req.setUsername(USER1);
 		req.setCode("123456");
 
 		User user = new User();
 		user.setId(1);
-		user.setUsername("user1");
-		user.setTwoFactorSecret("SECRET");
+		user.setUsername(USER1);
+		user.setTwoFactorSecret(SECRET);
 
-		when(userService.findUser("user1")).thenReturn(user);
-		when(totpService.validateCode("SECRET", "123456")).thenReturn(true);
-		when(userDetailsService.loadUserByUsername("user1")).thenReturn(userDetails);
+		when(userService.findUser(USER1)).thenReturn(user);
+		when(totpService.validateCode(SECRET, "123456")).thenReturn(true);
+		when(userDetailsService.loadUserByUsername(USER1)).thenReturn(userDetails);
 		when(jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn("MOCK_JWT");
 
 		mockMvc.perform(post(BASE_URL + "/verify-2fa").with(csrf()).contentType(MediaType.APPLICATION_JSON)
@@ -209,15 +218,15 @@ class AuthControllerTests {
 	@Test
 	void shouldVerifyTwoFactorInvalidCode() throws Exception {
 		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
-		req.setUsername("user1");
+		req.setUsername(USER1);
 		req.setCode("000000");
 
 		User user = new User();
-		user.setUsername("user1");
-		user.setTwoFactorSecret("SECRET");
+		user.setUsername(USER1);
+		user.setTwoFactorSecret(SECRET);
 
-		when(userService.findUser("user1")).thenReturn(user);
-		when(totpService.validateCode("SECRET", "000000")).thenReturn(false);
+		when(userService.findUser(USER1)).thenReturn(user);
+		when(totpService.validateCode(SECRET, "000000")).thenReturn(false);
 
 		mockMvc.perform(post(BASE_URL + "/verify-2fa").with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req)))
@@ -226,14 +235,15 @@ class AuthControllerTests {
 
 	@Test
 	void shouldRegisterUserSuccess() throws Exception {
+		String newUser = "newuser";
 		SignupRequest signup = new SignupRequest();
-		signup.setUsername("newuser");
-		signup.setPassword("password");
+		signup.setUsername(newUser);
+		signup.setPassword(PASSWORD);
 		signup.setPersonalCode("9999");
 		signup.setFirstName("New");
 		signup.setLastName("User");
 
-		when(userService.findUser("newuser")).thenThrow(new ResourceNotFoundException("User", "username", "newuser"));
+		when(userService.findUser(newUser)).thenThrow(new ResourceNotFoundException("User", "username", newUser));
 		when(authoritiesService.findByAuthority("EMPLOYEE")).thenReturn(new Authorities());
 
 		mockMvc.perform(post(BASE_URL + "/signup").with(csrf()).contentType(MediaType.APPLICATION_JSON)
@@ -262,17 +272,18 @@ class AuthControllerTests {
 	@Test
 	@WithMockUser
 	void shouldNotRegisterExistingUser() throws Exception {
+		String existingUser = "existinguser";
 		SignupRequest signup = new SignupRequest();
-		signup.setUsername("existinguser");
-		signup.setPassword("password");
+		signup.setUsername(existingUser);
+		signup.setPassword(PASSWORD);
 		signup.setPersonalCode("9999");
 		signup.setFirstName("New");
 		signup.setLastName("User");
 
 		User existing = new User();
-		existing.setUsername("existinguser");
+		existing.setUsername(existingUser);
 
-		when(userService.findUser("existinguser")).thenReturn(existing);
+		when(userService.findUser(existingUser)).thenReturn(existing);
 
 		mockMvc.perform(post(BASE_URL + "/signup").with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(signup)))
@@ -291,7 +302,7 @@ class AuthControllerTests {
 		when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
 				.thenThrow(new BadCredentialsException("Bad Credentials"));
 
-		mockMvc.perform(post(BASE_URL + "/signin").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(SIGNIN_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest)))
 				.andExpect(status().isBadRequest());
 	}
@@ -302,7 +313,7 @@ class AuthControllerTests {
 		User user = new User();
 		user.setUsername(loginRequest.getUsername());
 		user.setIsApproved(true);
-		user.setAccountLockedUntil(java.time.LocalDateTime.now().minusMinutes(1)); // Expired lockout
+		user.setAccountLockedUntil(LocalDateTime.now(ZoneId.systemDefault()).minusMinutes(1)); // Expired lockout
 
 		when(userService.findUser(loginRequest.getUsername())).thenReturn(user);
 		Authentication auth = mock(Authentication.class);
@@ -310,7 +321,7 @@ class AuthControllerTests {
 		when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
 		doReturn(userDetails).when(auth).getPrincipal();
 
-		mockMvc.perform(post(BASE_URL + "/signin").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(SIGNIN_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest)))
 				.andExpect(status().isOk());
 	}

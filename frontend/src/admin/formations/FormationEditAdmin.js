@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, Input, Label, FormGroup, Row, Col, Button } from "reactstrap";
+import { Form, Input, Label, FormGroup, Button } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTimes, faUpload } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
@@ -45,8 +45,7 @@ export default function FormationEditAdmin() {
           <h2>{formation.id ? t('formations.editFormation') : t('formations.createNew')}</h2>
         </div>
         <Form onSubmit={handleSubmit}>
-          <Row>
-            <Col md={6}>
+          <div className="ba-form-row-2">
               <FormGroup>
                 <Label for="name">{t('formations.formationName')}</Label>
                 <Input
@@ -58,9 +57,7 @@ export default function FormationEditAdmin() {
                   onChange={handleChange}
                 />
               </FormGroup>
-            </Col>
 
-            <Col md={6}>
               <FormGroup>
                 <Label for="formationDate">{t('formations.dateAndTime')}</Label>
                 <Input
@@ -72,11 +69,9 @@ export default function FormationEditAdmin() {
                   onChange={handleChange}
                 />
               </FormGroup>
-            </Col>
-          </Row>
+          </div>
 
-          <Row>
-            <Col md={12}>
+          <div className="ba-form-row-1">
               <FormGroup>
                 <Label for="description">{t('formations.description')}</Label>
                 <Input
@@ -89,11 +84,10 @@ export default function FormationEditAdmin() {
                   onChange={handleChange}
                 />
               </FormGroup>
-            </Col>
-          </Row>
+          </div>
 
-          <Row className="mt-3 mb-4">
-            <Col md={12}>
+          <div className="ba-form-row-1 mt-3 mb-4">
+            <div>
               <Label className="fw-bold">{t('formations.attachments', 'Documentos Adjuntos')}</Label>
               
               {/* Archivos Existentes */}
@@ -155,10 +149,10 @@ export default function FormationEditAdmin() {
                     )}
                   </div>
               </div>
-            </Col>
-          </Row>
+            </div>
+          </div>
 
-          <div className="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+          <div className="ba-form-actions">
             <Button className="ba-btn-secondary" onClick={() => window.history.back()} disabled={isSaving}>
               <FontAwesomeIcon icon={faTimes} className="me-1" /> {t('common.cancel')}
             </Button>

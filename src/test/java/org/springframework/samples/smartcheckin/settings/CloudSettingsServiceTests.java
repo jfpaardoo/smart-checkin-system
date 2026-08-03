@@ -12,6 +12,8 @@ class CloudSettingsServiceTests {
 	private CloudSettingsRepository repository;
 	private CloudSettingsService service;
 
+	private static final String ONEDRIVE = "onedrive";
+
 	@BeforeEach
 	void setUp() {
 		repository = mock(CloudSettingsRepository.class);
@@ -27,24 +29,24 @@ class CloudSettingsServiceTests {
 	@Test
 	void testGetSettingsExisting() {
 		CloudSettings settings = new CloudSettings();
-		settings.setProvider("onedrive");
+		settings.setProvider(ONEDRIVE);
 		when(repository.findAll()).thenReturn(List.of(settings));
 
 		CloudSettings res = service.getSettings();
 		assertNotNull(res);
-		assertEquals("onedrive", res.getProvider());
+		assertEquals(ONEDRIVE, res.getProvider());
 	}
 
 	@Test
 	void testSaveSettingsNew() {
 		CloudSettings settings = new CloudSettings();
-		settings.setProvider("onedrive");
+		settings.setProvider(ONEDRIVE);
 
 		when(repository.findAll()).thenReturn(List.of());
 		when(repository.save(settings)).thenReturn(settings);
 
 		CloudSettings saved = service.saveSettings(settings);
-		assertEquals("onedrive", saved.getProvider());
+		assertEquals(ONEDRIVE, saved.getProvider());
 	}
 
 	@Test
@@ -68,9 +70,9 @@ class CloudSettingsServiceTests {
 		assertNull(dtoFromNull.getProvider());
 
 		CloudSettingsDTO dto = new CloudSettingsDTO();
-		dto.setProvider("onedrive");
+		dto.setProvider(ONEDRIVE);
 		CloudSettings entityFromNull = dto.toEntity(null);
 		assertNotNull(entityFromNull);
-		assertEquals("onedrive", entityFromNull.getProvider());
+		assertEquals(ONEDRIVE, entityFromNull.getProvider());
 	}
 }

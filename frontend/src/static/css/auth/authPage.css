@@ -3,50 +3,34 @@
    ========================================== */
 
 .auth-page-container {
-  min-height: calc(100vh - 120px);
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 40px 20px;
-  box-sizing: border-box;
+  @apply min-h-[calc(100vh-120px)] w-full flex flex-col justify-center items-center px-5 py-10;
 }
 
 .auth-form-container {
-  max-width: 480px;
-  width: 100%;
-  min-width: 320px;
-  padding: 40px 35px;
-  background: rgba(255, 255, 255, 0.55) !important;
-  backdrop-filter: blur(35px) saturate(210%) !important;
-  -webkit-backdrop-filter: blur(35px) saturate(210%) !important;
-  border-radius: 36px !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
-  box-shadow: 0 25px 60px rgba(31, 38, 135, 0.08), inset 0 1.5px 2px rgba(255, 255, 255, 0.95) !important;
+  @apply w-full max-w-[480px] min-w-[320px] p-[40px_35px];
+  
+  /* Liquid Glass Integration */
+  background: var(--ba-glass-bg);
+  backdrop-filter: blur(var(--ba-glass-blur));
+  -webkit-backdrop-filter: blur(var(--ba-glass-blur));
+  border-radius: 2rem;
+  border: 1px solid var(--ba-glass-border);
+  box-shadow: var(--ba-glass-shadow);
+  color: var(--ba-text-primary);
 }
 
 .auth-page-container h1 {
-  text-align: center;
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: #1e293b;
-  margin-bottom: 25px;
-  letter-spacing: -0.5px;
+  @apply text-center text-[2.5rem] font-extrabold mb-6 tracking-tight;
+  color: var(--ba-white);
+  text-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
 .options-row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  width: 100%;
-  margin-top: 30px;
+  @apply flex justify-center items-center gap-5 w-full mt-7;
 }
 
 @media screen and (max-width: 768px) {
   .options-row {
-    flex-direction: row;
-    gap: 15px;
+    @apply flex-row gap-[15px];
   }
 }

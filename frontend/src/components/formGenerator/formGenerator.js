@@ -175,7 +175,7 @@ const FormGenerator = forwardRef((rawProps, ref) => {
         {props.childrenPosition === -1 && props.children}
       </form>
 
-      <button onClick={handleSubmit} className={`${props.buttonClassName}`}>
+      <button type="button" onClick={handleSubmit} className={`${props.buttonClassName}`}>
         {props.buttonText}
       </button>
     </div>
@@ -185,7 +185,7 @@ const FormGenerator = forwardRef((rawProps, ref) => {
 FormGenerator.propTypes = {
   inputs: PropTypes.array,
   onSubmit: PropTypes.func,
-  buttonText: PropTypes.string,
+  buttonText: PropTypes.node,
   buttonClassName: PropTypes.string,
   numberOfColumns: PropTypes.number,
   childrenPosition: PropTypes.number,

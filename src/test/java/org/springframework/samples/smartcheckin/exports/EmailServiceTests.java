@@ -17,6 +17,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 @ExtendWith(MockitoExtension.class)
 class EmailServiceTests {
 
+    private static final String TEST_EMAIL = "test@test.com";
+    private static final String SUBJECT = "Subject";
+
     @Mock
     private JavaMailSender javaMailSender;
 
@@ -34,7 +37,7 @@ class EmailServiceTests {
         when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
 
         byte[] attachmentBytes = new byte[]{1, 2, 3};
-        emailService.sendEmailWithAttachment("test@test.com", "Subject", "Body", attachmentBytes, "test.pdf");
+        emailService.sendEmailWithAttachment(TEST_EMAIL, SUBJECT, "Body", attachmentBytes, "test.pdf");
 
         verify(javaMailSender, times(1)).send(mimeMessage);
     }
@@ -44,7 +47,7 @@ class EmailServiceTests {
         MimeMessage mimeMessage = mock(MimeMessage.class);
         when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
 
-        emailService.sendEmailWithAttachment("test@test.com", "Subject", "Body", null, "test.pdf");
+        emailService.sendEmailWithAttachment(TEST_EMAIL, SUBJECT, "Body", null, "test.pdf");
 
         verify(javaMailSender, times(1)).send(mimeMessage);
     }
@@ -55,7 +58,7 @@ class EmailServiceTests {
         when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
 
         byte[] attachmentBytes = new byte[]{1, 2, 3};
-        emailService.sendEmailWithAttachment("test@test.com", "Subject", "Body", attachmentBytes, null);
+        emailService.sendEmailWithAttachment(TEST_EMAIL, SUBJECT, "Body", attachmentBytes, null);
 
         verify(javaMailSender, times(1)).send(mimeMessage);
     }
@@ -69,7 +72,7 @@ class EmailServiceTests {
         doThrow(new MessagingException("Simulated Messaging Exception"))
             .when(mimeMessage).setSubject(anyString()); 
 
-        emailService.sendEmailWithAttachment("test@test.com", "Subject", "Body", null, null);
+        emailService.sendEmailWithAttachment(TEST_EMAIL, SUBJECT, "Body", null, null);
 
         verify(javaMailSender, never()).send(any(MimeMessage.class));
         assertTrue(true);

@@ -54,7 +54,7 @@ export default function GlassSearchBar({
     };
 
     return (
-        <div className={`ba-search-bar-wrapper ${className}`} style={{ position: 'relative', width: '100%', maxWidth: '520px', ...style }}>
+        <div className={`ba-search-bar-wrapper ${className}`} style={style}>
             <FontAwesomeIcon icon={faSearch} className="ba-search-bar-icon" />
             <Input
                 type="text"

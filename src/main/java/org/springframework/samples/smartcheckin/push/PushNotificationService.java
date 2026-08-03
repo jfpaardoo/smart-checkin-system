@@ -2,7 +2,6 @@ package org.springframework.samples.smartcheckin.push;
 
 import java.security.Security;
 import java.util.List;
-
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.samples.smartcheckin.user.User;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Row, Col, Button } from 'reactstrap';
+import { Button } from 'reactstrap';
 import { FaQrcode, FaChartBar, FaUsers, FaGraduationCap, FaUser, FaSignInAlt, FaShieldAlt, FaUserPlus } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import tokenService from '../services/token.service';
@@ -41,12 +41,9 @@ export default function Home() {
       <div className="ba-card home-card text-center py-4 px-4 px-md-5" style={{ maxWidth: '1080px', margin: '1.5rem auto' }}>
         
         {/* LOGO & TITLE HEADER */}
-        <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4 pb-3 border-bottom border-light">
-          <div className="d-flex align-items-center gap-3">
-            <div
-              className="rounded-circle overflow-hidden d-flex align-items-center justify-content-center shadow-xs border bg-white flex-shrink-0"
-              style={{ width: '56px', height: '56px' }}
-            >
+        <div className="ba-home-header">
+          <div className="ba-home-logo-group">
+            <div className="ba-home-logo">
               <img
                 src="/ba-logo.png"
                 alt="BA Glass"
@@ -55,7 +52,7 @@ export default function Home() {
             </div>
             <div className="text-start">
               <h2 className="fw-bold mb-0 text-dark" style={{ letterSpacing: '-0.5px' }}>
-                BA Distribution Academy
+                Distribution Academy
               </h2>
               <span className="text-muted small fw-semibold">
                 {t('home.subtitle', 'Sistema Inteligente de Fichaje y Gestión de Formaciones')}
@@ -76,8 +73,8 @@ export default function Home() {
               </span>
             </div>
 
-            <Row className="g-3 align-items-stretch">
-              <Col md={6} lg={3}>
+            <div className="ba-home-grid-4">
+              <div>
                 <Link to="/qr-generator" className="text-decoration-none d-block h-100">
                   <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
@@ -92,9 +89,9 @@ export default function Home() {
                     </span>
                   </div>
                 </Link>
-              </Col>
+              </div>
 
-              <Col md={6} lg={3}>
+              <div>
                 <Link to="/analytics" className="text-decoration-none d-block h-100">
                   <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
@@ -109,9 +106,9 @@ export default function Home() {
                     </span>
                   </div>
                 </Link>
-              </Col>
+              </div>
 
-              <Col md={6} lg={3}>
+              <div>
                 <Link to="/formations" className="text-decoration-none d-block h-100">
                   <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
@@ -126,9 +123,9 @@ export default function Home() {
                     </span>
                   </div>
                 </Link>
-              </Col>
+              </div>
 
-              <Col md={6} lg={3}>
+              <div>
                 <Link to="/users" className="text-decoration-none d-block h-100">
                   <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
@@ -143,8 +140,8 @@ export default function Home() {
                     </span>
                   </div>
                 </Link>
-              </Col>
-            </Row>
+              </div>
+            </div>
           </div>
         )}
 
@@ -163,9 +160,9 @@ export default function Home() {
               </div>
             </div>
 
-            <Row className="g-3 align-items-stretch">
+            <div className="ba-home-grid-3">
               {/* Card 1: Fichaje Directo QR */}
-              <Col md={4}>
+              <div>
                 <Link to="/checkin" className="text-decoration-none d-block h-100">
                   <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
@@ -180,10 +177,10 @@ export default function Home() {
                     </span>
                   </div>
                 </Link>
-              </Col>
+              </div>
 
               {/* Card 2: Mi Perfil */}
-              <Col md={4}>
+              <div>
                 <Link to="/profile" className="text-decoration-none d-block h-100">
                   <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
@@ -198,10 +195,10 @@ export default function Home() {
                     </span>
                   </div>
                 </Link>
-              </Col>
+              </div>
 
               {/* Card 3: Mis Formaciones */}
-              <Col md={4}>
+              <div>
                 <Link to="/dashboard" className="text-decoration-none d-block h-100">
                   <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
@@ -216,8 +213,8 @@ export default function Home() {
                     </span>
                   </div>
                 </Link>
-              </Col>
-            </Row>
+              </div>
+            </div>
           </div>
         )}
 
@@ -231,18 +228,18 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="d-flex justify-content-center flex-wrap gap-3 mt-4">
+            <div className="ba-home-auth-actions">
               <Button
                 tag={Link}
                 to="/login"
-                className="ba-btn-primary px-5 py-3 fs-6 d-inline-flex align-items-center gap-2"
+                className="ba-btn-primary ba-home-auth-btn"
               >
                 <FaSignInAlt /> {t('nav.login', 'Iniciar Sesión')}
               </Button>
               <Button
                 tag={Link}
                 to="/register"
-                className="ba-btn-secondary px-4 py-3 fs-6 d-inline-flex align-items-center gap-2"
+                className="ba-btn-secondary ba-home-auth-btn"
               >
                 <FaUserPlus /> {t('nav.register', 'Solicitar Registro')}
               </Button>

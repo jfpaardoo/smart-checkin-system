@@ -1,12 +1,12 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { CardGhostLoader } from '../../../components/GhostLoader';
+import { TableGhostLoader } from '../../../components/GhostLoader';
 
 export default function UserFormationsTable({ attendances, isLoading, onOpenDetails }) {
   const { t } = useTranslation();
 
   if (isLoading) {
-    return <CardGhostLoader />;
+    return <TableGhostLoader rows={4} columns={4} />;
   }
 
   if (attendances && attendances.length > 0) {

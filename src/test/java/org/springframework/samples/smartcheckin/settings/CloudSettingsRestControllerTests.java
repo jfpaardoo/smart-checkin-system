@@ -29,6 +29,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 class CloudSettingsRestControllerTests {
 
 	private static final String BASE_URL = "/api/v1/cloud-settings";
+	private static final String ONEDRIVE = "ONEDRIVE";
+	private static final String PROVIDER_JSON_PATH = "$.provider";
 
 	@MockitoBean
 	private CloudSettingsService cloudSettingsService;
@@ -48,7 +50,7 @@ class CloudSettingsRestControllerTests {
 	void setUp() {
 		settings = new CloudSettings();
 		settings.setId(1);
-		settings.setProvider("ONEDRIVE");
+		settings.setProvider(ONEDRIVE);
 		settings.setOneDriveClientId("client123");
 	}
 
@@ -58,7 +60,7 @@ class CloudSettingsRestControllerTests {
 		when(cloudSettingsService.getSettings()).thenReturn(settings);
 
 		mockMvc.perform(get(BASE_URL)).andExpect(status().isOk())
-				.andExpect(jsonPath("$.provider").value("ONEDRIVE"));
+				.andExpect(jsonPath(PROVIDER_JSON_PATH).value(ONEDRIVE));
 	}
 
 	@Test
@@ -67,7 +69,7 @@ class CloudSettingsRestControllerTests {
 		when(cloudSettingsService.getSettings()).thenReturn(null);
 
 		mockMvc.perform(get(BASE_URL)).andExpect(status().isOk())
-				.andExpect(jsonPath("$.provider").value("ONEDRIVE"));
+				.andExpect(jsonPath(PROVIDER_JSON_PATH).value(ONEDRIVE));
 	}
 
 	@Test
@@ -80,7 +82,7 @@ class CloudSettingsRestControllerTests {
 
 		mockMvc.perform(post(BASE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(dto))).andExpect(status().isOk())
-				.andExpect(jsonPath("$.provider").value("ONEDRIVE"));
+				.andExpect(jsonPath(PROVIDER_JSON_PATH).value(ONEDRIVE));
 	}
 
 	@Test

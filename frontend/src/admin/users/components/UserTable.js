@@ -48,7 +48,7 @@ export default function UserTable({ users, loading, activeTab, onApprove, onReje
               </td>
               <td>
                 {activeTab === 'approved' ? (
-                  <div className="d-flex flex-column gap-2 align-items-center" style={{ minWidth: '95px', margin: '0 auto' }}>
+                  <div className="ba-table-actions">
                     <Button
                       size="sm"
                       className="ba-btn-blue w-100 fw-bold shadow-sm"
@@ -68,7 +68,7 @@ export default function UserTable({ users, loading, activeTab, onApprove, onReje
                     </Button>
                   </div>
                 ) : (
-                  <div className="d-flex flex-column gap-2 align-items-center" style={{ minWidth: '95px', margin: '0 auto' }}>
+                  <div className="ba-table-actions">
                     <Button
                       size="sm"
                       className="ba-btn-primary w-100 d-flex align-items-center justify-content-center gap-1 fw-bold shadow-sm"

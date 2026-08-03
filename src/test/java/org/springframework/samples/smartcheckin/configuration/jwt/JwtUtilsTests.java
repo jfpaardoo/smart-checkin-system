@@ -6,6 +6,8 @@ import static org.mockito.Mockito.*;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,9 +19,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 
+@SuppressWarnings("java:S6466")
 class JwtUtilsTests {
 
 	private JwtUtils jwtUtils;
@@ -70,12 +71,10 @@ class JwtUtilsTests {
 
 	@Test
 	void testSignatureException() {
-		// Generate a token with a different key
-		Keys.keyPairFor(SignatureAlgorithm.RS256);
-		KeyPair otherKeyPair = Keys.keyPairFor(SignatureAlgorithm.RS256);
+		KeyPair otherKeyPair = Jwts.SIG.RS256.keyPair().build();
 		String token = Jwts.builder()
-				.setSubject("test")
-				.signWith(otherKeyPair.getPrivate(), SignatureAlgorithm.RS256)
+				.subject("test")
+				.signWith(otherKeyPair.getPrivate())
 				.compact();
 		assertFalse(jwtUtils.validateJwtToken(token));
 	}
@@ -86,19 +85,20 @@ class JwtUtilsTests {
 		KeyPair keyPair = (KeyPair) ReflectionTestUtils.getField(jwtUtils, "rsaKeyPair");
 		assertNotNull(keyPair);
 		String token = io.jsonwebtoken.Jwts.builder()
-				.setSubject("test")
-				.setIssuedAt(new java.util.Date(System.currentTimeMillis() - 10000))
-				.setExpiration(new java.util.Date(System.currentTimeMillis() - 5000))
-				.signWith(keyPair.getPrivate(), io.jsonwebtoken.SignatureAlgorithm.RS256)
+				.subject("test")
+				.issuedAt(Date.from(Instant.now().minusMillis(10000)))
+				.expiration(Date.from(Instant.now().minusMillis(5000)))
+				.signWith(keyPair.getPrivate())
 				.compact();
 		assertFalse(jwtUtils.validateJwtToken(token));
 	}
 
 	@Test
+	@SuppressWarnings("java:S5659")
 	void testUnsupportedJwtException() {
 		// Unsecured JWT (no signature)
 		String token = io.jsonwebtoken.Jwts.builder()
-				.setSubject("test")
+				.subject("test")
 				.compact();
 		assertFalse(jwtUtils.validateJwtToken(token));
 	}

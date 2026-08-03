@@ -130,3 +130,23 @@
   font-weight: 600 !important;
   transform: translateX(4px);
 }
+
+/* ==========================================
+   TAILWIND UTILITY ABSTRACTIONS FOR NAVBAR
+   ========================================== */
+
+.ba-nav-capsule {
+  @apply bg-ba-dark/70 backdrop-blur-[40px] backdrop-saturate-[2.1] sticky top-4 z-40 border border-white/20 shadow-[0_8px_32px_0_rgba(31,38,135,0.3)] mx-4 md:mx-6 lg:mx-8 rounded-[40px] transition-all duration-300 mb-8;
+}
+
+.ba-nav-btn {
+  @apply flex items-center gap-2 text-white hover:bg-white/15 px-4 py-2 rounded-[20px] font-medium transition-all duration-300 outline-none;
+}
+
+.ba-nav-dropdown-container {
+  @apply absolute mt-[16px] rounded-[24px] bg-ba-dark/70 backdrop-blur-[40px] backdrop-saturate-[2.1] border border-white/25 z-50 p-2 shadow-[0_10px_40px_rgba(0,0,0,0.6)];
+}
+
+.ba-nav-dropdown-item {
+  @apply flex items-center gap-3 px-[18px] py-[10px] my-1 text-[0.95rem] font-medium text-white rounded-[20px] hover:bg-white/20 hover:backdrop-blur-[15px] hover:translate-x-1 hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_4px_12px_rgba(0,0,0,0.15)] transition-all duration-300 bg-transparent no-underline;
+}

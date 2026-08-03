@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -83,18 +84,18 @@ class ExportRestControllerTests {
 		checkin.setId(10);
 		checkin.setUser(user);
 		checkin.setCheckInType(CheckinType.ENTRADA);
-		checkin.setCheckInDate(LocalDateTime.of(2026, 8, 1, 9, 0));
+		checkin.setCheckInDate(LocalDateTime.of(2026, Month.AUGUST, 1, 9, 0));
 
 		formation = new Formation();
 		formation.setId(100);
 		formation.setName("Course");
-		formation.setFormationDate(LocalDateTime.of(2026, 8, 1, 10, 0));
+		formation.setFormationDate(LocalDateTime.of(2026, Month.AUGUST, 1, 10, 0));
 
 		attendance = new FormationAttendance();
 		attendance.setUser(user);
 		attendance.setFormation(formation);
-		attendance.setCheckInDate(LocalDateTime.of(2026, 8, 1, 10, 0));
-		attendance.setCheckOutDate(LocalDateTime.of(2026, 8, 1, 12, 0));
+		attendance.setCheckInDate(LocalDateTime.of(2023, Month.JANUARY, 1, 9, 0));
+		attendance.setCheckOutDate(LocalDateTime.of(2023, Month.JANUARY, 1, 10, 0));
 		attendance.setSignature("signature_data");
 	}
 

@@ -49,11 +49,11 @@ export default function FormationDetailsAdmin() {
   return (
     <div className="ba-container">
       <div className="ba-card">
-        <div className="ba-card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div className="ba-card-header ba-admin-header border-0 flex-wrap">
           <h2 className="mb-0 flex-grow-1 text-wrap" style={{ lineHeight: '1.2' }}>
             {t('formationDetails.title')}: {formation.name}
           </h2>
-          <div className="d-flex flex-wrap gap-2 align-items-center justify-content-center">
+          <div className="ba-admin-header-actions">
             <Button size="sm" className="ba-btn-secondary px-3 py-2 text-nowrap" tag={Link} to={`/formations/${id}`} title={t('formations.edit')}>
               <FontAwesomeIcon icon={faPencil} className="me-1" />{t('formations.edit')}
             </Button>
@@ -78,6 +78,7 @@ export default function FormationDetailsAdmin() {
           {formation.documentUrls && formation.documentUrls.length > 0 && (
             <div className="formation-document-section mt-4 pt-3 border-top" style={{ borderColor: 'rgba(255, 255, 255, 0.4)' }}>
               <button 
+                type="button"
                 className="d-flex justify-content-between align-items-center w-100 border-0 bg-transparent p-0 m-0 text-start" 
                 onClick={() => setDocsOpen(!docsOpen)}
                 style={{ cursor: 'pointer' }}
@@ -92,7 +93,7 @@ export default function FormationDetailsAdmin() {
               </button>
               
               <Collapse isOpen={docsOpen}>
-                <div className="d-flex flex-wrap gap-2 mt-3 p-2 rounded" style={{ background: 'rgba(255,255,255,0.2)' }}>
+                <div className="ba-file-list">
                   {formation.documentUrls.map((item) => {
                     const fileMeta = getCleanFileInfo(item);
 

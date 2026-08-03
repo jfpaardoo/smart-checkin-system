@@ -15,15 +15,16 @@
   --ba-border: rgba(255, 255, 255, 0.85);
   --ba-text-muted: #64748b;
 
-  /* Glassmorphism Tokens */
-  --ba-glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.55), rgba(240, 245, 252, 0.35));
-  --ba-glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.70), rgba(240, 245, 255, 0.40));
-  --ba-glass-panel-bg: rgba(255, 255, 255, 0.60);
-  --ba-glass-border: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.3));
+  /* Glassmorphism Tokens - Enhanced Realism */
+  --ba-glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.15));
+  --ba-glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.15));
+  --ba-glass-panel-bg: rgba(255, 255, 255, 0.25);
+  --ba-glass-border: linear-gradient(135deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.2));
+  --ba-glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.4);
   
-  --ba-glass-blur-high: blur(40px) saturate(220%);
-  --ba-glass-blur-med: blur(25px) saturate(190%);
-  --ba-glass-blur-low: blur(15px) saturate(150%);
+  --ba-glass-blur-high: blur(60px) saturate(180%);
+  --ba-glass-blur-med: blur(40px) saturate(160%);
+  --ba-glass-blur-low: blur(20px) saturate(140%);
 
   /* Radius Tokens */
   --ba-radius-xl: 44px;
