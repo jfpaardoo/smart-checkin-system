@@ -5,17 +5,25 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.samples.smartcheckin.formation.Formation;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.samples.smartcheckin.user.User;
+import org.springframework.samples.smartcheckin.storage.LocalFileSystemService;
 
+@ExtendWith(MockitoExtension.class)
 class CertificateGeneratorServiceTests {
+
+    @Mock
+    private LocalFileSystemService localFileSystemService;
 
 	private CertificateGeneratorService certificateGeneratorService;
 
 	@BeforeEach
 	void setUp() {
-		certificateGeneratorService = new CertificateGeneratorService();
+		certificateGeneratorService = new CertificateGeneratorService(localFileSystemService);
 	}
 
 	@Test

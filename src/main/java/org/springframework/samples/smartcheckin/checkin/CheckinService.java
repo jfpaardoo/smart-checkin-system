@@ -36,4 +36,10 @@ public class CheckinService {
     public List<Checkin> findByUserId(Integer userId) {
         return checkInRepository.findByUserIdOrderByCheckInDateDesc(userId);
     }
+
+    @Transactional
+    public void deleteAllCheckins(User user) {
+        List<Checkin> userCheckins = checkInRepository.findByUserId(user.getId());
+        checkInRepository.deleteAll(userCheckins);
+    }
 }

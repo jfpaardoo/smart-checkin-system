@@ -16,6 +16,7 @@ import org.springframework.samples.smartcheckin.settings.OneDriveService;
 import org.springframework.samples.smartcheckin.push.PushNotificationService;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
+import org.springframework.samples.smartcheckin.storage.LocalFileSystemService;
 
 @SuppressWarnings("null")
 class FormationServiceTests {
@@ -25,6 +26,7 @@ class FormationServiceTests {
     private UserService userService;
     private OneDriveService oneDriveService;
     private PushNotificationService pushNotificationService;
+    private LocalFileSystemService localFileSystemService;
     private FormationService formationService;
 
     @BeforeEach
@@ -34,8 +36,9 @@ class FormationServiceTests {
         userService = mock(UserService.class);
         oneDriveService = mock(OneDriveService.class);
         pushNotificationService = mock(PushNotificationService.class);
+        localFileSystemService = mock(LocalFileSystemService.class);
         
-        formationService = new FormationService(formationRepository, attendanceRepository, userService, oneDriveService, pushNotificationService);
+        formationService = new FormationService(formationRepository, attendanceRepository, userService, oneDriveService, pushNotificationService, localFileSystemService);
     }
 
     @Test
@@ -104,6 +107,7 @@ class FormationServiceTests {
         when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
         when(userService.findByPersonalCode("1234")).thenReturn(user);
         when(attendanceRepository.findByFormationAndUser(formation, user)).thenReturn(Optional.of(att));
+        when(localFileSystemService.saveSignature(anyString())).thenReturn("sig");
 
         Formation res = formationService.checkoutAttendance(1, "1234", "sig");
         assertNotNull(res);

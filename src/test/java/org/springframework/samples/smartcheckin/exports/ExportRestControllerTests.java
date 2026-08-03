@@ -23,6 +23,7 @@ import org.springframework.samples.smartcheckin.formation.FormationRepository;
 import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserRepository;
+import org.springframework.samples.smartcheckin.user.UserService;
 import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.audit.AuditLogRepository;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
@@ -52,6 +53,9 @@ class ExportRestControllerTests {
 
 	@MockitoBean
 	private PdfReportGenerator pdfReportGenerator;
+
+	@MockitoBean
+	private UserService userService;
 
 	@Autowired
 	private MockMvc mockMvc;

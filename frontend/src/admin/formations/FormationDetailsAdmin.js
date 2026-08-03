@@ -13,6 +13,7 @@ import moment from "moment";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
 import GlassDropdown from "../../components/GlassDropdown";
+import SecureImage from "../../components/SecureImage";
 import { useSubscription } from "../../hooks/useSubscription";
 
 export default function FormationDetailsAdmin() {
@@ -427,38 +428,38 @@ export default function FormationDetailsAdmin() {
         </ModalHeader>
         <ModalBody className="py-4" style={{ backgroundColor: '#f4f6fa' }}>
           {selectedAttendance && (
-            <div className="p-3" style={{ backgroundColor: 'white', borderRadius: '15px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
-              <h6 className="text-muted mb-1">{t('formationDetails.formation')}:</h6>
-              <p className="mb-3" style={{ fontWeight: '600', color: '#2c3e50' }}>{formation?.name}</p>
+            <div className="p-2" style={{ backgroundColor: 'white', borderRadius: '15px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+              <h6 className="text-muted mb-0" style={{ fontSize: '0.85rem' }}>{t('formationDetails.formation')}:</h6>
+              <p className="mb-2" style={{ fontWeight: '600', color: '#2c3e50', fontSize: '0.9rem' }}>{formation?.name}</p>
 
-              <h6 className="text-muted mb-1">{t('formationDetails.employee')}:</h6>
-              <p className="mb-3" style={{ fontWeight: '600', color: '#2c3e50' }}>
+              <h6 className="text-muted mb-0" style={{ fontSize: '0.85rem' }}>{t('formationDetails.employee')}:</h6>
+              <p className="mb-2" style={{ fontWeight: '600', color: '#2c3e50', fontSize: '0.9rem' }}>
                 {selectedAttendance.user.firstName} {selectedAttendance.user.lastName} ({selectedAttendance.user.username})
               </p>
 
-              <h6 className="text-muted mb-1">{t('formationDetails.personalCodeLabel')}:</h6>
-              <p className="mb-3" style={{ fontWeight: '600', color: '#2c3e50' }}>{selectedAttendance.user.personalCode}</p>
+              <h6 className="text-muted mb-0" style={{ fontSize: '0.85rem' }}>{t('formationDetails.personalCodeLabel')}:</h6>
+              <p className="mb-2" style={{ fontWeight: '600', color: '#2c3e50', fontSize: '0.9rem' }}>{selectedAttendance.user.personalCode}</p>
 
-              <h6 className="text-muted mb-1">{t('formationDetails.statusLabel')}:</h6>
-              <div className="mb-3">{renderModalAttendanceBadge(selectedAttendance)}</div>
+              <h6 className="text-muted mb-0" style={{ fontSize: '0.85rem' }}>{t('formationDetails.statusLabel')}:</h6>
+              <div className="mb-2">{renderModalAttendanceBadge(selectedAttendance)}</div>
 
-              <h6 className="text-muted mb-1">{t('formationDetails.checkInTime')}:</h6>
-              <p className="mb-3" style={{ fontWeight: '500' }}>
+              <h6 className="text-muted mb-0" style={{ fontSize: '0.85rem' }}>{t('formationDetails.checkInTime')}:</h6>
+              <p className="mb-2" style={{ fontWeight: '500', fontSize: '0.9rem' }}>
                 {selectedAttendance.checkInDate ? moment(selectedAttendance.checkInDate).format('YYYY-MM-DD HH:mm:ss') : t('formationDetails.notRecorded')}
               </p>
 
-              <h6 className="text-muted mb-1">{t('formationDetails.checkOutTime')}:</h6>
-              <p className="mb-4" style={{ fontWeight: '500' }}>
+              <h6 className="text-muted mb-0" style={{ fontSize: '0.85rem' }}>{t('formationDetails.checkOutTime')}:</h6>
+              <p className="mb-3" style={{ fontWeight: '500', fontSize: '0.9rem' }}>
                 {selectedAttendance.checkOutDate ? moment(selectedAttendance.checkOutDate).format('YYYY-MM-DD HH:mm:ss') : t('formationDetails.notRecorded')}
               </p>
 
-              <h6 className="text-muted mb-2">{t('formationDetails.digitalSignature')}:</h6>
+              <h6 className="text-muted mb-1" style={{ fontSize: '0.85rem' }}>{t('formationDetails.digitalSignature')}:</h6>
               {selectedAttendance.signature ? (
-                <div className="text-center p-2" style={{ backgroundColor: '#fff', borderRadius: '12px', border: '2px dashed #cbd5e1' }}>
-                  <img 
-                    src={selectedAttendance.signature} 
+                <div className="text-center p-1" style={{ backgroundColor: '#fff', borderRadius: '12px', border: '2px dashed #cbd5e1' }}>
+                  <SecureImage 
+                    src={selectedAttendance.signature.startsWith('data:image') ? selectedAttendance.signature : `/api/v1/signatures/${selectedAttendance.signature}`} 
                     alt={`Firma de ${selectedAttendance.user.firstName}`}
-                    style={{ maxWidth: '100%', maxHeight: '180px', objectFit: 'contain' }} 
+                    style={{ maxWidth: '100%', maxHeight: '100px', objectFit: 'contain' }} 
                   />
                 </div>
               ) : (

@@ -3,10 +3,12 @@ package org.springframework.samples.smartcheckin.user;
 import java.util.List;
 
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
+import org.springframework.samples.smartcheckin.checkin.Checkin;
 
 import java.time.LocalDateTime;
 
 import org.springframework.samples.smartcheckin.model.BaseEntity;
+import org.springframework.samples.smartcheckin.push.PushSubscriptionEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -30,7 +32,7 @@ import lombok.EqualsAndHashCode;
 
 @Getter
 @Setter
-@EqualsAndHashCode(callSuper = false, exclude = {"formationAttendances"})
+@EqualsAndHashCode(callSuper = false, exclude = {"formationAttendances", "checkins"})
 @Entity
 @Table(name = "appusers")
 public class User extends BaseEntity {
@@ -104,6 +106,14 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<FormationAttendance> formationAttendances;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Checkin> checkins;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<PushSubscriptionEntity> pushSubscriptions;
 
     @JsonIgnore
     public List<GrantedAuthority> getAuthorities() {

@@ -86,10 +86,21 @@ class UserRestController {
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
-    @GetMapping("me")
+    @GetMapping("/me")
     public ResponseEntity<User> getMyProfile() {
-        User currentUser = userService.findCurrentUser();
-        return new ResponseEntity<>(currentUser, HttpStatus.OK);
+        User user = userService.findCurrentUser();
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteMyAccount() {
+        User user = userService.findCurrentUser();
+        
+        // Ensure admins cannot delete themselves directly if it causes issues, but per GDPR, any user has the right to be forgotten.
+        // We might want to restrict this if they are the ONLY admin, but for now we proceed.
+        userService.deleteUser(user.getId());
+        
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("me/formations")

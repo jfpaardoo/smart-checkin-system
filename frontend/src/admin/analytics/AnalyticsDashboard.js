@@ -96,7 +96,7 @@ export default function AnalyticsDashboard() {
     };
 
     // Calculate aggregated metrics safely
-    const totalCheckinsSum = statistics.reduce((acc, curr) => acc + (curr.totalCheckins || 0), 0);
+    const latestTotalCheckins = statistics.length > 0 ? statistics[0].totalCheckins : 0;
     const latestAttendanceRate = statistics.length > 0 && statistics[0].formationAttendanceRate !== undefined 
         ? Math.round(statistics[0].formationAttendanceRate) 
         : 0;
@@ -108,6 +108,9 @@ export default function AnalyticsDashboard() {
         { name: t('analytics.attendance', 'Attendance'), value: latestAttendanceRate, fill: COLORS[0] },
         { name: t('analytics.absence', 'Absence'), value: Math.max(0, 100 - latestAttendanceRate), fill: COLORS[1] }
     ] : [];
+    
+    // Reverse statistics for correct chronological rendering on the X-axis (left to right)
+    const chronologicalStatistics = [...statistics].reverse();
 
     return (
         <div className="ba-container">
@@ -176,7 +179,7 @@ export default function AnalyticsDashboard() {
                                 </div>
                                 <div className="analytics-kpi-content">
                                     <h6>{t('analytics.totalCheckins', 'Total Check-ins')}</h6>
-                                    <p className="kpi-value">{totalCheckinsSum}</p>
+                                    <p className="kpi-value">{latestTotalCheckins}</p>
                                 </div>
                             </div>
                             
@@ -211,7 +214,7 @@ export default function AnalyticsDashboard() {
                                     </div>
                                     <div className="chart-container-wrapper">
                                         <ResponsiveContainer width="100%" height="100%">
-                                            <LineChart data={statistics} margin={{ top: 15, right: 25, left: -15, bottom: 5 }}>
+                                            <LineChart data={chronologicalStatistics} margin={{ top: 15, right: 25, left: -15, bottom: 5 }}>
                                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 0, 0, 0.06)" />
                                                 <XAxis dataKey="date" stroke="#64748b" fontSize={12} tickLine={false} />
                                                 <YAxis stroke="#64748b" fontSize={12} tickLine={false} />
@@ -292,6 +295,8 @@ export default function AnalyticsDashboard() {
                                     <th>{t('users.personalCode', 'Code')}</th>
                                     <th>{t('users.name', 'Employee')}</th>
                                     <th>{t('users.role', 'Role')}</th>
+                                    <th>{t('analytics.workCheckins', 'Work Check-ins')}</th>
+                                    <th>{t('analytics.workTime', 'Work Time')}</th>
                                     <th>{t('analytics.formationsCount', 'Formations (Attended / Assigned)')}</th>
                                     <th>{t('analytics.attendancePercentage', 'Attendance Rate')}</th>
                                     <th>{t('analytics.totalFormationTime', 'Time in Formations')}</th>
@@ -309,10 +314,19 @@ export default function AnalyticsDashboard() {
                                         <td>
                                             <span className="ba-badge ba-badge-active">{user.authority}</span>
                                         </td>
-                                        <td>
-                                            {user.formationsAttended} / {user.formationsAssigned}
+                                        <td className="fw-bold text-center">
+                                            {user.totalCheckins}
                                         </td>
                                         <td>
+                                            <span className="d-flex align-items-center gap-1 fw-bold" style={{ color: '#0f766e' }}>
+                                                <FontAwesomeIcon icon={faClock} />
+                                                {formatDuration(user.totalWorkMinutes)}
+                                            </span>
+                                        </td>
+                                        <td className="text-center">
+                                            {user.formationsAttended} / {user.formationsAssigned}
+                                        </td>
+                                        <td className="text-center">
                                             <span className={`fw-bold ${getAttendanceColorClass(user.attendancePercentage)}`}>
                                                 {user.attendancePercentage}%
                                             </span>

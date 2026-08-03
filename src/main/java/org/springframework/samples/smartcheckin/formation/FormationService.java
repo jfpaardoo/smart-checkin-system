@@ -11,6 +11,7 @@ import org.springframework.samples.smartcheckin.push.PushNotificationService;
 import org.springframework.samples.smartcheckin.settings.OneDriveService;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
+import org.springframework.samples.smartcheckin.storage.LocalFileSystemService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,18 +25,21 @@ public class FormationService {
     private final UserService userService;
     private final OneDriveService oneDriveService;
     private final PushNotificationService pushNotificationService;
+    private final LocalFileSystemService localFileSystemService;
 
     @Autowired
     public FormationService(FormationRepository formationRepository, 
                             FormationAttendanceRepository attendanceRepository, 
                             UserService userService,
                             OneDriveService oneDriveService,
-                            PushNotificationService pushNotificationService) {
+                            PushNotificationService pushNotificationService,
+                            LocalFileSystemService localFileSystemService) {
         this.formationRepository = formationRepository;
         this.attendanceRepository = attendanceRepository;
         this.userService = userService;
         this.oneDriveService = oneDriveService;
         this.pushNotificationService = pushNotificationService;
+        this.localFileSystemService = localFileSystemService;
     }
 
     private static final String FORMATION_NOT_FOUND_MSG = "Formation not found";
@@ -110,7 +114,10 @@ public class FormationService {
             .orElseThrow(() -> new IllegalArgumentException("El usuario no ha hecho check-in en esta formación"));
 
         att.setCheckOutDate(LocalDateTime.now(ZoneId.systemDefault()));
-        att.setSignature(signature);
+        if (signature != null && !signature.isEmpty()) {
+            String fileName = localFileSystemService.saveSignature(signature);
+            att.setSignature(fileName);
+        }
         attendanceRepository.save(att);
 
         user.setIsWorking(false);

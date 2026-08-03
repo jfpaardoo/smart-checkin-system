@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Row, Col, Nav, NavItem, NavLink, TabContent, TabPane, Form, Button, Table, Badge, Spinner, Input, Label, FormGroup } from "reactstrap";
-import { FaUser, FaGraduationCap, FaLock, FaKey, FaShieldAlt, FaIdCard, FaCheckCircle, FaExclamationTriangle, FaEye, FaEyeSlash, FaQrcode, FaClock, FaAward, FaFilePdf, FaShieldVirus } from "react-icons/fa";
+import { Row, Col, Nav, NavItem, NavLink, TabContent, TabPane, Form, Button, Table, Badge, Spinner, Input, Label, FormGroup, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
+import { FaUser, FaGraduationCap, FaLock, FaKey, FaShieldAlt, FaIdCard, FaCheckCircle, FaExclamationTriangle, FaEye, FaEyeSlash, FaQrcode, FaClock, FaAward, FaFilePdf, FaShieldVirus, FaDownload, FaTrash } from "react-icons/fa";
 import { QRCodeSVG } from "qrcode.react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -615,19 +615,54 @@ function PasswordSecurityTab({
   );
 }
 
-/* Main Component: UserProfile */
-export default function UserProfile() {
-  const { t } = useTranslation();
-  const toast = useToast();
-  const jwt = tokenService.getLocalAccessToken();
+/* Sub-component: Privacy & Data Tab */
+function PrivacyDataTab({ t, handleDeleteAccount, isDeleting, handleExportData, isExporting }) {
+  return (
+    <div className="p-3">
+      <h5 className="fw-bold mb-3 d-flex align-items-center text-dark">
+        <FaShieldAlt className="me-2" style={{ color: "#8a9e29" }} /> {t('profile.privacyData', 'Privacidad y Datos')}
+      </h5>
 
-  const [activeTab, setActiveTab] = useState("1");
-  const [loadingUser, setLoadingUser] = useState(true);
-  const [loadingFormations, setLoadingFormations] = useState(true);
-  const [userData, setUserData] = useState(null);
-  const [formations, setFormations] = useState([]);
+      <Row className="g-4 mt-1">
+        <Col md={12}>
+          <div className="p-4 ba-glass-panel text-start">
+            <h6 className="fw-bold mb-2 text-dark"><FaDownload className="me-2 text-success" /> {t('profile.exportData', 'Exportar Mis Datos (GDPR)')}</h6>
+            <p className="text-muted small mb-3">
+              {t('profile.exportDataDesc', 'Tienes derecho a solicitar una copia de todos tus datos personales almacenados en nuestro sistema, incluyendo tu historial de fichajes y formaciones, en un formato estructurado y legible.')}
+            </p>
+            <Button 
+              onClick={handleExportData} 
+              disabled={isExporting}
+              className="ba-btn-primary mt-2"
+            >
+              {isExporting ? <Spinner size="sm" className="me-2" /> : <FaDownload className="me-2" />}
+              {t('profile.exportDataBtn', 'Solicitar Exportación')}
+            </Button>
+          </div>
+        </Col>
 
-  // Form State for Password Change & Visibility Toggles
+        <Col md={12}>
+          <div className="p-4 ba-glass-panel text-start" style={{ background: 'linear-gradient(135deg, rgba(254, 226, 226, 0.4) 0%, rgba(255, 255, 255, 0.4) 100%)', borderColor: 'rgba(252, 165, 165, 0.6)' }}>
+            <h6 className="fw-bold text-danger mb-2"><FaTrash className="me-2" /> {t('profile.deleteAccount', 'Eliminar Cuenta')}</h6>
+            <p className="text-muted small mb-3">
+              {t('profile.deleteAccountDesc', 'Eliminar tu cuenta es una acción irreversible. Todos tus datos personales, historial de fichajes y formaciones serán eliminados de forma permanente de nuestros servidores.')}
+            </p>
+            <Button 
+              onClick={handleDeleteAccount} 
+              disabled={isDeleting}
+              className="ba-btn-danger mt-2"
+            >
+              {isDeleting ? <Spinner size="sm" className="me-2" /> : <FaTrash className="me-2" />}
+              {t('profile.deleteAccountBtn', 'Eliminar Mi Cuenta')}
+            </Button>
+          </div>
+        </Col>
+      </Row>
+    </div>
+  );
+}
+
+function usePasswordSecurity(jwt, t, toast) {
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
     newPassword: "",
@@ -637,6 +672,75 @@ export default function UserProfile() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submittingPassword, setSubmittingPassword] = useState(false);
+
+  const handlePasswordChangeSubmit = (e) => {
+    e.preventDefault();
+    const { currentPassword, newPassword, confirmPassword } = passwordForm;
+
+    if (!currentPassword) {
+      toast.error(t('profile.enterCurrentPassword', 'Introduce la contraseña actual'));
+      return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+      toast.error(t('profile.passwordMinLength', 'La nueva contraseña debe tener al menos 6 caracteres'));
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error(t('profile.passwordsDoNotMatch', 'Las contraseñas no coinciden'));
+      return;
+    }
+
+    setSubmittingPassword(true);
+    fetch("/api/v1/users/me/password", {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        currentPassword,
+        newPassword,
+        confirmPassword,
+      }),
+    })
+      .then(async (res) => {
+        const body = await res.json();
+        if (!res.ok) {
+          throw new Error(body.message || t('profile.changePasswordError', 'Error al cambiar contraseña'));
+        }
+        toast.success(t('profile.passwordSuccessLogout', 'Contraseña actualizada con éxito. Por seguridad, debes iniciar sesión de nuevo.'));
+        setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+        setTimeout(() => {
+          tokenService.removeUser();
+          window.location.href = "/login";
+        }, 1500);
+      })
+      .catch((err) => {
+        toast.error(err.message);
+        setSubmittingPassword(false);
+      });
+  };
+
+  return {
+    passwordForm,
+    setPasswordForm,
+    showCurrentPassword,
+    setShowCurrentPassword,
+    showNewPassword,
+    setShowNewPassword,
+    showConfirmPassword,
+    setShowConfirmPassword,
+    submittingPassword,
+    handlePasswordChangeSubmit,
+  };
+}
+
+/* Hook for User Profile Data */
+function useUserProfileData(jwt, t, toast) {
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [loadingFormations, setLoadingFormations] = useState(true);
+  const [userData, setUserData] = useState(null);
+  const [formations, setFormations] = useState([]);
 
   const fetchProfileData = useCallback(() => {
     setLoadingUser(true);
@@ -687,52 +791,93 @@ export default function UserProfile() {
     fetchMyFormations();
   }, [fetchProfileData, fetchMyFormations]);
 
-  const handlePasswordChangeSubmit = (e) => {
-    e.preventDefault();
-    const { currentPassword, newPassword, confirmPassword } = passwordForm;
+  return { loadingUser, loadingFormations, userData, setUserData, formations };
+}
 
-    if (!currentPassword) {
-      toast.error(t('profile.enterCurrentPassword', 'Introduce la contraseña actual'));
-      return;
-    }
-    if (!newPassword || newPassword.length < 6) {
-      toast.error(t('profile.passwordMinLength', 'La nueva contraseña debe tener al menos 6 caracteres'));
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      toast.error(t('profile.passwordsDoNotMatch', 'Las contraseñas no coinciden'));
-      return;
-    }
+/* Main Component: UserProfile */
+export default function UserProfile() {
+  const { t } = useTranslation();
+  const toast = useToast();
+  const jwt = tokenService.getLocalAccessToken();
 
-    setSubmittingPassword(true);
-    fetch("/api/v1/users/me/password", {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        currentPassword,
-        newPassword,
-        confirmPassword,
-      }),
-    })
-      .then(async (res) => {
-        const body = await res.json();
-        if (!res.ok) {
-          throw new Error(body.message || t('profile.changePasswordError', 'Error al cambiar contraseña'));
-        }
-        toast.success(t('profile.passwordSuccessLogout', 'Contraseña actualizada con éxito. Por seguridad, debes iniciar sesión de nuevo.'));
-        setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
-        setTimeout(() => {
-          tokenService.removeUser();
-          window.location.href = "/login";
-        }, 1500);
-      })
-      .catch((err) => {
-        toast.error(err.message);
-        setSubmittingPassword(false);
+  const [activeTab, setActiveTab] = useState("1");
+  const { loadingUser, loadingFormations, userData, setUserData, formations } = useUserProfileData(jwt, t, toast);
+
+  const {
+    passwordForm,
+    setPasswordForm,
+    showCurrentPassword,
+    setShowCurrentPassword,
+    showNewPassword,
+    setShowNewPassword,
+    showConfirmPassword,
+    setShowConfirmPassword,
+    submittingPassword,
+    handlePasswordChangeSubmit,
+  } = usePasswordSecurity(jwt, t, toast);
+
+  // GDPR State
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
+
+  // Extracted to useUserProfileData hook
+
+  const handleExportData = async () => {
+    try {
+      setIsExporting(true);
+      const res = await fetch("/api/v1/exports/my-data", {
+        headers: { Authorization: `Bearer ${jwt}` },
       });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `mis_datos_smartcheckin_${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        toast.success(t('profile.exportSuccess', 'Datos exportados correctamente'));
+      } else {
+        toast.error(t('profile.exportError', 'No se pudieron exportar los datos'));
+      }
+    } catch (err) {
+      console.error("Error exporting data:", err);
+      toast.error(t('genericError', 'Ocurrió un error inesperado'));
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const confirmDeleteAccount = async () => {
+    if (deleteConfirmationText !== 'ELIMINAR') {
+      toast.error(t('profile.deleteTypeConfirmError', 'Debes escribir ELIMINAR para confirmar.'));
+      return;
+    }
+    
+    try {
+      setIsDeleting(true);
+      const res = await fetch("/api/v1/users/me", {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${jwt}` },
+      });
+      if (res.ok) {
+        toast.success(t('profile.deleteSuccess', 'Tu cuenta ha sido eliminada.'));
+        tokenService.removeUser();
+        window.location.href = "/";
+      } else {
+        toast.error(t('profile.deleteError', 'No se pudo eliminar la cuenta. Verifica que no seas el único administrador.'));
+      }
+    } catch (err) {
+      console.error("Error deleting account:", err);
+      toast.error(t('genericError', 'Ocurrió un error inesperado'));
+    } finally {
+      setIsDeleting(false);
+      setDeleteModalOpen(false);
+    }
   };
 
   return (
@@ -792,6 +937,21 @@ export default function UserProfile() {
               <FaShieldAlt className="me-2" /> {t('profile.securityPassword', 'Seguridad y Contraseña')}
             </NavLink>
           </NavItem>
+          <NavItem>
+            <NavLink
+              className="px-4 py-2 rounded-pill fw-semibold border-0 d-inline-flex align-items-center"
+              style={{
+                cursor: "pointer",
+                background: activeTab === "4" ? "#cce364" : "rgba(255, 255, 255, 0.7)",
+                color: activeTab === "4" ? "#1a1a1a" : "#475569",
+                boxShadow: activeTab === "4" ? "0 4px 15px rgba(204, 227, 100, 0.4)" : "none",
+                fontWeight: activeTab === "4" ? "700" : "500",
+              }}
+              onClick={() => setActiveTab("4")}
+            >
+              <FaShieldVirus className="me-2" /> {t('profile.privacyData', 'Privacidad y Datos')}
+            </NavLink>
+          </NavItem>
         </Nav>
 
         <TabContent activeTab={activeTab}>
@@ -818,8 +978,57 @@ export default function UserProfile() {
               t={t}
             />
           </TabPane>
+          <TabPane tabId="4">
+            <PrivacyDataTab 
+              t={t} 
+              handleDeleteAccount={() => setDeleteModalOpen(true)}
+              isDeleting={isDeleting}
+              handleExportData={handleExportData}
+              isExporting={isExporting}
+            />
+          </TabPane>
         </TabContent>
       </div>
+
+      <Modal 
+        isOpen={deleteModalOpen} 
+        toggle={() => setDeleteModalOpen(!deleteModalOpen)} 
+        centered
+        contentClassName="ba-glass-panel border-0"
+      >
+        <ModalHeader toggle={() => setDeleteModalOpen(!deleteModalOpen)} className="border-0 pb-0 text-danger fw-bold">
+          <span className="d-flex align-items-center">
+            <FaExclamationTriangle className="me-2" /> {t('profile.deleteConfirmTitle', 'Eliminar Cuenta Permanentemente')}
+          </span>
+        </ModalHeader>
+        <ModalBody className="p-4 text-center">
+          <FaTrash className="text-danger mb-3" style={{ fontSize: "3rem", opacity: 0.8 }} />
+          <h5 className="fw-bold text-dark">{t('profile.areYouSure', '¿Estás completamente seguro?')}</h5>
+          <p className="text-muted fw-semibold mb-4">
+            {t('profile.deleteWarningText', 'Esta acción no se puede deshacer. Todos tus datos se borrarán permanentemente.')}
+          </p>
+          <FormGroup className="text-start p-3 rounded-4" style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.8)' }}>
+            <Label className="fw-bold text-dark mb-2">{t('profile.typeToDelete', 'Escribe ELIMINAR para confirmar:')}</Label>
+            <Input 
+              type="text" 
+              value={deleteConfirmationText}
+              onChange={(e) => setDeleteConfirmationText(e.target.value)}
+              placeholder="ELIMINAR"
+              className="ba-select-toggle w-100"
+            />
+          </FormGroup>
+        </ModalBody>
+        <ModalFooter className="border-0 pt-0 justify-content-center gap-2">
+          <Button className="ba-btn-secondary" onClick={() => setDeleteModalOpen(false)}>
+            {t('common.cancel', 'Cancelar')}
+          </Button>
+          <Button className="ba-btn-danger" onClick={confirmDeleteAccount} disabled={deleteConfirmationText !== 'ELIMINAR' || isDeleting}>
+            {isDeleting ? <Spinner size="sm" className="me-2" /> : null}
+            {t('profile.deleteConfirmBtn', 'Sí, Eliminar Mi Cuenta')}
+          </Button>
+        </ModalFooter>
+      </Modal>
+
     </div>
   );
 }
