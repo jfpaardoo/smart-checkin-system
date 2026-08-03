@@ -1,27 +1,60 @@
+version: '3.8'
+
 services:
-  postgres:
-    image: postgres:15
+  # ============================================================================
+  # 1. Main Spring Boot + React Application Service
+  # ============================================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smart-checkin-app
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/smartcheckin
+      - SPRING_DATASOURCE_USERNAME=checkin_user
+      - SPRING_DATASOURCE_PASSWORD=checkin_secret_pass
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - JWT_SECRET=ProductionSecretKeyForBADistributionAcademySystem2026!
+      - TOTP_SECRET=JBSWY3DPEHPK3PXP
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=admin
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - checkin-network
+
+  # ============================================================================
+  # 2. PostgreSQL Production Database
+  # ============================================================================
+  db:
+    image: postgres:16-alpine
+    container_name: smart-checkin-db
+    restart: always
+    environment:
+      - POSTGRES_DB=smartcheckin
+      - POSTGRES_USER=checkin_user
+      - POSTGRES_PASSWORD=checkin_secret_pass
     ports:
       - "5432:5432"
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER:-smartcheckin}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-smartcheckin}
-      - POSTGRES_DB=${POSTGRES_DB:-smartcheckin}
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U checkin_user -d smartcheckin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - checkin-network
 
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - "8082:8080"
-
-  mailhog:
-    image: mailhog/mailhog:v1.0.1
-    ports:
-      - "1025:1025" # smtp server
-      - "8025:8025" # web ui
-    restart: always
+networks:
+  checkin-network:
+    driver: bridge
 
 volumes:
-  postgres-data:
+  postgres_data:
+    driver: local

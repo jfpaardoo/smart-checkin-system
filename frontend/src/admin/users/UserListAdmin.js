@@ -1,18 +1,19 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Button, Table, Badge, Nav, NavItem, NavLink } from "reactstrap";
+import { Button } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import "../../App.css";
 import "../../static/css/admin/adminPage.css";
 import deleteFromList from "../../util/deleteFromList";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUsers, faFileCsv, faFileExcel, faPlus, faCheck, faTimes, faClock } from '@fortawesome/free-solid-svg-icons';
+import { faUsers, faFileCsv, faFileExcel, faPlus } from '@fortawesome/free-solid-svg-icons';
 import GlassSearchBar from "../../components/GlassSearchBar";
-import { TableGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
 import downloadExportFile from "../../util/downloadExportFile";
 import { useSubscription } from "../../hooks/useSubscription";
+import UserTable from "./components/UserTable";
+import UserListTabs from "./components/UserListTabs";
 
 export default function UserListAdmin() {
   const { t } = useTranslation();
@@ -98,6 +99,16 @@ export default function UserListAdmin() {
     );
   };
 
+  const handleDelete = async (id) => {
+    deleteFromList(
+      `/api/v1/users/${id}`,
+      id,
+      [users, setUsers],
+      toast,
+      { entityName: t('users.userEntity', 'Usuario'), t }
+    );
+  };
+
   const currentList = activeTab === 'approved' ? users : pendingUsers;
 
   const filteredUsers = currentList.filter((user) => {
@@ -138,31 +149,12 @@ export default function UserListAdmin() {
         </div>
 
         <div className="d-flex flex-column flex-xl-row justify-content-between align-items-center align-items-xl-start gap-4 mb-4">
-          <Nav tabs className="border-bottom-0 gap-2 w-100 w-xl-auto justify-content-center justify-content-xl-start">
-            <NavItem>
-              <NavLink
-                className={`ba-tab-pill ${activeTab === 'approved' ? 'ba-tab-pill-active' : ''}`}
-                onClick={() => setActiveTab('approved')}
-              >
-                <FontAwesomeIcon icon={faUsers} className="me-1" />
-                {t('users.activeEmployees', 'Empleados Activos')} ({users.length})
-              </NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink
-                className={`ba-tab-pill ${activeTab === 'pending' ? 'ba-tab-pill-pending' : ''}`}
-                onClick={() => setActiveTab('pending')}
-              >
-                <FontAwesomeIcon icon={faClock} className="me-1" />
-                {t('users.pendingRequestsTab', 'Solicitudes Pendientes')}
-                {pendingUsers.length > 0 && (
-                  <Badge color="danger" pill className="ms-2">
-                    {pendingUsers.length}
-                  </Badge>
-                )}
-              </NavLink>
-            </NavItem>
-          </Nav>
+          <UserListTabs 
+            activeTab={activeTab} 
+            setActiveTab={setActiveTab} 
+            activeCount={users.length} 
+            pendingCount={pendingUsers.length} 
+          />
 
           <div className="d-flex flex-column flex-md-row gap-3 align-items-center w-100 w-xl-auto justify-content-center justify-content-xl-end">
             <GlassSearchBar 
@@ -172,103 +164,14 @@ export default function UserListAdmin() {
           </div>
         </div>
         
-        {loading ? (
-          <TableGhostLoader columns={7} rows={4} />
-        ) : (
-          <Table responsive hover aria-label="users" className="ba-table align-middle" style={{ tableLayout: 'fixed', minWidth: '800px', width: '100%' }}>
-            <thead>
-              <tr>
-                <th style={{ width: '9%', paddingLeft: '1rem' }}>{t('users.personalCode', 'Código')}</th>
-                <th style={{ width: '13%' }}>{t('users.username', 'Usuario')}</th>
-                <th style={{ width: '14%' }}>{t('users.firstName', 'Nombre')}</th>
-                <th style={{ width: '14%' }}>{t('users.lastName', 'Apellidos')}</th>
-                <th style={{ width: '17%' }}>{t('users.status', 'Estado')}</th>
-                <th style={{ width: '11%' }}>{t('users.role', 'Rol')}</th>
-                <th style={{ width: '22%' }}>{t('users.actions', 'Acciones')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
-                  <tr key={user.id}>
-                    <td style={{ paddingLeft: '1rem' }}><span className="fw-bold">{user.personalCode}</span></td>
-                    <td style={{ wordBreak: 'break-word' }}>{user.username}</td>
-                    <td style={{ wordBreak: 'break-word' }}>{user.firstName}</td>
-                    <td style={{ wordBreak: 'break-word' }}>{user.lastName}</td>
-                    <td className="text-center">
-                      {activeTab === 'approved' ? (
-                        <span className={`ba-badge ${user.isWorking ? 'ba-badge-active' : 'ba-badge-inactive'}`} style={{ whiteSpace: 'normal', display: 'inline-block' }}>
-                          {user.isWorking ? t('users.working', 'En formación') : t('users.offDuty', 'Fuera de formación')}
-                        </span>
-                      ) : (
-                        <span className="badge-glass-warning px-3 py-2 fw-bold" style={{ whiteSpace: 'normal', display: 'inline-block' }}>
-                          {t('users.pendingApproval', 'Pendiente de Aprobación')}
-                        </span>
-                      )}
-                    </td>
-                    <td className="fw-bold text-truncate" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }} title={user.authority?.authority || 'EMPLOYEE'}>
-                      {user.authority?.authority || 'EMPLOYEE'}
-                    </td>
-                    <td>
-                      {activeTab === 'approved' ? (
-                        <div className="d-flex flex-column gap-2 align-items-center" style={{ minWidth: '95px', margin: '0 auto' }}>
-                          <Button
-                            size="sm"
-                            className="ba-btn-secondary w-100"
-                            tag={Link}
-                            to={"/users/" + user.id}
-                          >
-                            {t('users.edit', 'Editar')}
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="ba-btn-danger w-100"
-                            onClick={() =>
-                              deleteFromList(
-                                `/api/v1/users/${user.id}`,
-                                user.id,
-                                [users, setUsers],
-                                toast,
-                                { entityName: t('users.userEntity', 'Usuario'), t }
-                              )
-                            }
-                          >
-                            {t('users.delete', 'Eliminar')}
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="d-flex flex-column gap-2 align-items-center" style={{ minWidth: '95px', margin: '0 auto' }}>
-                          <Button
-                            size="sm"
-                            className="ba-btn-primary w-100 d-flex align-items-center justify-content-center gap-1 fw-bold"
-                            onClick={() => handleApprove(user.id)}
-                          >
-                            <FontAwesomeIcon icon={faCheck} />
-                            {t('users.approve', 'Aprobar')}
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="ba-btn-danger w-100 d-flex align-items-center justify-content-center gap-1 fw-bold"
-                            onClick={() => handleReject(user.id)}
-                          >
-                            <FontAwesomeIcon icon={faTimes} />
-                            {t('users.reject', 'Rechazar')}
-                          </Button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" className="text-center p-4 text-muted">
-                    {t('common.noResults', 'No se encontraron registros.')}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </Table>
-        )}
+        <UserTable 
+            users={filteredUsers} 
+            loading={loading} 
+            activeTab={activeTab} 
+            onApprove={handleApprove} 
+            onReject={handleReject} 
+            onDelete={handleDelete}
+        />
       </div>
     </div>
   );

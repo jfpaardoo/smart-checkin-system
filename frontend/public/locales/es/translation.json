@@ -278,7 +278,8 @@
     "exportError": "Error al generar la descarga del informe",
     "sessionExpired": "Sesión expirada. Por favor vuelva a iniciar sesión.",
     "genericError": "Ha ocurrido un error en la solicitud",
-    "networkError": "Error de conexión con el servidor"
+    "networkError": "Error de conexión con el servidor",
+    "saving": "Guardando..."
   },
   "lang": {
     "es": "Español",

@@ -1,100 +1,28 @@
-import { Link } from "react-router-dom";
+import React from "react";
 import { Form, Input, Label, FormGroup, Row, Col, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import "../../App.css";
 import "../../static/css/admin/adminPage.css";
 import getIdFromUrl from "../../util/getIdFromUrl";
-import useFetchData from "../../util/useFetchData";
-import useFetchState from "../../util/useFetchState";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
+import { useUserEdit } from "./hooks/useUserEdit";
 
 export default function UserEditAdmin() {
   const { t } = useTranslation();
   const jwt = tokenService.getLocalAccessToken();
-  const emptyItem = {
-    id: null,
-    username: "",
-    password: "",
-    personalCode: "",
-    firstName: "",
-    lastName: "",
-    isWorking: false,
-    authority: null,
-  };
   const id = getIdFromUrl(2);
   const toast = useToast();
-  const [user, setUser, loading] = useFetchState(
-    emptyItem,
-    `/api/v1/users/${id}`,
-    jwt,
-    null,
-    null,
-    id
-  );
-  const auths = useFetchData(`/api/v1/users/authorities`, jwt);
 
-  function handleChange(event) {
-    const target = event.target;
-    let value = target.type === 'checkbox' ? target.checked : target.value;
-    const name = target.name;
-    
-    if (name === "personalCode") {
-      value = value.replace(/\D/g, "").slice(0, 4);
-    }
-
-    if (name === "authority") {
-      const auth = auths.find((a) => a.id === Number(value));
-      setUser({ ...user, authority: auth });
-    } else {
-      setUser({ ...user, [name]: value });
-    }
-  }
-
-  function handleSubmit(event) {
-    event.preventDefault();
-
-    fetch("/api/v1/users" + (user.id ? "/" + user.id : ""), {
-      method: user.id ? "PUT" : "POST",
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(user),
-    })
-      .then((response) => response.json())
-      .then((json) => {
-        if (json.message) {
-          let errorMsg = json.message;
-          if (errorMsg.startsWith("{") && errorMsg.endsWith("}")) {
-            errorMsg = errorMsg
-              .slice(1, -1)
-              .split(",")
-              .map(err => {
-                const [field, msg] = err.split("=");
-                const formattedField = field.trim() === "authority" ? t('users.role') : field.trim();
-                return `${formattedField}: ${msg.trim()}`;
-              })
-              .join("\n");
-          } else if (errorMsg.includes("duplicate key value")) {
-            if (errorMsg.includes("personal_code") || errorMsg.includes("personalCode")) {
-              errorMsg = t('users.duplicatePersonalCode');
-            } else if (errorMsg.includes("username")) {
-              errorMsg = t('users.duplicateUsername');
-            } else {
-              errorMsg = t('users.duplicateGeneric');
-            }
-          }
-          toast.error(errorMsg);
-        } else {
-          toast.success(user.id ? t('users.updated') : t('users.created'));
-          setTimeout(() => { window.location.href = "/users"; }, 1200);
-        }
-      })
-      .catch(() => toast.error(t('users.connectionError')));
-  }
+  const {
+    user,
+    auths,
+    loading,
+    isSaving,
+    handleChange,
+    handleSubmit
+  } = useUserEdit(id, jwt, toast, t);
 
   if (id !== "new" && loading) {
     return <CardGhostLoader />;
@@ -207,10 +135,10 @@ export default function UserEditAdmin() {
                 </FormGroup>
               </Col>
             )}
-
+            
             <Col md={user.id ? 12 : 6}>
               <FormGroup>
-                <Label for="authority">{t('users.roleAuthority')}</Label>
+                <Label for="authority">{t('users.role')}</Label>
                 <UncontrolledDropdown className="w-100">
                   <DropdownToggle
                     tag="button"
@@ -225,7 +153,7 @@ export default function UserEditAdmin() {
                       <DropdownItem
                         key={auth.id}
                         className="ba-dropdown-item d-flex align-items-center justify-content-between"
-                        onClick={() => setUser({ ...user, authority: auth })}
+                        onClick={() => handleChange({ target: { name: 'authority', value: auth.id } })}
                       >
                         <span>{auth.authority}</span>
                         {user.authority?.id === auth.id && <span className="ms-2">✓</span>}
@@ -238,12 +166,14 @@ export default function UserEditAdmin() {
           </Row>
 
           <div className="form-action-group">
-            <button className="ba-btn-primary" type="submit">
-              {t('users.saveUser')}
+            <button className="ba-btn-primary" type="submit" disabled={isSaving}>
+              {isSaving ? t('common.saving') : null}
+              {!isSaving && user.id ? t('users.saveUser', 'Guardar') : null}
+              {!isSaving && !user.id ? t('users.addNewUser') : null}
             </button>
-            <Link to="/users" className="ba-btn-secondary form-action-link">
+            <button type="button" onClick={() => window.history.back()} className="ba-btn-secondary form-action-link" disabled={isSaving}>
               {t('users.cancel')}
-            </Link>
+            </button>
           </div>
         </Form>
       </div>

@@ -278,7 +278,8 @@
     "exportError": "Failed to download report",
     "sessionExpired": "Session expired. Please log in again.",
     "genericError": "An error occurred during the request",
-    "networkError": "Network connection error"
+    "networkError": "Network connection error",
+    "saving": "Saving..."
   },
   "lang": {
     "es": "Español",

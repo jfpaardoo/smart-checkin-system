@@ -28,13 +28,14 @@ export const WebSocketProvider = ({ children }) => {
                     Authorization: `Bearer ${jwt}`
                 },
                 debug: function (str) {
-                    console.log('STOMP: ' + str);
+                    if (process.env.NODE_ENV === 'development' && window.DEBUG_STOMP) {
+                        console.log('STOMP: ' + str);
+                    }
                 },
                 reconnectDelay: 5000,
                 heartbeatIncoming: 4000,
                 heartbeatOutgoing: 4000,
                 onConnect: () => {
-                    console.log("Conectado a STOMP a través de WebSocket");
                     setStompClient(client);
                     setIsConnected(true);
                 },

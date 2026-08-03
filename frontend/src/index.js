@@ -7,13 +7,17 @@ import './i18n';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { CardGhostLoader } from './components/GhostLoader';
+import './static/css/base/variables.css';
+import './static/css/base/common.css';
+import './App.css';
 import { BrowserRouter } from 'react-router-dom';
 import { WebSocketProvider } from './context/WebSocketProvider';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontSize: '1.2rem', color: '#888' }}>Loading...</div>}>
+    <Suspense fallback={<CardGhostLoader />}>
       <WebSocketProvider>
         <BrowserRouter>
           <App />

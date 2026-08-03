@@ -4,6 +4,7 @@ import { Row, Col, Button } from 'reactstrap';
 import { FaQrcode, FaChartBar, FaUsers, FaGraduationCap, FaUser, FaSignInAlt, FaShieldAlt, FaUserPlus } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import tokenService from '../services/token.service';
+import { CardGhostLoader } from '../components/GhostLoader';
 import '../App.css';
 
 export default function Home() {
@@ -12,9 +13,11 @@ export default function Home() {
   const user = tokenService.getUser();
 
   const [userData, setUserData] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(!!jwt);
 
   useEffect(() => {
     if (jwt) {
+      setLoadingUser(true);
       fetch("/api/v1/users/me", {
         headers: { Authorization: `Bearer ${jwt}` },
       })
@@ -22,11 +25,16 @@ export default function Home() {
         .then((data) => {
           if (data) setUserData(data);
         })
-        .catch(() => {});
+        .catch(() => {})
+        .finally(() => setLoadingUser(false));
     }
   }, [jwt]);
 
   const isAdmin = user?.authority?.authority === 'ADMIN' || user?.roles?.includes('ADMIN');
+
+  if (jwt && loadingUser) {
+    return <CardGhostLoader />;
+  }
 
   return (
     <div className="ba-container">

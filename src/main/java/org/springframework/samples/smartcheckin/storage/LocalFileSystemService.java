@@ -47,17 +47,13 @@ public class LocalFileSystemService {
         }
 
         try {
-            // Remove the data URL prefix if present
-            String base64Image = base64Data;
-            if (base64Data.contains(",")) {
-                base64Image = base64Data.split(",")[1];
-            }
-
+            String base64Image = extractBase64Image(base64Data);
             byte[] imageBytes = Base64.getDecoder().decode(base64Image);
-            String fileName = UUID.randomUUID().toString() + ".png";
+
+            String extension = determineFileExtension(imageBytes);
+            String fileName = UUID.randomUUID().toString() + extension;
             Path destinationFile = this.rootLocation.resolve(Paths.get(fileName)).normalize().toAbsolutePath();
             
-            // Security check
             if (!destinationFile.getParent().equals(this.rootLocation.toAbsolutePath())) {
                 throw new SecurityException("Cannot store file outside current directory.");
             }
@@ -67,10 +63,42 @@ public class LocalFileSystemService {
             }
 
             return fileName;
+        } catch (IllegalArgumentException | SecurityException e) {
+            logger.warn("Security validation failed for signature upload: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
             logger.error("Error saving signature to file system", e);
             throw new RuntimeException("Error saving signature", e);
         }
+    }
+
+    private String extractBase64Image(String base64Data) {
+        if (base64Data.length() > 700000) {
+            throw new IllegalArgumentException("Signature file size exceeds maximum limit (500KB).");
+        }
+        if (base64Data.contains(",")) {
+            String prefix = base64Data.split(",")[0];
+            if (!prefix.contains("image/png") && !prefix.contains("image/jpeg")) {
+                throw new IllegalArgumentException("Invalid signature image format.");
+            }
+            return base64Data.split(",")[1];
+        }
+        return base64Data;
+    }
+
+    private String determineFileExtension(byte[] imageBytes) {
+        if (imageBytes.length < 4) {
+            throw new IllegalArgumentException("Invalid image byte payload.");
+        }
+        boolean isPng = (imageBytes[0] == (byte) 0x89 && imageBytes[1] == (byte) 0x50 &&
+                         imageBytes[2] == (byte) 0x4E && imageBytes[3] == (byte) 0x47);
+        boolean isJpeg = (imageBytes[0] == (byte) 0xFF && imageBytes[1] == (byte) 0xD8 &&
+                          imageBytes[2] == (byte) 0xFF);
+
+        if (!isPng && !isJpeg) {
+            throw new IllegalArgumentException("Payload magic bytes do not match valid PNG/JPEG header.");
+        }
+        return isPng ? ".png" : ".jpg";
     }
 
     /**

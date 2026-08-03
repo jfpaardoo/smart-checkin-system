@@ -1031,3 +1031,31 @@ select option {
 .btn-icon-expand.btn-expand-lg:hover .btn-expand-label {
     max-width: 200px !important;
 }
+/* BA Nav Pills */
+.ba-nav-pills .nav-link {
+  border-radius: 20px !important;
+  color: var(--ba-primary) !important;
+  font-weight: bold;
+  padding: 0.5rem 1.2rem;
+  transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.4);
+}
+.ba-nav-pills .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.8);
+  color: var(--ba-primary-hover) !important;
+}
+.ba-nav-pills .nav-link.active {
+  background-color: var(--ba-primary) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 10px rgba(179, 195, 76, 0.4);
+}
+
+/* BA Small Glass Card */
+.ba-glass-card-sm {
+  background: var(--ba-glass-card-bg) !important;
+  backdrop-filter: var(--ba-glass-blur-low) !important;
+  -webkit-backdrop-filter: var(--ba-glass-blur-low) !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05), inset 0 1px 2px rgba(255, 255, 255, 0.95) !important;
+}
