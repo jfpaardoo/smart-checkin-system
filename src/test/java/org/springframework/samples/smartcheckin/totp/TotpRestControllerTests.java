@@ -48,3 +48,4 @@ class TotpRestControllerTests {
 				.andExpect(jsonPath("$.token").value("654321"));
 	}
 }
+

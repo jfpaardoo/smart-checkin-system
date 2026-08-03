@@ -12,6 +12,7 @@ import org.springframework.samples.smartcheckin.audit.AnomalyDetectionService;
 import org.springframework.samples.smartcheckin.auth.payload.request.LoginRequest;
 import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest;
 import org.springframework.samples.smartcheckin.auth.payload.response.JwtResponse;
+import org.springframework.samples.smartcheckin.configuration.jwt.JwtBlacklistService;
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsServiceImpl;
@@ -59,12 +60,14 @@ public class AuthController {
     private final UserDetailsServiceImpl userDetailsServiceImpl;
     private final AnomalyDetectionService anomalyDetectionService;
     private final HttpServletRequest request;
+    private final org.springframework.samples.smartcheckin.configuration.jwt.JwtBlacklistService jwtBlacklistService;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager, UserService userService, 
             AuthoritiesService authoritiesService, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, 
             SimpMessagingTemplate messagingTemplate, TotpService totpService, UserDetailsServiceImpl userDetailsServiceImpl,
-            AnomalyDetectionService anomalyDetectionService, HttpServletRequest request) {
+            AnomalyDetectionService anomalyDetectionService, HttpServletRequest request,
+            JwtBlacklistService jwtBlacklistService) {
         this.userService = userService;
         this.authoritiesService = authoritiesService;
         this.jwtUtils = jwtUtils;
@@ -75,6 +78,18 @@ public class AuthController {
         this.userDetailsServiceImpl = userDetailsServiceImpl;
         this.anomalyDetectionService = anomalyDetectionService;
         this.request = request;
+        this.jwtBlacklistService = jwtBlacklistService;
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<MessageResponse> logoutUser() {
+        String headerAuth = request.getHeader("Authorization");
+        if (org.springframework.util.StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
+            String jwt = headerAuth.substring(7, headerAuth.length());
+            jwtBlacklistService.blacklistToken(jwt);
+            return ResponseEntity.ok(new MessageResponse("Log out successful!"));
+        }
+        return ResponseEntity.badRequest().body(new MessageResponse("Error: No JWT token found in request."));
     }
 
     @PostMapping("/signin")

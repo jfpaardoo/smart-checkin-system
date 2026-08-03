@@ -23,15 +23,26 @@ import org.jpatterns.gof.ChainOfResponsibilityPattern;
 @ChainOfResponsibilityPattern.ConcreteHandler
 public class RateLimitFilter extends OncePerRequestFilter {
 
-    private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
+    private final Map<String, Bucket> cacheStrict = new ConcurrentHashMap<>();
+    private final Map<String, Bucket> cacheGlobal = new ConcurrentHashMap<>();
 
-    private Bucket resolveBucket(String ip) {
-        return cache.computeIfAbsent(ip, this::newBucket);
+    private Bucket resolveBucketStrict(String ip) {
+        return cacheStrict.computeIfAbsent(ip, this::newBucketStrict);
     }
 
-    private Bucket newBucket(String ip) {
-        // 10 requests per minute per IP
+    private Bucket resolveBucketGlobal(String ip) {
+        return cacheGlobal.computeIfAbsent(ip, this::newBucketGlobal);
+    }
+
+    private Bucket newBucketStrict(String ip) {
+        // 10 requests per minute per IP for sensitive endpoints
         Bandwidth limit = Bandwidth.builder().capacity(10).refillGreedy(10, Duration.ofMinutes(1)).build();
+        return Bucket.builder().addLimit(limit).build();
+    }
+
+    private Bucket newBucketGlobal(String ip) {
+        // 200 requests per minute per IP for global endpoints
+        Bandwidth limit = Bandwidth.builder().capacity(200).refillGreedy(200, Duration.ofMinutes(1)).build();
         return Bucket.builder().addLimit(limit).build();
     }
 
@@ -40,18 +51,20 @@ public class RateLimitFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String uri = request.getRequestURI();
-        if (uri.startsWith("/api/v1/auth/signin") || uri.startsWith("/api/v1/checkins/qr-fichaje")) {
-            String ip = request.getRemoteAddr();
-            Bucket bucket = resolveBucket(ip);
+        String ip = request.getRemoteAddr();
+        Bucket bucket;
 
-            if (bucket.tryConsume(1)) {
-                filterChain.doFilter(request, response);
-            } else {
-                response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-                response.getWriter().write("Too many requests. Please try again later.");
-            }
+        if (uri.startsWith("/api/v1/auth/signin") || uri.startsWith("/api/v1/checkins/qr-fichaje")) {
+            bucket = resolveBucketStrict(ip);
         } else {
+            bucket = resolveBucketGlobal(ip);
+        }
+
+        if (bucket.tryConsume(1)) {
             filterChain.doFilter(request, response);
+        } else {
+            response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+            response.getWriter().write("Too many requests. Please try again later.");
         }
     }
 }

@@ -8,6 +8,7 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
+import java.util.Date;
 
 import jakarta.annotation.PostConstruct;
 
@@ -78,6 +79,10 @@ public class JwtUtils {
 
 	public String getUserNameFromJwtToken(String token) {
 		return Jwts.parserBuilder().setSigningKey(rsaKeyPair.getPublic()).build().parseClaimsJws(token).getBody().getSubject();
+	}
+
+	public Date getExpirationDateFromJwtToken(String token) {
+		return Jwts.parserBuilder().setSigningKey(rsaKeyPair.getPublic()).build().parseClaimsJws(token).getBody().getExpiration();
 	}
 
 	public boolean validateJwtToken(String authToken) {

@@ -18,6 +18,7 @@ class AuthTokenFilterTests {
 
 	private JwtUtils jwtUtils;
 	private UserDetailsServiceImpl userDetailsService;
+	private JwtBlacklistService jwtBlacklistService;
 	private AuthTokenFilter authTokenFilter;
 
 	private HttpServletRequest request;
@@ -28,7 +29,8 @@ class AuthTokenFilterTests {
 	void setUp() {
 		jwtUtils = mock(JwtUtils.class);
 		userDetailsService = mock(UserDetailsServiceImpl.class);
-		authTokenFilter = new AuthTokenFilter(jwtUtils, userDetailsService);
+		jwtBlacklistService = mock(JwtBlacklistService.class);
+		authTokenFilter = new AuthTokenFilter(jwtUtils, userDetailsService, jwtBlacklistService);
 
 		request = mock(HttpServletRequest.class);
 		response = mock(HttpServletResponse.class);

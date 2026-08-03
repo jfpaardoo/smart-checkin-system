@@ -84,3 +84,4 @@ class CertificateControllerTests {
 		mockMvc.perform(get(BASE_URL + "/attendance/1")).andExpect(status().isNotFound());
 	}
 }
+

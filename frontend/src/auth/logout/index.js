@@ -10,11 +10,23 @@ const Logout = () => {
   const { t } = useTranslation();
   const toast = useToast();
 
-  function sendLogoutRequest() {
-    const jwt = window.localStorage.getItem("jwt");
+  async function sendLogoutRequest() {
+    const jwt = tokenService.getLocalAccessToken();
     if (jwt !== null && jwt !== undefined) {
-      tokenService.removeUser();
-      window.location.href = "/";
+      try {
+        await fetch("/api/v1/auth/logout", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${jwt}`,
+            "Content-Type": "application/json"
+          }
+        });
+      } catch (error) {
+        console.error("Error logging out on server", error);
+      } finally {
+        tokenService.removeUser();
+        window.location.href = "/";
+      }
     } else {
       toast.error(t('common.noUserLoggedIn', 'There is no user logged in'));
     }

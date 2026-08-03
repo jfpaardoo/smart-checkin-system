@@ -146,3 +146,4 @@ class AnalyticsRestControllerTests {
 		mockMvc.perform(get(BASE_URL + "/users/99")).andExpect(status().isNotFound());
 	}
 }
+

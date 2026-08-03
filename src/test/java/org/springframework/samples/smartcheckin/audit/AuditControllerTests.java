@@ -52,3 +52,4 @@ class AuditControllerTests {
 		mockMvc.perform(get(BASE_URL + "/csv")).andExpect(status().isOk());
 	}
 }
+
