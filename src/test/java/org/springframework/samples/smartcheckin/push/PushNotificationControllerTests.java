@@ -5,7 +5,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.util.Optional;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,7 +75,7 @@ class PushNotificationControllerTests {
     @WithMockUser(username = "testuser")
     void subscribe_savesNewSubscription() throws Exception {
         when(userService.findCurrentUser()).thenReturn(testUser);
-        when(subscriptionRepository.findByEndpoint(anyString())).thenReturn(Optional.empty());
+        when(subscriptionRepository.findByEndpoint(anyString())).thenReturn(List.of());
 
         String body = """
             {
@@ -105,7 +105,7 @@ class PushNotificationControllerTests {
         existing.setEndpoint("https://fcm.googleapis.com/fcm/send/abc123");
         existing.setUser(testUser);
         when(subscriptionRepository.findByEndpoint("https://fcm.googleapis.com/fcm/send/abc123"))
-            .thenReturn(Optional.of(existing));
+            .thenReturn(List.of(existing));
 
         String body = """
             {

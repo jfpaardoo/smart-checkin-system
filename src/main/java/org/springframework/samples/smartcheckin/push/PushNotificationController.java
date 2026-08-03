@@ -8,12 +8,13 @@ import org.springframework.web.bind.annotation.*;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/push")
 @Slf4j
+@SuppressWarnings("null")
 public class PushNotificationController {
 
     private final PushSubscriptionRepository subscriptionRepository;
@@ -46,9 +47,17 @@ public class PushNotificationController {
 
         // If the browser (endpoint) is already subscribed, update the user it belongs to
         // This is crucial for when different users log in on the same browser
-        Optional<PushSubscriptionEntity> existingOpt = subscriptionRepository.findByEndpoint(dto.getEndpoint());
-        if (existingOpt.isPresent()) {
-            PushSubscriptionEntity existing = existingOpt.get();
+        List<PushSubscriptionEntity> existingList = subscriptionRepository.findByEndpoint(dto.getEndpoint());
+        if (!existingList.isEmpty()) {
+            PushSubscriptionEntity existing = existingList.get(0);
+            
+            // Delete duplicates if they exist to clean the database
+            if (existingList.size() > 1) {
+                for (int i = 1; i < existingList.size(); i++) {
+                    subscriptionRepository.delete(existingList.get(i));
+                }
+            }
+
             if (existing.getUser() == null || !existing.getUser().getId().equals(user.getId())) {
                 existing.setUser(user);
                 subscriptionRepository.save(existing);

@@ -20,6 +20,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.samples.smartcheckin.configuration.SecurityConfiguration;
 import org.springframework.samples.smartcheckin.formation.Formation;
 import org.springframework.samples.smartcheckin.formation.FormationService;
+import org.springframework.samples.smartcheckin.storage.LocalFileSystemService;
 import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
@@ -50,6 +51,9 @@ class CheckinRestControllerTests {
 
 	@MockitoBean
 	private SimpMessagingTemplate messagingTemplate;
+
+	@MockitoBean
+	private LocalFileSystemService localFileSystemService;
 
 	@Autowired
 	private ObjectMapper objectMapper;

@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
+import org.springframework.samples.smartcheckin.storage.LocalFileSystemService;
 import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,15 +34,17 @@ public class CheckinRestController {
     private final TotpService totpService;
     private final FormationService formationService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final LocalFileSystemService localFileSystemService;
     private static final String MESSAGE_KEY = "message";
 
     @Autowired
-    public CheckinRestController(CheckinService checkInService, UserService userService, TotpService totpService, FormationService formationService, SimpMessagingTemplate messagingTemplate) {
+    public CheckinRestController(CheckinService checkInService, UserService userService, TotpService totpService, FormationService formationService, SimpMessagingTemplate messagingTemplate, LocalFileSystemService localFileSystemService) {
         this.checkInService = checkInService;
         this.userService = userService;
         this.totpService = totpService;
         this.formationService = formationService;
         this.messagingTemplate = messagingTemplate;
+        this.localFileSystemService = localFileSystemService;
     }
 
     @GetMapping("/my-history")
@@ -163,7 +166,8 @@ public class CheckinRestController {
     private Checkin processCheckinRecord(User user, CheckinType type, String signature) {
         Checkin saved = checkInService.performCheckIn(user, type);
         if (signature != null && !signature.isEmpty()) {
-            saved.setSignature(signature);
+            String fileName = localFileSystemService.saveSignature(signature);
+            saved.setSignature(fileName);
             saved = checkInService.save(saved);
         }
         return saved;

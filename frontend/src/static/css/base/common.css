@@ -662,7 +662,7 @@
   display: inline-block;
   white-space: nowrap;
   background: rgba(100, 116, 139, 0.15) !important;
-  color: #1e293b !important; /* Dark slate for maximum contrast */
+  color: #000000 !important; /* Black for maximum contrast */
   border: 1px solid rgba(100, 116, 139, 0.3) !important;
   backdrop-filter: blur(10px);
   border-radius: 12px;

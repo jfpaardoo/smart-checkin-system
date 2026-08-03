@@ -87,7 +87,7 @@ export default function Home() {
               </Col>
 
               <Col md={6} lg={3}>
-                <Link to="/admin/analytics" className="text-decoration-none d-block h-100">
+                <Link to="/analytics" className="text-decoration-none d-block h-100">
                   <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
                       <div className="ba-action-icon-wrapper">
@@ -104,7 +104,7 @@ export default function Home() {
               </Col>
 
               <Col md={6} lg={3}>
-                <Link to="/admin/formations" className="text-decoration-none d-block h-100">
+                <Link to="/formations" className="text-decoration-none d-block h-100">
                   <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
                       <div className="ba-action-icon-wrapper">
@@ -121,7 +121,7 @@ export default function Home() {
               </Col>
 
               <Col md={6} lg={3}>
-                <Link to="/admin/users" className="text-decoration-none d-block h-100">
+                <Link to="/users" className="text-decoration-none d-block h-100">
                   <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
                       <div className="ba-action-icon-wrapper">

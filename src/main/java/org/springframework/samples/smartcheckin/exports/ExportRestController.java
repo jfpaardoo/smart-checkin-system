@@ -20,8 +20,13 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserRepository;
+import org.springframework.samples.smartcheckin.user.UserService;
 import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.audit.AuditLogRepository;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -41,6 +46,7 @@ public class ExportRestController {
     private final FormationAttendanceRepository attendanceRepository;
     private final FormationRepository formationRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
     private final AuditLogRepository auditLogRepository;
     private final PdfReportGenerator pdfReportGenerator;
     private static final String PERSONAL_CODE = "Personal Code";
@@ -50,12 +56,14 @@ public class ExportRestController {
                                 FormationAttendanceRepository attendanceRepository,
                                 FormationRepository formationRepository,
                                 UserRepository userRepository,
+                                UserService userService,
                                 AuditLogRepository auditLogRepository,
                                 PdfReportGenerator pdfReportGenerator) {
         this.checkinRepository = checkinRepository;
         this.attendanceRepository = attendanceRepository;
         this.formationRepository = formationRepository;
         this.userRepository = userRepository;
+        this.userService = userService;
         this.auditLogRepository = auditLogRepository;
         this.pdfReportGenerator = pdfReportGenerator;
     }
@@ -127,6 +135,30 @@ public class ExportRestController {
         }
 
         return createCsvResponse(csvBuilder.toString(), "checkins.csv");
+    }
+
+    @GetMapping("/my-data")
+    public ResponseEntity<byte[]> exportMyData() throws IOException {
+        User user = userService.findCurrentUser();
+        List<Checkin> checkins = checkinRepository.findByUserId(user.getId());
+        List<FormationAttendance> attendances = attendanceRepository.findByUserId(user.getId());
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        // We create a custom map to avoid serialization loops or issues
+        java.util.Map<String, Object> exportData = new java.util.HashMap<>();
+        exportData.put("userProfile", user);
+        exportData.put("checkins", checkins);
+        exportData.put("formations", attendances);
+
+        byte[] jsonData = mapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(exportData);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setContentDispositionFormData("attachment", "my_data.json");
+        return ResponseEntity.ok().headers(headers).body(jsonData);
     }
 
     @GetMapping("/checkins/excel")

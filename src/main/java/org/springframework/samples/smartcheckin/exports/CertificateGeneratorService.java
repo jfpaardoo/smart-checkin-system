@@ -7,6 +7,7 @@ import java.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
+import org.springframework.samples.smartcheckin.storage.LocalFileSystemService;
 import org.springframework.stereotype.Service;
 
 import com.lowagie.text.Document;
@@ -19,6 +20,12 @@ import com.lowagie.text.pdf.PdfWriter;
 
 @Service
 public class CertificateGeneratorService {
+    
+    private final LocalFileSystemService localFileSystemService;
+
+    public CertificateGeneratorService(LocalFileSystemService localFileSystemService) {
+        this.localFileSystemService = localFileSystemService;
+    }
 
     private static final Logger logger = LoggerFactory.getLogger(CertificateGeneratorService.class);
 
@@ -66,7 +73,7 @@ public class CertificateGeneratorService {
             document.add(body);
 
             // Signature Image
-            if (attendance.getSignature() != null && attendance.getSignature().startsWith("data:image")) {
+            if (attendance.getSignature() != null && !attendance.getSignature().isEmpty()) {
                 addSignatureImage(document, attendance.getSignature(), bodyFont);
             }
 
@@ -86,20 +93,28 @@ public class CertificateGeneratorService {
         return out.toByteArray();
     }
 
-    private void addSignatureImage(Document document, String signatureData, Font bodyFont) {
+    private void addSignatureImage(Document document, String signatureFileName, Font bodyFont) {
         try {
-            String base64Image = signatureData.split(",")[1];
-            byte[] imageBytes = Base64.getDecoder().decode(base64Image);
-            Image signatureImg = Image.getInstance(imageBytes);
-            signatureImg.scaleToFit(150, 80);
-            signatureImg.setAlignment(Element.ALIGN_CENTER);
+            byte[] imageBytes = null;
+            if (signatureFileName.startsWith("data:image")) {
+                String base64Image = signatureFileName.split(",")[1];
+                imageBytes = Base64.getDecoder().decode(base64Image);
+            } else {
+                imageBytes = localFileSystemService.loadSignature(signatureFileName);
+            }
             
-            Paragraph sigText = new Paragraph("Firma del Empleado:", bodyFont);
-            sigText.setAlignment(Element.ALIGN_CENTER);
-            sigText.setSpacingAfter(10);
-            
-            document.add(sigText);
-            document.add(signatureImg);
+            if (imageBytes != null && imageBytes.length > 0) {
+                Image signatureImg = Image.getInstance(imageBytes);
+                signatureImg.scaleToFit(150, 80);
+                signatureImg.setAlignment(Element.ALIGN_CENTER);
+                
+                Paragraph sigText = new Paragraph("Firma del Empleado:", bodyFont);
+                sigText.setAlignment(Element.ALIGN_CENTER);
+                sigText.setSpacingAfter(10);
+                
+                document.add(sigText);
+                document.add(signatureImg);
+            }
         } catch (Exception e) {
             logger.error("Error parsing signature image", e);
         }

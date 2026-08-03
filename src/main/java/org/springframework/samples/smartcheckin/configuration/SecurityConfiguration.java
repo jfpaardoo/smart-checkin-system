@@ -80,7 +80,8 @@ public class SecurityConfiguration {
                                 "/api/v1/users/me/**",
                                 "/api/v1/users/2fa/setup",
                                 "/api/v1/users/2fa/enable",
-                                "/api/v1/users/2fa/disable"
+                                "/api/v1/users/2fa/disable",
+                                "/api/v1/exports/my-data"
                         ).authenticated()
 
                         // 6. Administración y HR
@@ -104,6 +105,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/v1/checkins/**").authenticated()
                         .requestMatchers("/api/v1/certificates/**").authenticated()
                         .requestMatchers("/api/v1/push/**").authenticated()
+                        .requestMatchers("/api/v1/signatures/**").authenticated()
 
                         // 10. Denegar lo demás por defecto
                         .anyRequest().denyAll())
