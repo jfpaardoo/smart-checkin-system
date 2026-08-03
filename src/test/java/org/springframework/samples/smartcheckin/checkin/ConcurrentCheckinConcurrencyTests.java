@@ -21,14 +21,16 @@ import org.springframework.test.annotation.DirtiesContext;
 @DirtiesContext
 class ConcurrentCheckinConcurrencyTests {
 
-    @Autowired
-    private CheckinService checkInService;
+    private final CheckinService checkInService;
+    private final UserService userService;
+    private final AuthoritiesService authoritiesService;
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
-    private AuthoritiesService authoritiesService;
+    public ConcurrentCheckinConcurrencyTests(CheckinService checkInService, UserService userService, AuthoritiesService authoritiesService) {
+        this.checkInService = checkInService;
+        this.userService = userService;
+        this.authoritiesService = authoritiesService;
+    }
 
     @Test
     void testConcurrentCheckinExecutionShouldMaintainDataIntegrity() throws InterruptedException {
@@ -77,6 +79,9 @@ class ConcurrentCheckinConcurrencyTests {
         startLatch.countDown();
         boolean completed = endLatch.await(5, TimeUnit.SECONDS);
         service.shutdown();
+        if (!service.awaitTermination(2, TimeUnit.SECONDS)) {
+            service.shutdownNow();
+        }
 
         assertTrue(completed, "All threads should finish execution within timeout");
         assertTrue(successCount.get() > 0, "At least one concurrent checkin request should succeed");

@@ -49,7 +49,7 @@ export default function UserFormationsTable({ attendances, isLoading, onOpenDeta
                   <td style={{ color: '#64748b' }}>{new Date(f.formationDate).toLocaleString()}</td>
                   <td>{statusBadge}</td>
                   <td>
-                    <button className="ba-btn ba-btn-primary btn-sm m-0" onClick={() => onOpenDetails(att)}>
+                    <button type="button" className="ba-btn ba-btn-primary btn-sm m-0" onClick={() => onOpenDetails(att)}>
                       {t('dashboard.viewDetails')}
                     </button>
                   </td>
