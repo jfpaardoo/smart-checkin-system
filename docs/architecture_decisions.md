@@ -226,6 +226,11 @@ sequenceDiagram
 - **Automatización de Flujos Críticos:** Cobertura de los flujos de "Autorregistro", "Aprobación Administrativa", "MFA/2FA Setup y Login" y "Fichaje Manual con Firma".
 - **Resiliencia en Componentes de Redirección:** Verificación exhaustiva de estados en React Router (`PrivateRoute`) para prevenir bucles de redirección, controlando aserciones de red (`waitForResponse`) en flujos de autenticación complejos.
 
+### Fase 18: Notificaciones Nativas Web Push (PWA)
+- **Criptografía VAPID:** Integración de notificaciones nativas a nivel del sistema operativo. El backend (Spring Boot) utiliza un par de claves asimétricas VAPID (Voluntary Application Server Identification) de curva elíptica (`prime256v1`) para autenticarse directamente frente a los servidores de notificaciones de Google (FCM), Mozilla y Apple (APNs).
+- **Service Worker Interceptor:** El frontend (React) registra un `sw.js` que escucha los eventos `push` en background, levanta la notificación OS nativa (`self.registration.showNotification`) y la sincroniza con el estado de la UI (Navbar) mediante `postMessage`.
+- **Canal de Centralización:** La campana de notificaciones (Navbar) se nutre simultáneamente de la API nativa Push (PWA) y del protocolo STOMP sobre WebSockets (alertas de seguridad), unificando todo el flujo de notificaciones al usuario independientemente del estado de foco del navegador.
+
 ---
 
 ## 3. Módulos Adicionales y Funcionalidades Extendidas
@@ -265,3 +270,6 @@ sequenceDiagram
 | Integración Nube | Microsoft Graph API (OneDrive) | Alojamiento externo de adjuntos de formación y backups de BBDD en ZIP. |
 | Hardware / Escáner | html5-qrcode | Acceso a cámara WebRTC para escaneo de códigos QR de fichaje. |
 | Componente Firma | react-signature-canvas | Captura de firmas manuscritas SVG/PNG para fichaje manual auditable. |
+| Web Push (PWA) | nl.martijndwars:web-push + Service Worker | Envío cifrado de notificaciones nativas del SO a dispositivos móviles y escritorio usando VAPID Keys. |
+
+---

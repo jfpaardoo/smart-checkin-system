@@ -39,6 +39,7 @@ export default function FormationDetailsAdmin() {
   );
 
   const [selectedUserId, setSelectedUserId] = useState("");
+  const [isAddingUser, setIsAddingUser] = useState(false);
   const [selectedAttendance, setSelectedAttendance] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   
@@ -49,12 +50,10 @@ export default function FormationDetailsAdmin() {
     if (!url) return "";
     let embedUrl = url;
     
-    // Convert standard OneDrive sharing links to embed links
     if (embedUrl.includes("onedrive.live.com")) {
       embedUrl = embedUrl.replace("/redir?", "/embed?").replace("/view.aspx?", "/embed?");
       embedUrl = embedUrl.replace("onedrive.live.com/?", "onedrive.live.com/embed?");
       
-      // If it's successfully converted to an /embed? URL, do NOT append action=embedview
       if (embedUrl.includes("/embed?")) {
         return embedUrl;
       }
@@ -79,7 +78,8 @@ export default function FormationDetailsAdmin() {
   useSubscription('/topic/formations', reloadFormation);
 
   const handleAddUser = async () => {
-    if (!selectedUserId) return;
+    if (!selectedUserId || isAddingUser) return;
+    setIsAddingUser(true);
     try {
       const response = await fetch(`/api/v1/formations/${id}/attendances`, {
         method: "POST",
@@ -99,6 +99,8 @@ export default function FormationDetailsAdmin() {
       }
     } catch {
       toast.error(t('formationDetails.userAddError'));
+    } finally {
+      setIsAddingUser(false);
     }
   };
 
@@ -175,7 +177,6 @@ export default function FormationDetailsAdmin() {
   return (
     <div className="ba-container">
       <div className="ba-card">
-        {/* Cabecera optimizada con flex-nowrap para garantizar una única línea en pantallas de escritorio */}
         <div className="ba-card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
           <h2 className="mb-0 text-truncate flex-grow-1" style={{ minWidth: '250px' }} title={`${t('formationDetails.title')}: ${formation.name}`}>
             {t('formationDetails.title')}: {formation.name}
@@ -240,8 +241,8 @@ export default function FormationDetailsAdmin() {
 
         <div className="ba-card-header pt-3">
           <h3>{t('formationDetails.attendeesSection')}</h3>
-          <Form className="formation-add-form d-flex gap-2 align-items-center" onSubmit={(e) => { e.preventDefault(); handleAddUser(); }}>
-            <FormGroup className="mb-0" style={{ minWidth: '280px' }}>
+          <Form className="formation-add-form d-flex gap-2 align-items-stretch" style={{ height: '42px' }} onSubmit={(e) => { e.preventDefault(); handleAddUser(); }}>
+            <FormGroup className="mb-0 h-100" style={{ minWidth: '280px', flex: 1, maxWidth: '400px' }}>
               <GlassDropdown
                 options={availableUsers.map(u => ({
                   value: u.id,
@@ -250,10 +251,11 @@ export default function FormationDetailsAdmin() {
                 value={selectedUserId}
                 onChange={(val) => setSelectedUserId(String(val))}
                 placeholder={t('formationDetails.selectUserToAdd')}
+                searchable={true}
               />
             </FormGroup>
-            <Button className="ba-btn-primary" type="submit" disabled={!selectedUserId}>
-              {t('formationDetails.addUser')}
+            <Button className="ba-btn-primary h-100 d-flex align-items-center justify-content-center px-4" type="submit" disabled={!selectedUserId || isAddingUser}>
+              {isAddingUser ? 'Añadiendo...' : t('formationDetails.addUser')}
             </Button>
           </Form>
         </div>
@@ -349,7 +351,6 @@ export default function FormationDetailsAdmin() {
         </Table>
       </div>
 
-      {/* Pop-up Profesional */}
       <Modal isOpen={documentModalOpen} toggle={() => setDocumentModalOpen(false)} size="lg" centered>
         <ModalHeader toggle={() => setDocumentModalOpen(false)} style={{ backgroundColor: '#2c3e50', color: 'white', borderBottom: 'none' }}>
           <div className="text-truncate" style={{ maxWidth: '400px' }}>
@@ -403,7 +404,6 @@ export default function FormationDetailsAdmin() {
         </ModalFooter>
       </Modal>
 
-      {/* Modal para detalles de asistencia y firma */}
       <Modal isOpen={modalOpen} toggle={() => setModalOpen(false)} centered style={{ maxWidth: '500px' }}>
         <ModalHeader toggle={() => setModalOpen(false)} style={{ backgroundColor: '#2c3e50', color: 'white', borderBottom: 'none' }}>
           {t('formationDetails.attendanceDetails')} - {formation?.name}

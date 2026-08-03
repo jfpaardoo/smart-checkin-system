@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.samples.smartcheckin.settings.OneDriveService;
+import org.springframework.samples.smartcheckin.push.PushNotificationService;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
 
@@ -22,7 +23,8 @@ class FormationServiceTests {
     private FormationRepository formationRepository;
     private FormationAttendanceRepository attendanceRepository;
     private UserService userService;
-    private OneDriveService oneDriveService; // Mock añadido
+    private OneDriveService oneDriveService;
+    private PushNotificationService pushNotificationService;
     private FormationService formationService;
 
     @BeforeEach
@@ -30,10 +32,10 @@ class FormationServiceTests {
         formationRepository = mock(FormationRepository.class);
         attendanceRepository = mock(FormationAttendanceRepository.class);
         userService = mock(UserService.class);
-        oneDriveService = mock(OneDriveService.class); // Inicialización del mock
+        oneDriveService = mock(OneDriveService.class);
+        pushNotificationService = mock(PushNotificationService.class);
         
-        // Inyectamos el servicio de OneDrive en el constructor
-        formationService = new FormationService(formationRepository, attendanceRepository, userService, oneDriveService);
+        formationService = new FormationService(formationRepository, attendanceRepository, userService, oneDriveService, pushNotificationService);
     }
 
     @Test
