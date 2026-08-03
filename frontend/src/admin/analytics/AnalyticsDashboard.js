@@ -88,15 +88,15 @@ export default function AnalyticsDashboard() {
     <div className="ba-container">
       <div className="ba-card">
         {/* Header with Navigation Tabs & Export Menu */}
-        <div className="ba-card-header mb-4 border-0 pb-0">
-          <h2 className="mb-0 d-flex align-items-center">
+        <div className="ba-card-header ba-admin-header border-0">
+          <h2>
             <FontAwesomeIcon icon={faChartLine} style={{ color: 'var(--ba-primary)' }} className="me-2" />
             {t('analytics.title', 'Analytics & HR Control')}
           </h2>
         </div>
 
-        <div className="d-flex flex-column flex-md-row justify-content-center align-items-center gap-4 mb-4">
-          <Nav tabs className="border-bottom-0 gap-2">
+        <div className="ba-admin-controls justify-center">
+          <Nav tabs className="ba-admin-tabs-nav">
             <NavItem>
               <NavLink
                 className={`ba-tab-pill ${activeTab === 'overview' ? 'ba-tab-pill-active' : ''}`}
@@ -119,7 +119,7 @@ export default function AnalyticsDashboard() {
             </NavItem>
           </Nav>
 
-          <div className="d-flex gap-2">
+          <div className="ba-admin-header-actions">
             <AnalyticsExportMenu />
           </div>
         </div>

@@ -7,6 +7,7 @@ import tokenService from "../../services/token.service";
 import "../../App.css";
 import "../../static/css/auth/authButton.css";
 import { loginFormInputs } from "./form/loginFormInputs";
+import { FaSignInAlt } from "react-icons/fa";
 
 export default function Login() {
   const { t } = useTranslation();
@@ -107,8 +108,8 @@ export default function Login() {
             onSubmit={handleSubmit}
             numberOfColumns={1}
             listenEnterKey
-            buttonText={t('login.title')}
-            buttonClassName="auth-button"
+            buttonText={<><FaSignInAlt style={{ marginRight: '8px' }}/>{t('login.title')}</>}
+            buttonClassName="auth-button auth-button-filled"
           />
         ) : (
           <Form onSubmit={handleVerify2FA}>

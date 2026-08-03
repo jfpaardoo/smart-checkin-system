@@ -121,8 +121,8 @@ export default function NotificationBell() {
   };
 
   return (
-    <UncontrolledDropdown nav inNavbar direction="down">
-      <DropdownToggle nav className="ba-nav-link position-relative d-inline-flex align-items-center" onClick={markAllRead}>
+    <UncontrolledDropdown direction="down">
+      <DropdownToggle tag="div" className="position-relative d-inline-flex align-items-center cursor-pointer" onClick={markAllRead}>
         <FaBell size={20} />
         {unreadCount > 0 && (
           <Badge
@@ -135,15 +135,14 @@ export default function NotificationBell() {
           </Badge>
         )}
       </DropdownToggle>
-      <DropdownMenu className="ba-dropdown-menu" end style={{ minWidth: '320px', maxHeight: '60vh', overflowY: 'auto', position: 'absolute', padding: 0 }}>
-        <DropdownItem header style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '12px 16px', margin: 0 }}>
+      <DropdownMenu className="ba-dropdown-menu shadow-lg border-0 rounded-4" end style={{ minWidth: '300px', maxWidth: '90vw', maxHeight: '60vh', overflowY: 'auto', padding: 0 }}>
+        <DropdownItem header className="border-bottom border-light" style={{ padding: '12px 16px', margin: 0 }}>
           <div className="d-flex justify-content-between align-items-center w-100">
-            <strong style={{ color: 'rgba(255,255,255,0.9)' }}>{t('notifications.title', 'Notificaciones')}</strong>
+            <strong className="text-dark">{t('notifications.title', 'Notificaciones')}</strong>
             {notifications.length > 0 && (
               <button
                 type="button"
-                className="btn btn-link btn-sm p-0 ms-3"
-                style={{ color: '#4db8ff', textDecoration: 'none', fontWeight: 500 }}
+                className="btn btn-link btn-sm p-0 ms-3 text-primary fw-medium text-decoration-none"
                 onClick={clearAll}
               >
                 {t('notifications.clearAll', 'Limpiar todo')}
@@ -152,27 +151,25 @@ export default function NotificationBell() {
           </div>
         </DropdownItem>
         {notifications.length === 0 ? (
-          <DropdownItem disabled className="text-center py-4" style={{ backgroundColor: 'transparent' }}>
-            <FaBell className="mb-2" style={{ opacity: 0.2, fontSize: '2rem', color: 'rgba(255,255,255,0.6)' }} />
-            <div className="small mt-1" style={{ color: 'rgba(255,255,255,0.6)' }}>{t('notifications.empty', 'Sin notificaciones')}</div>
+          <DropdownItem disabled className="text-center py-4 bg-transparent">
+            <FaBell className="mb-2 text-secondary opacity-25" style={{ fontSize: '2rem' }} />
+            <div className="small mt-1 text-muted">{t('notifications.empty', 'Sin notificaciones')}</div>
           </DropdownItem>
         ) : (
           notifications.map(n => (
             <DropdownItem 
               key={n.id} 
-              className={`py-3 px-3`}
+              className={`py-3 px-3 border-bottom border-light ${!n.read ? 'bg-light' : 'bg-transparent'}`}
               style={{ 
                 whiteSpace: 'normal', 
                 wordBreak: 'break-word', 
-                backgroundColor: !n.read ? 'rgba(255,255,255,0.08)' : 'transparent',
-                borderBottom: '1px solid rgba(255,255,255,0.05)',
                 transition: 'background-color 0.2s ease'
               }}
             >
-              <div className="small fw-semibold mb-1" style={{ color: !n.read ? '#ffffff' : 'rgba(255,255,255,0.7)', lineHeight: '1.4' }}>
+              <div className={`small mb-1 ${!n.read ? 'fw-bold text-dark' : 'fw-medium text-secondary'}`} style={{ lineHeight: '1.4' }}>
                 {n.text}
               </div>
-              <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>
+              <div className="text-muted" style={{ fontSize: '0.7rem' }}>
                 {n.timestamp.toLocaleTimeString()}
               </div>
             </DropdownItem>

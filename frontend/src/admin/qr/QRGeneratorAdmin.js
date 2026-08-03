@@ -178,11 +178,27 @@ const QRGeneratorAdmin = () => {
                                             </span>
                                         </div>
 
-                                        <div className="progress qr-progress-bar">
-                                            <div 
-                                                className={`progress-bar qr-progress-fill ${isEnding ? 'ending' : ''}`}
-                                                style={{ width: `${progress}%` }}>
-                                            </div>
+                                        {/* QR expiry countdown — Tailwind liquid glass progress */}
+                                        <div className="w-full rounded-full overflow-hidden mb-3" style={{
+                                            height: '6px',
+                                            background: 'rgba(255,255,255,0.15)',
+                                            backdropFilter: 'blur(8px)',
+                                            boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.12)'
+                                        }}>
+                                            <div
+                                                style={{
+                                                    width: `${progress}%`,
+                                                    height: '100%',
+                                                    borderRadius: '9999px',
+                                                    background: isEnding
+                                                        ? 'linear-gradient(90deg, #f87171, #ef4444)'
+                                                        : 'linear-gradient(90deg, #b3c34c, #cce364)',
+                                                    boxShadow: isEnding
+                                                        ? '0 0 10px rgba(239,68,68,0.7), 0 0 20px rgba(239,68,68,0.35)'
+                                                        : '0 0 10px rgba(179,195,76,0.6), 0 0 20px rgba(204,227,100,0.3)',
+                                                    transition: 'width 100ms linear, background 0.4s ease, box-shadow 0.4s ease',
+                                                }}
+                                            />
                                         </div>
                                         
                                         <p className="qr-footer-text mt-1">

@@ -17,6 +17,8 @@ class UserDetailsServiceImplTests {
 	private UserRepository userRepository;
 	private UserDetailsServiceImpl userDetailsService;
 
+	private static final String USER1_USERNAME = "user1";
+
 	@BeforeEach
 	void setUp() {
 		userRepository = mock(UserRepository.class);
@@ -27,17 +29,17 @@ class UserDetailsServiceImplTests {
 	void testLoadUserByUsernameFound() {
 		User user = new User();
 		user.setId(1);
-		user.setUsername("user1");
+		user.setUsername(USER1_USERNAME);
 		user.setPassword("pass");
 		Authorities auth = new Authorities();
 		auth.setAuthority("ADMIN");
 		user.setAuthority(auth);
 
-		when(userRepository.findByUsername("user1")).thenReturn(Optional.of(user));
+		when(userRepository.findByUsername(USER1_USERNAME)).thenReturn(Optional.of(user));
 
-		UserDetails details = userDetailsService.loadUserByUsername("user1");
+		UserDetails details = userDetailsService.loadUserByUsername(USER1_USERNAME);
 		assertNotNull(details);
-		assertEquals("user1", details.getUsername());
+		assertEquals(USER1_USERNAME, details.getUsername());
 		assertEquals("pass", details.getPassword());
 		assertTrue(details.isAccountNonExpired());
 		assertTrue(details.isAccountNonLocked());

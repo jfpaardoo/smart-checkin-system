@@ -35,14 +35,14 @@ const Logout = () => {
   return (
     <div className="auth-page-container">
       <div className="auth-form-container">
-        <h2 className="text-center text-md" style={{ color: '#1e293b', fontWeight: 700, marginBottom: '25px', fontSize: '1.4rem' }}>
+        <h2 className="text-center text-slate-800 font-bold mb-6 text-2xl">
           {t('common.confirmLogout', 'Are you sure you want to log out?')}
         </h2>
         <div className="options-row">
           <Link className="auth-button danger" to="/" style={{ textDecoration: "none" }}>
             {t('common.no', 'No')}
           </Link>
-          <button className="auth-button blue" onClick={() => sendLogoutRequest()}>
+          <button type="button" className="auth-button blue" onClick={() => sendLogoutRequest()}>
             {t('common.yes', 'Yes')}
           </button>
         </div>

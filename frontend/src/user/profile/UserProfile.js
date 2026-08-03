@@ -90,8 +90,8 @@ export default function UserProfile() {
   };
 
   return (
-    <div className="container-fluid min-vh-100 py-4 px-3 px-lg-5" style={{ background: "transparent" }}>
-      <div className="mx-auto" style={{ maxWidth: "1000px" }}>
+    <div className="ba-container">
+      <div className="mx-auto w-full max-w-[1000px]">
 
         {/* Profile Header */}
         <ProfileHeader userData={userData} formations={formations} t={t} />

@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 class CheckinRestControllerTests {
 
 	private static final String BASE_URL = "/api/v1/checkins";
+	private static final String QR_FICHAJE_URL = "/qr-fichaje";
+	private static final String DEFAULT_QR_TOKEN = "654321";
 
 	@MockitoBean
 	private CheckinService checkInService;
@@ -75,7 +78,7 @@ class CheckinRestControllerTests {
 		checkin.setId(10);
 		checkin.setUser(user);
 		checkin.setCheckInType(CheckinType.ENTRADA);
-		checkin.setCheckInDate(LocalDateTime.now());
+		checkin.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
 	}
 
 	@Test
@@ -117,7 +120,7 @@ class CheckinRestControllerTests {
 		req.setToken("123456");
 		req.setFormationId(5L);
 
-		mockMvc.perform(post(BASE_URL + "/qr-fichaje").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isCreated())
 				.andExpect(jsonPath("$.formationId").value(5));
 	}
@@ -128,13 +131,13 @@ class CheckinRestControllerTests {
 		user.setIsWorking(false);
 		when(userService.findCurrentUser()).thenReturn(user);
 		when(formationService.findAll()).thenReturn(List.of());
-		when(totpService.verifyToken("654321")).thenReturn(true);
+		when(totpService.verifyToken(DEFAULT_QR_TOKEN)).thenReturn(true);
 		when(checkInService.performCheckIn(user, CheckinType.ENTRADA)).thenReturn(checkin);
 
 		QrCheckinRequest req = new QrCheckinRequest();
-		req.setToken("654321");
+		req.setToken(DEFAULT_QR_TOKEN);
 
-		mockMvc.perform(post(BASE_URL + "/qr-fichaje").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isCreated())
 				.andExpect(jsonPath("$.checkin.id").value(10));
 	}
@@ -145,14 +148,14 @@ class CheckinRestControllerTests {
 		user.setIsWorking(true);
 		when(userService.findCurrentUser()).thenReturn(user);
 		when(formationService.findAll()).thenReturn(List.of());
-		when(totpService.verifyToken("654321")).thenReturn(true);
+		when(totpService.verifyToken(DEFAULT_QR_TOKEN)).thenReturn(true);
 		when(checkInService.performCheckIn(user, CheckinType.SALIDA)).thenReturn(checkin);
 
 		QrCheckinRequest req = new QrCheckinRequest();
-		req.setToken("654321");
+		req.setToken(DEFAULT_QR_TOKEN);
 		req.setSignature("data:image/png;base64,sig");
 
-		mockMvc.perform(post(BASE_URL + "/qr-fichaje").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isCreated());
 	}
 
@@ -162,12 +165,12 @@ class CheckinRestControllerTests {
 		user.setIsWorking(true);
 		when(userService.findCurrentUser()).thenReturn(user);
 		when(formationService.findAll()).thenReturn(List.of());
-		when(totpService.verifyToken("654321")).thenReturn(true);
+		when(totpService.verifyToken(DEFAULT_QR_TOKEN)).thenReturn(true);
 
 		QrCheckinRequest req = new QrCheckinRequest();
-		req.setToken("654321");
+		req.setToken(DEFAULT_QR_TOKEN);
 
-		mockMvc.perform(post(BASE_URL + "/qr-fichaje").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isAccepted());
 	}
 
@@ -176,16 +179,16 @@ class CheckinRestControllerTests {
 	void testQrCheckinInvalidLocation() throws Exception {
 		when(userService.findCurrentUser()).thenReturn(user);
 		when(formationService.findAll()).thenReturn(List.of());
-		when(totpService.verifyToken("654321")).thenReturn(true);
+		when(totpService.verifyToken(DEFAULT_QR_TOKEN)).thenReturn(true);
 
 		QrCheckinRequest req = new QrCheckinRequest();
-		req.setToken("654321");
+		req.setToken(DEFAULT_QR_TOKEN);
 		req.setUserLat(0.0);
 		req.setUserLng(0.0);
 		req.setAdminLat(40.0);
 		req.setAdminLng(40.0);
 
-		mockMvc.perform(post(BASE_URL + "/qr-fichaje").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isForbidden());
 	}
 
@@ -199,7 +202,7 @@ class CheckinRestControllerTests {
 		QrCheckinRequest req = new QrCheckinRequest();
 		req.setToken("000000");
 
-		mockMvc.perform(post(BASE_URL + "/qr-fichaje").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isUnauthorized());
 	}
 }

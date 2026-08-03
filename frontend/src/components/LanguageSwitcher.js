@@ -22,8 +22,8 @@ export default function LanguageSwitcher() {
   };
 
   return (
-    <UncontrolledDropdown nav inNavbar>
-      <DropdownToggle nav className="ba-nav-link d-inline-flex align-items-center gap-1" style={{ fontSize: '1rem' }}>
+    <UncontrolledDropdown>
+      <DropdownToggle tag="div" className="d-inline-flex align-items-center gap-1 cursor-pointer" style={{ fontSize: '1rem' }}>
         <span>{current.flag}</span>
         <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{current.code.toUpperCase()}</span>
       </DropdownToggle>

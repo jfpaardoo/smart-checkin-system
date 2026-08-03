@@ -129,11 +129,11 @@ export default function UserListAdmin() {
   return (
     <div className="ba-container">
       <div className="ba-card">
-        <div className="ba-card-header mb-4 border-0 pb-0 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div className="ba-card-header ba-admin-header border-0">
             <h2>
                 <FontAwesomeIcon icon={faUsers} style={{ color: 'var(--ba-primary)' }} className="me-2" /> {t('users.title', 'Gestión de Empleados')}
             </h2>
-            <div className="d-flex gap-2 align-items-center flex-wrap justify-content-center justify-content-md-end">
+            <div className="ba-admin-header-actions">
                 <Button className="ba-btn-primary btn-icon-expand btn-expand-lg" onClick={() => handleDownloadExport('users/csv', 'usuarios.csv')}>
                     <FontAwesomeIcon icon={faFileCsv} />
                     <span className="btn-expand-label">{t('analytics.exportCsv', 'Exportar CSV')}</span>
@@ -148,7 +148,7 @@ export default function UserListAdmin() {
             </div>
         </div>
 
-        <div className="d-flex flex-column flex-xl-row justify-content-between align-items-center align-items-xl-start gap-4 mb-4">
+        <div className="ba-admin-controls">
           <UserListTabs 
             activeTab={activeTab} 
             setActiveTab={setActiveTab} 
@@ -156,7 +156,7 @@ export default function UserListAdmin() {
             pendingCount={pendingUsers.length} 
           />
 
-          <div className="d-flex flex-column flex-md-row gap-3 align-items-center w-100 w-xl-auto justify-content-center justify-content-xl-end">
+          <div className="ba-admin-search-wrapper">
             <GlassSearchBar 
               placeholder={t('users.searchPlaceholder', 'Buscar por nombre, código...')}
               onSearch={(query) => setSearchQuery(query)}

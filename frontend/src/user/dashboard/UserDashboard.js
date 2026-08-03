@@ -73,16 +73,20 @@ export default function UserDashboard() {
 
   return (
     <div className="ba-container">
-      <div className="ba-card home-card" style={{ maxWidth: '800px', margin: '2rem auto' }}>
-        <h2 className="home-title mb-4" style={{ color: '#2c3e50' }}>{t('dashboard.hello')}, {user?.username}</h2>
+      <div className="ba-card" style={{ maxWidth: '800px', margin: '2rem auto' }}>
+        <h2 className="mb-6 text-center font-extrabold text-slate-800 text-3xl drop-shadow-sm">
+          {t('dashboard.hello')}, <span className="text-primary">{user?.username}</span>
+        </h2>
         
-        <div className="d-flex justify-content-center mb-5">
-          <Link to="/checkin" className="ba-btn ba-btn-primary" style={{ padding: '15px 30px', fontSize: '1.2rem', borderRadius: '30px' }}>
+        <div className="flex justify-center mb-10 w-full">
+          <Link to="/checkin" className="ba-btn-primary px-8 py-4 text-lg font-bold rounded-full w-full md:w-auto text-center shadow-lg hover:shadow-xl transition-all duration-400 ease-out hover:-translate-y-1">
             {t('dashboard.scannerButton')}
           </Link>
         </div>
 
-        <h3 className="mb-3" style={{ color: '#2c3e50', fontWeight: 600 }}>{t('dashboard.myFormations')}</h3>
+        <h3 className="mb-4 text-slate-800 font-bold text-xl border-b border-slate-200 pb-3">
+          {t('dashboard.myFormations')}
+        </h3>
         
         <UserFormationsTable 
           attendances={attendances} 

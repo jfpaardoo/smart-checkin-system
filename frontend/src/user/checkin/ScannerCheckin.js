@@ -121,23 +121,23 @@ export default function ScannerCheckin() {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100">
+      <div className="flex justify-center items-center min-h-screen w-full">
         <CardGhostLoader />
       </div>
     );
   }
 
   return (
-    <div className="ba-container d-flex flex-column justify-content-center min-vh-100 py-5">
-      <div className="ba-card mx-auto" style={{ maxWidth: '600px', width: '100%', padding: '2rem' }}>
+    <div className="ba-container flex flex-col justify-center min-h-screen py-10">
+      <div className="ba-card mx-auto w-full max-w-[600px] p-8">
         
         <div style={{ display: (!isManualInput && !needsSignature) ? 'block' : 'none' }}>
-          <div className="text-center mb-4">
-            <FontAwesomeIcon icon={faQrcode} size="3x" style={{ color: 'var(--ba-primary)' }} className="mb-3" />
-            <h2 style={{ color: '#2c3e50', fontWeight: 'bold' }}>
+          <div className="text-center mb-6">
+            <FontAwesomeIcon icon={faQrcode} size="3x" style={{ color: 'var(--ba-primary)' }} className="mb-4 drop-shadow-md" />
+            <h2 className="text-white font-bold text-3xl mb-2 drop-shadow-sm">
               {t('checkin.scanQr', 'Escanear Código QR')}
             </h2>
-            <p className="text-muted">
+            <p className="text-white/80 text-lg">
               {t('checkin.qrSubtitle', 'Enfoca el código QR de la formación con tu cámara')}
             </p>
           </div>
@@ -193,12 +193,12 @@ export default function ScannerCheckin() {
 
         {isManualInput && (
           <div>
-            <div className="text-center mb-4">
-              <FontAwesomeIcon icon={faKeyboard} size="3x" style={{ color: 'var(--ba-primary)' }} className="mb-3" />
-              <h2 style={{ color: '#2c3e50', fontWeight: 'bold' }}>
+            <div className="text-center mb-6">
+              <FontAwesomeIcon icon={faKeyboard} size="3x" style={{ color: 'var(--ba-primary)' }} className="mb-4 drop-shadow-md" />
+              <h2 className="text-white font-bold text-3xl mb-2 drop-shadow-sm">
                 {t('checkin.manualCheckin', 'Check-in Manual')}
               </h2>
-              <p className="text-muted">
+              <p className="text-white/80 text-lg">
                 {t('checkin.manualSubtitle', 'Introduce el código que te proporcionó el administrador')}
               </p>
             </div>
@@ -218,37 +218,36 @@ export default function ScannerCheckin() {
         )}
       </div>
 
-      <Modal isOpen={successModal} toggle={() => { setSuccessModal(false); resetScanner(); }} centered>
-        <ModalHeader toggle={() => { setSuccessModal(false); resetScanner(); }} className="border-0 pb-0" style={{ backgroundColor: '#2c3e50', color: 'white' }}>
+      <Modal isOpen={successModal} toggle={() => { setSuccessModal(false); resetScanner(); }} centered className="ba-glass-modal">
+        <ModalHeader toggle={() => { setSuccessModal(false); resetScanner(); }} className="border-0 pb-0">
           {t('checkin.successTitle', '¡Proceso Completado!')}
         </ModalHeader>
-        <ModalBody className="text-center py-5" style={{ backgroundColor: '#f4f6fa' }}>
+        <ModalBody className="text-center py-5">
           <div className="mb-4">
-            <div className="d-inline-flex align-items-center justify-content-center rounded-circle" style={{ width: '80px', height: '80px', backgroundColor: 'rgba(179, 195, 76, 0.15)', color: 'var(--ba-primary)' }}>
+            <div className="d-inline-flex align-items-center justify-content-center rounded-circle" style={{ width: '80px', height: '80px', backgroundColor: 'rgba(179, 195, 76, 0.2)', color: 'var(--ba-primary)' }}>
               <FontAwesomeIcon icon={faQrcode} size="3x" />
             </div>
           </div>
-          <h4 style={{ color: '#2c3e50', fontWeight: 600 }} className="mb-2">
+          <h4 className="font-bold text-white mb-2 text-xl">
             {formationDetails?.description}
           </h4>
-          <p className="text-muted mb-3">
+          <p className="text-white/80 mb-3">
             {t('checkin.formationLabel', 'Formación')}: <strong>{formationDetails?.name}</strong>
           </p>
           {formationDetails?.formationDate && (
-            <div className="p-3 mx-auto" style={{ backgroundColor: 'rgba(255,255,255,0.6)', borderRadius: '12px', display: 'inline-block', border: '1px solid #e2e8f0' }}>
-              <p className="mb-0" style={{ fontWeight: 500, color: '#2c3e50' }}>
+            <div className="p-3 mx-auto bg-white/10 rounded-xl border border-white/20 inline-block">
+              <p className="mb-0 font-medium text-white">
                 <FontAwesomeIcon icon={faCalendarCheck} className="me-2" style={{ color: 'var(--ba-primary)' }} />
                 {t('checkin.dateLabel', 'Fecha')}: {new Date(formationDetails.formationDate).toLocaleString()}
               </p>
             </div>
           )}
         </ModalBody>
-        <ModalFooter className="border-0 pt-0 justify-content-center" style={{ backgroundColor: '#f4f6fa' }}>
+        <ModalFooter className="border-0 pt-0 justify-content-center">
           <button 
             type="button" 
-            className="ba-btn ba-btn-primary px-5 py-2" 
+            className="ba-btn ba-btn-primary px-8 py-3 rounded-full text-lg font-bold" 
             onClick={() => { setSuccessModal(false); resetScanner(); }}
-            style={{ borderRadius: '30px' }}
           >
             {t('checkin.close', 'Cerrar')}
           </button>

@@ -12,11 +12,15 @@ class SpelConstraintValidatorTests {
 
 	private SpelConstraintValidator validator;
 
+	private static final String CHILD = "child";
+	private static final String APPLE = "apple";
+	private static final String BANANA = "banana";
+
 	@BeforeEach
 	void setUp() {
 		validator = new SpelConstraintValidator();
 		ValidateElementIn annotation = mock(ValidateElementIn.class);
-		when(annotation.element()).thenReturn("child");
+		when(annotation.element()).thenReturn(CHILD);
 		when(annotation.collection()).thenReturn("parentList");
 		validator.initialize(annotation);
 	}
@@ -43,14 +47,14 @@ class SpelConstraintValidatorTests {
 	@Test
 	void testIsValidElementInCollection() {
 		ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
-		DummyClass target = new DummyClass("apple", List.of("apple", "banana"));
+		DummyClass target = new DummyClass(APPLE, List.of(APPLE, BANANA));
 		assertTrue(validator.isValid(target, context));
 	}
 
 	@Test
 	void testIsValidElementNotInCollection() {
 		ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
-		DummyClass target = new DummyClass("cherry", List.of("apple", "banana"));
+		DummyClass target = new DummyClass("cherry", List.of(APPLE, BANANA));
 		assertFalse(validator.isValid(target, context));
 	}
 
@@ -58,8 +62,8 @@ class SpelConstraintValidatorTests {
 	void testIsValidNotACollection() {
 		ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
 		ValidateElementIn badAnnotation = mock(ValidateElementIn.class);
-		when(badAnnotation.element()).thenReturn("child");
-		when(badAnnotation.collection()).thenReturn("child");
+		when(badAnnotation.element()).thenReturn(CHILD);
+		when(badAnnotation.collection()).thenReturn(CHILD);
 		validator.initialize(badAnnotation);
 
 		DummyClass target = new DummyClass("apple", List.of("apple", "banana"));

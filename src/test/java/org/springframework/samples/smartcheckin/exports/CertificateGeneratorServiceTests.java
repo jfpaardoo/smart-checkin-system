@@ -3,6 +3,7 @@ package org.springframework.samples.smartcheckin.exports;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDateTime;
+import java.time.Month;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +22,8 @@ class CertificateGeneratorServiceTests {
 
 	private CertificateGeneratorService certificateGeneratorService;
 
+	private static final String SPRING_SECURITY_101 = "Spring Security 101";
+
 	@BeforeEach
 	void setUp() {
 		certificateGeneratorService = new CertificateGeneratorService(localFileSystemService);
@@ -34,12 +37,12 @@ class CertificateGeneratorServiceTests {
 		user.setPersonalCode("1234");
 
 		Formation formation = new Formation();
-		formation.setName("Spring Security 101");
+		formation.setName(SPRING_SECURITY_101);
 
 		FormationAttendance attendance = new FormationAttendance();
 		attendance.setUser(user);
 		attendance.setFormation(formation);
-		attendance.setCheckInDate(LocalDateTime.of(2026, 8, 1, 10, 0));
+		attendance.setCheckInDate(LocalDateTime.of(2026, Month.AUGUST, 1, 10, 0));
 
 		byte[] pdfBytes = certificateGeneratorService.generateCertificatePdf(attendance);
 
@@ -55,12 +58,12 @@ class CertificateGeneratorServiceTests {
 		user.setPersonalCode("1234");
 
 		Formation formation = new Formation();
-		formation.setName("Spring Security 101");
+		formation.setName(SPRING_SECURITY_101);
 
 		FormationAttendance attendance = new FormationAttendance();
 		attendance.setUser(user);
 		attendance.setFormation(formation);
-		attendance.setCheckInDate(LocalDateTime.of(2026, 8, 1, 10, 0));
+		attendance.setCheckInDate(LocalDateTime.of(2026, Month.AUGUST, 1, 10, 0));
 		
 		String signatureData = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 		attendance.setSignature(signatureData);
@@ -79,12 +82,12 @@ class CertificateGeneratorServiceTests {
 		user.setPersonalCode("1234");
 
 		Formation formation = new Formation();
-		formation.setName("Spring Security 101");
+		formation.setName(SPRING_SECURITY_101);
 
 		FormationAttendance attendance = new FormationAttendance();
 		attendance.setUser(user);
 		attendance.setFormation(formation);
-		attendance.setCheckInDate(LocalDateTime.of(2026, 8, 1, 10, 0));
+		attendance.setCheckInDate(LocalDateTime.of(2026, Month.AUGUST, 1, 10, 0));
 		attendance.setSignature("data:image/png;base64,INVALID_BASE64_DATA");
 
 		byte[] pdfBytes = certificateGeneratorService.generateCertificatePdf(attendance);

@@ -8,7 +8,7 @@ export default function UserListTabs({ activeTab, setActiveTab, activeCount, pen
   const { t } = useTranslation();
 
   return (
-    <Nav tabs className="border-bottom-0 gap-2 w-100 w-xl-auto justify-content-center justify-content-xl-start">
+    <Nav tabs className="ba-admin-tabs-nav">
       <NavItem>
         <NavLink
           className={`ba-tab-pill ${activeTab === 'approved' ? 'ba-tab-pill-active' : ''}`}

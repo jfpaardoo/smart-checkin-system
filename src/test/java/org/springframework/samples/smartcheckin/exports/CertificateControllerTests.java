@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class CertificateControllerTests {
 
 	private static final String BASE_URL = "/api/v1/certificates";
+	private static final String ATTENDANCE_1_URL = "/attendance/1";
 
 	@MockitoBean
 	private CertificateGeneratorService certificateGeneratorService;
@@ -56,7 +57,7 @@ class CertificateControllerTests {
 		when(attendanceRepository.findById(1)).thenReturn(Optional.of(attendance));
 		when(certificateGeneratorService.generateCertificatePdf(attendance)).thenReturn(new byte[]{10, 20, 30});
 
-		mockMvc.perform(get(BASE_URL + "/attendance/1")).andExpect(status().isOk());
+		mockMvc.perform(get(BASE_URL + ATTENDANCE_1_URL)).andExpect(status().isOk());
 	}
 
 	@Test
@@ -65,7 +66,7 @@ class CertificateControllerTests {
 		when(attendanceRepository.findById(1)).thenReturn(Optional.of(attendance));
 		when(certificateGeneratorService.generateCertificatePdf(attendance)).thenReturn(new byte[]{1, 2, 3});
 
-		mockMvc.perform(get(BASE_URL + "/attendance/1")).andExpect(status().isOk());
+		mockMvc.perform(get(BASE_URL + ATTENDANCE_1_URL)).andExpect(status().isOk());
 	}
 
 	@Test
@@ -73,7 +74,7 @@ class CertificateControllerTests {
 	void testDownloadCertificateForbidden() throws Exception {
 		when(attendanceRepository.findById(1)).thenReturn(Optional.of(attendance));
 
-		mockMvc.perform(get(BASE_URL + "/attendance/1")).andExpect(status().isForbidden());
+		mockMvc.perform(get(BASE_URL + ATTENDANCE_1_URL)).andExpect(status().isForbidden());
 	}
 
 	@Test
@@ -81,7 +82,7 @@ class CertificateControllerTests {
 	void testDownloadCertificateNotFound() throws Exception {
 		when(attendanceRepository.findById(1)).thenReturn(Optional.empty());
 
-		mockMvc.perform(get(BASE_URL + "/attendance/1")).andExpect(status().isNotFound());
+		mockMvc.perform(get(BASE_URL + ATTENDANCE_1_URL)).andExpect(status().isNotFound());
 	}
 }
 

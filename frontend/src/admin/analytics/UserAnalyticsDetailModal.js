@@ -71,7 +71,7 @@ export default function UserAnalyticsDetailModal({ isOpen, toggle, userAnalytics
                 </h6>
 
                 {userAnalytics.formationDetails && userAnalytics.formationDetails.length > 0 ? (
-                    <Table responsive className="ba-table align-middle" style={{ minWidth: '700px' }}>
+                    <Table responsive className="ba-table stacked-mobile align-middle" style={{ minWidth: '100%' }}>
                         <thead>
                             <tr>
                                 <th>{t('analytics.formationName', 'Formation')}</th>
@@ -85,16 +85,16 @@ export default function UserAnalyticsDetailModal({ isOpen, toggle, userAnalytics
                         <tbody>
                             {userAnalytics.formationDetails.map((f) => (
                                 <tr key={f.formationId}>
-                                    <td className="fw-bold">{f.formationName}</td>
-                                    <td>{f.formationDate ? moment(f.formationDate).format('YYYY-MM-DD HH:mm') : 'N/A'}</td>
-                                    <td>{f.checkInDate ? moment(f.checkInDate).format('HH:mm') : '-'}</td>
-                                    <td>{f.checkOutDate ? moment(f.checkOutDate).format('HH:mm') : '-'}</td>
-                                    <td>
+                                    <td data-label={t('analytics.formationName', 'Formation')} className="fw-bold">{f.formationName}</td>
+                                    <td data-label={t('analytics.date', 'Date')}>{f.formationDate ? moment(f.formationDate).format('YYYY-MM-DD HH:mm') : 'N/A'}</td>
+                                    <td data-label={t('analytics.checkIn', 'Check-in')}>{f.checkInDate ? moment(f.checkInDate).format('HH:mm') : '-'}</td>
+                                    <td data-label={t('analytics.checkOut', 'Check-out')}>{f.checkOutDate ? moment(f.checkOutDate).format('HH:mm') : '-'}</td>
+                                    <td data-label={t('analytics.duration', 'Time Spent')}>
                                         <Badge color="info" className="ba-badge text-dark fw-bold">
                                             {formatDuration(f.durationMinutes)}
                                         </Badge>
                                     </td>
-                                    <td>{renderSignatureStatus(f)}</td>
+                                    <td data-label={t('analytics.signature', 'Signature')}>{renderSignatureStatus(f)}</td>
                                 </tr>
                             ))}
                         </tbody>

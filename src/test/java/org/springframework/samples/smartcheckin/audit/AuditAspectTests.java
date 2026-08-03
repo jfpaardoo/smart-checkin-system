@@ -21,13 +21,12 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 class AuditAspectTests {
 
 	private AuditLogRepository auditLogRepository;
-	private SimpMessagingTemplate messagingTemplate;
 	private AuditAspect aspect;
 
 	@BeforeEach
 	void setUp() {
 		auditLogRepository = mock(AuditLogRepository.class);
-		messagingTemplate = mock(SimpMessagingTemplate.class);
+		SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
 		HttpServletRequest request = mock(HttpServletRequest.class);
 		when(request.getRemoteAddr()).thenReturn("127.0.0.1");
 		aspect = new AuditAspect(auditLogRepository, request, messagingTemplate);

@@ -21,6 +21,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @ExtendWith(MockitoExtension.class)
 class LoginFailureListenerTests {
 
+    private static final String TEST_USER = "testuser";
+    private static final String WRONG_PASS = "wrongpass";
+
     @Mock
     private SimpMessagingTemplate messagingTemplate;
 
@@ -39,7 +42,7 @@ class LoginFailureListenerTests {
 
     @Test
     void shouldTriggerAlertAfterThreeFailures() {
-        Authentication auth = new UsernamePasswordAuthenticationToken("testuser", "wrongpass");
+        Authentication auth = new UsernamePasswordAuthenticationToken(TEST_USER, WRONG_PASS);
         AuthenticationFailureBadCredentialsEvent event = new AuthenticationFailureBadCredentialsEvent(auth, new org.springframework.security.authentication.BadCredentialsException("bad"));
 
         // First attempt
@@ -59,7 +62,7 @@ class LoginFailureListenerTests {
     @Test
     void testGetClientIpNullAttributes() {
         RequestContextHolder.resetRequestAttributes();
-        Authentication auth = new UsernamePasswordAuthenticationToken("testuser", "wrongpass");
+        Authentication auth = new UsernamePasswordAuthenticationToken(TEST_USER, WRONG_PASS);
         AuthenticationFailureBadCredentialsEvent event = new AuthenticationFailureBadCredentialsEvent(auth, new org.springframework.security.authentication.BadCredentialsException("bad"));
         loginFailureListener.onApplicationEvent(event);
         assertNotNull(event);
@@ -71,7 +74,7 @@ class LoginFailureListenerTests {
         request.addHeader("X-Forwarded-For", "192.168.1.1, 10.0.0.1");
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
         
-        Authentication auth = new UsernamePasswordAuthenticationToken("testuser", "wrongpass");
+        Authentication auth = new UsernamePasswordAuthenticationToken(TEST_USER, WRONG_PASS);
         AuthenticationFailureBadCredentialsEvent event = new AuthenticationFailureBadCredentialsEvent(auth, new org.springframework.security.authentication.BadCredentialsException("bad"));
         loginFailureListener.onApplicationEvent(event);
         assertNotNull(event);

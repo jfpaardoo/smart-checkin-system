@@ -21,6 +21,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
@@ -76,7 +77,14 @@ public class User extends BaseEntity {
     private Boolean twoFactorEnabled = false;
 
     @Column(name = "two_factor_secret")
+    @Convert(converter = org.springframework.samples.smartcheckin.configuration.StringCryptoConverter.class)
     private String twoFactorSecret;
+
+    @Column(name = "privacy_policy_accepted", columnDefinition = "boolean default false")
+    private Boolean privacyPolicyAccepted = false;
+
+    @Column(name = "privacy_policy_accepted_at")
+    private LocalDateTime privacyPolicyAcceptedAt;
 
     @Transient
     public String getEmployeeBlock() {

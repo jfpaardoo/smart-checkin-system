@@ -30,6 +30,7 @@ import org.jpatterns.gof.SingletonPattern;
 
 @Component
 @SingletonPattern.Singleton
+@SuppressWarnings("java:S6466")
 public class JwtUtils {
 	private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
@@ -63,8 +64,8 @@ public class JwtUtils {
 				userPrincipal.getAuthorities().stream().map(auth -> auth.getAuthority()).toList());
 
 		Instant now = Instant.now();
-		return Jwts.builder().setClaims(claims).setSubject((userPrincipal.getUsername())).setIssuedAt(java.util.Date.from(now))
-				.setExpiration(java.util.Date.from(now.plusMillis(jwtExpirationMs)))
+		return Jwts.builder().claims(claims).subject(userPrincipal.getUsername()).issuedAt(java.util.Date.from(now))
+				.expiration(java.util.Date.from(now.plusMillis(jwtExpirationMs)))
 				.signWith(rsaKeyPair.getPrivate()).compact();
 	}
 
@@ -72,22 +73,20 @@ public class JwtUtils {
 		Map<String, Object> claims = new HashMap<>();
 		claims.put("authorities", authority.getAuthority());
 		Instant now = Instant.now();
-		return Jwts.builder().setClaims(claims).setSubject(username).setIssuedAt(java.util.Date.from(now))
-				.setExpiration(java.util.Date.from(now.plusMillis(jwtExpirationMs)))
+		return Jwts.builder().claims(claims).subject(username).issuedAt(java.util.Date.from(now))
+				.expiration(java.util.Date.from(now.plusMillis(jwtExpirationMs)))
 				.signWith(rsaKeyPair.getPrivate()).compact();
 	}
-
 	public String getUserNameFromJwtToken(String token) {
-		return Jwts.parserBuilder().setSigningKey(rsaKeyPair.getPublic()).build().parseClaimsJws(token).getBody().getSubject();
+		return Jwts.parser().verifyWith(rsaKeyPair.getPublic()).build().parseSignedClaims(token).getPayload().getSubject();
 	}
 
 	public Date getExpirationDateFromJwtToken(String token) {
-		return Jwts.parserBuilder().setSigningKey(rsaKeyPair.getPublic()).build().parseClaimsJws(token).getBody().getExpiration();
+		return Jwts.parser().verifyWith(rsaKeyPair.getPublic()).build().parseSignedClaims(token).getPayload().getExpiration();
 	}
-
 	public boolean validateJwtToken(String authToken) {
 		try {
-			Jwts.parserBuilder().setSigningKey(rsaKeyPair.getPublic()).build().parseClaimsJws(authToken);
+			Jwts.parser().verifyWith(rsaKeyPair.getPublic()).build().parseSignedClaims(authToken);
 			return true;
 		} catch (SignatureException e) {
 			logger.error("Invalid JWT signature: {}", e.getMessage());

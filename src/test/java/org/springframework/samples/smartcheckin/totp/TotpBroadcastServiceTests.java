@@ -15,6 +15,9 @@ import java.util.Map;
 @SuppressWarnings("null")
 class TotpBroadcastServiceTests {
 
+    private static final String LAST_TOKEN_FIELD = "lastBroadcastedToken";
+    private static final String TOKEN_VAL = "TOKEN123";
+
     @Mock
     private TotpService totpService;
 
@@ -38,19 +41,19 @@ class TotpBroadcastServiceTests {
 
     @Test
     void testBroadcastTokenIfChangedSameToken() {
-        ReflectionTestUtils.setField(totpBroadcastService, "lastBroadcastedToken", "TOKEN123");
-        when(totpService.getCurrentToken()).thenReturn("TOKEN123");
+        ReflectionTestUtils.setField(totpBroadcastService, LAST_TOKEN_FIELD, TOKEN_VAL);
+        when(totpService.getCurrentToken()).thenReturn(TOKEN_VAL);
         totpBroadcastService.broadcastTokenIfChanged();
         verify(messagingTemplate, never()).convertAndSend(anyString(), any(Map.class));
     }
 
     @Test
     void testBroadcastTokenIfChangedDifferentToken() {
-        ReflectionTestUtils.setField(totpBroadcastService, "lastBroadcastedToken", "TOKEN123");
+        ReflectionTestUtils.setField(totpBroadcastService, LAST_TOKEN_FIELD, TOKEN_VAL);
         when(totpService.getCurrentToken()).thenReturn("TOKEN456");
         totpBroadcastService.broadcastTokenIfChanged();
         verify(messagingTemplate, times(1)).convertAndSend(eq("/topic/totp"), any(Map.class));
-        assert "TOKEN456".equals(ReflectionTestUtils.getField(totpBroadcastService, "lastBroadcastedToken"));
+        assert "TOKEN456".equals(ReflectionTestUtils.getField(totpBroadcastService, LAST_TOKEN_FIELD));
     }
 
     @Test

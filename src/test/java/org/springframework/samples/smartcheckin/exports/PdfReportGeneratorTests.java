@@ -13,6 +13,10 @@ import org.springframework.samples.smartcheckin.audit.AuditLog;
 
 class PdfReportGeneratorTests {
 
+    private static final String ADMIN = "admin";
+    private static final String IP = "127.0.0.1";
+    private static final String PDF_NOT_EMPTY = "PDF should not be empty";
+
     private PdfReportGenerator pdfReportGenerator;
 
     @BeforeEach
@@ -22,27 +26,27 @@ class PdfReportGeneratorTests {
 
     @Test
     void shouldGenerateAuditLogPdf() {
-        AuditLog log1 = new AuditLog("TEST_ACTION_1", "admin", "details1", "127.0.0.1");
+        AuditLog log1 = new AuditLog("TEST_ACTION_1", ADMIN, "details1", IP);
         log1.setTimestamp(LocalDateTime.now(ZoneId.systemDefault()));
         
-        AuditLog log2 = new AuditLog("TEST_ACTION_2", "admin", "details2", "127.0.0.1");
+        AuditLog log2 = new AuditLog("TEST_ACTION_2", ADMIN, "details2", IP);
         log2.setTimestamp(LocalDateTime.now(ZoneId.systemDefault()));
 
         byte[] pdf = pdfReportGenerator.generateAuditLogPdf(List.of(log1, log2));
 
         assertNotNull(pdf);
-        assertTrue(pdf.length > 0, "PDF should not be empty");
+        assertTrue(pdf.length > 0, PDF_NOT_EMPTY);
     }
 
     @Test
     void shouldGenerateAuditLogPdfWithNullTimestamp() {
-        AuditLog log1 = new AuditLog("TEST_ACTION_1", "admin", "details1", "127.0.0.1");
+        AuditLog log1 = new AuditLog("TEST_ACTION_1", ADMIN, "details1", IP);
         // Timestamp is null by default
         
         byte[] pdf = pdfReportGenerator.generateAuditLogPdf(List.of(log1));
 
         assertNotNull(pdf);
-        assertTrue(pdf.length > 0, "PDF should not be empty");
+        assertTrue(pdf.length > 0, PDF_NOT_EMPTY);
     }
 
     @Test
@@ -57,7 +61,7 @@ class PdfReportGeneratorTests {
         byte[] pdf = pdfReportGenerator.generateHrReportPdf(100, 50, 45, 12);
 
         assertNotNull(pdf);
-        assertTrue(pdf.length > 0, "PDF should not be empty");
+        assertTrue(pdf.length > 0, PDF_NOT_EMPTY);
     }
 
     @Test
@@ -66,6 +70,6 @@ class PdfReportGeneratorTests {
         byte[] pdf = pdfReportGenerator.generateHrReportPdf(10, 50, 20, 12);
 
         assertNotNull(pdf);
-        assertTrue(pdf.length > 0, "PDF should not be empty");
+        assertTrue(pdf.length > 0, PDF_NOT_EMPTY);
     }
 }
