@@ -88,7 +88,7 @@ function ToastItem({ toast, onRemove }) {
         <span className="ba-toast-icon">{icon}</span>
         <span className="ba-toast-message">{toast.message}</span>
         {toast.type !== "confirm" && (
-          <button className="ba-toast-close" onClick={handleClose}>
+          <button type="button" className="ba-toast-close" onClick={handleClose}>
             ×
           </button>
         )}
@@ -96,10 +96,10 @@ function ToastItem({ toast, onRemove }) {
 
       {toast.type === "confirm" && (
         <div className="ba-toast-actions">
-          <button className="ba-toast-btn ba-toast-btn-yes" onClick={handleConfirm}>
+          <button type="button" className="ba-toast-btn ba-toast-btn-yes" onClick={handleConfirm}>
             {t('common.yes', 'Sí')}
           </button>
-          <button className="ba-toast-btn ba-toast-btn-no" onClick={handleClose}>
+          <button type="button" className="ba-toast-btn ba-toast-btn-no" onClick={handleClose}>
             {t('common.no', 'No')}
           </button>
         </div>

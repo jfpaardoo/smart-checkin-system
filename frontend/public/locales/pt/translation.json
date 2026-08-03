@@ -278,7 +278,8 @@
     "exportError": "Erro ao descarregar relatório",
     "sessionExpired": "Sessão expirada. Por favor inicie sessão novamente.",
     "genericError": "Ocorreu um erro no pedido",
-    "networkError": "Erro de ligação de rede"
+    "networkError": "Erro de ligação de rede",
+    "saving": "A guardar..."
   },
   "lang": {
     "es": "Español",

@@ -1,145 +1,34 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { Form, Input, Label, FormGroup, Row, Col } from "reactstrap";
+import React from "react";
+import { Form, Input, Label, FormGroup, Row, Col, Button } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFilePdf, faFileLines, faFileImage, faFile } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faTimes, faUpload } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import "../../App.css";
 import "../../static/css/admin/adminPage.css";
 import getIdFromUrl from "../../util/getIdFromUrl";
-import useFetchState from "../../util/useFetchState";
 import moment from "moment";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
+import { getCleanFileInfo } from "../../utils/fileUtils";
+import { useFormationEdit } from "./hooks/useFormationEdit";
 
 export default function FormationEditAdmin() {
   const { t } = useTranslation();
   const jwt = tokenService.getLocalAccessToken();
-  const emptyItem = {
-    id: null,
-    name: "",
-    description: "",
-    formationDate: "",
-    documentUrls: [],
-  };
   const id = getIdFromUrl(2);
   const toast = useToast();
-  const [formation, setFormation, loading] = useFetchState(
-    emptyItem,
-    `/api/v1/formations/${id}`,
-    jwt,
-    null,
-    null,
-    id
-  );
-  const [files, setFiles] = useState([]);
 
-  const [isSaving, setIsSaving] = useState(false);
-
-  function handleChange(event) {
-    const target = event.target;
-    const value = target.value;
-    const name = target.name;
-    setFormation({ ...formation, [name]: value });
-  }
-
-  function handleFileChange(event) {
-    setFiles(Array.from(event.target.files));
-  }
-
-  const handleRemoveExistingFile = (urlToRemove) => {
-    setFormation({
-      ...formation,
-      documentUrls: (formation.documentUrls || []).filter(url => url !== urlToRemove)
-    });
-  };
-
-  const getCleanFileNameAndType = (item) => {
-    try {
-      let url = item;
-      let originalName = "";
-
-      if (item.includes("||")) {
-        const parts = item.split("||");
-        originalName = parts[0];
-        url = parts[1];
-      } else {
-        const decoded = decodeURIComponent(item);
-        const segments = decoded.split('/');
-        const rawFileName = segments.at(-1)?.split('?')[0] || "Documento";
-        const uuidPrefixRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_/i;
-        originalName = uuidPrefixRegex.test(rawFileName) ? rawFileName.replace(uuidPrefixRegex, '') : rawFileName;
-      }
-
-      if (originalName.startsWith("IQ") || originalName.length > 30) {
-        originalName = "Documento Adjunto.pdf";
-      }
-
-      const lower = originalName.toLowerCase();
-      if (lower.endsWith('.pdf') || lower.includes('pdf')) {
-        return { name: originalName, url, icon: faFilePdf, color: '#e74c3c' };
-      } else if (['.txt', '.doc', '.docx', '.odt', '.log'].some(ext => lower.endsWith(ext)) || lower.includes('txt') || lower.includes('doc')) {
-        return { name: originalName, url, icon: faFileLines, color: '#3498db' };
-      } else if (['.png', '.jpg', '.jpeg', '.webp', '.gif'].some(ext => lower.endsWith(ext)) || lower.includes('png') || lower.includes('jpg')) {
-        return { name: originalName, url, icon: faFileImage, color: '#2ecc71' };
-      }
-      return { name: originalName, url, icon: faFilePdf, color: '#e74c3c' };
-    } catch {
-      return { name: "Documento Adjunto", url: item, icon: faFile, color: '#95a5a6' };
-    }
-  };
-
-  function handleSubmit(event) {
-    event.preventDefault();
-    setIsSaving(true);
-
-    const formData = new FormData();
-    const payload = {
-      ...formation,
-      existingDocumentUrls: formation.documentUrls || []
-    };
-    formData.append("formation", new Blob([JSON.stringify(payload)], { type: "application/json" }));
-    files.forEach(file => {
-      formData.append("files", file);
-    });
-
-    fetch("/api/v1/formations" + (formation.id ? "/" + formation.id : ""), {
-      method: formation.id ? "PUT" : "POST",
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        Accept: "application/json",
-      },
-      body: formData,
-    })
-      .then((response) => response.json())
-      .then((json) => {
-        if (json.message) {
-          let errorMsg = json.message;
-          if (errorMsg.startsWith("{") && errorMsg.endsWith("}")) {
-            errorMsg = errorMsg
-              .slice(1, -1)
-              .split(",")
-              .map(err => {
-                const [field, msg] = err.split("=");
-                return `${field.trim()}: ${msg.trim()}`;
-              })
-              .join("\n");
-          } else if (errorMsg.includes("duplicate key value")) {
-            errorMsg = t('formations.duplicateConflict');
-          }
-          toast.error(errorMsg);
-          setIsSaving(false);
-        } else {
-          toast.success(formation.id ? t('formations.updated') : t('formations.created'));
-          setTimeout(() => { window.location.href = "/formations"; }, 1200);
-        }
-      })
-      .catch(() => {
-        toast.error(t('formations.connectionError'));
-        setIsSaving(false);
-      });
-  }
+  const {
+    formation,
+    loading,
+    isSaving,
+    files,
+    handleChange,
+    handleFileChange,
+    handleRemoveExistingFile,
+    handleSubmit
+  } = useFormationEdit(id, jwt, toast, t);
 
   const formattedDate = formation.formationDate 
     ? moment(formation.formationDate).format('YYYY-MM-DDTHH:mm') 
@@ -203,65 +92,82 @@ export default function FormationEditAdmin() {
             </Col>
           </Row>
 
-          <Row>
+          <Row className="mt-3 mb-4">
             <Col md={12}>
-              <FormGroup>
-                <Label for="file">{t('formations.document', 'Documentos de Formación (Opcional)')}</Label>
-                <Input
-                  type="file"
-                  name="files"
-                  id="file"
-                  multiple
-                  onChange={handleFileChange}
-                />
-                {formation.documentUrls && formation.documentUrls.length > 0 && (
-                  <div className="mt-3">
-                    <strong>{t('formations.currentDocuments', 'Documentos actuales vinculados:')}</strong>
-                    <ul className="list-group mt-2">
-                      {formation.documentUrls.map((item) => {
-                        const fileInfo = getCleanFileNameAndType(item);
-
-                        return (
-                          <li key={item} className="list-group-item d-flex justify-content-between align-items-center gap-3">
-                            <a href={fileInfo.url} target="_blank" rel="noopener noreferrer" className="d-flex align-items-center gap-2 text-decoration-none text-truncate flex-grow-1" style={{ maxWidth: 'calc(100% - 90px)' }}>
-                              <FontAwesomeIcon icon={fileInfo.icon} style={{ color: fileInfo.color }} />
-                              <span className="text-truncate">{fileInfo.name}</span>
-                            </a>
-                            <button
-                              type="button"
-                              className="btn btn-danger btn-sm"
-                              onClick={() => handleRemoveExistingFile(item)}
-                            >
-                              {t('formations.removeDocument', 'Eliminar')}
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
+              <Label className="fw-bold">{t('formations.attachments', 'Documentos Adjuntos')}</Label>
+              
+              {/* Archivos Existentes */}
+              {formation.documentUrls && formation.documentUrls.length > 0 && (
+                <div className="d-flex flex-column gap-2 mb-3 p-3 rounded" style={{ background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(0,0,0,0.05)' }}>
+                  <span className="text-muted small fw-bold">{t('formations.existingFiles', 'Archivos actuales')}</span>
+                  <div className="d-flex flex-wrap gap-2">
+                    {formation.documentUrls.map((item) => {
+                      const fileMeta = getCleanFileInfo(item);
+                      return (
+                        <div key={item} className="ba-badge bg-white text-dark d-flex align-items-center gap-2 border">
+                          <FontAwesomeIcon icon={fileMeta.icon} style={{ color: fileMeta.color }} />
+                          <span className="text-truncate" style={{ maxWidth: '200px' }} title={fileMeta.name}>{fileMeta.name}</span>
+                          <button 
+                            type="button" 
+                            className="btn-close" 
+                            style={{ fontSize: '10px' }}
+                            onClick={() => handleRemoveExistingFile(item)}
+                            title={t('formations.removeFile', 'Eliminar archivo')}
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
-                )}
-              </FormGroup>
+                </div>
+              )}
+
+              {/* Subir Nuevos Archivos */}
+              <div className="upload-container position-relative">
+                  <Input
+                    type="file"
+                    name="files"
+                    id="files"
+                    multiple
+                    onChange={handleFileChange}
+                    className="position-absolute w-100 h-100 opacity-0"
+                    style={{ zIndex: 2, cursor: 'pointer', left: 0, top: 0 }}
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.webp"
+                  />
+                  <div className="upload-dropzone p-4 text-center rounded border-dashed" style={{ backgroundColor: 'rgba(255,255,255,0.6)', border: '2px dashed var(--ba-primary)', transition: 'all 0.3s ease' }}>
+                    <FontAwesomeIcon icon={faUpload} size="2x" className="mb-2 text-primary" style={{ opacity: 0.7 }} />
+                    <h6 className="fw-bold mb-1" style={{ color: '#2c3e50' }}>{t('formations.dragDropFiles', 'Arrastra archivos aquí o haz clic para subir')}</h6>
+                    <p className="text-muted small mb-0">{t('formations.acceptedFormats', 'Formatos aceptados: PDF, Word, Excel, PowerPoint, Imágenes')}</p>
+                    
+                    {files.length > 0 && (
+                      <div className="mt-3 text-start">
+                        <span className="fw-bold small" style={{ color: 'var(--ba-primary)' }}>
+                          {files.length} {t('formations.filesSelected', 'archivo(s) seleccionado(s)')}
+                        </span>
+                        <ul className="list-unstyled mb-0 mt-2">
+                          {files.map((f) => (
+                            <li key={f.name} className="small text-muted d-flex align-items-center gap-2">
+                              <FontAwesomeIcon icon={faPlus} className="text-success" style={{ fontSize: '10px' }} />
+                              <span className="text-truncate" style={{ maxWidth: '250px' }}>{f.name}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+              </div>
             </Col>
           </Row>
 
-          <div className="form-action-group mt-4 d-flex gap-3">
-            <button className="ba-btn-primary position-relative" type="submit" disabled={isSaving} style={{ minWidth: '150px' }}>
-              {isSaving ? (
-                <div className="d-flex align-items-center justify-content-center gap-2">
-                  <span className="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                  <span>{t('formations.saving', 'Guardando...')}</span>
-                </div>
-              ) : (
-                t('formations.saveFormation')
-              )}
-            </button>
-            <Link 
-              to="/formations" 
-              className={`ba-btn-secondary form-action-link ${isSaving ? 'disabled pe-none opacity-50' : ''}`}
-              aria-disabled={isSaving}
-            >
-              {t('formations.cancel')}
-            </Link>
+          <div className="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+            <Button className="ba-btn-secondary" onClick={() => window.history.back()} disabled={isSaving}>
+              <FontAwesomeIcon icon={faTimes} className="me-1" /> {t('common.cancel')}
+            </Button>
+            <Button className="ba-btn-primary" type="submit" disabled={isSaving}>
+              <FontAwesomeIcon icon={faPlus} className="me-1" /> 
+              {isSaving ? t('common.saving') : null}
+              {!isSaving && formation.id ? t('common.save') : null}
+              {!isSaving && !formation.id ? t('formations.createNew') : null}
+            </Button>
           </div>
         </Form>
       </div>

@@ -278,7 +278,8 @@
     "exportError": "Échec du téléchargement du rapport",
     "sessionExpired": "Session expirée. Veuillez vous reconnecter.",
     "genericError": "Une erreur est survenue lors de la requête",
-    "networkError": "Erreur de connexion réseau"
+    "networkError": "Erreur de connexion réseau",
+    "saving": "Enregistrement..."
   },
   "lang": {
     "es": "Español",

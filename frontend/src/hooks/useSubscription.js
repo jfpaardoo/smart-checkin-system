@@ -1,15 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useWebSocket } from '../context/WebSocketProvider';
 
 export const useSubscription = (destination, callback) => {
     const { stompClient, isConnected } = useWebSocket();
+    const callbackRef = useRef(callback);
+    useEffect(() => { callbackRef.current = callback; }, [callback]);
     
     useEffect(() => {
         if (isConnected && destination && stompClient) {
-            // Suscripción al conectar
-            const sub = stompClient.subscribe(destination, (msg) => callback(msg));
-            // Desuscripción automática al desmontar
+            const sub = stompClient.subscribe(destination, (msg) => callbackRef.current(msg));
             return () => sub.unsubscribe();
         }
-    }, [destination, isConnected, stompClient, callback]); 
+    }, [destination, isConnected, stompClient]); 
 };

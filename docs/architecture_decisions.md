@@ -231,6 +231,24 @@ sequenceDiagram
 - **Service Worker Interceptor:** El frontend (React) registra un `sw.js` que escucha los eventos `push` en background, levanta la notificación OS nativa (`self.registration.showNotification`) y la sincroniza con el estado de la UI (Navbar) mediante `postMessage`.
 - **Canal de Centralización:** La campana de notificaciones (Navbar) se nutre simultáneamente de la API nativa Push (PWA) y del protocolo STOMP sobre WebSockets (alertas de seguridad), unificando todo el flujo de notificaciones al usuario independientemente del estado de foco del navegador.
 
+### Fase 19: Blindaje de Seguridad Avanzado y Despliegue en Producción (Enterprise Readiness)
+
+- **Sanitización e Inspección de Archivos (Anti-Malware en Firmas):**
+  - Implementación de filtro de cabecera mágica (magic bytes) en `LocalFileSystemService` para comprobar que las firmas subidas en formato Base64 cumplen exactamente las secuencias binarias de cabecera PNG (`0x89 0x50 0x4E 0x47`) o JPEG (`0xFF 0xD8 0xFF`), impidiendo la inyección de ejecutables renombrados o código malicioso.
+  - Límite de tamaño estricto de payload (`< 500 KB`) y validación de prefijo Data URL.
+- **Revocación Activa de Sesiones (JWT Blacklist):**
+  - Implementación de `JwtBlacklistedToken` y `JwtBlacklistService` para revocar tokens de inmediato tras el cierre de sesión (`POST /api/v1/auth/logout`) o al solicitar la eliminación de cuenta (GDPR).
+  - Tarea programada en segundo plano (`@Scheduled`) para la purga automática de tokens expirados de la base de datos.
+- **Doble Nivel de Rate Limiting (Bucket4j):**
+  - Límite estricto de 10 peticiones/minuto en rutas sensibles (`/api/v1/auth/signin`, `/api/v1/checkins/qr-fichaje`).
+  - Límite global de 200 peticiones/minuto para la API en general contra ataques DDoS.
+- **Seguridad CORS y Cabeceras Strict HSTS:**
+  - Configuración explícita de dominios permitidos en `SecurityConfiguration` (eliminando comodines en entornos de producción con credenciales).
+  - Aplicación de Content Security Policy (`CSP`) y restricciones de entramado (`X-Frame-Options`).
+- **Contenerización Multicapa Portable (Docker & Compose):**
+  - Creación de `Dockerfile` multi-stage (Fase 1: `maven` + Node build; Fase 2: `eclipse-temurin:21-jre-alpine` ejecutable con usuario no-root).
+  - Configuración de `docker-compose.yml` para levantar la aplicación junto a PostgreSQL 16 con comprobación de salud activa (`healthcheck`) y volúmenes de datos persistentes.
+
 ---
 
 ## 3. Módulos Adicionales y Funcionalidades Extendidas
@@ -252,11 +270,11 @@ sequenceDiagram
 
 | Capa / Subsistema | Tecnología / Librería Seleccionada | Criterio de Selección / Función |
 |---|---|---|
-| Lenguaje Backend | Java 17 (LTS) | Estabilidad, alto rendimiento y soporte de Long Term Support. |
+| Lenguaje Backend | Java 21 (LTS) | Estabilidad, alto rendimiento y soporte de Long Term Support. |
 | Framework Backend | Spring Boot 3.x | Arquitectura modular, seguridad robusta y ecosistema nativo. |
 | Persistencia | Spring Data JPA / Hibernate | Abstracción de capa de datos y mapeo objeto-relacional. |
-| Base de Datos | PostgreSQL 15 | Cumplimiento ACID, soporte Cloud SQL y escalabilidad. |
-| Autenticación | Spring Security + JWT (RS256) | Tokens firmados asimétricamente con claves RSA de 2048 bits. |
+| Base de Datos | PostgreSQL 16 | Cumplimiento ACID, soporte Cloud SQL y escalabilidad. |
+| Autenticación | Spring Security + JWT (RS256) | Tokens firmados asimétricamente con lista negra (Blacklist) activa. |
 | Motor TOTP | dev.samstevens.totp | Generación de algoritmos TOTP de 6 dígitos para códigos QR. |
 | Mensajería Tiempo Real | Spring WebSocket + STOMP / SockJS | Sincronización asíncrona bidireccional entre cliente y servidor. |
 | Procesamiento Lotes | Spring Batch 5 | Consolidación masiva de datos y tareas programadas (CRON). |

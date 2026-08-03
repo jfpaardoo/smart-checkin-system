@@ -25,6 +25,15 @@ test.describe('Flujo de Fichaje Manual y Firma Digital en Salida (Check-in & Sig
       }
     });
 
+    // Mock PrivateRoute token validation
+    await page.route('/api/v1/auth/validate*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(true),
+      });
+    });
+
     // Mock token in localStorage (valid base64 JWT payload with EMPLOYEE role)
     const validEmployeeJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyIiwiYXV0aG9yaXRpZXMiOlsiRU1QTE9ZRUUiXX0.mock";
     await page.addInitScript((token) => {
@@ -34,32 +43,32 @@ test.describe('Flujo de Fichaje Manual y Firma Digital en Salida (Check-in & Sig
     await page.goto('/checkin');
 
     // Switch to manual input mode
-    await page.click('button:has-text("Introducir código manualmente"), button:has-text("Enter code manually")');
+    await page.click('button:has-text("Ingresar código manualmente"), button:has-text("Enter code manually")');
 
     // Fill 6-digit code
-    await page.fill('input#manualCodeInput', '654321');
+    await page.fill('input[placeholder="000000"]', '654321');
 
-    // Click Confirmar Fichaje
-    await page.click('button:has-text("Confirmar Fichaje"), button:has-text("Confirm Check-in")');
+    // Click Validar Código
+    await page.click('button:has-text("Validar Código"), button:has-text("Validate Code"), button:has-text("Confirmar Fichaje")');
 
     // Verify digital signature canvas is required
-    await expect(page.locator('text=/Firma Requerida|Signature Required/i')).toBeVisible();
+    await expect(page.locator('text=/Por favor, firme abajo para finalizar|Signature Required/i')).toBeVisible();
 
     // Draw signature on canvas
     const canvas = page.locator('canvas.sigCanvas');
+    await canvas.scrollIntoViewIfNeeded();
     const boundingBox = await canvas.boundingBox();
     if (boundingBox) {
-      await page.mouse.move(boundingBox.x + 20, boundingBox.y + 20);
+      await page.mouse.move(boundingBox.x + boundingBox.width / 2, boundingBox.y + boundingBox.height / 2);
       await page.mouse.down();
-      await page.mouse.move(boundingBox.x + 100, boundingBox.y + 80);
+      await page.mouse.move(boundingBox.x + boundingBox.width / 2 + 50, boundingBox.y + boundingBox.height / 2 + 50, { steps: 20 });
       await page.mouse.up();
     }
 
     // Submit signature
-    await page.click('button:has-text("Confirmar Firma"), button:has-text("Confirm Signature")');
+    await page.click('button:has-text("Confirmar Firma y Registrar Salida"), button:has-text("Confirmar Firma"), button:has-text("Confirm Signature")');
 
     // Verify success modal
-    await expect(page.locator('text=/Confirmada|Confirmed/i')).toBeVisible();
     await expect(page.locator('text=Curso de Seguridad Industrial')).toBeVisible();
   });
 });

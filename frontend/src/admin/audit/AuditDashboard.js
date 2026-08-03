@@ -167,10 +167,10 @@ export default function AuditDashboard() {
             {t('audit.title', 'Registro de Auditoría')}
           </h2>
           <div className="d-flex gap-2">
-            <button className="btn ba-btn-primary d-flex align-items-center gap-2" onClick={handleDownloadCsv}>
+            <button type="button" className="btn ba-btn-primary d-flex align-items-center gap-2" onClick={handleDownloadCsv}>
               <FaDownload /> {t('audit.exportCSV', 'Exportar a CSV')}
             </button>
-            <button className="btn ba-btn-secondary d-flex align-items-center gap-2" onClick={handleDownloadPdf}>
+            <button type="button" className="btn ba-btn-secondary d-flex align-items-center gap-2" onClick={handleDownloadPdf}>
               <FaDownload /> {t('audit.exportPDF', 'Exportar a PDF')}
             </button>
           </div>

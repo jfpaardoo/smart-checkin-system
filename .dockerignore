@@ -1,0 +1,15 @@
+# Docker Ignore Rules
+.git
+.gitignore
+.dockerignore
+target/
+frontend/node_modules/
+frontend/build/
+.mvn/
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml

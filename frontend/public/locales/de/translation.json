@@ -278,7 +278,8 @@
     "exportError": "Fehler beim Herunterladen des Berichts",
     "sessionExpired": "Sitzung abgelaufen. Bitte melden Sie sich erneut an.",
     "genericError": "Bei der Anfrage ist ein Fehler aufgetreten",
-    "networkError": "Netzwerkverbindungsfehler"
+    "networkError": "Netzwerkverbindungsfehler",
+    "saving": "Speichern..."
   },
   "lang": {
     "es": "Español",

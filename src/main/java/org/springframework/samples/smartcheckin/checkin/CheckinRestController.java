@@ -72,6 +72,14 @@ public class CheckinRestController {
         // FLUJO 1: EL CÓDIGO ES DE UNA FORMACIÓN
         // ==========================================
         if (targetFormation != null) {
+            // Verificación de distancia GPS también para fichajes de formación
+            if (isLocationInvalid(request)) {
+                double distance = calculateDistance(request.getUserLat(), request.getUserLng(), 
+                                                    request.getAdminLat(), request.getAdminLng());
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of(MESSAGE_KEY, "Demasiado lejos del punto de control. Distancia: " + Math.round(distance) + "m (Max: 50m)"));
+            }
+
             try {
                 // Lo registramos en la formación
                 formationService.registerAttendance(targetFormation.getId(), user);
