@@ -99,3 +99,4 @@ class CloudSettingsRestControllerTests {
 		mockMvc.perform(post(BASE_URL + "/backup").with(csrf())).andExpect(status().isBadRequest());
 	}
 }
+

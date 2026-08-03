@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.samples.smartcheckin.configuration.jwt.AuthEntryPointJwt;
 import org.springframework.samples.smartcheckin.configuration.jwt.AuthTokenFilter;
+import org.springframework.samples.smartcheckin.configuration.jwt.JwtBlacklistService;
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -118,8 +119,9 @@ public class SecurityConfiguration {
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter(
             JwtUtils jwtUtils,
-            UserDetailsServiceImpl userDetailsService) {
-        return new AuthTokenFilter(jwtUtils, userDetailsService);
+            UserDetailsServiceImpl userDetailsService,
+            JwtBlacklistService jwtBlacklistService) {
+        return new AuthTokenFilter(jwtUtils, userDetailsService, jwtBlacklistService);
     }
 
     @Bean

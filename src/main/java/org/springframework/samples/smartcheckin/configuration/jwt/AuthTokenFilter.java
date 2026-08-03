@@ -21,10 +21,12 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
 	private final JwtUtils jwtUtils;
 	private final UserDetailsServiceImpl userDetailsService;
+	private final JwtBlacklistService jwtBlacklistService;
 
-	public AuthTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService) {
+	public AuthTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService, JwtBlacklistService jwtBlacklistService) {
 		this.jwtUtils = jwtUtils;
 		this.userDetailsService = userDetailsService;
+		this.jwtBlacklistService = jwtBlacklistService;
 	}
 
 	@Override
@@ -33,6 +35,11 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 		try {
 			String jwt = parseJwt(request);
 			if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
+				if (jwtBlacklistService.isBlacklisted(jwt)) {
+					logger.error("JWT token is blacklisted");
+					response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has been invalidated (Logged out)");
+					return;
+				}
 				String username = jwtUtils.getUserNameFromJwtToken(jwt);
 				UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

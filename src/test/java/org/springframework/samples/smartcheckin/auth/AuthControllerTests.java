@@ -25,6 +25,7 @@ import org.springframework.samples.smartcheckin.audit.AnomalyDetectionService;
 import org.springframework.samples.smartcheckin.auth.payload.request.LoginRequest;
 import org.springframework.samples.smartcheckin.auth.payload.request.SignupRequest;
 import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest;
+import org.springframework.samples.smartcheckin.configuration.jwt.JwtBlacklistService;
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
 import org.springframework.samples.smartcheckin.user.UserService;
@@ -88,6 +89,9 @@ class AuthControllerTests {
 
 	@MockitoBean
 	private AnomalyDetectionService anomalyDetectionService;
+
+	@MockitoBean
+	private JwtBlacklistService jwtBlacklistService;
 
 	@Autowired
 	private ObjectMapper objectMapper;
