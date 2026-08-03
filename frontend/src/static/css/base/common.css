@@ -6,6 +6,24 @@
   text-align: center;
 }
 
+/* Glass Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(179, 195, 76, 0.6);
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(179, 195, 76, 0.9);
+}
+
 /* Input Fields - Glassmorphism */
 .form-control, .form-select {
   background: rgba(255, 255, 255, 0.3) !important;
@@ -106,24 +124,38 @@
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.07), inset 0 1.5px 2px rgba(255, 255, 255, 0.95);
   padding: 35px 45px;
   margin-bottom: 20px;
-  border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.95) !important;
+  border-left: 1.5px solid rgba(255, 255, 255, 0.75) !important;
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   width: 100%;
   min-width: 300px;
+  animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ba-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 35px 75px rgba(0, 0, 0, 0.08), inset 0 1.5px 2px rgba(255, 255, 255, 1);
+}
+
+@keyframes fade-in-up {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 /* Quick Actions Liquid Glass Action Cards */
 .ba-action-card, .ba-glass-panel {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.70), rgba(240, 245, 255, 0.50)) !important;
-  backdrop-filter: blur(25px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(25px) saturate(190%) !important;
+  background: var(--ba-glass-card-bg) !important;
+  backdrop-filter: var(--ba-glass-blur-med) !important;
+  -webkit-backdrop-filter: var(--ba-glass-blur-med) !important;
   border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
   border-radius: 24px !important;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05), inset 0 1.5px 2px rgba(255, 255, 255, 0.95) !important;
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .ba-action-card {
@@ -135,10 +167,10 @@
 }
 
 .ba-action-card:hover, .ba-glass-panel:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(240, 248, 240, 0.75)) !important;
-  border-color: rgba(179, 195, 76, 0.85) !important;
-  transform: translateY(-4px) scale(1.01) !important;
-  box-shadow: 0 20px 45px rgba(179, 195, 76, 0.22), inset 0 1.5px 2px rgba(255, 255, 255, 1) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 248, 240, 0.85)) !important;
+  border-color: rgba(179, 195, 76, 0.9) !important;
+  transform: translateY(-6px) scale(1.02) !important;
+  box-shadow: 0 25px 55px rgba(179, 195, 76, 0.25), inset 0 1.5px 2px rgba(255, 255, 255, 1) !important;
 }
 
 .ba-action-icon-wrapper {
@@ -202,24 +234,28 @@
 }
 
 .ba-btn-primary {
-  background: rgba(204, 227, 100, 0.45) !important;
+  background: rgba(179, 195, 76, 0.45) !important;
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(204, 227, 100, 0.8) !important;
+  border: 1px solid rgba(179, 195, 76, 0.8) !important;
   color: #2b3a04 !important;
   border-radius: 20px !important;
   padding: 8px 22px !important;
   font-weight: 600 !important;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 4px 15px rgba(204, 227, 100, 0.25);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 4px 15px rgba(179, 195, 76, 0.25);
   text-decoration: none !important;
 }
 
 .ba-btn-primary:hover {
-  background: rgba(204, 227, 100, 0.85) !important;
-  color: #2b3a04 !important;
-  transform: translateY(-2px) scale(1.03) !important;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 1), 0 6px 20px rgba(204, 227, 100, 0.35) !important;
+  background: rgba(179, 195, 76, 0.85) !important;
+  color: #1e293b !important;
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 1), 0 8px 25px rgba(179, 195, 76, 0.45) !important;
+}
+
+.ba-btn-primary:active {
+  transform: translateY(1px) scale(0.97) !important;
 }
 
 .ba-btn-danger, .btn-danger {
@@ -231,15 +267,19 @@
   border-radius: 20px !important;
   padding: 6px 18px !important;
   font-weight: 600 !important;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 3px 10px rgba(220, 53, 69, 0.2);
 }
 
-.ba-btn-danger:hover, .btn-danger:hover, .btn-danger:focus, .btn-danger:active {
+.ba-btn-danger:hover, .btn-danger:hover, .btn-danger:focus {
   background: rgba(200, 35, 51, 0.90) !important;
   color: #ffffff !important;
-  transform: translateY(-2px) scale(1.03) !important;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 6px 16px rgba(220, 53, 69, 0.35) !important;
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 8px 25px rgba(220, 53, 69, 0.4) !important;
+}
+
+.ba-btn-danger:active, .btn-danger:active {
+  transform: translateY(1px) scale(0.97) !important;
 }
 
 .ba-btn-blue {
@@ -251,16 +291,20 @@
   border-radius: 20px !important;
   padding: 6px 18px !important;
   font-weight: 600 !important;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 3px 10px rgba(59, 130, 246, 0.2);
   text-decoration: none !important;
 }
 
-.ba-btn-blue:hover, .ba-btn-blue:focus, .ba-btn-blue:active {
-  background: rgba(37, 99, 235, 0.90) !important;
+.ba-btn-blue:hover, .ba-btn-blue:focus {
+  background: rgba(30, 64, 175, 0.95) !important;
   color: #ffffff !important;
-  transform: translateY(-2px) scale(1.03) !important;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 6px 16px rgba(59, 130, 246, 0.4) !important;
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 1), 0 8px 25px rgba(29, 78, 216, 0.4) !important;
+}
+
+.ba-btn-blue:active {
+  transform: translateY(1px) scale(0.97) !important;
 }
 
 .ba-btn-secondary {
@@ -272,7 +316,7 @@
   border-radius: 20px !important;
   padding: 8px 22px !important;
   font-weight: 600 !important;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 3px 10px rgba(0, 0, 0, 0.1);
   display: inline-flex !important;
   align-items: center !important;
@@ -282,10 +326,14 @@
 }
 
 .ba-btn-secondary:hover {
-  background: rgba(44, 62, 80, 0.90) !important;
+  background: rgba(30, 41, 59, 0.90) !important;
   color: #ffffff !important;
-  transform: translateY(-2px) scale(1.03) !important;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 6px 16px rgba(44, 62, 80, 0.3) !important;
+  transform: translateY(-3px) scale(1.05) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 8px 25px rgba(0, 0, 0, 0.2) !important;
+}
+
+.ba-btn-secondary:active {
+  transform: translateY(1px) scale(0.97) !important;
 }
 
 /* Expandable Icon Buttons */
@@ -424,15 +472,21 @@
 }
 
 .ba-badge-active {
-  background: rgba(204, 227, 100, 0.5) !important;
+  background: rgba(204, 227, 100, 0.4) !important;
   color: #2b3a04 !important;
-  border: 1px solid rgba(204, 227, 100, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.9) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.7) !important;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.8), 0 4px 10px rgba(204, 227, 100, 0.15);
 }
 
 .ba-badge-inactive {
-  background: rgba(200, 200, 200, 0.35) !important;
+  background: rgba(200, 200, 200, 0.25) !important;
   color: #1e293b !important;
-  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.8) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 .btn-gap {
@@ -534,13 +588,34 @@
 }
 
 .formation-info-box {
+  background: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(30px) saturate(200%);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05), inset 0 1px 1.5px rgba(255, 255, 255, 0.95) !important;
+  padding: 24px !important;
   margin-bottom: 30px;
-  background: rgba(255, 255, 255, 0.4);
-  padding: 20px;
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.formation-info-box h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ba-dark);
+  margin-bottom: 8px;
+  margin-top: 16px;
+  font-family: var(--ba-font-family) !important;
+}
+
+.formation-info-box h4:first-child {
+  margin-top: 0;
+}
+
+.formation-info-box p {
+  color: var(--ba-text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 16px;
+  font-family: var(--ba-font-family) !important;
 }
 
 .formation-add-form {
@@ -557,6 +632,42 @@
   background: var(--ba-primary) !important;
   color: var(--ba-dark) !important;
   font-weight: 700 !important;
+}
+
+.badge-glass-success {
+  display: inline-block;
+  white-space: nowrap;
+  background: rgba(179, 195, 76, 0.25) !important;
+  color: #363d08 !important;
+  border: 1px solid rgba(179, 195, 76, 0.6) !important;
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-weight: 600;
+}
+
+.badge-glass-warning {
+  display: inline-block;
+  white-space: nowrap;
+  background: rgba(245, 158, 11, 0.15) !important;
+  color: #451a03 !important; /* Very dark brown for maximum contrast */
+  border: 1px solid rgba(245, 158, 11, 0.4) !important;
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-weight: 700;
+}
+
+.badge-glass-secondary {
+  display: inline-block;
+  white-space: nowrap;
+  background: rgba(100, 116, 139, 0.15) !important;
+  color: #1e293b !important; /* Dark slate for maximum contrast */
+  border: 1px solid rgba(100, 116, 139, 0.3) !important;
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-weight: 600;
 }
 
 .text-dark-slate {
@@ -822,6 +933,26 @@
 .modal-dialog {
   display: flex !important;
   align-items: center !important;
+  margin: 2.5rem 1.5rem !important;
+}
+
+@media (min-width: 576px) {
+  .modal-dialog {
+    margin: 1.75rem auto !important;
+  }
+}
+
+.modal-dialog-scrollable {
+  height: auto !important;
+  max-height: calc(100dvh - 6rem) !important;
+}
+
+/* Glass Modal Backdrop */
+.modal-backdrop.show {
+  backdrop-filter: blur(8px) saturate(150%);
+  -webkit-backdrop-filter: blur(8px) saturate(150%);
+  background-color: rgba(15, 23, 42, 0.5) !important;
+  opacity: 1 !important;
 }
 
 .modal-content {
@@ -829,9 +960,12 @@
   backdrop-filter: blur(35px) saturate(210%) !important;
   -webkit-backdrop-filter: blur(35px) saturate(210%) !important;
   border-radius: 36px !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.95) !important;
+  border-left: 1.5px solid rgba(255, 255, 255, 0.8) !important;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12), inset 0 1.5px 2px rgba(255, 255, 255, 0.95) !important;
   overflow: hidden !important;
+  animation: fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .modal-header {

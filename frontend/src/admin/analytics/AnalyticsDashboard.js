@@ -113,34 +113,35 @@ export default function AnalyticsDashboard() {
         <div className="ba-container">
             <div className="ba-card">
                 {/* Header with Navigation Tabs & Export Menu */}
-                <div className="ba-card-header align-items-center">
-                    <div>
-                        <h2>
-                            <FontAwesomeIcon icon={faChartLine} className="me-2" style={{ color: 'var(--ba-primary)' }} /> 
-                            {t('analytics.title', 'Analytics & HR Control')}
-                        </h2>
-                        {/* Tab Switcher */}
-                        <Nav tabs className="border-0 mt-3 gap-2">
-                            <NavItem>
-                                <NavLink
-                                    className={`ba-tab-pill ${activeTab === 'overview' ? 'ba-tab-pill-active' : ''}`}
-                                    onClick={() => setActiveTab('overview')}
-                                >
-                                    <FontAwesomeIcon icon={faChartLine} className="me-1" />
-                                    {t('analytics.overviewTab', 'Platform Overview')}
-                                </NavLink>
-                            </NavItem>
-                            <NavItem>
-                                <NavLink
-                                    className={`ba-tab-pill ${activeTab === 'employees' ? 'ba-tab-pill-active' : ''}`}
-                                    onClick={() => setActiveTab('employees')}
-                                >
-                                    <FontAwesomeIcon icon={faUsers} className="me-1" />
-                                    {t('analytics.employeesTab', 'Employee Control')}
-                                </NavLink>
-                            </NavItem>
-                        </Nav>
-                    </div>
+                <div className="ba-card-header mb-4 border-0 pb-0">
+                    <h2 className="mb-0 d-flex align-items-center">
+                        <FontAwesomeIcon icon={faChartLine} style={{ color: 'var(--ba-primary)' }} className="me-2" />
+                        {t('analytics.title', 'Analytics & HR Control')}
+                    </h2>
+                </div>
+
+                <div className="d-flex flex-column flex-md-row justify-content-center align-items-center gap-4 mb-4">
+                    {/* Tab Switcher */}
+                    <Nav tabs className="border-bottom-0 gap-2">
+                        <NavItem>
+                            <NavLink
+                                className={`ba-tab-pill ${activeTab === 'overview' ? 'ba-tab-pill-active' : ''}`}
+                                onClick={() => setActiveTab('overview')}
+                            >
+                                <FontAwesomeIcon icon={faChartLine} className="me-1" />
+                                {t('analytics.overviewTab', 'Platform Overview')}
+                            </NavLink>
+                        </NavItem>
+                        <NavItem>
+                            <NavLink
+                                className={`ba-tab-pill ${activeTab === 'employees' ? 'ba-tab-pill-active' : ''}`}
+                                onClick={() => setActiveTab('employees')}
+                            >
+                                <FontAwesomeIcon icon={faUsers} className="me-1" />
+                                {t('analytics.employeesTab', 'Employee Control')}
+                            </NavLink>
+                        </NavItem>
+                    </Nav>
 
                     {/* Export Dropdown Menu */}
                     <div className="d-flex gap-2">
@@ -285,7 +286,7 @@ export default function AnalyticsDashboard() {
                         </div>
 
                         {/* Employee Statistics Table */}
-                        <Table responsive className="ba-table align-middle">
+                        <Table responsive className="ba-table align-middle" style={{ minWidth: '800px' }}>
                             <thead>
                                 <tr>
                                     <th>{t('users.personalCode', 'Code')}</th>

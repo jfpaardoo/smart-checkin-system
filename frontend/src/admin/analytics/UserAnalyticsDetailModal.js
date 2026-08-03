@@ -71,7 +71,7 @@ export default function UserAnalyticsDetailModal({ isOpen, toggle, userAnalytics
                 </h6>
 
                 {userAnalytics.formationDetails && userAnalytics.formationDetails.length > 0 ? (
-                    <Table responsive className="ba-table align-middle">
+                    <Table responsive className="ba-table align-middle" style={{ minWidth: '700px' }}>
                         <thead>
                             <tr>
                                 <th>{t('analytics.formationName', 'Formation')}</th>

@@ -64,10 +64,12 @@ export default function FormationListAdmin() {
         <td>{formation.description}</td>
         <td>{moment(formation.formationDate).format('YYYY-MM-DD HH:mm')}</td>
         <td>
-          <div className="d-flex align-items-center gap-2">
-            <span className="badge bg-secondary">{total} {t('formations.total')}</span>
-            {completed > 0 && <span className="badge bg-success">{completed} {t('formations.completed')}</span>}
-            {inProgress > 0 && <span className="badge bg-warning text-dark">{inProgress} {t('formations.inProgress')}</span>}
+          <div className="d-flex justify-content-center align-items-center gap-2">
+            <span className="badge-glass-secondary">{total} {t('formations.total')}</span>
+          </div>
+          <div className="d-flex justify-content-center flex-wrap gap-2 mt-2">
+            {completed > 0 && <span className="badge-glass-success">{completed} {t('formations.completed')}</span>}
+            {inProgress > 0 && <span className="badge-glass-warning text-dark">{inProgress} {t('formations.inProgress')}</span>}
           </div>
         </td>
         <td>
@@ -110,7 +112,7 @@ export default function FormationListAdmin() {
         {loading ? (
           <TableGhostLoader columns={5} rows={4} />
         ) : (
-          <Table responsive aria-label="formations" className="ba-table">
+          <Table responsive aria-label="formations" className="ba-table" style={{ minWidth: '800px' }}>
             <thead>
               <tr>
                 <th>{t('formations.name')}</th>

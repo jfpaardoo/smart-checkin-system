@@ -69,16 +69,16 @@ export default function CloudSettingsAdmin() {
   return (
     <div className="ba-container">
       <div className="ba-card p-4 p-md-5 mx-auto" style={{ maxWidth: '800px', marginTop: '2rem' }}>
-        <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mb-4 text-center text-md-start">
           <h2 className="mb-0 text-dark fw-bold">
             <FaCloudUploadAlt className="me-2" style={{ color: 'var(--ba-primary)' }} /> {t('cloudSettings.title', 'Ajustes de Nube')}
           </h2>
-          <Button className="ba-btn-primary d-flex align-items-center gap-2" onClick={handleBackup} disabled={backingUp}>
+          <Button className="ba-btn-primary d-flex align-items-center justify-content-center gap-2" onClick={handleBackup} disabled={backingUp}>
             <FaDatabase /> {backingUp ? t('cloudSettings.backingUp', 'Respaldando...') : t('cloudSettings.forceBackupBtn', 'Forzar Backup DB')}
           </Button>
         </div>
 
-        <p className="text-muted mb-4">
+        <p className="text-muted mb-4 text-center text-md-start">
           {t('cloudSettings.description', 'Configura aquí las credenciales para conectar la plataforma con la API de OneDrive (Microsoft Graph). Estas credenciales se utilizarán para subir los documentos de las formaciones y los backups de la base de datos.')}
         </p>
 

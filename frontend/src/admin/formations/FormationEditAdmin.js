@@ -222,8 +222,8 @@ export default function FormationEditAdmin() {
                         const fileInfo = getCleanFileNameAndType(item);
 
                         return (
-                          <li key={item} className="list-group-item d-flex justify-content-between align-items-center">
-                            <a href={fileInfo.url} target="_blank" rel="noopener noreferrer" className="d-flex align-items-center gap-2 text-decoration-none text-truncate" style={{ maxWidth: '350px' }}>
+                          <li key={item} className="list-group-item d-flex justify-content-between align-items-center gap-3">
+                            <a href={fileInfo.url} target="_blank" rel="noopener noreferrer" className="d-flex align-items-center gap-2 text-decoration-none text-truncate flex-grow-1" style={{ maxWidth: 'calc(100% - 90px)' }}>
                               <FontAwesomeIcon icon={fileInfo.icon} style={{ color: fileInfo.color }} />
                               <span className="text-truncate">{fileInfo.name}</span>
                             </a>
@@ -256,7 +256,7 @@ export default function FormationEditAdmin() {
               )}
             </button>
             <Link 
-              to={`/formations/${id}/details`} 
+              to="/formations" 
               className={`ba-btn-secondary form-action-link ${isSaving ? 'disabled pe-none opacity-50' : ''}`}
               aria-disabled={isSaving}
             >

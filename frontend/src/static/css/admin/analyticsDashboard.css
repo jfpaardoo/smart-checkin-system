@@ -36,30 +36,40 @@
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
-    background: rgba(204, 227, 100, 0.35);
-    color: #2b3a04;
-    border: 1px solid rgba(204, 227, 100, 0.6);
+    background: rgba(179, 195, 76, 0.25); /* var(--ba-primary) */
+    color: var(--ba-dark);
+    border: 1px solid rgba(179, 195, 76, 0.6);
+    flex-shrink: 0;
 }
 
 .analytics-kpi-icon.blue {
-    background: rgba(59, 130, 246, 0.15);
-    color: #0f172a;
-    border: 1px solid rgba(59, 130, 246, 0.3);
+    background: rgba(64, 150, 255, 0.2); /* Soft blue from background */
+    color: var(--ba-dark);
+    border: 1px solid rgba(64, 150, 255, 0.4);
 }
 
 .analytics-kpi-icon.green {
-    background: rgba(16, 185, 129, 0.15);
-    color: #0f172a;
-    border: 1px solid rgba(16, 185, 129, 0.3);
+    background: rgba(30, 41, 59, 0.15); /* Slate Dark */
+    color: var(--ba-dark);
+    border: 1px solid rgba(30, 41, 59, 0.3);
+}
+
+.analytics-kpi-content {
+    flex: 1;
+    min-width: 0;
 }
 
 .analytics-kpi-content h6 {
     margin: 0 0 4px 0;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: #475569;
+    font-family: 'Inter', system-ui, sans-serif !important;
+    line-height: 1.3;
+    white-space: normal;
+    word-wrap: break-word;
 }
 
 .analytics-kpi-content .kpi-value {
@@ -68,6 +78,7 @@
     color: #0f172a;
     line-height: 1.1;
     margin: 0;
+    font-family: 'Inter', system-ui, sans-serif !important;
 }
 
 /* Glass Subcards for Charts */

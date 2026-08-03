@@ -101,20 +101,30 @@ function AppNavbar() {
     return (
         <div>
             <Navbar expand="md" className="ba-navbar">
-                <NavbarBrand href="/" className="ba-navbar-brand">
+                <NavbarBrand href="/" className="ba-navbar-brand me-auto">
                     <div className="logo-crop">
                         <img src="/ba-logo.png" alt="BA Glass" />
                     </div>
-                    Distribution Academy
+                    <span className="d-none d-sm-inline">Distribution Academy</span>
+                    <span className="d-inline d-sm-none">BA Academy</span>
                 </NavbarBrand>
-                <NavbarToggler onClick={toggleNavbar} className="ms-2" />
+                
+                <div className="d-flex align-items-center d-md-none gap-2">
+                    {jwt && <NotificationBell />}
+                    <NavbarToggler onClick={toggleNavbar} />
+                </div>
+
                 <Collapse isOpen={!collapsed} navbar>
-                    <Nav className="me-auto" navbar>
+                    <Nav className="me-auto ms-md-4" navbar>
                         {adminLinks}
                     </Nav>
                     <Nav navbar>
                         {publicLinks}
-                        {jwt && <NotificationBell />}
+                        {jwt && (
+                            <div className="d-none d-md-block">
+                                <NotificationBell />
+                            </div>
+                        )}
                         {userLogout}
                         <LanguageSwitcher />
                     </Nav>

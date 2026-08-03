@@ -118,11 +118,11 @@ export default function UserListAdmin() {
   return (
     <div className="ba-container">
       <div className="ba-card">
-        <div className="ba-card-header flex-wrap gap-3">
+        <div className="ba-card-header mb-4 border-0 pb-0 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
             <h2>
                 <FontAwesomeIcon icon={faUsers} style={{ color: 'var(--ba-primary)' }} className="me-2" /> {t('users.title', 'Gestión de Empleados')}
             </h2>
-            <div className="d-flex gap-2 align-items-center flex-wrap">
+            <div className="d-flex gap-2 align-items-center flex-wrap justify-content-center justify-content-md-end">
                 <Button className="ba-btn-primary btn-icon-expand btn-expand-lg" onClick={() => handleDownloadExport('users/csv', 'usuarios.csv')}>
                     <FontAwesomeIcon icon={faFileCsv} />
                     <span className="btn-expand-label">{t('analytics.exportCsv', 'Exportar CSV')}</span>
@@ -137,43 +137,45 @@ export default function UserListAdmin() {
             </div>
         </div>
 
-        <Nav tabs className="mb-4 border-bottom-0 gap-2">
-          <NavItem>
-            <NavLink
-              className={`ba-tab-pill ${activeTab === 'approved' ? 'ba-tab-pill-active' : ''}`}
-              onClick={() => setActiveTab('approved')}
-            >
-              <FontAwesomeIcon icon={faUsers} className="me-1" />
-              {t('users.activeEmployees', 'Empleados Activos')} ({users.length})
-            </NavLink>
-          </NavItem>
-          <NavItem>
-            <NavLink
-              className={`ba-tab-pill ${activeTab === 'pending' ? 'ba-tab-pill-pending' : ''}`}
-              onClick={() => setActiveTab('pending')}
-            >
-              <FontAwesomeIcon icon={faClock} className="me-1" />
-              {t('users.pendingRequestsTab', 'Solicitudes Pendientes')}
-              {pendingUsers.length > 0 && (
-                <Badge color="danger" pill className="ms-2">
-                  {pendingUsers.length}
-                </Badge>
-              )}
-            </NavLink>
-          </NavItem>
-        </Nav>
+        <div className="d-flex flex-column flex-xl-row justify-content-between align-items-center align-items-xl-start gap-4 mb-4">
+          <Nav tabs className="border-bottom-0 gap-2 w-100 w-xl-auto justify-content-center justify-content-xl-start">
+            <NavItem>
+              <NavLink
+                className={`ba-tab-pill ${activeTab === 'approved' ? 'ba-tab-pill-active' : ''}`}
+                onClick={() => setActiveTab('approved')}
+              >
+                <FontAwesomeIcon icon={faUsers} className="me-1" />
+                {t('users.activeEmployees', 'Empleados Activos')} ({users.length})
+              </NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink
+                className={`ba-tab-pill ${activeTab === 'pending' ? 'ba-tab-pill-pending' : ''}`}
+                onClick={() => setActiveTab('pending')}
+              >
+                <FontAwesomeIcon icon={faClock} className="me-1" />
+                {t('users.pendingRequestsTab', 'Solicitudes Pendientes')}
+                {pendingUsers.length > 0 && (
+                  <Badge color="danger" pill className="ms-2">
+                    {pendingUsers.length}
+                  </Badge>
+                )}
+              </NavLink>
+            </NavItem>
+          </Nav>
 
-        <div className="mb-4">
-          <GlassSearchBar 
-            placeholder={t('analytics.searchEmployee', 'Buscar empleado por nombre o código...')}
-            onSearch={(query) => setSearchQuery(query)}
-          />
+          <div className="d-flex flex-column flex-md-row gap-3 align-items-center w-100 w-xl-auto justify-content-center justify-content-xl-end">
+            <GlassSearchBar 
+              placeholder={t('users.searchPlaceholder', 'Buscar por nombre, código...')}
+              onSearch={(query) => setSearchQuery(query)}
+            />
+          </div>
         </div>
         
         {loading ? (
           <TableGhostLoader columns={7} rows={4} />
         ) : (
-          <Table hover aria-label="users" className="ba-table align-middle" style={{ tableLayout: 'fixed', width: '100%' }}>
+          <Table responsive hover aria-label="users" className="ba-table align-middle" style={{ tableLayout: 'fixed', minWidth: '800px', width: '100%' }}>
             <thead>
               <tr>
                 <th style={{ width: '9%', paddingLeft: '1rem' }}>{t('users.personalCode', 'Código')}</th>
@@ -199,7 +201,7 @@ export default function UserListAdmin() {
                           {user.isWorking ? t('users.working', 'En formación') : t('users.offDuty', 'Fuera de formación')}
                         </span>
                       ) : (
-                        <span className="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold" style={{ whiteSpace: 'normal', display: 'inline-block' }}>
+                        <span className="badge-glass-warning px-3 py-2 fw-bold" style={{ whiteSpace: 'normal', display: 'inline-block' }}>
                           {t('users.pendingApproval', 'Pendiente de Aprobación')}
                         </span>
                       )}
@@ -209,10 +211,10 @@ export default function UserListAdmin() {
                     </td>
                     <td>
                       {activeTab === 'approved' ? (
-                        <div className="d-flex gap-2 flex-wrap">
+                        <div className="d-flex flex-column gap-2 align-items-center" style={{ minWidth: '95px', margin: '0 auto' }}>
                           <Button
                             size="sm"
-                            className="ba-btn-secondary"
+                            className="ba-btn-secondary w-100"
                             tag={Link}
                             to={"/users/" + user.id}
                           >
@@ -220,7 +222,7 @@ export default function UserListAdmin() {
                           </Button>
                           <Button
                             size="sm"
-                            className="ba-btn-danger"
+                            className="ba-btn-danger w-100"
                             onClick={() =>
                               deleteFromList(
                                 `/api/v1/users/${user.id}`,
@@ -235,10 +237,10 @@ export default function UserListAdmin() {
                           </Button>
                         </div>
                       ) : (
-                        <div className="d-flex gap-2 flex-wrap">
+                        <div className="d-flex flex-column gap-2 align-items-center" style={{ minWidth: '95px', margin: '0 auto' }}>
                           <Button
                             size="sm"
-                            className="ba-btn-primary d-flex align-items-center gap-1 fw-bold"
+                            className="ba-btn-primary w-100 d-flex align-items-center justify-content-center gap-1 fw-bold"
                             onClick={() => handleApprove(user.id)}
                           >
                             <FontAwesomeIcon icon={faCheck} />
@@ -246,7 +248,7 @@ export default function UserListAdmin() {
                           </Button>
                           <Button
                             size="sm"
-                            className="ba-btn-danger d-flex align-items-center gap-1 fw-bold"
+                            className="ba-btn-danger w-100 d-flex align-items-center justify-content-center gap-1 fw-bold"
                             onClick={() => handleReject(user.id)}
                           >
                             <FontAwesomeIcon icon={faTimes} />
