@@ -194,7 +194,7 @@ export default function AuditDashboard() {
         {loading ? (
           <TableGhostLoader rows={8} columns={5} />
         ) : (
-          <Table hover className="ba-table" style={{ tableLayout: 'fixed', width: '100%', wordBreak: 'break-word' }}>
+          <Table responsive hover className="ba-table align-middle" style={{ tableLayout: 'fixed', minWidth: '800px', width: '100%', wordBreak: 'break-word' }}>
             <thead>
               <tr>
                 <th style={{ width: '15%' }}>{t('audit.columns.date', 'Fecha y Hora')}</th>

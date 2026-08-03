@@ -202,7 +202,7 @@ export default function UserDashboard() {
 
       return (
         <div className="table-responsive">
-          <table className="table table-hover ba-table align-middle">
+          <table className="table table-hover ba-table align-middle" style={{ minWidth: '600px' }}>
             <thead>
               <tr>
                 <th style={{ color: '#2c3e50' }}>{t('dashboard.formation')}</th>
@@ -214,7 +214,14 @@ export default function UserDashboard() {
             <tbody>
               {sortedAttendances.map((att) => {
                 const f = att.formation;
-                const isCompleted = !!att.checkOutDate;
+                
+                let statusBadge = null;
+                if (att.checkOutDate) {
+                  statusBadge = <span className="badge-glass-success">{t('dashboard.statusCompleted')}</span>;
+                } else if (att.checkInDate) {
+                  statusBadge = <span className="badge-glass-warning text-dark">{t('dashboard.statusInProgress')}</span>;
+                }
+                
                 return (
                   <tr key={att.id}>
                     <td style={{ color: '#2c3e50', fontWeight: 600 }}>
@@ -222,11 +229,7 @@ export default function UserDashboard() {
                     </td>
                     <td style={{ color: '#64748b' }}>{new Date(f.formationDate).toLocaleString()}</td>
                     <td>
-                      {isCompleted ? (
-                        <span className="badge bg-success">{t('dashboard.statusCompleted')}</span>
-                      ) : (
-                        <span className="badge bg-warning text-dark">{t('dashboard.statusInProgress')}</span>
-                      )}
+                      {statusBadge}
                     </td>
                     <td>
                       <button className="ba-btn ba-btn-primary btn-sm m-0" onClick={() => openDetails(att)}>
@@ -331,9 +334,9 @@ export default function UserDashboard() {
                     <div>
                       <span style={{ color: '#64748b' }} className="mr-2">{t('dashboard.statusLabel')} </span>
                       {selectedAtt.checkOutDate ? (
-                        <span className="badge bg-success" style={{ fontSize: '0.9rem' }}>{t('dashboard.statusCompleted')}</span>
+                        <span className="badge-glass-success" style={{ fontSize: '0.9rem' }}>{t('dashboard.statusCompleted')}</span>
                       ) : (
-                        <span className="badge bg-warning text-dark" style={{ fontSize: '0.9rem' }}>{t('dashboard.statusInProgress')}</span>
+                        <span className="badge-glass-warning text-dark" style={{ fontSize: '0.9rem' }}>{t('dashboard.statusInProgress')}</span>
                       )}
                     </div>
                     {!selectedAtt.checkOutDate && (

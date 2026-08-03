@@ -46,7 +46,7 @@
 
 @media screen and (max-width: 768px) {
   .options-row {
-    flex-direction: column;
-    gap: 12px;
+    flex-direction: row;
+    gap: 15px;
   }
 }

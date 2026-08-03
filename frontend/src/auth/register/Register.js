@@ -99,7 +99,7 @@ export default function Register() {
     <div className="auth-page-container">
       <div className="auth-form-container">
         <div className="text-center mb-4">
-          <div className="d-inline-flex align-items-center justify-content-center p-3 rounded-circle bg-primary bg-opacity-10 mb-3 text-primary fs-3">
+          <div className="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3 fs-3" style={{ background: 'rgba(179, 195, 76, 0.15)', color: 'var(--ba-dark)' }}>
             <FaUserPlus />
           </div>
           <h2 className="fw-bold text-dark mb-1">{t('register.title', 'Solicitud de Registro')}</h2>
