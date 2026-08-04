@@ -166,7 +166,7 @@ function AppNavbar() {
             </div>
 
             {/* Mobile Menu Panel */}
-            <div className={`md:hidden transition-all duration-500 ease-in-out w-full ${collapsed ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[80vh] opacity-100 bg-black/20 border-t border-white/10 rounded-b-4xl overflow-y-auto'}`}>
+            <div className={`md:hidden transition-all duration-500 ease-in-out w-full ${collapsed ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[80vh] opacity-100 bg-black/20 border-t border-white/10 rounded-b-4xl overflow-hidden'}`}>
                 <div className="px-6 pt-4 pb-8 space-y-2">
                     {roles.includes("ADMIN") && (
                         <div className="py-2 border-b border-white/10 mb-3">
