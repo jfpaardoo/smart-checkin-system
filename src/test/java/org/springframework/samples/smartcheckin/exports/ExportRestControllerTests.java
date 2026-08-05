@@ -1,5 +1,6 @@
 package org.springframework.samples.smartcheckin.exports;
 
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -199,5 +200,162 @@ class ExportRestControllerTests {
 		mockMvc.perform(get(BASE_URL + "/checkins/excel"))
 				.andExpect(status().isOk());
 	}
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void testExportUsersCsvWithNullFields() throws Exception {
+        User userWithNulls = new User();
+        userWithNulls.setId(1);
+        userWithNulls.setUsername(null);
+        userWithNulls.setPersonalCode(null);
+        userWithNulls.setFirstName(null);
+        userWithNulls.setLastName(null);
+        userWithNulls.setAuthority(null);
+        userWithNulls.setIsWorking(null);
+
+        when(userRepository.findAll()).thenReturn(List.of(userWithNulls));
+
+        mockMvc.perform(get(BASE_URL + "/users/csv"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void testExportUsersExcelWithNullFields() throws Exception {
+        User userWithNulls = new User();
+        userWithNulls.setId(1);
+        userWithNulls.setUsername(null);
+        userWithNulls.setPersonalCode(null);
+        userWithNulls.setFirstName(null);
+        userWithNulls.setLastName(null);
+        userWithNulls.setAuthority(null);
+        userWithNulls.setIsWorking(null);
+
+        when(userRepository.findAll()).thenReturn(List.of(userWithNulls));
+
+        mockMvc.perform(get(BASE_URL + "/users/excel"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void testExportCheckinsCsvWithNullFields() throws Exception {
+        Checkin checkinWithNulls = new Checkin();
+        checkinWithNulls.setId(null);
+        checkinWithNulls.setUser(null);
+        checkinWithNulls.setCheckInType(null);
+        checkinWithNulls.setCheckInDate(null);
+
+        when(checkinRepository.findAll()).thenReturn(List.of(checkinWithNulls));
+
+        mockMvc.perform(get(BASE_URL + "/checkins/csv"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void testExportCheckinsExcelWithNullFields() throws Exception {
+        Checkin checkinWithNulls = new Checkin();
+        checkinWithNulls.setId(null);
+        checkinWithNulls.setUser(null);
+        checkinWithNulls.setCheckInType(null);
+        checkinWithNulls.setCheckInDate(null);
+
+        when(checkinRepository.findAll()).thenReturn(List.of(checkinWithNulls));
+
+        mockMvc.perform(get(BASE_URL + "/checkins/excel"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void testExportFormationsCsvThorough() throws Exception {
+        FormationAttendance attNulls = new FormationAttendance();
+        attNulls.setFormation(null);
+        attNulls.setUser(null);
+        attNulls.setCheckInDate(null);
+        attNulls.setCheckOutDate(null);
+        attNulls.setSignature(null);
+
+        Formation f = new Formation();
+        f.setId(10);
+        f.setName("Test Formation");
+        f.setFormationDate(null);
+        f.setAttendances(null);
+
+        User u = new User();
+        u.setId(5);
+        u.setUsername("u1");
+        u.setPersonalCode("1111");
+        u.setFirstName("First");
+        u.setLastName("Last");
+
+        FormationAttendance attPartials = new FormationAttendance();
+        attPartials.setFormation(f);
+        attPartials.setUser(u);
+        attPartials.setCheckInDate(LocalDateTime.now());
+        attPartials.setCheckOutDate(LocalDateTime.now().plusHours(1));
+        attPartials.setSignature("valid_sig");
+
+        when(attendanceRepository.findAll()).thenReturn(List.of(attNulls, attPartials));
+
+        mockMvc.perform(get(BASE_URL + "/formations/csv"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void testExportFormationsExcelThorough() throws Exception {
+        Formation f = new Formation();
+        f.setId(10);
+        f.setName(null);
+        f.setFormationDate(null);
+        f.setAttendances(null);
+
+        FormationAttendance attNulls = new FormationAttendance();
+        attNulls.setFormation(null);
+        attNulls.setUser(null);
+        attNulls.setCheckInDate(null);
+        attNulls.setCheckOutDate(null);
+        attNulls.setSignature("");
+
+        when(formationRepository.findAll()).thenReturn(List.of(f));
+        when(attendanceRepository.findAll()).thenReturn(List.of(attNulls));
+
+        mockMvc.perform(get(BASE_URL + "/formations/excel"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void testExportFormationsCsvHashExceptionCatch() throws Exception {
+        Formation f = new Formation();
+        f.setId(10);
+        f.setName("Course");
+        f.setFormationDate(LocalDateTime.now());
+
+        User u = new User();
+        u.setId(1);
+        u.setPersonalCode("1234");
+        u.setFirstName("A");
+        u.setLastName("B");
+
+        FormationAttendance att = new FormationAttendance();
+        att.setFormation(f);
+        att.setUser(u);
+        att.setCheckInDate(LocalDateTime.now());
+        att.setCheckOutDate(LocalDateTime.now().plusHours(1));
+        att.setSignature("sig");
+
+        when(attendanceRepository.findAll()).thenReturn(List.of(att));
+
+        try (org.mockito.MockedStatic<java.security.MessageDigest> mockedDigest = org.mockito.Mockito.mockStatic(java.security.MessageDigest.class)) {
+            mockedDigest.when(() -> java.security.MessageDigest.getInstance("SHA-256"))
+                    .thenThrow(new java.security.NoSuchAlgorithmException("No SHA-256"));
+
+            mockMvc.perform(get(BASE_URL + "/formations/csv"))
+                    .andExpect(status().isOk());
+        }
+    }
 }
 

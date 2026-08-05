@@ -75,4 +75,23 @@ class GenericIdToEntityConverterTests {
 		GenericIdToEntityConverter nullEmConverter = new GenericIdToEntityConverter(null);
 		assertNull(nullEmConverter.convert(1, sourceType, targetType));
 	}
+
+	@Test
+    void testConvertNullSourceOnly() {
+        TypeDescriptor sourceType = TypeDescriptor.valueOf(Integer.class);
+        TypeDescriptor targetType = TypeDescriptor.valueOf(User.class);
+
+        Object result = converter.convert(null, sourceType, targetType);
+        assertNull(result);
+    }
+
+    @Test
+    void testConvertNullEntityManagerOnly() {
+        TypeDescriptor sourceType = TypeDescriptor.valueOf(Integer.class);
+        TypeDescriptor targetType = TypeDescriptor.valueOf(User.class);
+
+        GenericIdToEntityConverter nullEmConverter = new GenericIdToEntityConverter(null);
+        Object result = nullEmConverter.convert(1, sourceType, targetType);
+        assertNull(result);
+    }
 }

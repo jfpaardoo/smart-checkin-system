@@ -51,5 +51,16 @@ class AuditControllerTests {
 		when(auditLogRepository.findAllByOrderByTimestampDesc()).thenReturn(List.of(log));
 		mockMvc.perform(get(BASE_URL + "/csv")).andExpect(status().isOk());
 	}
+
+	@Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void testExportAuditCsvWithExplicitNullTimestamp() throws Exception {
+        AuditLog log = new AuditLog("LOGIN", "admin", "details", "127.0.0.1");
+        log.setTimestamp(null); // Fuerza explícitamente el valor nulo para evaluar la rama del ternario
+
+        when(auditLogRepository.findAllByOrderByTimestampDesc()).thenReturn(List.of(log));
+
+        mockMvc.perform(get(BASE_URL + "/csv")).andExpect(status().isOk());
+    }
 }
 

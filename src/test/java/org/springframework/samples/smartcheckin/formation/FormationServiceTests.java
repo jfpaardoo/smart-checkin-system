@@ -377,4 +377,68 @@ class FormationServiceTests {
         assertDoesNotThrow(() -> formationService.deleteFormation(1));
         verify(formationRepository, times(1)).delete(formation);
     }
+
+    @Test
+    void testUpdateFormationFileDeleteOneDriveExceptionHandled() throws Exception {
+        Formation existing = new Formation();
+        existing.setId(1);
+        existing.setName("Old");
+        existing.getDocumentUrls().add("https://onedrive.live.com/error_old.pdf");
+
+        Formation updatedDetails = new Formation();
+        updatedDetails.setName("New");
+
+        MockMultipartFile mockFile = 
+            new MockMultipartFile("file", "new.pdf", "application/pdf", new byte[]{4, 5, 6});
+
+        when(formationRepository.findById(1)).thenReturn(Optional.of(existing));
+        when(oneDriveService.uploadFile(mockFile, FORMATIONS_DIR)).thenReturn("https://onedrive.live.com/new.pdf");
+        when(formationRepository.save(any(Formation.class))).thenReturn(existing);
+        
+        // Forzamos que el borrado del archivo antiguo en OneDrive falle para entrar en el catch defensivo
+        doThrow(new RuntimeException("Cloud delete error")).when(oneDriveService).deleteFile(anyString());
+
+        assertDoesNotThrow(() -> formationService.updateFormation(updatedDetails, 1, mockFile));
+        verify(oneDriveService, times(1)).uploadFile(mockFile, FORMATIONS_DIR);
+    }
+
+    @Test
+    void testAddAttendeePushNotificationExceptionHandled() {
+        Formation formation = new Formation();
+        formation.setId(1);
+        formation.setName("Spring Boot");
+        formation.setAttendances(new ArrayList<>());
+
+        User user = new User();
+        user.setId(10);
+
+        when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
+        when(userService.findUser(10)).thenReturn(user);
+        when(attendanceRepository.findByFormationAndUser(formation, user)).thenReturn(Optional.empty());
+        
+        // Forzamos que el servicio de notificaciones push falle para comprobar que el catch ignora el error
+        PushNotificationService pushNotificationServiceMock = mock(PushNotificationService.class);
+        doThrow(new RuntimeException("Push failed")).when(pushNotificationServiceMock).sendToUser(any(), anyString(), anyString());
+
+        // Instanciamos temporalmente con el mock de push fallido
+        FormationService customService = new FormationService(
+            formationRepository, attendanceRepository, userService, oneDriveService, pushNotificationServiceMock, localFileSystemService
+        );
+
+        assertDoesNotThrow(() -> customService.addAttendee(1, 10));
+        verify(attendanceRepository, times(1)).save(any(FormationAttendance.class));
+    }
+
+    @Test
+    void testDeleteFormationWithNullDocumentUrls() {
+        Formation formation = mock(Formation.class);
+        when(formation.getId()).thenReturn(1);
+        when(formation.getAttendances()).thenReturn(new ArrayList<>());
+        when(formation.getDocumentUrls()).thenReturn(null); // Fuerza la evaluación documento == null
+
+        when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
+
+        assertDoesNotThrow(() -> formationService.deleteFormation(1));
+        verify(formationRepository, times(1)).delete(formation);
+    }
 }

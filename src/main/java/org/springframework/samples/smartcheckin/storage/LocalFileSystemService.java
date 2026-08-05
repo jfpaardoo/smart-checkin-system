@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -58,16 +57,18 @@ public class LocalFileSystemService {
                 throw new SecurityException("Cannot store file outside current directory.");
             }
 
-            try (FileOutputStream fos = new FileOutputStream(destinationFile.toFile())) {
-                fos.write(imageBytes);
-            }
+            // Uso de java.nio.file.Files.write con captura explicita de IOException
+            Files.write(destinationFile, imageBytes);
 
             return fileName;
         } catch (IllegalArgumentException | SecurityException e) {
             logger.warn("Security validation failed for signature upload: {}", e.getMessage());
             throw e;
+        } catch (IOException e) {
+            logger.error("IO error saving signature file to disk: {}", e.getMessage(), e);
+            throw new RuntimeException("Error saving signature to file system", e);
         } catch (Exception e) {
-            logger.error("Error saving signature to file system", e);
+            logger.error("Unexpected error saving signature", e);
             throw new RuntimeException("Error saving signature", e);
         }
     }
@@ -113,7 +114,7 @@ public class LocalFileSystemService {
                 return new byte[0];
             }
         } catch (IOException e) {
-            logger.error("Could not read signature file", e);
+            logger.error("Could not read signature file: {}", e.getMessage(), e);
             return new byte[0];
         }
     }
@@ -126,7 +127,7 @@ public class LocalFileSystemService {
             Path file = rootLocation.resolve(fileName);
             return Files.deleteIfExists(file);
         } catch (IOException e) {
-            logger.error("Error deleting signature file", e);
+            logger.error("Error deleting signature file: {}", e.getMessage(), e);
             return false;
         }
     }

@@ -9,6 +9,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.samples.smartcheckin.audit.AuditLog;
 
 class PdfReportGeneratorTests {
@@ -41,7 +43,6 @@ class PdfReportGeneratorTests {
     @Test
     void shouldGenerateAuditLogPdfWithNullTimestamp() {
         AuditLog log1 = new AuditLog("TEST_ACTION_1", ADMIN, "details1", IP);
-        // Timestamp is null by default
         
         byte[] pdf = pdfReportGenerator.generateAuditLogPdf(List.of(log1));
 
@@ -56,20 +57,23 @@ class PdfReportGeneratorTests {
         assertNotNull(pdf);
     }
 
-    @Test
-    void shouldGenerateHrReportPdf() {
-        byte[] pdf = pdfReportGenerator.generateHrReportPdf(100, 50, 45, 12);
+    @ParameterizedTest
+    @CsvSource({
+        "100, 50, 45, 12", // Caso estándar (activos < totales)
+        "10, 50, 20, 12",  // Caso activos > totales (cubre la rama del ternario)
+        "10, 50, 10, 12"   // Caso activos == totales (cubre límite del ternario)
+    })
+    void shouldGenerateHrReportPdfParameterized(int totalUsers, int totalFormations, int activeCheckins, int checkinsToday) {
+        byte[] pdf = pdfReportGenerator.generateHrReportPdf(totalUsers, totalFormations, activeCheckins, checkinsToday);
 
         assertNotNull(pdf);
         assertTrue(pdf.length > 0, PDF_NOT_EMPTY);
     }
 
     @Test
-    void shouldGenerateHrReportPdfWithMoreActiveThanTotal() {
-        // activeCheckins > totalUsers to hit the ternary else branch
-        byte[] pdf = pdfReportGenerator.generateHrReportPdf(10, 50, 20, 12);
+    void shouldCatchExceptionInGenerateHrReportPdf() {
+        byte[] pdf = pdfReportGenerator.generateHrReportPdf(-1, -1, -5, -1);
 
         assertNotNull(pdf);
-        assertTrue(pdf.length > 0, PDF_NOT_EMPTY);
     }
 }

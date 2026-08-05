@@ -1,10 +1,11 @@
 package org.springframework.samples.smartcheckin.configuration.jwt;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,9 +29,8 @@ class JwtBlacklistServiceTests {
     void testBlacklistToken_WhenNotBlacklistedAndValidExpiration_ShouldSaveToken() {
         String token = "valid_token";
         when(repository.existsByToken(token)).thenReturn(false);
-        Date expirationDate = new Date(System.currentTimeMillis() + 3600000); // +1 hour
+        Instant expirationDate = Instant.now().plusSeconds(3600);
         when(jwtUtils.getExpirationDateFromJwtToken(token)).thenReturn(expirationDate);
-
         jwtBlacklistService.blacklistToken(token);
 
         ArgumentCaptor<JwtBlacklistedToken> tokenCaptor = ArgumentCaptor.forClass(JwtBlacklistedToken.class);

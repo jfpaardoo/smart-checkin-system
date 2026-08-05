@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.HashMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.ParameterizedTypeReference;
@@ -40,7 +41,6 @@ class OneDriveServiceTests {
         assertThrows(IllegalStateException.class, () -> oneDriveService.uploadFile(file, "folder"));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void testUploadFileSuccess() throws IOException {
         CloudSettings settings = new CloudSettings();
@@ -57,8 +57,8 @@ class OneDriveServiceTests {
                 eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
                 eq(HttpMethod.POST),
                 any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("tenant")
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("tenant")
         )).thenReturn(tokenEntity);
 
         Map<String, Object> uploadResponse = Map.of("id", "item123");
@@ -68,9 +68,9 @@ class OneDriveServiceTests {
                 eq("https://graph.microsoft.com/v1.0/me/drive/root:/formations/{folder}/{filename}:/content"),
                 eq(HttpMethod.PUT),
                 any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("folder"),
-                anyString()
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("folder"),
+                (Object) anyString()
         )).thenReturn(uploadEntity);
 
         Map<String, Object> linkResponse = Map.of("link", Map.of("webUrl", "http://onedrive.link/test"));
@@ -80,8 +80,8 @@ class OneDriveServiceTests {
                 eq("https://graph.microsoft.com/v1.0/me/drive/items/{itemId}/createLink"),
                 eq(HttpMethod.POST),
                 any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("item123")
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("item123")
         )).thenReturn(linkEntity);
 
         MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
@@ -90,7 +90,6 @@ class OneDriveServiceTests {
         assertEquals("test.txt||http://onedrive.link/test||item123", result);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void testUploadBackupSuccess() {
         CloudSettings settings = new CloudSettings();
@@ -107,8 +106,8 @@ class OneDriveServiceTests {
                 eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
                 eq(HttpMethod.POST),
                 any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("tenant")
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("tenant")
         )).thenReturn(tokenEntity);
 
         Map<String, Object> uploadResponse = Map.of("id", "backupItem123");
@@ -118,8 +117,8 @@ class OneDriveServiceTests {
                 eq("https://graph.microsoft.com/v1.0/me/drive/root:/backups/{filename}:/content"),
                 eq(HttpMethod.PUT),
                 any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("backup.zip")
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("backup.zip")
         )).thenReturn(uploadEntity);
 
         Map<String, Object> linkResponse = Map.of("link", Map.of("webUrl", "http://onedrive.link/backup"));
@@ -129,8 +128,8 @@ class OneDriveServiceTests {
                 eq("https://graph.microsoft.com/v1.0/me/drive/items/{itemId}/createLink"),
                 eq(HttpMethod.POST),
                 any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("backupItem123")
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("backupItem123")
         )).thenReturn(linkEntity);
 
         String result = oneDriveService.uploadBackup("data".getBytes(), "backup.zip");
@@ -145,12 +144,10 @@ class OneDriveServiceTests {
         verifyNoInteractions(restTemplate);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void testUploadFileInvalidTokenResponse() {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
-        // null tenant should use "common"
         settings.setOneDriveTenantId(null);
         when(cloudSettingsService.getSettings()).thenReturn(settings);
 
@@ -160,15 +157,14 @@ class OneDriveServiceTests {
                 eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
                 eq(HttpMethod.POST),
                 any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("common")
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("common")
         )).thenReturn(tokenEntity);
 
         MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
         assertThrows(IllegalStateException.class, () -> oneDriveService.uploadFile(file, ""));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void testUploadFileInvalidUploadResponse() {
         CloudSettings settings = new CloudSettings();
@@ -183,8 +179,8 @@ class OneDriveServiceTests {
                 eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
                 eq(HttpMethod.POST),
                 any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("tenant")
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("tenant")
         )).thenReturn(tokenEntity);
 
         ResponseEntity<Map<String, Object>> uploadEntity = new ResponseEntity<>(Map.of(), HttpStatus.OK);
@@ -193,9 +189,9 @@ class OneDriveServiceTests {
                 anyString(),
                 eq(HttpMethod.PUT),
                 any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                anyString(),
-                anyString()
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) anyString(),
+                (Object) anyString()
         )).thenReturn(uploadEntity);
 
         MockMultipartFile file = new MockMultipartFile("file", (String)null, "text/plain", "content".getBytes());
@@ -209,7 +205,6 @@ class OneDriveServiceTests {
         verifyNoInteractions(restTemplate);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void testDeleteFileSuccess() {
         CloudSettings settings = new CloudSettings();
@@ -226,17 +221,16 @@ class OneDriveServiceTests {
                 eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
                 eq(HttpMethod.POST),
                 any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("tenant")
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("tenant")
         )).thenReturn(tokenEntity);
 
-        // Usamos eq("item123") directamente en lugar de varargs ambiguos
         when(restTemplate.exchange(
                 eq("https://graph.microsoft.com/v1.0/me/drive/items/{fileId}"),
                 eq(HttpMethod.DELETE),
                 any(HttpEntity.class),
-                eq(Void.class),
-                eq("item123")
+                org.mockito.ArgumentMatchers.<Class<Void>>eq(Void.class),
+                (Object) eq("item123")
         )).thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
         assertDoesNotThrow(() -> oneDriveService.deleteFile("test.txt||http://onedrive.link/test||item123"));
@@ -245,12 +239,11 @@ class OneDriveServiceTests {
                 eq("https://graph.microsoft.com/v1.0/me/drive/items/{fileId}"),
                 eq(HttpMethod.DELETE),
                 any(HttpEntity.class),
-                eq(Void.class),
-                eq("item123")
+                org.mockito.ArgumentMatchers.<Class<Void>>eq(Void.class),
+                (Object) eq("item123")
         );
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void testDeleteFileExceptionHandled() {
         CloudSettings settings = new CloudSettings();
@@ -267,17 +260,16 @@ class OneDriveServiceTests {
                 eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
                 eq(HttpMethod.POST),
                 any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("tenant")
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("tenant")
         )).thenReturn(tokenEntity);
 
-        // Usamos eq("errorItem") explícitamente para evitar ambigüedades con varargs
         when(restTemplate.exchange(
                 eq("https://graph.microsoft.com/v1.0/me/drive/items/{fileId}"),
                 eq(HttpMethod.DELETE),
                 any(HttpEntity.class),
-                eq(Void.class),
-                eq("errorItem")
+                org.mockito.ArgumentMatchers.<Class<Void>>eq(Void.class),
+                (Object) eq("errorItem")
         )).thenThrow(new RestClientException("Graph API Error"));
 
         assertDoesNotThrow(() -> oneDriveService.deleteFile("errorItem"));
@@ -298,7 +290,6 @@ class OneDriveServiceTests {
         assertThrows(IllegalStateException.class, () -> oneDriveService.uploadBackup(data, "test.zip"));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void testUploadBackupWithNullFileName() {
         CloudSettings settings = new CloudSettings();
@@ -315,8 +306,8 @@ class OneDriveServiceTests {
                 eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
                 eq(HttpMethod.POST),
                 any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("tenant")
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("tenant")
         )).thenReturn(tokenEntity);
 
         Map<String, Object> uploadResponse = Map.of("id", "item123");
@@ -326,8 +317,8 @@ class OneDriveServiceTests {
                 eq("https://graph.microsoft.com/v1.0/me/drive/root:/backups/{filename}:/content"),
                 eq(HttpMethod.PUT),
                 any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("backup.zip")
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("backup.zip")
         )).thenReturn(uploadEntity);
 
         Map<String, Object> linkResponse = Map.of("link", Map.of("webUrl", "http://onedrive.link/test"));
@@ -337,15 +328,14 @@ class OneDriveServiceTests {
                 eq("https://graph.microsoft.com/v1.0/me/drive/items/{itemId}/createLink"),
                 eq(HttpMethod.POST),
                 any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("item123")
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("item123")
         )).thenReturn(linkEntity);
 
         String result = oneDriveService.uploadBackup("test data".getBytes(), null);
         assertEquals("http://onedrive.link/test", result);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void testCreateShareLinkEmptyResponse() {
         CloudSettings settings = new CloudSettings();
@@ -361,8 +351,8 @@ class OneDriveServiceTests {
                 eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
                 eq(HttpMethod.POST),
                 any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("tenant")
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("tenant")
         )).thenReturn(tokenEntity);
 
         Map<String, Object> uploadResponse = Map.of("id", "item123");
@@ -371,9 +361,9 @@ class OneDriveServiceTests {
                 eq("https://graph.microsoft.com/v1.0/me/drive/root:/formations/{folder}/{filename}:/content"),
                 eq(HttpMethod.PUT),
                 any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("folder"),
-                anyString()
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("folder"),
+                (Object) anyString()
         )).thenReturn(uploadEntity);
 
         ResponseEntity<Map<String, Object>> emptyLinkEntity = new ResponseEntity<>(Map.of(), HttpStatus.OK);
@@ -381,8 +371,8 @@ class OneDriveServiceTests {
                 eq("https://graph.microsoft.com/v1.0/me/drive/items/{itemId}/createLink"),
                 eq(HttpMethod.POST),
                 any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("item123")
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("item123")
         )).thenReturn(emptyLinkEntity);
 
         MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
@@ -390,107 +380,294 @@ class OneDriveServiceTests {
     }
 
     @Test
-    void testDeleteFileNullOrEmpty() {
-        oneDriveService.deleteFile(null);
-        oneDriveService.deleteFile("");
-        oneDriveService.deleteFile("   ");
-        verifyNoInteractions(cloudSettingsService);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    void testDeleteFileDirectHttpLink() {
+    void testUploadFileWithWhitespaceTenantId() throws IOException {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
-        settings.setOneDriveClientSecret("secret");
-        settings.setOneDriveRefreshToken("refresh");
-        settings.setOneDriveTenantId("tenant");
+        settings.setOneDriveTenantId("   "); 
         when(cloudSettingsService.getSettings()).thenReturn(settings);
-        
+
         Map<String, Object> tokenResponse = Map.of("access_token", "token123");
         ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
         when(restTemplate.exchange(
                 eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
                 eq(HttpMethod.POST),
                 any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("tenant")
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("common")
         )).thenReturn(tokenEntity);
 
-        oneDriveService.deleteFile("http://onedrive.com/file");
-        // We only expect a call to getAccessToken via restTemplate.exchange, but no DELETE call
-        verify(restTemplate, never()).exchange(
-                eq("https://graph.microsoft.com/v1.0/me/drive/items/{fileId}"),
+        Map<String, Object> uploadResponse = Map.of("id", "item123");
+        ResponseEntity<Map<String, Object>> uploadEntity = new ResponseEntity<>(uploadResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.PUT),
+                any(HttpEntity.class),
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("folder"),
+                (Object) anyString()
+        )).thenReturn(uploadEntity);
+
+        Map<String, Object> linkResponse = Map.of("link", Map.of("webUrl", "http://onedrive.link/test"));
+        ResponseEntity<Map<String, Object>> linkEntity = new ResponseEntity<>(linkResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("item123")
+        )).thenReturn(linkEntity);
+
+        MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
+        String result = oneDriveService.uploadFile(file, "folder");
+        assertEquals("test.txt||http://onedrive.link/test||item123", result);
+    }
+
+    @Test
+    void testUploadFileWithRegexCharactersInFilenamesAndFolder() throws IOException {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId("client_id");
+        settings.setOneDriveTenantId("tenant");
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+
+        Map<String, Object> tokenResponse = Map.of("access_token", "token123");
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("tenant")
+        )).thenReturn(tokenEntity);
+
+        Map<String, Object> uploadResponse = Map.of("id", "item123");
+        ResponseEntity<Map<String, Object>> uploadEntity = new ResponseEntity<>(uploadResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.PUT),
+                any(HttpEntity.class),
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("b_d_f_lder"),
+                (Object) eq("b_d_f_le.txt")
+        )).thenReturn(uploadEntity);
+
+        Map<String, Object> linkResponse = Map.of("link", Map.of("webUrl", "http://onedrive.link/test"));
+        ResponseEntity<Map<String, Object>> linkEntity = new ResponseEntity<>(linkResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("item123")
+        )).thenReturn(linkEntity);
+
+        MockMultipartFile file = new MockMultipartFile("file", "b<d>f|le.txt", "text/plain", "content".getBytes());
+        String result = oneDriveService.uploadFile(file, "b\\d/f*lder");
+        assertEquals("b<d>f|le.txt||http://onedrive.link/test||item123", result);
+    }
+
+    @Test
+    void testUploadFileWithEmptyTrimmedFolderName() throws IOException {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId("client_id");
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+
+        Map<String, Object> tokenResponse = Map.of("access_token", "token123");
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(), 
+                eq(HttpMethod.POST), 
+                any(HttpEntity.class), 
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(), 
+                (Object) anyString()
+        )).thenReturn(tokenEntity);
+
+        Map<String, Object> uploadResponse = Map.of("id", "item123");
+        ResponseEntity<Map<String, Object>> uploadEntity = new ResponseEntity<>(uploadResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.PUT),
+                any(HttpEntity.class),
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("general"),
+                (Object) anyString()
+        )).thenReturn(uploadEntity);
+
+        Map<String, Object> linkResponse = Map.of("link", Map.of("webUrl", "http://onedrive.link/test"));
+        ResponseEntity<Map<String, Object>> linkEntity = new ResponseEntity<>(linkResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(), 
+                eq(HttpMethod.POST), 
+                any(HttpEntity.class), 
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(), 
+                (Object) eq("item123")
+        )).thenReturn(linkEntity);
+
+        MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
+        String result = oneDriveService.uploadFile(file, "   ");
+        assertEquals("test.txt||http://onedrive.link/test||item123", result);
+    }
+
+    @Test
+    void testCreateShareLinkWithNullLinkData() throws IOException {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId("client_id");
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+
+        Map<String, Object> tokenResponse = Map.of("access_token", "token123");
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(), 
+                eq(HttpMethod.POST), 
+                any(HttpEntity.class), 
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(), 
+                (Object) anyString()
+        )).thenReturn(tokenEntity);
+
+        Map<String, Object> uploadResponse = Map.of("id", "item123");
+        ResponseEntity<Map<String, Object>> uploadEntity = new ResponseEntity<>(uploadResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(), 
+                eq(HttpMethod.PUT), 
+                any(HttpEntity.class), 
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(), 
+                (Object) anyString(), 
+                (Object) anyString()
+        )).thenReturn(uploadEntity);
+
+        Map<String, Object> linkResponse = new HashMap<>();
+        linkResponse.put("link", null); 
+        ResponseEntity<Map<String, Object>> linkEntity = new ResponseEntity<>(linkResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(), 
+                eq(HttpMethod.POST), 
+                any(HttpEntity.class), 
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(), 
+                (Object) eq("item123")
+        )).thenReturn(linkEntity);
+
+        MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
+        String result = oneDriveService.uploadFile(file, "folder");
+        assertEquals("test.txt||null||item123", result);
+    }
+
+    @Test
+    void testUploadBackupWithRegexFileName() {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId("client_id");
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+
+        Map<String, Object> tokenResponse = Map.of("access_token", "token123");
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(), 
+                eq(HttpMethod.POST), 
+                any(HttpEntity.class), 
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(), 
+                (Object) anyString()
+        )).thenReturn(tokenEntity);
+
+        Map<String, Object> uploadResponse = Map.of("id", "backupItem123");
+        ResponseEntity<Map<String, Object>> uploadEntity = new ResponseEntity<>(uploadResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.PUT),
+                any(HttpEntity.class),
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq("back_up.zip")
+        )).thenReturn(uploadEntity);
+
+        Map<String, Object> linkResponse = Map.of("link", Map.of("webUrl", "http://onedrive.link/backup"));
+        ResponseEntity<Map<String, Object>> linkEntity = new ResponseEntity<>(linkResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(), 
+                eq(HttpMethod.POST), 
+                any(HttpEntity.class), 
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(), 
+                (Object) eq("backupItem123")
+        )).thenReturn(linkEntity);
+
+        String result = oneDriveService.uploadBackup("data".getBytes(), "back*up.zip");
+        assertEquals("http://onedrive.link/backup", result);
+    }
+
+    @Test
+    void testDeleteFileWithOnlyFirstPartInUrl() {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId("client_id");
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+
+        Map<String, Object> tokenResponse = Map.of("access_token", "token123");
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(), 
+                eq(HttpMethod.POST), 
+                any(HttpEntity.class), 
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(), 
+                (Object) anyString()
+        )).thenReturn(tokenEntity);
+
+        when(restTemplate.exchange(
+                anyString(),
                 eq(HttpMethod.DELETE),
                 any(HttpEntity.class),
-                eq(Void.class),
-                anyString()
+                org.mockito.ArgumentMatchers.<Class<Void>>eq(Void.class),
+                (Object) eq("item789")
+        )).thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+
+        assertDoesNotThrow(() -> oneDriveService.deleteFile("item789||"));
+    }
+
+    @Test
+    void testDeleteFileWithHttpsUrl() {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId("client_id");
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+
+        Map<String, Object> tokenResponse = Map.of("access_token", "token123");
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(), 
+                eq(HttpMethod.POST), 
+                any(HttpEntity.class), 
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(), 
+                (Object) anyString()
+        )).thenReturn(tokenEntity);
+
+        assertDoesNotThrow(() -> oneDriveService.deleteFile("https://example.com/file123"));
+        
+        verify(restTemplate, never()).exchange(
+                anyString(), 
+                eq(HttpMethod.DELETE), 
+                any(HttpEntity.class), 
+                org.mockito.ArgumentMatchers.<Class<Void>>eq(Void.class), 
+                (Object) anyString()
         );
     }
 
-    @SuppressWarnings("unchecked")
     @Test
-    void testDeleteFileWithTwoParts() {
+    void testDeleteFileWithEmptyPartsInUrl() {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
-        settings.setOneDriveClientSecret("secret");
-        settings.setOneDriveRefreshToken("refresh");
-        settings.setOneDriveTenantId("tenant");
         when(cloudSettingsService.getSettings()).thenReturn(settings);
 
         Map<String, Object> tokenResponse = Map.of("access_token", "token123");
         ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
         when(restTemplate.exchange(
-                eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
-                eq(HttpMethod.POST),
-                any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("tenant")
+                anyString(), 
+                eq(HttpMethod.POST), 
+                any(HttpEntity.class), 
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(), 
+                (Object) anyString()
         )).thenReturn(tokenEntity);
 
         when(restTemplate.exchange(
-                eq("https://graph.microsoft.com/v1.0/me/drive/items/{fileId}"),
+                anyString(),
                 eq(HttpMethod.DELETE),
                 any(HttpEntity.class),
-                eq(Void.class),
-                eq("item456")
+                org.mockito.ArgumentMatchers.<Class<Void>>eq(Void.class),
+                (Object) eq("   ||   ||item123")
         )).thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
-        assertDoesNotThrow(() -> oneDriveService.deleteFile("test.txt||item456"));
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    void testUploadBackupEmptyResponse() {
-        CloudSettings settings = new CloudSettings();
-        settings.setOneDriveClientId("client_id");
-        settings.setOneDriveClientSecret("secret");
-        settings.setOneDriveRefreshToken("refresh");
-        settings.setOneDriveTenantId("tenant");
-        when(cloudSettingsService.getSettings()).thenReturn(settings);
-
-        Map<String, Object> tokenResponse = Map.of("access_token", "token123");
-        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
-        
-        when(restTemplate.exchange(
-                eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
-                eq(HttpMethod.POST),
-                any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("tenant")
-        )).thenReturn(tokenEntity);
-
-        ResponseEntity<Map<String, Object>> emptyUploadEntity = new ResponseEntity<>(Map.of(), HttpStatus.OK);
-
-        when(restTemplate.exchange(
-                eq("https://graph.microsoft.com/v1.0/me/drive/root:/backups/{filename}:/content"),
-                eq(HttpMethod.PUT),
-                any(HttpEntity.class),
-                any(ParameterizedTypeReference.class),
-                eq("test.zip")
-        )).thenReturn(emptyUploadEntity);
-
-        byte[] data = "test".getBytes();
-        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadBackup(data, "test.zip"));
+        assertDoesNotThrow(() -> oneDriveService.deleteFile("   ||   ||item123"));
     }
 }

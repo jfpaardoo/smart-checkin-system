@@ -1,6 +1,7 @@
 package org.springframework.samples.smartcheckin.push;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.security.KeyPair;
@@ -201,5 +202,18 @@ class PushNotificationServiceTests {
         // Al ejecutarse con éxito el mock, interceptará correctamente la interrupción.
         assertTrue(Thread.currentThread().isInterrupted());
         Thread.interrupted();
+    }
+
+    @Test
+    void initProviderAlreadyExistsAndInvalidKeysException() {
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
+
+        PushNotificationService serviceWithBadKeys = new PushNotificationService(subscriptionRepository);
+        ReflectionTestUtils.setField(serviceWithBadKeys, "vapidPublicKey", "invalidKey");
+        ReflectionTestUtils.setField(serviceWithBadKeys, "vapidPrivateKey", "invalidKey");
+
+        assertDoesNotThrow(serviceWithBadKeys::init);
     }
 }

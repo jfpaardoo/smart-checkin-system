@@ -202,4 +202,24 @@ class UserServiceTests {
 		assertThrows(ResourceNotFoundException.class, () -> userService.findCurrentUser());
 		SecurityContextHolder.clearContext();
 	}
+
+	@Test
+    void testUpdateUserWithNullOrEmptyPasswordPreservesOld() {
+        User existing = new User();
+        existing.setId(1);
+        existing.setPassword("oldpass");
+
+        User updatedInfo = new User();
+        updatedInfo.setUsername("newuser");
+        updatedInfo.setPassword(null);
+
+        when(userRepository.findById(1)).thenReturn(Optional.of(existing));
+
+        User updated = userService.updateUser(updatedInfo, 1);
+        assertEquals("oldpass", updated.getPassword());
+
+        updatedInfo.setPassword("");
+        User updatedAgain = userService.updateUser(updatedInfo, 1);
+        assertEquals("oldpass", updatedAgain.getPassword());
+    }
 }

@@ -1,5 +1,6 @@
 package org.springframework.samples.smartcheckin.checkin;
 
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -83,7 +84,7 @@ class CheckinRestControllerTests {
 
 	@Test
 	@WithMockUser
-	void testGetMyHistory() throws Exception {
+	void getMyHistory() throws Exception {
 		when(userService.findCurrentUser()).thenReturn(user);
 		when(checkInService.findByUserId(1)).thenReturn(List.of(checkin));
 
@@ -93,7 +94,7 @@ class CheckinRestControllerTests {
 
 	@Test
 	@WithMockUser
-	void testCheckIn() throws Exception {
+	void checkIn() throws Exception {
 		when(userService.findCurrentUser()).thenReturn(user);
 		when(checkInService.performCheckIn(user, CheckinType.ENTRADA)).thenReturn(checkin);
 
@@ -106,7 +107,7 @@ class CheckinRestControllerTests {
 
 	@Test
 	@WithMockUser
-	void testQrCheckinFormationFlow() throws Exception {
+	void qrCheckinFormationFlow() throws Exception {
 		when(userService.findCurrentUser()).thenReturn(user);
 
 		Formation formation = new Formation();
@@ -127,10 +128,99 @@ class CheckinRestControllerTests {
 
 	@Test
 	@WithMockUser
-	void testQrCheckinGlobalFlowEntrada() throws Exception {
+	void qrCheckinFormationFlowInvalidLocation() throws Exception {
+		when(userService.findCurrentUser()).thenReturn(user);
+
+		Formation formation = new Formation();
+		formation.setId(5);
+		when(formationService.findAll()).thenReturn(List.of(formation));
+		when(totpService.verifyToken(eq("123456"), any())).thenReturn(true);
+
+		QrCheckinRequest req = new QrCheckinRequest();
+		req.setToken("123456");
+		req.setFormationId(5L);
+		req.setUserLat(0.0);
+		req.setUserLng(0.0);
+		req.setAdminLat(40.0);
+		req.setAdminLng(40.0);
+
+		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isForbidden());
+	}
+
+	@Test
+	@WithMockUser
+	void qrCheckinFormationFlowThrowsException() throws Exception {
+		when(userService.findCurrentUser()).thenReturn(user);
+
+		Formation formation = new Formation();
+		formation.setId(5);
+		formation.setName("Course 5");
+		when(formationService.findAll()).thenReturn(List.of(formation));
+		when(totpService.verifyToken(eq("123456"), any())).thenReturn(true);
+		when(formationService.registerAttendance(5, user)).thenThrow(new RuntimeException("Database error"));
+
+		QrCheckinRequest req = new QrCheckinRequest();
+		req.setToken("123456");
+		req.setFormationId(5L);
+
+		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("Error al registrar en formación: Database error"));
+	}
+
+	@Test
+	@WithMockUser
+	void qrCheckinProvidedFormationIdButInvalidToken() throws Exception {
+		when(userService.findCurrentUser()).thenReturn(user);
+
+		Formation formation = new Formation();
+		formation.setId(5);
+		when(formationService.findAll()).thenReturn(List.of(formation));
+
+		when(totpService.verifyToken("000000", 5L)).thenReturn(false);
+		when(totpService.verifyToken("000000")).thenReturn(false);
+
+		QrCheckinRequest req = new QrCheckinRequest();
+		req.setToken("000000");
+		req.setFormationId(5L);
+
+		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	@WithMockUser
+	void qrCheckinResolvesFormationFromList() throws Exception {
+		when(userService.findCurrentUser()).thenReturn(user);
+
+		Formation formation = new Formation();
+		formation.setId(8);
+		formation.setName("Iterated Course");
+		when(formationService.findAll()).thenReturn(List.of(formation));
+
+		when(totpService.verifyToken("123456", 8)).thenReturn(true);
+		when(formationService.registerAttendance(8, user)).thenReturn(formation);
+
+		QrCheckinRequest req = new QrCheckinRequest();
+		req.setToken("123456");
+
+		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isCreated())
+				.andExpect(jsonPath("$.formationId").value(8));
+	}
+
+	@Test
+	@WithMockUser
+	void qrCheckinResolvesNoFormationFromList() throws Exception {
 		user.setIsWorking(false);
 		when(userService.findCurrentUser()).thenReturn(user);
-		when(formationService.findAll()).thenReturn(List.of());
+
+		Formation formation = new Formation();
+		formation.setId(9);
+		when(formationService.findAll()).thenReturn(List.of(formation));
+
+		when(totpService.verifyToken(DEFAULT_QR_TOKEN, 9)).thenReturn(false);
 		when(totpService.verifyToken(DEFAULT_QR_TOKEN)).thenReturn(true);
 		when(checkInService.performCheckIn(user, CheckinType.ENTRADA)).thenReturn(checkin);
 
@@ -144,12 +234,58 @@ class CheckinRestControllerTests {
 
 	@Test
 	@WithMockUser
-	void testQrCheckinGlobalFlowSalidaSuccess() throws Exception {
+	void qrCheckinGlobalFlowEntrada() throws Exception {
+		user.setIsWorking(false);
+		when(userService.findCurrentUser()).thenReturn(user);
+		when(formationService.findAll()).thenReturn(List.of());
+		when(totpService.verifyToken(DEFAULT_QR_TOKEN)).thenReturn(true);
+		when(checkInService.performCheckIn(user, CheckinType.ENTRADA)).thenReturn(checkin);
+
+		QrCheckinRequest req = new QrCheckinRequest();
+		req.setToken(DEFAULT_QR_TOKEN);
+
+		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL)
+				.with(csrf())
+				.with(request -> {
+					request.setRemoteAddr("10.0.0.1");
+					return request;
+				}) // Burlar el RateLimit
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isCreated())
+				.andExpect(jsonPath("$.checkin.id").value(10));
+	}
+
+	@Test
+	@WithMockUser
+	void qrCheckinGlobalFlowValidLocation() throws Exception {
+		user.setIsWorking(false);
+		when(userService.findCurrentUser()).thenReturn(user);
+		when(formationService.findAll()).thenReturn(List.of());
+		when(totpService.verifyToken(DEFAULT_QR_TOKEN)).thenReturn(true);
+		when(checkInService.performCheckIn(user, CheckinType.ENTRADA)).thenReturn(checkin);
+
+		QrCheckinRequest req = new QrCheckinRequest();
+		req.setToken(DEFAULT_QR_TOKEN);
+		req.setUserLat(40.0);
+		req.setUserLng(-3.0);
+		req.setAdminLat(40.0);
+		req.setAdminLng(-3.0);
+
+		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isCreated())
+				.andExpect(jsonPath("$.checkin.id").value(10));
+	}
+
+	@Test
+	@WithMockUser
+	void qrCheckinGlobalFlowSalidaSuccess() throws Exception {
 		user.setIsWorking(true);
 		when(userService.findCurrentUser()).thenReturn(user);
 		when(formationService.findAll()).thenReturn(List.of());
 		when(totpService.verifyToken(DEFAULT_QR_TOKEN)).thenReturn(true);
 		when(checkInService.performCheckIn(user, CheckinType.SALIDA)).thenReturn(checkin);
+		when(localFileSystemService.saveSignature("data:image/png;base64,sig")).thenReturn("saved_sig.png");
+		when(checkInService.save(any(Checkin.class))).thenReturn(checkin);
 
 		QrCheckinRequest req = new QrCheckinRequest();
 		req.setToken(DEFAULT_QR_TOKEN);
@@ -161,7 +297,7 @@ class CheckinRestControllerTests {
 
 	@Test
 	@WithMockUser
-	void testQrCheckinGlobalFlowSalidaMissingSignature() throws Exception {
+	void qrCheckinGlobalFlowSalidaEmptySignature() throws Exception {
 		user.setIsWorking(true);
 		when(userService.findCurrentUser()).thenReturn(user);
 		when(formationService.findAll()).thenReturn(List.of());
@@ -169,6 +305,7 @@ class CheckinRestControllerTests {
 
 		QrCheckinRequest req = new QrCheckinRequest();
 		req.setToken(DEFAULT_QR_TOKEN);
+		req.setSignature("");
 
 		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isAccepted());
@@ -176,7 +313,7 @@ class CheckinRestControllerTests {
 
 	@Test
 	@WithMockUser
-	void testQrCheckinInvalidLocation() throws Exception {
+	void qrCheckinInvalidLocation() throws Exception {
 		when(userService.findCurrentUser()).thenReturn(user);
 		when(formationService.findAll()).thenReturn(List.of());
 		when(totpService.verifyToken(DEFAULT_QR_TOKEN)).thenReturn(true);
@@ -194,15 +331,22 @@ class CheckinRestControllerTests {
 
 	@Test
 	@WithMockUser
-	void testQrCheckinInvalidToken() throws Exception {
+	void qrCheckinGlobalFlowSalidaMissingSignature() throws Exception {
+		user.setIsWorking(true);
 		when(userService.findCurrentUser()).thenReturn(user);
 		when(formationService.findAll()).thenReturn(List.of());
-		when(totpService.verifyToken("000000")).thenReturn(false);
+		when(totpService.verifyToken(DEFAULT_QR_TOKEN)).thenReturn(true);
 
 		QrCheckinRequest req = new QrCheckinRequest();
-		req.setToken("000000");
+		req.setToken(DEFAULT_QR_TOKEN);
 
-		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(req))).andExpect(status().isUnauthorized());
+		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL)
+				.with(csrf())
+				.with(request -> {
+					request.setRemoteAddr("10.0.0.2");
+					return request;
+				}) // Burlar el RateLimit
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isAccepted());
 	}
 }
