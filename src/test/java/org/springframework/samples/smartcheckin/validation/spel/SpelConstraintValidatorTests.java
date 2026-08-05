@@ -81,4 +81,28 @@ class SpelConstraintValidatorTests {
 		DummyClass target = new DummyClass("apple", List.of("apple", "banana"));
 		assertFalse(validator.isValid(target, context));
 	}
+
+	@Test
+    void testIsValidElementExpressionNull() {
+        ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
+        ValidateElementIn nullElemAnnotation = mock(ValidateElementIn.class);
+        when(nullElemAnnotation.element()).thenReturn(null);
+        when(nullElemAnnotation.collection()).thenReturn("parentList");
+        validator.initialize(nullElemAnnotation);
+
+        DummyClass target = new DummyClass(APPLE, List.of(APPLE, BANANA));
+        assertTrue(validator.isValid(target, context));
+    }
+
+    @Test
+    void testIsValidCollectionExpressionNull() {
+        ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
+        ValidateElementIn nullCollAnnotation = mock(ValidateElementIn.class);
+        when(nullCollAnnotation.element()).thenReturn(CHILD);
+        when(nullCollAnnotation.collection()).thenReturn(null);
+        validator.initialize(nullCollAnnotation);
+
+        DummyClass target = new DummyClass(APPLE, List.of(APPLE, BANANA));
+        assertTrue(validator.isValid(target, context));
+    }
 }

@@ -1,8 +1,8 @@
 package org.springframework.samples.smartcheckin.configuration.jwt;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class JwtBlacklistService {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(JwtBlacklistService.class);
 
     private final JwtBlacklistedTokenRepository repository;
@@ -29,11 +29,11 @@ public class JwtBlacklistService {
     public void blacklistToken(String token) {
         if (!repository.existsByToken(token)) {
             try {
-                Date expiration = jwtUtils.getExpirationDateFromJwtToken(token);
+                Instant expiration = jwtUtils.getExpirationDateFromJwtToken(token);
                 if (expiration != null) {
-                    LocalDateTime expiresAt = expiration.toInstant()
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDateTime();
+                    LocalDateTime expiresAt = LocalDateTime.ofInstant(
+                            expiration,
+                            ZoneId.systemDefault());
                     repository.save(new JwtBlacklistedToken(token, expiresAt));
                     logger.info("JWT Token added to blacklist");
                 }

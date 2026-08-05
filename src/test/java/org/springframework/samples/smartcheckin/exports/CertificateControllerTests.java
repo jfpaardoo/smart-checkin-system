@@ -84,5 +84,14 @@ class CertificateControllerTests {
 
 		mockMvc.perform(get(BASE_URL + ATTENDANCE_1_URL)).andExpect(status().isNotFound());
 	}
+
+	@Test
+    @WithMockUser(username = "admin", authorities = {"ADMIN"})
+    void testDownloadCertificateCheckInDateNullNotFound() throws Exception {
+        attendance.setCheckInDate(null); // Forzamos la segunda condición del if
+        when(attendanceRepository.findById(1)).thenReturn(Optional.of(attendance));
+
+        mockMvc.perform(get(BASE_URL + ATTENDANCE_1_URL)).andExpect(status().isNotFound());
+    }
 }
 

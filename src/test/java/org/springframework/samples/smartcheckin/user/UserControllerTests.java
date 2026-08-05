@@ -1,7 +1,7 @@
 package org.springframework.samples.smartcheckin.user;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -541,4 +541,89 @@ class UserControllerTests {
 
 		mockMvc.perform(put(BASE_URL + "/{userId}/approve", TEST_USER_ID).with(csrf())).andExpect(status().isOk());
 	}
+
+	@Test
+    @WithMockUser("admin")
+    void shouldFindAllWithSearchLastName() throws Exception {
+        User searchUser = new User();
+        searchUser.setId(6);
+        searchUser.setUsername("dummy");
+        searchUser.setFirstName("John");
+        searchUser.setLastName("UniqueLastName");
+        searchUser.setPersonalCode("9999");
+        searchUser.setAuthority(auth);
+
+        when(userService.findApprovedUsers()).thenReturn(List.of(user, searchUser));
+
+        mockMvc.perform(get(BASE_URL).param("search", "uniquelastname")).andExpect(status().isOk())
+                .andExpect(jsonPath(SIZE_PATH).value(1))
+                .andExpect(jsonPath("$[0].lastName").value("UniqueLastName"));
+    }
+
+    @Test
+    @WithMockUser("admin")
+    void shouldFindAllWithSearchPersonalCode() throws Exception {
+        User searchUser = new User();
+        searchUser.setId(7);
+        searchUser.setUsername("dummy");
+        searchUser.setFirstName("John");
+        searchUser.setLastName("Doe");
+        searchUser.setPersonalCode("5555");
+        searchUser.setAuthority(auth);
+
+        when(userService.findApprovedUsers()).thenReturn(List.of(user, searchUser));
+
+        mockMvc.perform(get(BASE_URL).param("search", "5555")).andExpect(status().isOk())
+                .andExpect(jsonPath(SIZE_PATH).value(1))
+                .andExpect(jsonPath("$[0].personalCode").value("5555"));
+    }
+
+    @Test
+    @WithMockUser("admin")
+    void shouldFindAllWithSearchBlank() throws Exception {
+        when(userService.findApprovedUsers()).thenReturn(List.of(user));
+
+        mockMvc.perform(get(BASE_URL).param("search", "   ")).andExpect(status().isOk())
+                .andExpect(jsonPath(SIZE_PATH).value(1));
+    }
+
+    @Test
+    @WithMockUser("admin")
+    void shouldFindAllWithAuthBlank() throws Exception {
+        when(userService.findApprovedUsers()).thenReturn(List.of(user));
+
+        mockMvc.perform(get(BASE_URL).param("auth", "   ")).andExpect(status().isOk())
+                .andExpect(jsonPath(SIZE_PATH).value(1));
+    }
+
+    @Test
+    @WithMockUser("admin")
+    void shouldFailDisableTwoFactorNullSecret() throws Exception {
+        user.setTwoFactorSecret(null);
+        when(userService.findUser(anyString())).thenReturn(user);
+
+        TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
+        req.setCode("123456");
+
+        mockMvc.perform(post(BASE_URL + "/2fa/disable").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser("admin")
+    void shouldCreateUserWithNullPassword() throws Exception {
+        User aux = new User();
+        aux.setUsername("PruebaNullPass2");
+        aux.setPassword(null);
+        aux.setFirstName("PRUEBA");
+        aux.setLastName("TEST");
+        aux.setPersonalCode("5678");
+        aux.setIsWorking(false);
+        aux.setAuthority(auth);
+        
+        when(userService.saveUser(any(User.class))).thenReturn(aux);
+
+        mockMvc.perform(post(BASE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(aux))).andExpect(status().isCreated());
+    }
 }

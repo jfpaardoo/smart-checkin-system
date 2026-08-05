@@ -1,5 +1,6 @@
 package org.springframework.samples.smartcheckin.auth;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -334,4 +335,62 @@ class AuthControllerTests {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$").value("PUBLIC_KEY"));
 	}
+
+	@Test
+    void testLogout_WithoutAuthorizationHeader_ReturnsBadRequest() throws Exception {
+        mockMvc.perform(post(BASE_URL + "/logout").with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Error: No JWT token found in request."));
+    }
+
+    @Test
+    void testLogout_WithInvalidAuthorizationHeader_ReturnsBadRequest() throws Exception {
+        mockMvc.perform(post(BASE_URL + "/logout")
+                .with(csrf())
+                .header("Authorization", "InvalidToken123"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testSignin_SuccessfulLogin_ResetsFailedAttempts() throws Exception {
+        User userWithFails = new User();
+        userWithFails.setUsername(loginRequest.getUsername());
+        userWithFails.setIsApproved(true);
+        userWithFails.setFailedLoginAttempts(3); 
+        
+        when(userService.findUser(loginRequest.getUsername())).thenReturn(userWithFails);
+        
+        Authentication auth = mock(Authentication.class);
+        when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
+        doReturn(userDetails).when(auth).getPrincipal();
+        when(this.jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn(token);
+
+        mockMvc.perform(post(SIGNIN_URL).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk());
+                
+        verify(userService, times(1)).saveUser(userWithFails);
+        assertEquals(0, userWithFails.getFailedLoginAttempts());
+    }
+
+    @Test
+    void testSignup_EmployeeAuthorityNotFound_CreatesNewAuthority() throws Exception {
+        SignupRequest signup = new SignupRequest();
+        signup.setUsername("newUser2");
+        signup.setPassword("password");
+        signup.setPersonalCode("9999");
+        signup.setFirstName("New");
+        signup.setLastName("User");
+
+        when(userService.findUser("newUser2")).thenThrow(new ResourceNotFoundException("User", "username", "newUser2"));
+        when(authoritiesService.findByAuthority("EMPLOYEE")).thenThrow(new ResourceNotFoundException("Authority not found"));
+
+        mockMvc.perform(post(BASE_URL + "/signup").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signup)))
+                .andExpect(status().isOk());
+
+        verify(authoritiesService, times(1)).saveAuthorities(any(Authorities.class));
+    }
 }

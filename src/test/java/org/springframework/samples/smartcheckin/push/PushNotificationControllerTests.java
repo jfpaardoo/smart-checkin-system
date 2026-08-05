@@ -4,6 +4,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 
@@ -20,6 +21,7 @@ import org.springframework.samples.smartcheckin.user.UserService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SuppressWarnings("null")
 @WebMvcTest(PushNotificationController.class)
@@ -27,6 +29,9 @@ class PushNotificationControllerTests {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockitoBean
     private PushSubscriptionRepository subscriptionRepository;
@@ -57,7 +62,7 @@ class PushNotificationControllerTests {
 
     @Test
     @WithMockUser(username = "testuser")
-    void getVapidKey_returnsPublicKey() throws Exception {
+    void getVapidKeyreturnsPublicKey() throws Exception {
         when(pushNotificationService.getVapidPublicKey()).thenReturn("testVapidPublicKey123");
 
         mockMvc.perform(get("/api/v1/push/vapid-key"))
@@ -66,14 +71,14 @@ class PushNotificationControllerTests {
     }
 
     @Test
-    void getVapidKey_unauthenticated_returns401() throws Exception {
+    void getVapidKeyunauthenticatedreturns401() throws Exception {
         mockMvc.perform(get("/api/v1/push/vapid-key"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     @WithMockUser(username = "testuser")
-    void subscribe_savesNewSubscription() throws Exception {
+    void subscribesavesNewSubscription() throws Exception {
         when(userService.findCurrentUser()).thenReturn(testUser);
         when(subscriptionRepository.findByEndpoint(anyString())).thenReturn(List.of());
 
@@ -88,7 +93,7 @@ class PushNotificationControllerTests {
             """;
 
         mockMvc.perform(post("/api/v1/push/subscribe")
-                .with(csrf()) // Soluciona el error 403 Forbidden
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
                 .andExpect(status().isOk());
@@ -98,7 +103,7 @@ class PushNotificationControllerTests {
 
     @Test
     @WithMockUser(username = "testuser")
-    void subscribe_duplicateEndpoint_skipsSave() throws Exception {
+    void subscribeduplicateEndpointskipsSave() throws Exception {
         when(userService.findCurrentUser()).thenReturn(testUser);
 
         PushSubscriptionEntity existing = new PushSubscriptionEntity();
@@ -118,21 +123,22 @@ class PushNotificationControllerTests {
             """;
 
         mockMvc.perform(post("/api/v1/push/subscribe")
-                .with(csrf()) // Soluciona el error 403 Forbidden
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
                 .andExpect(status().isOk());
 
+        // Al ser el mismo usuario y haber un solo registro, no guarda duplicado ni borra
         verify(subscriptionRepository, never()).save(any());
     }
 
     @Test
     @WithMockUser(username = "testuser")
-    void unsubscribe_deletesSubscription() throws Exception {
+    void unsubscribedeletesSubscription() throws Exception {
         String body = "{\"endpoint\": \"https://fcm.googleapis.com/fcm/send/abc123\"}";
 
         mockMvc.perform(post("/api/v1/push/unsubscribe")
-                .with(csrf()) // Soluciona el error 403 Forbidden
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
                 .andExpect(status().isOk());
@@ -141,7 +147,7 @@ class PushNotificationControllerTests {
     }
 
     @Test
-    void subscribe_unauthenticated_returns401() throws Exception {
+    void subscribeunauthenticatedreturns401() throws Exception {
         String body = """
             {
                 "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
@@ -153,9 +159,105 @@ class PushNotificationControllerTests {
             """;
 
         mockMvc.perform(post("/api/v1/push/subscribe")
-                .with(csrf()) // Evita que salte el 403 CSRF antes que el 401 Unauthorized
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "testuser")
+    void testSubscribeExistingEndpointWithDuplicatesShouldDeleteDuplicates() throws Exception {
+        when(userService.findCurrentUser()).thenReturn(testUser);
+
+        PushSubscriptionEntity sub1 = new PushSubscriptionEntity();
+        sub1.setId(10);
+        sub1.setEndpoint("https://endpoint.com");
+        sub1.setUser(testUser);
+
+        PushSubscriptionEntity sub2 = new PushSubscriptionEntity();
+        sub2.setId(11);
+        sub2.setEndpoint("https://endpoint.com");
+
+        PushSubscriptionEntity sub3 = new PushSubscriptionEntity();
+        sub3.setId(12);
+        sub3.setEndpoint("https://endpoint.com");
+
+        when(subscriptionRepository.findByEndpoint("https://endpoint.com")).thenReturn(List.of(sub1, sub2, sub3));
+
+        PushSubscriptionDTO dto = new PushSubscriptionDTO();
+        dto.setEndpoint("https://endpoint.com");
+        PushSubscriptionDTO.Keys keys = new PushSubscriptionDTO.Keys();
+        keys.setAuth("auth");
+        keys.setP256dh("p256dh");
+        dto.setKeys(keys);
+
+        mockMvc.perform(post("/api/v1/push/subscribe")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk());
+
+        verify(subscriptionRepository, times(1)).delete(sub2);
+        verify(subscriptionRepository, times(1)).delete(sub3);
+    }
+
+    @Test
+    @WithMockUser(username = "testuser")
+    void testSubscribeExistingEndpointWithNullUserShouldTransferUser() throws Exception {
+        when(userService.findCurrentUser()).thenReturn(testUser);
+
+        PushSubscriptionEntity existingSub = new PushSubscriptionEntity();
+        existingSub.setEndpoint("https://endpoint.com");
+        existingSub.setUser(null);
+
+        when(subscriptionRepository.findByEndpoint("https://endpoint.com")).thenReturn(List.of(existingSub));
+
+        PushSubscriptionDTO dto = new PushSubscriptionDTO();
+        dto.setEndpoint("https://endpoint.com");
+        PushSubscriptionDTO.Keys keys = new PushSubscriptionDTO.Keys();
+        keys.setAuth("auth");
+        keys.setP256dh("p256dh");
+        dto.setKeys(keys);
+
+        mockMvc.perform(post("/api/v1/push/subscribe")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk());
+
+        verify(subscriptionRepository, times(1)).save(existingSub);
+        assertEquals(testUser, existingSub.getUser());
+    }
+
+    @Test
+    @WithMockUser(username = "testuser")
+    void testSubscribeExistingEndpointWithDifferentUserShouldTransferUser() throws Exception {
+        when(userService.findCurrentUser()).thenReturn(testUser);
+
+        User oldUser = new User();
+        oldUser.setId(99);
+
+        PushSubscriptionEntity existingSub = new PushSubscriptionEntity();
+        existingSub.setEndpoint("https://endpoint.com");
+        existingSub.setUser(oldUser);
+
+        when(subscriptionRepository.findByEndpoint("https://endpoint.com")).thenReturn(List.of(existingSub));
+
+        PushSubscriptionDTO dto = new PushSubscriptionDTO();
+        dto.setEndpoint("https://endpoint.com");
+        PushSubscriptionDTO.Keys keys = new PushSubscriptionDTO.Keys();
+        keys.setAuth("auth");
+        keys.setP256dh("p256dh");
+        dto.setKeys(keys);
+
+        mockMvc.perform(post("/api/v1/push/subscribe")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk());
+
+        verify(subscriptionRepository, times(1)).save(existingSub);
+        assertEquals(testUser, existingSub.getUser());
     }
 }

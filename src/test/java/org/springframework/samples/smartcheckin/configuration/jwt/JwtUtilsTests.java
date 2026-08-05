@@ -113,4 +113,17 @@ class JwtUtilsTests {
 			assertTrue(exception.getMessage().contains("Failed to generate RSA Key Pair"));
 		}
 	}
+
+	@Test
+    void testGetExpirationDateFromJwtToken() {
+        UserDetailsImpl userDetails = new UserDetailsImpl(1, "john", "pass", List.of(new SimpleGrantedAuthority("ADMIN")));
+        Authentication auth = mock(Authentication.class);
+        when(auth.getPrincipal()).thenReturn(userDetails);
+
+        String token = jwtUtils.generateJwtToken(auth);
+        Instant expirationDate = jwtUtils.getExpirationDateFromJwtToken(token);
+        
+        assertNotNull(expirationDate);
+        assertTrue(expirationDate.isAfter(Instant.now()));
+    }
 }

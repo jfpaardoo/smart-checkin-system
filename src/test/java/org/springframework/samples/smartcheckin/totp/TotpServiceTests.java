@@ -1,11 +1,22 @@
 package org.springframework.samples.smartcheckin.totp;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import dev.samstevens.totp.code.CodeGenerator;
+import dev.samstevens.totp.exceptions.CodeGenerationException;
+
+@SuppressWarnings("null")
 class TotpServiceTests {
 
 	private TotpService totpService;
@@ -69,4 +80,39 @@ class TotpServiceTests {
 		assertTrue(totpService.verifyToken(tokenNullStr, "null"));
 		assertTrue(totpService.verifyToken(tokenEmptyStr, ""));
 	}
+
+	@Test
+    void testGetHashedSecretForFormation_NoSuchAlgorithmException() {
+        // Añadir Mockito.CALLS_REAL_METHODS evita corromper la generación interna del TOTP
+        try (MockedStatic<MessageDigest> mockedDigest = Mockito.mockStatic(MessageDigest.class, Mockito.CALLS_REAL_METHODS)) {
+            mockedDigest.when(() -> MessageDigest.getInstance("SHA-256"))
+                    .thenThrow(new NoSuchAlgorithmException("Algoritmo simulado no encontrado"));
+
+            // El bloque catch debería hacer un fallback codificando en Base32 directo sin hashear
+            String token = totpService.getCurrentToken();
+            assertNotNull(token);
+            assertEquals(6, token.length());
+        }
+    }
+
+    @Test
+    void testGetCurrentToken_CodeGeneratorException() {
+        // Inyectamos un generador defectuoso para forzar la excepción al generar el código
+        CodeGenerator brokenGenerator = mock(CodeGenerator.class);
+        
+        try {
+            when(brokenGenerator.generate(anyString(), anyLong()))
+                    .thenThrow(new CodeGenerationException("Error forzado", new RuntimeException()));
+        } catch (CodeGenerationException e) {
+            // No hacemos nada, es solo configuración del mock
+        }
+
+        ReflectionTestUtils.setField(totpService, "codeGenerator", brokenGenerator);
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+            totpService.getCurrentToken();
+        });
+
+        assertTrue(ex.getMessage().contains("Error generating TOTP token"));
+    }
 }
