@@ -78,12 +78,12 @@ public class SecurityConfiguration {
 
                         // 5. Perfil personal del usuario y configuración de 2FA
                         .requestMatchers(
-                                "/api/v1/users/me", 
+                                "/api/v1/users/me",
                                 "/api/v1/users/me/**",
                                 "/api/v1/users/2fa/setup",
                                 "/api/v1/users/2fa/enable",
                                 "/api/v1/users/2fa/disable",
-                                "/api/v1/exports/my-data"
+                                "/api/v1/exports/me/export"
                         ).authenticated()
 
                         // 6. Administración y HR

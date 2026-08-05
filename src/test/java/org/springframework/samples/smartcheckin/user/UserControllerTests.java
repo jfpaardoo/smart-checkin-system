@@ -56,6 +56,9 @@ class UserControllerTests {
 	private static final String SIZE_PATH = "$.size()";
 	private static final String ID_PATH = "/{id}";
 	private static final String UPDATED = "UPDATED";
+	private static final String USERNAME_PATH = "$.username";
+	private static final String NAME_PATH = "PRUEBA";
+	private static final String TWO_FACTOR_PATH = "/2fa/enable";
 
 	@MockitoBean
 	private UserService userService;
@@ -165,7 +168,7 @@ class UserControllerTests {
 		
 		mockMvc.perform(get(BASE_URL + ID_PATH, TEST_USER_ID)).andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(TEST_USER_ID))
-				.andExpect(jsonPath("$.username").value(user.getUsername()))
+				.andExpect(jsonPath(USERNAME_PATH).value(user.getUsername()))
 				.andExpect(jsonPath("$.authority.authority").value(user.getAuthority().getAuthority()));
 	}
 
@@ -180,9 +183,9 @@ class UserControllerTests {
 	@WithMockUser("admin")
 	void shouldDeleteUser() throws Exception {
 		User aux = new User();
-		aux.setUsername("Prueba");
-		aux.setPassword("Prueba");
-		aux.setFirstName("PRUEBA");
+		aux.setUsername(NAME_PATH);
+		aux.setPassword(NAME_PATH);
+		aux.setFirstName(NAME_PATH);
 		aux.setLastName("TEST");
 		aux.setPersonalCode("5678");
 		aux.setIsWorking(false);
@@ -298,7 +301,7 @@ class UserControllerTests {
 		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
 		req.setCode("123456");
 
-		mockMvc.perform(post(BASE_URL + "/2fa/enable").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(BASE_URL + TWO_FACTOR_PATH).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isOk());
 	}
 
