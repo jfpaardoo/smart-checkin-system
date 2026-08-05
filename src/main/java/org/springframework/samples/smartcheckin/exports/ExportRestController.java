@@ -35,7 +35,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @SuppressWarnings("null")
@@ -137,7 +139,8 @@ public class ExportRestController {
         return createCsvResponse(csvBuilder.toString(), "checkins.csv");
     }
 
-    @GetMapping("/my-data")
+    @GetMapping("/me/export")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<byte[]> exportMyData() throws IOException {
         User user = userService.findCurrentUser();
         List<Checkin> checkins = checkinRepository.findByUserId(user.getId());
@@ -147,8 +150,7 @@ public class ExportRestController {
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        // We create a custom map to avoid serialization loops or issues
-        java.util.Map<String, Object> exportData = new java.util.HashMap<>();
+        Map<String, Object> exportData = new HashMap<>();
         exportData.put("userProfile", user);
         exportData.put("checkins", checkins);
         exportData.put("formations", attendances);
@@ -158,6 +160,7 @@ public class ExportRestController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setContentDispositionFormData("attachment", "my_data.json");
+
         return ResponseEntity.ok().headers(headers).body(jsonData);
     }
 
