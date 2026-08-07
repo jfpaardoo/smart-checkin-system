@@ -27,6 +27,7 @@ class CertificateGeneratorServiceTests {
     private CertificateGeneratorService certificateGeneratorService;
 
     private static final String SPRING_SECURITY_101 = "Spring Security 101";
+    private static final String NULL_SIGNATURE = "null_signature.png";
 
     @Test
     void testGenerateCertificatePdfWithoutSignature() {
@@ -94,8 +95,6 @@ class CertificateGeneratorServiceTests {
         assertNotNull(pdfBytes);
         assertTrue(pdfBytes.length > 0);
     }
-
-    // --- TESTS DE COBERTURA ---
 
     @Test
     void testGenerateCertificatePdfWithNullCheckInDate() {
@@ -199,5 +198,30 @@ class CertificateGeneratorServiceTests {
 
         assertNotNull(pdfBytes);
         assertEquals(0, pdfBytes.length);
+    }
+
+	@Test
+    void testGenerateCertificatePdfWithFileSignatureNullBytes() {
+        User user = new User();
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setPersonalCode("1234");
+
+        Formation formation = new Formation();
+        formation.setName(SPRING_SECURITY_101);
+
+        FormationAttendance attendance = new FormationAttendance();
+        attendance.setUser(user);
+        attendance.setFormation(formation);
+        attendance.setCheckInDate(LocalDateTime.of(2026, Month.AUGUST, 1, 10, 0));
+        attendance.setSignature(NULL_SIGNATURE);
+
+        when(localFileSystemService.loadSignature(NULL_SIGNATURE)).thenReturn(null);
+
+        byte[] pdfBytes = certificateGeneratorService.generateCertificatePdf(attendance);
+
+        assertNotNull(pdfBytes);
+        assertTrue(pdfBytes.length > 0);
+        verify(localFileSystemService, times(1)).loadSignature(NULL_SIGNATURE);
     }
 }

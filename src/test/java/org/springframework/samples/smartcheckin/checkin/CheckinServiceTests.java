@@ -75,4 +75,29 @@ class CheckinServiceTests {
 
         verify(checkInRepository).findByUserIdOrderByCheckInDateDesc(TEST_USER_ID);
     }
+
+    @Test
+    void shouldSaveCheckin() {
+        User user = createDummyUser();
+        Checkin checkin = createDummyCheckin(user, CheckinType.SALIDA);
+        when(checkInRepository.save(checkin)).thenReturn(checkin);
+
+        Checkin result = checkinService.save(checkin);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(TEST_CHECKIN_ID);
+        verify(checkInRepository).save(checkin);
+    }
+
+    @Test
+    void shouldDeleteAllCheckinsForUser() {
+        User user = createDummyUser();
+        Checkin checkin = createDummyCheckin(user, CheckinType.ENTRADA);
+        when(checkInRepository.findByUserId(TEST_USER_ID)).thenReturn(List.of(checkin));
+
+        checkinService.deleteAllCheckins(user);
+
+        verify(checkInRepository).findByUserId(TEST_USER_ID);
+        verify(checkInRepository).deleteAll(List.of(checkin));
+    }
 }

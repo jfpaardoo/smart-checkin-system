@@ -146,25 +146,26 @@ public class FormationService {
     public Formation updateFormation(Formation formationDetails, Integer id, MultipartFile file) throws IOException {
         Formation toUpdate = formationRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
-        
+
         toUpdate.setName(formationDetails.getName());
         toUpdate.setDescription(formationDetails.getDescription());
         toUpdate.setFormationDate(formationDetails.getFormationDate());
 
         if (file != null && !file.isEmpty()) {
-            // Sincronización en cascada: Limpiamos los ficheros anteriores de la nube si procede
-            if (toUpdate.getDocumentUrls() != null) {
-                for (String oldUrl : toUpdate.getDocumentUrls()) {
-                    try {
-                        oneDriveService.deleteFile(oldUrl);
-                    } catch (Exception e) {
-                        // Continuamos de forma defensiva
-                    }
-                }
-                toUpdate.getDocumentUrls().clear();
+            if (toUpdate.getDocumentUrls() == null) {
+                toUpdate.setDocumentUrls(new java.util.ArrayList<>());
             }
-            
-            // Subir nuevo fichero a OneDrive y añadirlo a la colección
+
+            for (String oldUrl : new java.util.ArrayList<>(toUpdate.getDocumentUrls())) {
+                try {
+                    oneDriveService.deleteFile(oldUrl);
+                } catch (Exception e) {
+                    // Ignorar errores al borrar en OneDrive
+                }
+            }
+
+            toUpdate.getDocumentUrls().clear();
+
             String newFileUrl = oneDriveService.uploadFile(file, "formations");
             toUpdate.getDocumentUrls().add(newFileUrl);
         }

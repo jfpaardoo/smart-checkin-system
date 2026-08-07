@@ -114,4 +114,26 @@ class StatisticsBatchConfigTests {
         Job job = batchConfig.statisticsJob(jobRepository, step);
         assertNotNull(job);
     }
+
+    @Test
+    void shouldExecuteTaskletCatchingExceptionInTryBlock() {
+
+        Tasklet tasklet = batchConfig.statisticsTasklet(
+                statisticsRepository,
+                checkinRepository,
+                jdbcTemplate);
+
+        when(checkinRepository.count()).thenReturn(10L);
+
+        when(jdbcTemplate.queryForObject(anyString(), eq(Long.class)))
+                .thenThrow(new RuntimeException("JDBC Error"));
+
+        StepContribution contribution = mock(StepContribution.class);
+        ChunkContext chunkContext = mock(ChunkContext.class);
+
+        assertThrows(RuntimeException.class,
+                () -> tasklet.execute(contribution, chunkContext));
+
+        verify(statisticsRepository, never()).save(any());
+}
 }

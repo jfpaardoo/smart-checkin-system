@@ -626,4 +626,38 @@ class UserControllerTests {
         mockMvc.perform(post(BASE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(aux))).andExpect(status().isCreated());
     }
+
+	@Test
+    @WithMockUser("admin")
+    void shouldFailDisableTwoFactorWrongCode() throws Exception {
+        user.setTwoFactorSecret("SECRET");
+        when(userService.findUser(anyString())).thenReturn(user);
+        when(totpService.validateCode("SECRET", "000000")).thenReturn(false);
+
+        TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
+        req.setCode("000000");
+
+        mockMvc.perform(post(BASE_URL + "/2fa/disable").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest());
+    }
+
+	@Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void shouldFindAllWithAuthSpecificCaseSensitive() throws Exception {
+        User testUser = new User();
+        testUser.setId(1);
+        testUser.setFirstName("TestName");
+        testUser.setLastName("TestLastName");
+        testUser.setUsername("testuser");
+        testUser.setPersonalCode("1234");
+        Authorities testAuth = new Authorities();
+        testAuth.setAuthority("USER");
+        testUser.setAuthority(testAuth);
+
+        when(userService.findApprovedUsers()).thenReturn(List.of(testUser));
+
+        mockMvc.perform(get(BASE_URL).param("search", "TestName"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(SIZE_PATH).value(1));
+    }
 }

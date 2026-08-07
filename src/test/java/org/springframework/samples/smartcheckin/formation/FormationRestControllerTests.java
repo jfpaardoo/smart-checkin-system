@@ -1,7 +1,6 @@
 package org.springframework.samples.smartcheckin.formation;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -555,5 +554,16 @@ class FormationRestControllerTests {
         mockMvc.perform(MockMvcRequestBuilders.multipart(BASE_URL)
                 .file(jsonPart).with(csrf()))
                 .andExpect(status().isOk());
+    }
+
+	@Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void notifyFormationsUpdateExceptionWithNonNullId() throws Exception {
+        doNothing().when(messagingTemplate).convertAndSend(eq("/topic/formations"), anyString());
+        doThrow(new RuntimeException("Simulated specific messaging error")).when(messagingTemplate).convertAndSend(eq("/topic/formations/1"), anyString());
+        
+        doNothing().when(formationService).deleteFormation(1);
+
+        mockMvc.perform(delete(BASE_URL + "/1").with(csrf())).andExpect(status().isOk());
     }
 }

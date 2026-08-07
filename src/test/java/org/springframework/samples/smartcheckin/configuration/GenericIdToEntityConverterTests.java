@@ -94,4 +94,12 @@ class GenericIdToEntityConverterTests {
         Object result = nullEmConverter.convert(1, sourceType, targetType);
         assertNull(result);
     }
+
+	@Test
+    void testMatchesReturnsFalseWhenConversionCannotBePerformed() {
+        TypeDescriptor sourceType = TypeDescriptor.valueOf(Object.class);
+        TypeDescriptor targetType = TypeDescriptor.valueOf(User.class);
+
+        assertFalse(converter.matches(sourceType, targetType));
+    }
 }

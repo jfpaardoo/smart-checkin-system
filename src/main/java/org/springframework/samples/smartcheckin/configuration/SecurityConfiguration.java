@@ -61,7 +61,7 @@ public class SecurityConfiguration {
                         // 2. Recursos estáticos y consolas
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                         .requestMatchers(PathRequest.toH2Console()).permitAll()
-                        .requestMatchers("/h2-console/**", "/", "/oups").permitAll()
+                        .requestMatchers("/h2-console/**", "/", "/oups", "/index.html", "/manifest.json", "/favicon.ico", "/*.png").permitAll()
 
                         // 3. Swagger / OpenAPI (solo ADMIN)
                         .requestMatchers(

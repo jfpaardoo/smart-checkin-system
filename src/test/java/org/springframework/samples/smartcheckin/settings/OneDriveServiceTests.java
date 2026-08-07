@@ -1,6 +1,7 @@
 package org.springframework.samples.smartcheckin.settings;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
@@ -669,5 +670,83 @@ class OneDriveServiceTests {
         )).thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
         assertDoesNotThrow(() -> oneDriveService.deleteFile("   ||   ||item123"));
+    }
+
+    @Test
+    void testUploadFileAccessTokenNullResponse() {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId("client_id");
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(null, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                anyString()
+        )).thenReturn(tokenEntity);
+
+        MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
+        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadFile(file, "folder"));
+    }
+
+    @Test
+    void testUploadFileNullUploadResponseEntityBody() {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId("client_id");
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+
+        Map<String, Object> tokenResponse = Map.of("access_token", "token123");
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                anyString()
+        )).thenReturn(tokenEntity);
+
+        ResponseEntity<Map<String, Object>> uploadEntity = new ResponseEntity<>(null, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.PUT),
+                any(HttpEntity.class),
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                anyString(),
+                anyString()
+        )).thenReturn(uploadEntity);
+
+        MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
+        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadFile(file, "folder"));
+    }
+
+    @Test
+    void testUploadBackupNullUploadResponse() {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId("client_id");
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+
+        Map<String, Object> tokenResponse = Map.of("access_token", "token123");
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                anyString()
+        )).thenReturn(tokenEntity);
+
+        ResponseEntity<Map<String, Object>> uploadEntity = new ResponseEntity<>(null, HttpStatus.OK);
+        when(restTemplate.exchange(
+                anyString(),
+                eq(HttpMethod.PUT),
+                any(HttpEntity.class),
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                anyString()
+        )).thenReturn(uploadEntity);
+
+        byte[] data = "test data".getBytes();
+        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadBackup(data, "backup.zip"));
     }
 }
