@@ -1,4 +1,4 @@
-import React, { useRef, useImperativeHandle, forwardRef } from 'react';
+import React, { useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../../components/ToastProvider';
@@ -6,14 +6,34 @@ import { useToast } from '../../../components/ToastProvider';
 const SignatureStep = forwardRef(({ onSubmit, onCancel, submitLabel }, ref) => {
   const { t } = useTranslation();
   const toast = useToast();
-  const sigCanvas = useRef({});
+  const sigCanvas = useRef(null);
+  const containerRef = useRef(null);
 
-  // Allow parent to access canvas methods if needed, though we handle submit here
   useImperativeHandle(ref, () => ({
     clear: () => sigCanvas.current?.clear(),
     isEmpty: () => sigCanvas.current?.isEmpty(),
     getSignatureBase64: () => sigCanvas.current?.getCanvas().toDataURL('image/png')
   }));
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current && sigCanvas.current) {
+        const canvas = sigCanvas.current.getCanvas();
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        const width = containerRef.current.offsetWidth;
+        const height = 160;
+
+        canvas.width = width * ratio;
+        canvas.height = height * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+        sigCanvas.current.clear();
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleSubmit = () => {
     if (sigCanvas.current.isEmpty()) {
@@ -25,25 +45,25 @@ const SignatureStep = forwardRef(({ onSubmit, onCancel, submitLabel }, ref) => {
   };
 
   return (
-    <div className="text-center p-2">
+    <div className="text-center p-2 w-full">
       <h5 className="mb-3" style={{ color: '#2c3e50', fontWeight: 600 }}>
         {t('checkin.signStepTitle', 'Por favor, firme abajo para finalizar')}
       </h5>
       
       <div 
-        className="mx-auto mb-3"
+        ref={containerRef}
+        className="mx-auto mb-3 w-full"
         style={{ 
           backgroundColor: '#ffffff', 
           borderRadius: '20px', 
           border: '1.5px solid rgba(255, 255, 255, 0.8)', 
           overflow: 'hidden', 
-          width: 'fit-content',
           boxShadow: '0 8px 25px rgba(0,0,0,0.05)' 
         }}
       >
         <SignatureCanvas 
           penColor="blue"
-          canvasProps={{ width: 450, height: 200, className: 'sigCanvas' }}
+          canvasProps={{ className: 'sigCanvas w-full h-[160px] block cursor-crosshair' }}
           ref={sigCanvas}
         />
       </div>

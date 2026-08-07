@@ -8,7 +8,6 @@ import ProfileHeader from "./components/ProfileHeader";
 import PersonalDataTab from "./components/PersonalDataTab";
 import FormationsTab from "./components/FormationsTab";
 import PasswordSecurityTab from "./components/PasswordSecurityTab";
-import PrivacyDataTab from "./components/PrivacyDataTab";
 import { useUserProfileData } from "./hooks/useUserProfileData";
 import { usePasswordSecurity } from "./hooks/usePasswordSecurity";
 import "../../App.css";
@@ -112,11 +111,6 @@ export default function UserProfile() {
               <FaShieldAlt className="me-2" />{t("profile.securityPassword", "Seguridad")}
             </NavLink>
           </NavItem>
-          <NavItem>
-            <NavLink className={`px-4 py-2 shadow-sm ${activeTab === "4" ? "active" : ""}`} onClick={() => toggleTab("4")} style={{ cursor: "pointer" }}>
-              <FaShieldAlt className="me-2" />{t("profile.privacyData", "Privacidad y Datos")}
-            </NavLink>
-          </NavItem>
         </Nav>
 
         <TabContent activeTab={activeTab} className="p-0 border-0 bg-transparent">
@@ -127,10 +121,17 @@ export default function UserProfile() {
             <FormationsTab loadingFormations={loadingFormations} formations={formations} t={t} />
           </TabPane>
           <TabPane tabId="3" className="ba-fade-in">
-            <PasswordSecurityTab {...passwordProps} userData={userData} setUserData={setUserData} t={t} toast={toast} />
-          </TabPane>
-          <TabPane tabId="4" className="ba-fade-in">
-            <PrivacyDataTab t={t} handleDeleteAccount={handleDeleteAccount} isDeleting={isDeleting} handleExportData={handleExportData} isExporting={isExporting} />
+            <PasswordSecurityTab 
+              {...passwordProps} 
+              userData={userData} 
+              setUserData={setUserData} 
+              t={t} 
+              toast={toast}
+              handleExportData={handleExportData}
+              isExporting={isExporting}
+              handleDeleteAccount={handleDeleteAccount}
+              isDeleting={isDeleting}
+            />
           </TabPane>
         </TabContent>
       </div>

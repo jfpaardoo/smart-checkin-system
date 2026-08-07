@@ -10,85 +10,133 @@ export default function AnalyticsEmployeesTab({ userAnalyticsList, onSearch, onO
   const { t } = useTranslation();
 
   const getAttendanceColorClass = (percentage) => {
-    if (percentage >= 75) return 'text-success';
-    if (percentage >= 50) return 'text-warning';
-    return 'text-danger';
+    if (percentage >= 75) return 'text-emerald-600 font-bold';
+    if (percentage >= 50) return 'text-amber-600 font-bold';
+    return 'text-rose-500 font-bold';
   };
 
   return (
-    <div className="mt-3">
-      <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div className="mt-3 w-full">
+      <div className="flex justify-between items-center flex-wrap gap-3 mb-4">
         <GlassSearchBar 
             placeholder={t('analytics.searchEmployee', 'Search employee by name or code...')}
             onSearch={onSearch}
         />
-        <span className="text-muted fw-bold">
+        <span className="text-slate-500 font-bold text-sm">
             {t('analytics.totalEmployees', 'Employees')}: {userAnalyticsList.length}
         </span>
       </div>
 
-      <Table responsive className="ba-table align-middle" style={{ minWidth: '950px', width: '100%', tableLayout: 'fixed', fontSize: '0.9rem' }}>
-        <thead>
-            <tr>
-                <th style={{ width: '8%', paddingLeft: '1rem' }}>{t('users.personalCode', 'Código')}</th>
-                <th style={{ width: '14%' }}>{t('users.name', 'Empleado')}</th>
-                <th style={{ width: '12%', textAlign: 'center' }}>{t('users.role', 'Rol')}</th>
-                <th style={{ width: '8%' }}>{t('analytics.workCheckins', 'Check-ins')}</th>
-                <th style={{ width: '12%' }}>{t('analytics.workTime', 'T. Trabajo')}</th>
-                <th style={{ width: '16%' }}>{t('analytics.formationsCount', 'Formaciones (Asist/Asign)')}</th>
-                <th style={{ width: '10%' }}>{t('analytics.attendancePercentage', '% Asistencia')}</th>
-                <th style={{ width: '12%' }}>{t('analytics.totalFormationTime', 'T. Formación')}</th>
-                <th style={{ width: '8%' }}>{t('analytics.actions', 'Acciones')}</th>
-            </tr>
-        </thead>
-        <tbody>
+      {userAnalyticsList.length === 0 ? (
+        <div className="text-center p-6 text-slate-500 bg-white/40 rounded-2xl border border-white/20 mt-4">
+          {t('analytics.noEmployees', 'No se encontraron empleados.')}
+        </div>
+      ) : (
+        <>
+          {/* 1. VISTA ESCRITORIO */}
+          <div className="hidden lg:block overflow-x-auto pb-4">
+            <Table responsive className="ba-table align-middle" style={{ minWidth: '950px', width: '100%', tableLayout: 'fixed', fontSize: '0.9rem' }}>
+              <thead>
+                  <tr>
+                      <th style={{ width: '8%', paddingLeft: '1rem' }}>{t('users.personalCode', 'Código')}</th>
+                      <th style={{ width: '14%' }}>{t('users.name', 'Empleado')}</th>
+                      <th style={{ width: '12%', textAlign: 'center' }}>{t('users.role', 'Rol')}</th>
+                      <th style={{ width: '8%' }} className="text-center">{t('analytics.workCheckins', 'Check-ins')}</th>
+                      <th style={{ width: '12%' }}>{t('analytics.workTime', 'T. Trabajo')}</th>
+                      <th style={{ width: '16%' }} className="text-center">{t('analytics.formationsCount', 'Formaciones (Asist/Asign)')}</th>
+                      <th style={{ width: '10%' }} className="text-center">{t('analytics.attendancePercentage', '% Asistencia')}</th>
+                      <th style={{ width: '12%' }}>{t('analytics.totalFormationTime', 'T. Formación')}</th>
+                      <th style={{ width: '8%', paddingRight: '1.5rem' }} className="text-center">{t('analytics.actions', 'Acciones')}</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {userAnalyticsList.map((user) => (
+                      <tr key={user.userId}>
+                          <td className="fw-bold" style={{ paddingLeft: '1rem' }}>{user.personalCode}</td>
+                          <td style={{ wordBreak: 'break-word' }}>
+                              <div className="fw-bold text-slate-800">{user.firstName} {user.lastName}</div>
+                              <small className="text-slate-400">@{user.username}</small>
+                          </td>
+                          <td className="text-center">
+                              <span className="ba-badge ba-badge-active" style={{ whiteSpace: 'normal', display: 'inline-block' }}>{user.authority}</span>
+                          </td>
+                          <td className="fw-bold text-center">
+                              {user.totalCheckins}
+                          </td>
+                          <td>
+                              <span className="flex items-center gap-1 font-bold text-teal-700">
+                                  <FontAwesomeIcon icon={faClock} />
+                                  {formatDuration(user.totalWorkMinutes)}
+                              </span>
+                          </td>
+                          <td className="text-center">
+                              {user.formationsAttended} / {user.formationsAssigned}
+                          </td>
+                          <td className="text-center">
+                              <span className={getAttendanceColorClass(user.attendancePercentage)}>
+                                  {user.attendancePercentage}%
+                              </span>
+                          </td>
+                          <td>
+                              <span className="flex items-center gap-1 text-slate-800 font-bold">
+                                  <FontAwesomeIcon icon={faClock} className="text-blue-500" />
+                                  {formatDuration(user.totalFormationMinutes)}
+                              </span>
+                          </td>
+                          <td className="text-center" style={{ paddingRight: '1.5rem' }}>
+                              <Button 
+                                  size="sm" 
+                                  className="ba-btn-blue fw-bold shadow-sm !rounded-full px-4 py-1.5 inline-flex items-center justify-center mx-auto text-xs"
+                                  onClick={() => onOpenUserDetail(user.userId)}
+                                  title={t('analytics.viewDetails', 'View Details')}
+                              >
+                                  <FontAwesomeIcon icon={faEye} />
+                              </Button>
+                          </td>
+                      </tr>
+                  ))}
+              </tbody>
+            </Table>
+          </div>
+
+          {/* 2. VISTA MÓVIL / TABLET COMPRIMIDA */}
+          <div className="lg:hidden flex flex-col gap-4 mt-2">
             {userAnalyticsList.map((user) => (
-                <tr key={user.userId}>
-                    <td className="fw-bold" style={{ paddingLeft: '1rem' }}>{user.personalCode}</td>
-                    <td style={{ wordBreak: 'break-word' }}>
-                        <div className="fw-bold text-truncate">{user.firstName} {user.lastName}</div>
-                        <small className="text-muted text-truncate">@{user.username}</small>
-                    </td>
-                    <td className="text-center">
-                        <span className="ba-badge ba-badge-active" style={{ whiteSpace: 'normal', display: 'inline-block' }}>{user.authority}</span>
-                    </td>
-                    <td className="fw-bold text-center">
-                        {user.totalCheckins}
-                    </td>
-                    <td>
-                        <span className="d-flex align-items-center gap-1 fw-bold" style={{ color: '#0f766e' }}>
-                            <FontAwesomeIcon icon={faClock} />
-                            {formatDuration(user.totalWorkMinutes)}
-                        </span>
-                    </td>
-                    <td className="text-center">
-                        {user.formationsAttended} / {user.formationsAssigned}
-                    </td>
-                    <td className="text-center">
-                        <span className={`fw-bold ${getAttendanceColorClass(user.attendancePercentage)}`}>
-                            {user.attendancePercentage}%
-                        </span>
-                    </td>
-                    <td>
-                        <span className="d-flex align-items-center gap-1 text-dark fw-bold">
-                            <FontAwesomeIcon icon={faClock} className="text-primary" />
-                            {formatDuration(user.totalFormationMinutes)}
-                        </span>
-                    </td>
-                    <td>
-                        <Button 
-                            size="sm" 
-                            className="ba-btn-blue px-3 w-100 d-flex justify-content-center align-items-center"
-                            onClick={() => onOpenUserDetail(user.userId)}
-                            title={t('analytics.viewDetails', 'View Details')}
-                        >
-                            <FontAwesomeIcon icon={faEye} />
-                        </Button>
-                    </td>
-                </tr>
+              <div key={user.userId} className="bg-white/70 backdrop-blur-md shadow-sm rounded-[20px] p-5 border border-white/40 flex flex-col gap-3">
+                <div className="flex justify-between items-start gap-3">
+                  <div>
+                    <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Código: {user.personalCode}</span>
+                    <h3 className="font-bold text-slate-800 m-0 text-base">{user.firstName} {user.lastName}</h3>
+                    <p className="text-xs text-slate-400 m-0">@{user.username}</p>
+                  </div>
+                  <div>
+                    <span className="ba-badge ba-badge-active text-xs">{user.authority}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 border-t border-slate-200/50 pt-3 text-xs text-slate-600">
+                  <div><span className="font-semibold text-slate-500">Check-ins:</span> {user.totalCheckins}</div>
+                  <div><span className="font-semibold text-slate-500">Asistencia:</span> <span className={getAttendanceColorClass(user.attendancePercentage)}>{user.attendancePercentage}%</span></div>
+                  <div><span className="font-semibold text-slate-500">T. Trabajo:</span> {formatDuration(user.totalWorkMinutes)}</div>
+                  <div><span className="font-semibold text-slate-500">T. Formación:</span> {formatDuration(user.totalFormationMinutes)}</div>
+                  <div className="col-span-2"><span className="font-semibold text-slate-500">Formaciones (Asist/Asign):</span> {user.formationsAttended} / {user.formationsAssigned}</div>
+                </div>
+
+                <div className="border-t border-slate-200/50 pt-3 flex justify-end">
+                  <Button 
+                      size="sm" 
+                      className="ba-btn-blue fw-bold shadow-sm !rounded-full px-5 py-2 inline-flex items-center justify-center gap-2 text-xs w-full sm:w-auto"
+                      onClick={() => onOpenUserDetail(user.userId)}
+                  >
+                      <FontAwesomeIcon icon={faEye} />
+                      {t('analytics.viewDetails', 'Ver Detalles')}
+                  </Button>
+                </div>
+              </div>
             ))}
-        </tbody>
-      </Table>
+          </div>
+        </>
+      )}
     </div>
   );
 }

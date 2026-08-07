@@ -161,16 +161,26 @@ export default function AuditDashboard() {
   return (
     <div className="ba-container">
       <div className="ba-card">
-        <div className="ba-card-header flex-wrap gap-3 d-flex justify-content-between align-items-center">
+        
+        {/* Cabecera con botones de exportación en cápsula de cristal */}
+        <div className="ba-card-header flex-wrap gap-3 d-flex justify-content-between align-items-center border-0">
           <h2>
             <FaShieldAlt style={{ color: "var(--ba-primary)" }} className="me-2" />
             {t('audit.title', 'Registro de Auditoría')}
           </h2>
-          <div className="d-flex gap-2">
-            <button type="button" className="btn ba-btn-primary d-flex align-items-center gap-2" onClick={handleDownloadCsv}>
+          <div className="d-flex gap-2 flex-wrap">
+            <button 
+              type="button" 
+              className="inline-flex items-center justify-center px-4 py-2 bg-[#b3c34c]/80 hover:bg-[#b3c34c] text-slate-900 font-semibold text-sm rounded-full transition-all shadow-sm border-0 backdrop-blur-md active:scale-95 hover:-translate-y-0.5 gap-2" 
+              onClick={handleDownloadCsv}
+            >
               <FaDownload /> {t('audit.exportCSV', 'Exportar a CSV')}
             </button>
-            <button type="button" className="btn ba-btn-secondary d-flex align-items-center gap-2" onClick={handleDownloadPdf}>
+            <button 
+              type="button" 
+              className="inline-flex items-center justify-center px-4 py-2 bg-slate-500/30 hover:bg-slate-500/50 text-slate-800 font-semibold text-sm rounded-full transition-all shadow-[0_8px_20px_0_rgba(31,38,135,0.07)] border border-white/60 backdrop-blur-xl active:scale-95 hover:-translate-y-0.5 gap-2" 
+              onClick={handleDownloadPdf}
+            >
               <FaDownload /> {t('audit.exportPDF', 'Exportar a PDF')}
             </button>
           </div>
@@ -180,6 +190,7 @@ export default function AuditDashboard() {
           <p className="text-muted">{t('audit.subtitle', 'Trazabilidad de acciones del sistema')}</p>
         </div>
 
+        {/* Buscador Glassmorphism */}
         <div className="mb-4 position-relative">
           <FaSearch className="position-absolute ba-search-bar-icon" />
           <input
@@ -194,41 +205,83 @@ export default function AuditDashboard() {
         {loading ? (
           <TableGhostLoader rows={8} columns={5} />
         ) : (
-          <Table responsive hover className="ba-table align-middle" style={{ tableLayout: 'fixed', minWidth: '800px', width: '100%', wordBreak: 'break-word' }}>
-            <thead>
-              <tr>
-                <th style={{ width: '15%' }}>{t('audit.columns.date', 'Fecha y Hora')}</th>
-                <th style={{ width: '15%' }}>{t('audit.columns.action', 'Acción')}</th>
-                <th style={{ width: '15%' }}>{t('audit.columns.user', 'Usuario')}</th>
-                <th style={{ width: '30%' }}>{t('audit.columns.details', 'Detalles')}</th>
-                <th style={{ width: '25%' }}>{t('audit.columns.ip', 'IP Origen')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredLogs.map(log => (
-                <tr key={log.id} className={log.action === 'SECURITY_ANOMALY' ? 'table-danger border-danger' : ''}>
-                  <td className={`small fw-medium ${log.action === 'SECURITY_ANOMALY' ? 'text-danger fw-bold' : 'text-muted'}`}>
-                    {moment(log.timestamp).format('DD/MM/YYYY HH:mm:ss')}
-                  </td>
-                  <td>
-                    <Badge color={getActionColor(log.action)} pill className="px-3 py-2 fw-semibold text-wrap" style={{ wordBreak: 'break-all', minWidth: '100px' }}>
-                      {t(`audit.actions.${log.action}`, log.action)}
-                    </Badge>
-                  </td>
-                  <td className="fw-bold text-dark">{log.username}</td>
-                  <td className="text-muted small">{formatDetails(log.details)}</td>
-                  <td><code className="text-secondary bg-light px-2 py-1 rounded">{log.ipAddress || 'N/A'}</code></td>
-                </tr>
-              ))}
-              {filteredLogs.length === 0 && (
-                <tr>
-                  <td colSpan="5" className="text-center py-5 text-muted">
-                    {t('audit.noRecords', 'No se encontraron registros de auditoría.')}
-                  </td>
-                </tr>
+          <>
+            {/* 1. VISTA ESCRITORIO (Tabla clásica flotante) */}
+            <div className="hidden lg:block overflow-x-auto pb-4">
+              <Table responsive hover className="ba-table align-middle" style={{ tableLayout: 'fixed', minWidth: '850px', width: '100%', wordBreak: 'break-word' }}>
+                <thead>
+                  <tr>
+                    <th style={{ width: '15%' }}>{t('audit.columns.date', 'Fecha y Hora')}</th>
+                    <th style={{ width: '15%' }}>{t('audit.columns.action', 'Acción')}</th>
+                    <th style={{ width: '15%' }}>{t('audit.columns.user', 'Usuario')}</th>
+                    <th style={{ width: '30%' }}>{t('audit.columns.details', 'Detalles')}</th>
+                    <th style={{ width: '25%' }}>{t('audit.columns.ip', 'IP Origen')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredLogs.map(log => (
+                    <tr key={log.id} className={log.action === 'SECURITY_ANOMALY' ? 'table-danger border-danger' : ''}>
+                      <td className={`small fw-medium ${log.action === 'SECURITY_ANOMALY' ? 'text-danger fw-bold' : 'text-muted'}`}>
+                        {moment(log.timestamp).format('DD/MM/YYYY HH:mm:ss')}
+                      </td>
+                      <td>
+                        <Badge color={getActionColor(log.action)} pill className="px-3 py-2 fw-semibold text-wrap" style={{ wordBreak: 'break-all', minWidth: '100px' }}>
+                          {t(`audit.actions.${log.action}`, log.action)}
+                        </Badge>
+                      </td>
+                      <td className="fw-bold text-dark">{log.username}</td>
+                      <td className="text-muted small">{formatDetails(log.details)}</td>
+                      <td><code className="text-secondary bg-light px-2 py-1 rounded">{log.ipAddress || 'N/A'}</code></td>
+                    </tr>
+                  ))}
+                  {filteredLogs.length === 0 && (
+                    <tr>
+                      <td colSpan="5" className="text-center py-5 text-muted">
+                        {t('audit.noRecords', 'No se encontraron registros de auditoría.')}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </Table>
+            </div>
+
+            {/* 2. VISTA MÓVIL / TABLET (Tarjetas con efecto cristal adaptadas) */}
+            <div className="lg:hidden flex flex-col gap-4 mt-2">
+              {filteredLogs.length > 0 ? (
+                filteredLogs.map(log => (
+                  <div key={log.id} className={`bg-white/70 backdrop-blur-md shadow-sm rounded-[20px] p-5 border ${log.action === 'SECURITY_ANOMALY' ? 'border-red-400 bg-red-50/70' : 'border-white/40'} flex flex-col gap-3`}>
+                    <div className="flex justify-between items-start gap-3">
+                      <div>
+                        <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+                          {moment(log.timestamp).format('DD/MM/YYYY HH:mm:ss')}
+                        </span>
+                        <h3 className="font-bold text-slate-800 m-0 text-base mt-0.5">{log.username || 'Sistema'}</h3>
+                      </div>
+                      <div>
+                        <Badge color={getActionColor(log.action)} pill className="px-3 py-1.5 fw-semibold text-xs">
+                          {t(`audit.actions.${log.action}`, log.action)}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="text-xs text-slate-600 bg-white/40 rounded-xl p-3 border border-white/50 shadow-inner">
+                      <span className="font-semibold text-slate-700 block mb-1">{t('audit.columns.details', 'Detalles')}:</span>
+                      {formatDetails(log.details)}
+                    </div>
+
+                    <div className="flex items-center justify-between border-t border-slate-200/50 pt-3 text-xs text-slate-500">
+                      <span>{t('audit.columns.ip', 'IP Origen')}:</span>
+                      <code className="text-secondary bg-light px-2 py-0.5 rounded">{log.ipAddress || 'N/A'}</code>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-slate-500 bg-white/40 rounded-2xl">
+                  {t('audit.noRecords', 'No se encontraron registros de auditoría.')}
+                </div>
               )}
-            </tbody>
-          </Table>
+            </div>
+          </>
         )}
       </div>
     </div>

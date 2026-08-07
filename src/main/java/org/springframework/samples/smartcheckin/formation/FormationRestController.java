@@ -189,7 +189,6 @@ public class FormationRestController {
         }
     }
 
-    // 🚀 FIX: Cambiado a "/attendances" para coincidir con React y adaptado para recibir el JSON
     @PostMapping("/{formationId}/attendances")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> addAttendee(@PathVariable Integer formationId, @RequestBody Map<String, Integer> payload) {
