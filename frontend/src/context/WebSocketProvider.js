@@ -16,10 +16,9 @@ export const WebSocketProvider = ({ children }) => {
         let client = null;
 
         if (jwt) {
-            // Reemplaza localhost con el origen real si está en producción
-            // Aquí usamos rutas relativas de SockJS si el proxy está configurado (como en React dev server con proxy)
-            // O una URL absoluta si es necesario.
-            const socketUrl = 'http://localhost:8080/ws';
+            const socketUrl = window.location.hostname === 'localhost'
+                ? 'http://localhost:8080/ws'
+                : 'https://smart-checkin-system.onrender.com/ws';
 
             client = new Client({
                 webSocketFactory: () => new SockJS(socketUrl, null, { transports: ['websocket', 'xhr-streaming', 'xhr-polling'] }),
