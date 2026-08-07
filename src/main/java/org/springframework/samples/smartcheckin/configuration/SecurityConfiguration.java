@@ -50,7 +50,7 @@ public class SecurityConfiguration {
                 .headers(headers -> headers
                     .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
                     .xssProtection(HeadersConfigurer.XXssConfig::disable)
-                    .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'"))
+                    .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'"))
                 )
                 .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(unauthorizedHandler))
 
@@ -58,7 +58,7 @@ public class SecurityConfiguration {
                         // 1. Peticiones CORS Preflight (OPTIONS)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // 2. Recursos estáticos y consolas
+                        // 2. Recursos estáticos, consolas, Service Worker y rutas del frontend/errores
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                         .requestMatchers(PathRequest.toH2Console()).permitAll()
                         .requestMatchers("/h2-console/**", "/", "/oups", "/index.html", "/manifest.json", "/favicon.ico", "/*.png", "/static/**", "/locales/**", "/error", "/login", "/sw.js").permitAll()
