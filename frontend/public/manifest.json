@@ -3,8 +3,8 @@
   "name": "BA Distribution Academy",
   "icons": [
     {
-      "src": "ba-logo.png",
-      "sizes": "192x192 512x512",
+      "src": "favicon.png?v=5",
+      "sizes": "192x192 512x512 64x64 32x32",
       "type": "image/png"
     }
   ],
