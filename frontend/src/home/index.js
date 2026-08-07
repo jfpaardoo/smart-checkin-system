@@ -45,7 +45,7 @@ export default function Home() {
           <div className="ba-home-logo-group">
             <div className="ba-home-logo">
               <img
-                src="/ba-logo.png"
+                src="/favicon.png"
                 alt="BA Glass"
                 style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.15)' }}
               />

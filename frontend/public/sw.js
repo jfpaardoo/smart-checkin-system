@@ -11,15 +11,15 @@ self.addEventListener('push', function(event) {
       return {
         title: 'Distribution Academy',
         body: event.data.text(),
-        icon: '/ba-logo-circle.png'
+        icon: '/ba-logo.png'
       };
     }
   })();
 
   const options = {
     body: data.body || '',
-    icon: data.icon || '/ba-logo-circle.png',
-    badge: '/ba-logo-circle.png',
+    icon: data.icon || '/ba-logo.png',
+    badge: '/ba-logo.png',
     vibrate: [200, 100, 200],
     tag: 'ba-notification-' + Date.now(),
     data: {
