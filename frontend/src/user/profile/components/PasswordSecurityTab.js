@@ -2,6 +2,7 @@ import React from "react";
 import { Row, Col } from "reactstrap";
 import TwoFactorSettings from "./TwoFactorSettings";
 import PasswordChangeCard from "./PasswordChangeCard";
+import PrivacyDataTab from "./PrivacyDataTab";
 
 export default function PasswordSecurityTab({
   passwordForm,
@@ -17,11 +18,15 @@ export default function PasswordSecurityTab({
   userData,
   setUserData,
   t,
-  toast
+  toast,
+  handleExportData,
+  isExporting,
+  handleDeleteAccount,
+  isDeleting
 }) {
   return (
     <div className="p-3">
-      <Row className="g-4">
+      <Row className="g-4 mb-4">
         {/* Card: 2FA Configuration */}
         <Col xs={12} lg={6}>
           <TwoFactorSettings userData={userData} setUserData={setUserData} t={t} toast={toast} />
@@ -44,6 +49,17 @@ export default function PasswordSecurityTab({
           />
         </Col>
       </Row>
+
+      {/* Sección de Privacidad y Datos debajo con su diseño original exacto */}
+      <div className="mt-4">
+        <PrivacyDataTab 
+          t={t}
+          handleExportData={handleExportData}
+          isExporting={isExporting}
+          handleDeleteAccount={handleDeleteAccount}
+          isDeleting={isDeleting}
+        />
+      </div>
     </div>
   );
 }

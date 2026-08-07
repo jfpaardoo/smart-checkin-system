@@ -21,15 +21,23 @@ export default function FormationListAdmin() {
   const fetchFormations = useCallback(async (query = '') => {
     setLoading(true);
     try {
-      const url = query 
-        ? `/api/v1/formations?search=${encodeURIComponent(query)}`
-        : `/api/v1/formations`;
+      // Eliminamos el ternario para que SonarLint no se queje (S3358)
+      let url = `/api/v1/formations`;
+      if (query) {
+        url = `/api/v1/formations?search=${encodeURIComponent(query)}`;
+      }
+
       const response = await fetch(url, {
         headers: { Authorization: `Bearer ${jwt}` },
       });
+      
       if (response.ok) {
         const data = await response.json();
-        setFormations(Array.isArray(data) ? data : []);
+        if (Array.isArray(data)) {
+          setFormations(data);
+        } else {
+          setFormations([]);
+        }
       }
     } catch (e) {
       console.error("Error fetching formations list", e);
@@ -69,12 +77,13 @@ export default function FormationListAdmin() {
         
         <div className="mb-4">
           <GlassSearchBar 
-            placeholder={t('formations.searchPlaceholder', 'Search formation by name or description...')}
+            placeholder={t('formations.searchPlaceholder', 'Buscar formación por nombre o descripción...')}
             onSearch={(query) => setSearchQuery(query)}
           />
         </div>
 
         <FormationTable formations={sortedFormations} loading={loading} />
+        
       </div>
     </div>
   );

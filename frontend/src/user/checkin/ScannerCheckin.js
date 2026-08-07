@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faQrcode, faKeyboard, faCamera, faCalendarCheck } from '@fortawesome/free-solid-svg-icons';
+import { faQrcode, faKeyboard, faCamera, faCalendarCheck, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '../../components/ToastProvider';
-import { CardGhostLoader } from '../../components/GhostLoader';
 import tokenService from '../../services/token.service';
 import GlassDropdown from '../../components/GlassDropdown';
 import { useQrScanner } from '../../hooks/useQrScanner';
@@ -16,6 +16,7 @@ import '../../static/css/admin/adminPage.css';
 export default function ScannerCheckin() {
   const { t } = useTranslation();
   const toast = useToast();
+  const navigate = useNavigate();
   const jwt = tokenService.getLocalAccessToken();
 
   const [loading, setLoading] = useState(false);
@@ -44,6 +45,12 @@ export default function ScannerCheckin() {
     setNeedsSignature(false);
     setPendingToken('');
     setIsManualInput(false);
+  };
+
+  const handleCloseSuccess = () => {
+    setSuccessModal(false);
+    resetScanner();
+    navigate('/dashboard');
   };
 
   const handleCheckinExecution = async (rawInput, signature = null) => {
@@ -121,8 +128,13 @@ export default function ScannerCheckin() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen w-full">
-        <CardGhostLoader />
+      <div className="ba-container flex justify-center items-center min-h-screen w-full">
+        <div className="bg-white/70 backdrop-blur-md rounded-[28px] p-8 border border-white/60 shadow-lg text-center flex flex-col items-center gap-4 max-w-[400px] w-full mx-4">
+          <FontAwesomeIcon icon={faSpinner} className="fa-spin text-3xl" style={{ color: 'var(--ba-primary)' }} />
+          <p className="text-slate-700 font-semibold mb-0 text-lg">
+            {t('checkin.processing', 'Procesando registro...')}
+          </p>
+        </div>
       </div>
     );
   }
@@ -218,8 +230,8 @@ export default function ScannerCheckin() {
         )}
       </div>
 
-      <Modal isOpen={successModal} toggle={() => { setSuccessModal(false); resetScanner(); }} centered className="ba-glass-modal">
-        <ModalHeader toggle={() => { setSuccessModal(false); resetScanner(); }} className="border-0 pb-0">
+      <Modal isOpen={successModal} toggle={handleCloseSuccess} centered className="ba-glass-modal">
+        <ModalHeader toggle={handleCloseSuccess} className="border-0 pb-0">
           {t('checkin.successTitle', '¡Proceso Completado!')}
         </ModalHeader>
         <ModalBody className="text-center py-5">
@@ -247,7 +259,7 @@ export default function ScannerCheckin() {
           <button 
             type="button" 
             className="ba-btn ba-btn-primary px-8 py-3 rounded-full text-lg font-bold" 
-            onClick={() => { setSuccessModal(false); resetScanner(); }}
+            onClick={handleCloseSuccess}
           >
             {t('checkin.close', 'Cerrar')}
           </button>

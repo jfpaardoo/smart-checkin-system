@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 import { Button } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
-import "../../App.css";
-import "../../static/css/admin/adminPage.css";
 import deleteFromList from "../../util/deleteFromList";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUsers, faFileCsv, faFileExcel, faPlus } from '@fortawesome/free-solid-svg-icons';
@@ -28,9 +26,10 @@ export default function UserListAdmin() {
   const fetchUsers = useCallback(async (query = '') => {
     setLoading(true);
     try {
-      const url = query 
-        ? `/api/v1/users?search=${encodeURIComponent(query)}` 
-        : `/api/v1/users`;
+      let url = `/api/v1/users`;
+      if (query) {
+        url = `/api/v1/users?search=${encodeURIComponent(query)}`;
+      }
       const response = await fetch(url, {
         headers: { Authorization: `Bearer ${jwt}` }
       });
@@ -129,25 +128,40 @@ export default function UserListAdmin() {
   return (
     <div className="ba-container">
       <div className="ba-card">
+        
+        {/* Cabecera con el botón de Excel mejorado con Liquid Glass */}
         <div className="ba-card-header ba-admin-header border-0">
             <h2>
-                <FontAwesomeIcon icon={faUsers} style={{ color: 'var(--ba-primary)' }} className="me-2" /> {t('users.title', 'Gestión de Empleados')}
+                <FontAwesomeIcon icon={faUsers} style={{ color: 'var(--ba-primary)' }} className="me-2" /> 
+                {t('users.title', 'Gestión de Empleados')}
             </h2>
             <div className="ba-admin-header-actions">
-                <Button className="ba-btn-primary btn-icon-expand btn-expand-lg" onClick={() => handleDownloadExport('users/csv', 'usuarios.csv')}>
+                {/* Botón CSV */}
+                <Button 
+                  className="ba-btn-primary btn-icon-expand btn-expand-lg bg-[#b3c34c]/80 hover:bg-[#b3c34c] text-slate-900 border-0 shadow-sm" 
+                  onClick={() => handleDownloadExport('users/csv', 'usuarios.csv')}
+                >
                     <FontAwesomeIcon icon={faFileCsv} />
-                    <span className="btn-expand-label">{t('analytics.exportCsv', 'Exportar CSV')}</span>
+                    <span className="btn-expand-label ms-1">{t('analytics.exportCsv', 'Exportar CSV')}</span>
                 </Button>
-                <Button className="ba-btn-secondary btn-icon-expand btn-expand-lg" onClick={() => handleDownloadExport('users/excel', 'usuarios.xlsx')}>
-                    <FontAwesomeIcon icon={faFileExcel} />
-                    <span className="btn-expand-label">{t('analytics.exportExcel', 'Exportar Excel')}</span>
+                
+                {/* Botón Excel con efecto Liquid Glass acentuado */}
+                <Button 
+                  className="ba-btn-secondary btn-icon-expand btn-expand-lg bg-slate-500/30 hover:bg-slate-500/50 text-slate-800 border border-white/60 backdrop-blur-xl shadow-[0_8px_20px_0_rgba(31,38,135,0.07)] transition-all duration-300 hover:-translate-y-0.5" 
+                  onClick={() => handleDownloadExport('users/excel', 'usuarios.xlsx')}
+                >
+                    <FontAwesomeIcon icon={faFileExcel} className="text-slate-700" />
+                    <span className="btn-expand-label ms-1 font-semibold">{t('analytics.exportExcel', 'Exportar Excel')}</span>
                 </Button>
-                <Button className="ba-btn-primary" tag={Link} to="/users/new">
+
+                {/* Botón Principal Añadir */}
+                <Button className="ba-btn-primary shadow-[0_0_15px_rgba(179,195,76,0.6)]" tag={Link} to="/users/new">
                     <FontAwesomeIcon icon={faPlus} className="me-1" /> {t('users.addUser', 'Añadir Empleado')}
                 </Button>
             </div>
         </div>
 
+        {/* Controles y pestañas originales */}
         <div className="ba-admin-controls">
           <UserListTabs 
             activeTab={activeTab} 

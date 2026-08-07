@@ -35,9 +35,17 @@ export default function UserDashboard() {
 
   const [detailsModal, setDetailsModal] = useState(false);
   const [selectedAtt, setSelectedAtt] = useState(null);
+  const [modalStep, setModalStep] = useState('details');
 
   const openDetails = (attendance) => {
     setSelectedAtt(attendance);
+    setModalStep('details');
+    setDetailsModal(true);
+  };
+
+  const handleOpenCheckout = (attendance) => {
+    setSelectedAtt(attendance);
+    setModalStep('scan');
     setDetailsModal(true);
   };
 
@@ -92,6 +100,7 @@ export default function UserDashboard() {
           attendances={attendances} 
           isLoading={isLoading} 
           onOpenDetails={openDetails} 
+          onCheckout={handleOpenCheckout}
         />
       </div>
 
@@ -100,6 +109,7 @@ export default function UserDashboard() {
         onClose={() => setDetailsModal(false)}
         selectedAtt={selectedAtt}
         onSubmitCheckout={handleCheckoutSubmit}
+        initialStep={modalStep}
       />
     </div>
   );

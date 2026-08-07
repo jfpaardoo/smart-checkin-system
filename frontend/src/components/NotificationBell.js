@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { FaBell } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../hooks/useSubscription';
@@ -16,13 +15,23 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray;
 }
 
-export default function NotificationBell() {
+export default function NotificationBell({ isMobile = false, isOpen = false, onToggle = null }) {
   const { t } = useTranslation();
   const jwt = tokenService.getLocalAccessToken();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [desktopOpen, setDesktopOpen] = useState(false);
 
-  // 1. Escuchar WebSockets (Para Alertas de Seguridad Globales)
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.notif-dropdown-container')) {
+        setDesktopOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   const handleAlert = useCallback((message) => {
     if (message.body) {
       const newNotif = {
@@ -38,7 +47,6 @@ export default function NotificationBell() {
 
   useSubscription('/topic/alerts', handleAlert);
 
-  // 2. Escuchar mensajes internos desde el Service Worker (Para Push locales como Formaciones)
   useEffect(() => {
     const handleServiceWorkerMessage = (event) => {
       if (event?.data?.type === 'PUSH_RECEIVED') {
@@ -65,7 +73,6 @@ export default function NotificationBell() {
     };
   }, []);
 
-  // 3. Suscripción a Web Push
   const subscribeToPush = useCallback(async () => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
 
@@ -120,62 +127,76 @@ export default function NotificationBell() {
     setUnreadCount(0);
   };
 
+  const handleToggle = (e) => {
+    e.stopPropagation();
+    if (isMobile && onToggle) {
+      onToggle();
+    } else {
+      setDesktopOpen(!desktopOpen);
+    }
+    if (unreadCount > 0) markAllRead();
+  };
+
   return (
-    <UncontrolledDropdown direction="down">
-      <DropdownToggle tag="div" className="position-relative d-inline-flex align-items-center cursor-pointer" onClick={markAllRead}>
-        <FaBell size={20} />
+    <div className="relative notif-dropdown-container inline-flex items-center">
+      <button 
+        type="button" 
+        className="relative flex items-center justify-center w-10 h-10 text-white hover:bg-white/10 rounded-full transition-all focus:outline-none"
+        onClick={handleToggle}
+      >
+        <FaBell size={18} />
         {unreadCount > 0 && (
-          <Badge
-            color="danger"
-            pill
-            className="position-absolute"
-            style={{ top: '0', right: '-5px', fontSize: '0.65rem', padding: '2px 5px' }}
-          >
+          <span className="absolute top-1 right-1 bg-red-500 text-white text-[0.65rem] font-bold px-[5px] py-[2px] rounded-full leading-none shadow-sm">
             {unreadCount > 99 ? '99+' : unreadCount}
-          </Badge>
+          </span>
         )}
-      </DropdownToggle>
-      <DropdownMenu className="ba-dropdown-menu shadow-lg border-0 rounded-4" end style={{ minWidth: '300px', maxWidth: '90vw', maxHeight: '60vh', overflowY: 'auto', padding: 0 }}>
-        <DropdownItem header className="border-bottom border-light" style={{ padding: '12px 16px', margin: 0 }}>
-          <div className="d-flex justify-content-between align-items-center w-100">
-            <strong className="text-dark">{t('notifications.title', 'Notificaciones')}</strong>
-            {notifications.length > 0 && (
-              <button
-                type="button"
-                className="btn btn-link btn-sm p-0 ms-3 text-primary fw-medium text-decoration-none"
-                onClick={clearAll}
-              >
-                {t('notifications.clearAll', 'Limpiar todo')}
-              </button>
-            )}
+      </button>
+
+      {/* Solo renderiza el flotante desplegable en escritorio */}
+      {!isMobile && (
+        <div 
+          className={`absolute right-0 top-full mt-3 w-[300px] sm:w-[320px] ba-nav-dropdown-container transition-all duration-300 origin-top-right z-[100] ${desktopOpen ? 'opacity-100 scale-100 translate-y-0 visible' : 'opacity-0 scale-95 -translate-y-4 invisible pointer-events-none'}`}
+        >
+          <div className="py-2" role="menu">
+            <div className="flex justify-between items-center px-4 py-2 border-b border-white/10 mb-2">
+              <strong className="text-white text-[11px] uppercase tracking-widest">
+                {t('notifications.title', 'Notificaciones')}
+              </strong>
+              {notifications.length > 0 && (
+                <button
+                  type="button"
+                  className="text-[10px] text-white/60 hover:text-white transition-colors uppercase font-bold"
+                  onClick={clearAll}
+                >
+                  {t('notifications.clearAll', 'Limpiar todo')}
+                </button>
+              )}
+            </div>
+            <div className="max-h-[50vh] overflow-y-auto">
+              {notifications.length === 0 ? (
+                <div className="text-center py-8">
+                  <FaBell className="mx-auto mb-3 text-white/20" size={32} />
+                  <div className="text-xs text-white/50">{t('notifications.empty', 'Sin notificaciones')}</div>
+                </div>
+              ) : (
+                notifications.map(n => (
+                  <div 
+                    key={n.id} 
+                    className={`block px-4 py-3 border-b border-white/5 last:border-0 transition-colors ${!n.read ? 'bg-white/5' : 'hover:bg-white/5'}`}
+                  >
+                    <div className={`text-sm mb-1 leading-snug break-words ${!n.read ? 'font-semibold text-white' : 'font-medium text-white/70'}`}>
+                      {n.text}
+                    </div>
+                    <div className="text-[10px] text-white/40">
+                      {n.timestamp.toLocaleTimeString()}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </DropdownItem>
-        {notifications.length === 0 ? (
-          <DropdownItem disabled className="text-center py-4 bg-transparent">
-            <FaBell className="mb-2 text-secondary opacity-25" style={{ fontSize: '2rem' }} />
-            <div className="small mt-1 text-muted">{t('notifications.empty', 'Sin notificaciones')}</div>
-          </DropdownItem>
-        ) : (
-          notifications.map(n => (
-            <DropdownItem 
-              key={n.id} 
-              className={`py-3 px-3 border-bottom border-light ${!n.read ? 'bg-light' : 'bg-transparent'}`}
-              style={{ 
-                whiteSpace: 'normal', 
-                wordBreak: 'break-word', 
-                transition: 'background-color 0.2s ease'
-              }}
-            >
-              <div className={`small mb-1 ${!n.read ? 'fw-bold text-dark' : 'fw-medium text-secondary'}`} style={{ lineHeight: '1.4' }}>
-                {n.text}
-              </div>
-              <div className="text-muted" style={{ fontSize: '0.7rem' }}>
-                {n.timestamp.toLocaleTimeString()}
-              </div>
-            </DropdownItem>
-          ))
-        )}
-      </DropdownMenu>
-    </UncontrolledDropdown>
+        </div>
+      )}
+    </div>
   );
 }

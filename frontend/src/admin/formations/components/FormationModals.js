@@ -114,11 +114,11 @@ export function AttendanceDetailsModal({ isOpen, toggle, attendance, formationNa
 
             <h6 className="text-muted mb-1" style={{ fontSize: '0.85rem' }}>{t('formationDetails.digitalSignature')}:</h6>
             {attendance.signature ? (
-              <div className="text-center p-1" style={{ backgroundColor: '#fff', borderRadius: '12px', border: '2px dashed #cbd5e1' }}>
+              <div className="mx-auto max-w-[265px] bg-white rounded-xl border border-dashed border-slate-300 p-2 shadow-inner overflow-hidden flex justify-center items-center">
                 <SecureImage 
                   src={attendance.signature.startsWith('data:image') ? attendance.signature : `/api/v1/signatures/${attendance.signature}`} 
                   alt={`Firma de ${attendance.user.firstName}`}
-                  style={{ maxWidth: '100%', maxHeight: '100px', objectFit: 'contain' }} 
+                  className="w-full h-[110px] object-contain block mx-auto" 
                 />
               </div>
             ) : (

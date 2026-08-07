@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import React, { useState, useEffect } from 'react';
+import { Modal, ModalHeader, ModalBody } from 'reactstrap';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCamera } from '@fortawesome/free-solid-svg-icons';
@@ -10,13 +10,19 @@ import ManualCheckinForm from '../../checkin/components/ManualCheckinForm';
 import SignatureStep from '../../checkin/components/SignatureStep';
 import { useToast } from '../../../components/ToastProvider';
 
-export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCheckout }) {
+export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCheckout, initialStep = 'details' }) {
   const { t } = useTranslation();
   const toast = useToast();
-  
-  const [step, setStep] = useState('details'); // 'details' | 'scan' | 'sign'
+
+  const [step, setStep] = useState(initialStep); // 'details' | 'scan' | 'sign'
   const [isManualCheckout, setIsManualCheckout] = useState(false);
   const [validatedToken, setValidatedToken] = useState('');
+
+  useEffect(() => {
+    setStep(initialStep);
+    setIsManualCheckout(false);
+    setValidatedToken('');
+  }, [initialStep, isOpen]);
 
   const {
     cameras,
@@ -40,7 +46,6 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
   });
 
   const handleClose = () => {
-    // Nuke the scanner container *before* React unmounts it to prevent removeChild errors
     const el = document.getElementById('checkout-qr-reader');
     if (el) el.innerHTML = '';
     stopScannerSafely();
@@ -54,37 +59,41 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
   const renderDetailsStep = () => {
     if (!selectedAtt) return null;
     return (
-      <div className="p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.45)', backdropFilter: 'blur(15px)', borderRadius: '24px', border: '1.5px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 10px 25px rgba(0,0,0,0.03)' }}>
-        <h6 style={{ color: '#64748b', fontSize: '0.9rem' }} className="mb-1">{t('dashboard.descriptionLabel')}</h6>
-        <p className="lead mb-4" style={{ color: '#2c3e50', fontSize: '1.1rem' }}>{selectedAtt.formation.description || t('dashboard.noDescription')}</p>
-        
-        <h6 style={{ color: '#64748b', fontSize: '0.9rem' }} className="mb-1">{t('dashboard.formationDate')}</h6>
-        <p className="mb-4" style={{ color: '#2c3e50', fontWeight: '500' }}>{new Date(selectedAtt.formation.formationDate).toLocaleString()}</p>
-        
-        <h6 style={{ color: '#64748b', fontSize: '0.9rem' }} className="mb-1">{t('dashboard.checkInTime')}</h6>
-        <p className="mb-4" style={{ color: '#2c3e50', fontWeight: '500' }}>{new Date(selectedAtt.checkInDate).toLocaleString()}</p>
+      <div className="p-3.5" style={{ backgroundColor: 'rgba(255, 255, 255, 0.45)', backdropFilter: 'blur(15px)', borderRadius: '20px', border: '1.5px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 8px 20px rgba(0,0,0,0.02)' }}>
+        <h6 style={{ color: '#64748b', fontSize: '0.8rem' }} className="mb-0.5">{t('dashboard.descriptionLabel')}</h6>
+        <p className="mb-2.5 text-slate-800 text-sm font-medium">{selectedAtt.formation.description || t('dashboard.noDescription')}</p>
+
+        <div className="grid grid-cols-2 gap-2 mb-2.5">
+          <div>
+            <h6 style={{ color: '#64748b', fontSize: '0.8rem' }} className="mb-0.5">{t('dashboard.formationDate')}</h6>
+            <p className="mb-0 text-slate-800 text-xs font-semibold">{new Date(selectedAtt.formation.formationDate).toLocaleString()}</p>
+          </div>
+          <div>
+            <h6 style={{ color: '#64748b', fontSize: '0.8rem' }} className="mb-0.5">{t('dashboard.checkInTime')}</h6>
+            <p className="mb-0 text-slate-800 text-xs font-semibold">{new Date(selectedAtt.checkInDate).toLocaleString()}</p>
+          </div>
+        </div>
 
         {selectedAtt.checkOutDate && (
-          <>
-            <h6 style={{ color: '#64748b', fontSize: '0.9rem' }} className="mb-1">{t('dashboard.checkOutTime')}</h6>
-            <p className="mb-4" style={{ color: '#2c3e50', fontWeight: '500' }}>{new Date(selectedAtt.checkOutDate).toLocaleString()}</p>
-          </>
+          <div className="mb-2.5">
+            <h6 style={{ color: '#64748b', fontSize: '0.8rem' }} className="mb-0.5">{t('dashboard.checkOutTime')}</h6>
+            <p className="mb-0 text-slate-800 text-xs font-semibold">{new Date(selectedAtt.checkOutDate).toLocaleString()}</p>
+          </div>
         )}
 
         {selectedAtt.formation.documentUrls && selectedAtt.formation.documentUrls.length > 0 && (
-          <div className="mb-4 text-center">
-            <span className="fw-bold text-dark mb-2 d-block text-start">{t('dashboard.viewDocumentation', 'Ver Documentación')}:</span>
-            <div className="d-flex flex-wrap gap-2 justify-content-center">
-              {selectedAtt.formation.documentUrls.map((item, idx) => {
+          <div className="mb-3">
+            <span className="font-bold text-slate-700 text-xs mb-1.5 block">{t('dashboard.viewDocumentation', 'Ver Documentación')}:</span>
+            <div className="flex flex-wrap gap-1.5 justify-center max-h-28 overflow-y-auto p-1">
+              {selectedAtt.formation.documentUrls.map((item) => {
                 const fileMeta = getCleanFileInfo(item);
-
                 return (
                   <a
                     key={item}
                     href={fileMeta.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ba-btn ba-btn-secondary px-3 py-2 text-truncate"
+                    className="ba-btn ba-btn-secondary px-2.5 py-1 text-xs text-truncate rounded-full"
                     style={{ textDecoration: 'none', maxWidth: '100%' }}
                   >
                     {fileMeta.name}
@@ -95,19 +104,19 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
           </div>
         )}
 
-        <div className="d-flex justify-content-between align-items-center mt-4 pt-3" style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-          <div>
-            <span style={{ color: '#64748b' }} className="mr-2">{t('dashboard.statusLabel')} </span>
-            {selectedAtt.checkOutDate ? (
-              <span className="badge-glass-success" style={{ fontSize: '0.9rem' }}>{t('dashboard.statusCompleted')}</span>
-            ) : (
-              <span className="badge-glass-warning text-dark" style={{ fontSize: '0.9rem' }}>{t('dashboard.statusInProgress')}</span>
-            )}
-          </div>
-          {!selectedAtt.checkOutDate && (
-            <button type="button" className="ba-btn ba-btn-primary m-0" onClick={() => setStep('scan')}>
-              {t('dashboard.checkout')}
-            </button>
+        <div className="flex justify-start items-center mt-3 pt-2.5 border-t border-black/5">
+          <span style={{ color: '#64748b', fontSize: '0.85rem' }} className="mr-1.5">
+            {t('dashboard.statusLabel')}
+          </span>
+
+          {selectedAtt.checkOutDate ? (
+            <span className="badge-glass-success text-xs px-2.5 py-0.5">
+              {t('dashboard.statusCompleted')}
+            </span>
+          ) : (
+            <span className="badge-glass-warning text-dark text-xs px-2.5 py-0.5">
+              {t('dashboard.statusInProgress')}
+            </span>
           )}
         </div>
       </div>
@@ -117,11 +126,11 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
   const renderScanStep = () => {
     return (
       <div>
-        <h5 className="text-center mb-3" style={{ color: '#2c3e50', fontWeight: 600 }}>{t('dashboard.scanStep')}</h5>
+        <h5 className="text-center mb-2 text-sm font-semibold text-slate-800">{t('dashboard.scanStep')}</h5>
         {!isManualCheckout ? (
           <>
             {cameras.length > 1 && (
-              <div className="mb-3" style={{ maxWidth: '300px', margin: '0 auto' }}>
+              <div className="mb-2" style={{ maxWidth: '250px', margin: '0 auto' }}>
                 <GlassDropdown
                   options={cameras}
                   value={selectedCameraId}
@@ -130,26 +139,22 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
                 />
               </div>
             )}
-            
-            {/* Loading indicator — outside #checkout-qr-reader so React and the library don't conflict */}
+
             {!isScannerReady && (
-              <div className="p-5 text-center text-muted">
-                <FontAwesomeIcon icon={faCamera} className="fa-spin mb-2" size="2x" />
+              <div className="p-3 text-center text-muted text-xs">
+                <FontAwesomeIcon icon={faCamera} className="fa-spin mb-1" size="lg" />
                 <p className="mb-0">{t('checkin.startingCamera', 'Iniciando cámara...')}</p>
               </div>
             )}
 
-            {/* Stable outer div — React owns this wrapper; the library fully owns #checkout-qr-reader */}
-            <div style={{ width: '100%', maxWidth: '400px', borderRadius: '24px', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.5)', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', margin: '0 auto 12px' }}>
-              {/* This div is intentionally EMPTY from React's perspective. html5-qrcode manages its DOM. */}
+            <div style={{ width: '100%', maxWidth: '300px', borderRadius: '16px', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.5)', boxShadow: '0 8px 20px rgba(0,0,0,0.06)', margin: '0 auto 8px' }}>
               <div id="checkout-qr-reader" style={{ width: '100%' }} />
             </div>
 
-            <div className="text-center mt-3">
-              <button 
-                type="button" 
-                className="ba-btn ba-btn-secondary w-100 py-3" 
-                style={{ fontSize: '0.9rem', fontWeight: 600 }}
+            <div className="text-center mt-2">
+              <button
+                type="button"
+                className="ba-btn ba-btn-secondary w-full py-2 text-xs font-semibold rounded-full"
                 onClick={() => setIsManualCheckout(true)}
               >
                 {t('dashboard.cameraIssue', '¿Problemas con la cámara? Entrada manual')}
@@ -157,13 +162,13 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
             </div>
           </>
         ) : (
-          <ManualCheckinForm 
+          <ManualCheckinForm
             onSubmit={(code) => {
               setValidatedToken(code);
               setStep('sign');
               toast.success(t('dashboard.codeAccepted'));
-            }} 
-            onCancel={() => setIsManualCheckout(false)} 
+            }}
+            onCancel={() => setIsManualCheckout(false)}
           />
         )}
       </div>
@@ -171,32 +176,38 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
   };
 
   return (
-    <Modal isOpen={isOpen} toggle={handleClose} centered style={{ maxWidth: '500px' }}>
-      <ModalHeader toggle={handleClose}>
+    <Modal isOpen={isOpen} toggle={handleClose} centered style={{ maxWidth: '440px' }}>
+      <ModalHeader toggle={handleClose} className="py-2.5 px-4 text-sm font-bold">
         {selectedAtt ? selectedAtt.formation.name : t('dashboard.formationDetails')}
       </ModalHeader>
-      
-      <ModalBody className="py-4">
+
+      <ModalBody className="py-3 px-4">
         {step === 'details' && renderDetailsStep()}
         {step === 'scan' && renderScanStep()}
         {step === 'sign' && (
-          <SignatureStep 
+          <SignatureStep
             onSubmit={(signatureBase64) => {
               onSubmitCheckout(signatureBase64, validatedToken);
               handleClose();
-            }} 
+            }}
             submitLabel={t('dashboard.confirmCheckout')}
           />
         )}
+
+        <div className="flex justify-end mt-3 pt-2 border-t border-black/5">
+          {step !== 'details' ? (
+            step !== 'sign' && (
+              <button type="button" className="ba-btn ba-btn-secondary m-0 px-3 py-1.5 text-xs rounded-full" onClick={() => setStep('details')}>
+                {t('dashboard.backToDetails')}
+              </button>
+            )
+          ) : (
+            <button type="button" className="ba-btn ba-btn-secondary m-0 px-3 py-1.5 text-xs rounded-full" onClick={handleClose}>
+              {t('dashboard.close')}
+            </button>
+          )}
+        </div>
       </ModalBody>
-      
-      <ModalFooter>
-        {step !== 'details' ? (
-          step !== 'sign' && <button type="button" className="ba-btn ba-btn-secondary" onClick={() => setStep('details')}>{t('dashboard.backToDetails')}</button>
-        ) : (
-          <button type="button" className="ba-btn ba-btn-secondary" onClick={handleClose}>{t('dashboard.close')}</button>
-        )}
-      </ModalFooter>
     </Modal>
   );
 }
