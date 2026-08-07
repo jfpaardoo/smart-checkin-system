@@ -62,7 +62,6 @@ public class LocalFileSystemService {
 
             return fileName;
         } catch (IllegalArgumentException | SecurityException e) {
-            logger.warn("Security validation failed for signature upload: {}", e.getMessage());
             throw e;
         } catch (IOException e) {
             logger.error("IO error saving signature file to disk: {}", e.getMessage(), e);

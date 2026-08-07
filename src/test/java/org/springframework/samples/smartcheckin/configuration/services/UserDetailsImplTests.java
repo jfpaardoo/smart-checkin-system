@@ -58,4 +58,13 @@ class UserDetailsImplTests {
         assertEquals(user1.hashCode(), user2.hashCode());
         assertNotEquals(user1.hashCode(), user3.hashCode());
     }
+
+	@Test
+    void testEqualsWithNullIdComparisons() {
+        UserDetailsImpl userWithId = new UserDetailsImpl(1, "user1", "pass", Collections.emptyList());
+        UserDetailsImpl userWithNullId = new UserDetailsImpl(null, "userNull", "pass", Collections.emptyList());
+
+        assertNotEquals(userWithId, userWithNullId);
+        assertNotEquals(userWithNullId, userWithId);
+    }
 }

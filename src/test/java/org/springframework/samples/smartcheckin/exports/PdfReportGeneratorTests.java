@@ -76,4 +76,13 @@ class PdfReportGeneratorTests {
 
         assertNotNull(pdf);
     }
+
+    @Test
+    void shouldGenerateHrReportPdfWhenActiveCheckinsExceedTotalUsers() {
+        // totalUsers = 5, activeCheckins = 10 (cubre la rama totalUsers > activeCheckins como falsa de manera segura)
+        byte[] pdf = pdfReportGenerator.generateHrReportPdf(5, 10, 10, 2);
+
+        assertNotNull(pdf);
+        assertTrue(pdf.length > 0, PDF_NOT_EMPTY);
+    }
 }

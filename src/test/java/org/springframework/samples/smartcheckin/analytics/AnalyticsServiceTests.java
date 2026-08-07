@@ -275,4 +275,28 @@ class AnalyticsServiceTests {
         assertTrue(res.isPresent());
         assertFalse(res.get().getFormationDetails().getFirst().getHasSignature());
     }
+
+	@Test
+    void testCalculateWorkMinutesInvalidOrChronologicallyBackwardsCheckins() {
+        User user = new User();
+        user.setId(1);
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+
+        // Entrada a las 10:00
+        Checkin c1 = new Checkin();
+        c1.setCheckInType(CheckinType.ENTRADA);
+        c1.setCheckInDate(LocalDateTime.of(2026, Month.AUGUST, 1, 10, 0));
+
+        // Salida a las 9:00 (anterior a la entrada, evalúa isAfter a false)
+        Checkin c2 = new Checkin();
+        c2.setCheckInType(CheckinType.SALIDA);
+        c2.setCheckInDate(LocalDateTime.of(2026, Month.AUGUST, 1, 9, 0));
+
+        // Ordenamos cronológicamente como hace el método
+        when(checkinRepository.findByUserIdOrderByCheckInDateDesc(1)).thenReturn(List.of(c2, c1));
+
+        Optional<UserAnalyticsDTO> res = analyticsService.getUserAnalytics(1);
+        assertTrue(res.isPresent());
+        assertEquals(0L, res.get().getTotalWorkMinutes());
+    }
 }

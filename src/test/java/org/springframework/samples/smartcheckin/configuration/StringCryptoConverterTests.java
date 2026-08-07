@@ -12,7 +12,6 @@ class StringCryptoConverterTests {
     @BeforeEach
     void setUp() {
         converter = new StringCryptoConverter();
-        // Configuramos la clave AES a un estado conocido
         EncryptionConfig config = new EncryptionConfig();
         config.setSecret("SuperSecretKey12345678901234567890"); 
     }
@@ -38,14 +37,30 @@ class StringCryptoConverterTests {
 
     @Test
     void testCompatibilityFallback() {
-        // Simula la lectura de un registro antiguo en BBDD que no fue cifrado (no contiene el formato iv:data)
         String unencryptedOldData = "DatosAntiguosSinCifrar";
         assertEquals(unencryptedOldData, converter.convertToEntityAttribute(unencryptedOldData));
     }
 
     @Test
     void testDecryptionExceptionForInvalidBase64() {
-        // Forzamos un error de descifrado pasando un formato correcto pero con datos inválidos de Base64
         assertThrows(RuntimeException.class, () -> converter.convertToEntityAttribute("invalidBase64:invalidBase64"));
+    }
+
+    @Test
+    void testGetKeyWithNullSecretUsesFallback() {
+        EncryptionConfig config = new EncryptionConfig();
+        config.setSecret(null);
+        String encrypted = converter.convertToDatabaseColumn("pruebaNulo");
+        assertNotNull(encrypted);
+        assertEquals("pruebaNulo", converter.convertToEntityAttribute(encrypted));
+    }
+
+    @Test
+    void testGetKeyWithShortSecretUsesFallback() {
+        EncryptionConfig config = new EncryptionConfig();
+        config.setSecret("corto");
+        String encrypted = converter.convertToDatabaseColumn("pruebaCorto");
+        assertNotNull(encrypted);
+        assertEquals("pruebaCorto", converter.convertToEntityAttribute(encrypted));
     }
 }

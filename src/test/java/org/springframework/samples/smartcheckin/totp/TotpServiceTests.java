@@ -115,4 +115,27 @@ class TotpServiceTests {
 
         assertTrue(ex.getMessage().contains("Error generating TOTP token"));
     }
+
+	@Test
+    void shouldValidateCodeSuccessfully() {
+        String secretKey = "TEST_SECRET_KEY_12345";
+        
+        dev.samstevens.totp.time.TimeProvider timeProvider = new dev.samstevens.totp.time.SystemTimeProvider();
+        long currentBucket = Math.floorDiv(timeProvider.getTime(), 30);
+        
+        dev.samstevens.totp.code.CodeGenerator codeGenerator = new dev.samstevens.totp.code.DefaultCodeGenerator();
+        
+        String validToken = org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> 
+            codeGenerator.generate(secretKey, currentBucket)
+        );
+        
+        boolean isValid = totpService.validateCode(secretKey, validToken);
+        assertTrue(isValid);
+    }
+
+    @Test
+    void shouldFailValidateCodeWithInvalidFormatOrEmpty() {
+        assertFalse(totpService.validateCode("SECRET", ""));
+        assertFalse(totpService.validateCode("   ", "123456"));
+    }
 }

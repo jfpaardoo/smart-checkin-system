@@ -1,14 +1,11 @@
 package org.springframework.samples.smartcheckin.auth;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -16,14 +13,13 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.samples.smartcheckin.audit.AnomalyDetectionService;
 import org.springframework.samples.smartcheckin.auth.payload.request.LoginRequest;
 import org.springframework.samples.smartcheckin.auth.payload.request.SignupRequest;
@@ -31,10 +27,13 @@ import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVe
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtBlacklistService;
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
-import org.springframework.samples.smartcheckin.user.UserService;
+import org.springframework.samples.smartcheckin.configuration.services.UserDetailsServiceImpl;
+import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
+import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.samples.smartcheckin.user.AuthoritiesService;
 import org.springframework.samples.smartcheckin.user.User;
+import org.springframework.samples.smartcheckin.user.UserService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -43,14 +42,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import org.springframework.samples.smartcheckin.configuration.services.UserDetailsServiceImpl;
-import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
-import org.springframework.samples.smartcheckin.totp.TotpService;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
 import io.qameta.allure.Owner;
@@ -64,6 +60,7 @@ import io.qameta.allure.Owner;
 class AuthControllerTests {
 
 	private static final String BASE_URL = "/api/v1/auth";
+	private static final String VERIFY_URL = "/verify-2fa";
 
 	@MockitoBean
 	private AuthenticationManager authenticationManager;
@@ -210,7 +207,7 @@ class AuthControllerTests {
 		when(userDetailsService.loadUserByUsername(USER1)).thenReturn(userDetails);
 		when(jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn("MOCK_JWT");
 
-		mockMvc.perform(post(BASE_URL + "/verify-2fa").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(BASE_URL + VERIFY_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.token").value("MOCK_JWT"));
@@ -229,7 +226,7 @@ class AuthControllerTests {
 		when(userService.findUser(USER1)).thenReturn(user);
 		when(totpService.validateCode(SECRET, "000000")).thenReturn(false);
 
-		mockMvc.perform(post(BASE_URL + "/verify-2fa").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(BASE_URL + VERIFY_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req)))
 				.andExpect(status().isBadRequest());
 	}
@@ -392,5 +389,54 @@ class AuthControllerTests {
                 .andExpect(status().isOk());
 
         verify(authoritiesService, times(1)).saveAuthorities(any(Authorities.class));
+    }
+
+	@Test
+    void shouldLogoutUserSuccessfully() throws Exception {
+        mockMvc.perform(post(BASE_URL + "/logout").with(csrf())
+                .header("Authorization", "Bearer MOCK_VALID_JWT_TOKEN"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Log out successful!"));
+
+        verify(jwtBlacklistService, times(1)).blacklistToken("MOCK_VALID_JWT_TOKEN");
+    }
+
+    @Test
+    void shouldVerifyTwoFactorUserNotFound() throws Exception {
+        TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
+        req.setUsername("nonexistent");
+        req.setCode("123456");
+
+        when(userService.findUser("nonexistent")).thenThrow(new ResourceNotFoundException("User not found"));
+
+        mockMvc.perform(post(BASE_URL + "/verify-2fa").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldVerifyTwoFactorSuccessResetsFailedAttempts() throws Exception {
+        TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
+        req.setUsername(USER1);
+        req.setCode("123456");
+
+        User user = new User();
+        user.setId(1);
+        user.setUsername(USER1);
+        user.setTwoFactorSecret(SECRET);
+        user.setFailedLoginAttempts(3); // Para cubrir la condición de restablecimiento de intentos
+
+        when(userService.findUser(USER1)).thenReturn(user);
+        when(totpService.validateCode(SECRET, "123456")).thenReturn(true);
+        when(userDetailsService.loadUserByUsername(USER1)).thenReturn(userDetails);
+        when(jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn("MOCK_JWT");
+
+        mockMvc.perform(post(BASE_URL + "/verify-2fa").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("MOCK_JWT"));
+
+        verify(userService, times(1)).saveUser(user);
+        assertEquals(0, user.getFailedLoginAttempts());
     }
 }

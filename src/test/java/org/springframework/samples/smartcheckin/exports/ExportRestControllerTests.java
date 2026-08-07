@@ -357,5 +357,16 @@ class ExportRestControllerTests {
                     .andExpect(status().isOk());
         }
     }
+
+	@Test
+    @WithMockUser(authorities = {"EMPLOYEE"})
+    void shouldExportMyDataSuccessfully() throws Exception {
+        when(userService.findCurrentUser()).thenReturn(user);
+        when(checkinRepository.findByUserId(user.getId())).thenReturn(List.of(checkin));
+        when(attendanceRepository.findByUserId(user.getId())).thenReturn(List.of(attendance));
+
+        mockMvc.perform(get(BASE_URL + "/me/export"))
+                .andExpect(status().isOk());
+    }
 }
 

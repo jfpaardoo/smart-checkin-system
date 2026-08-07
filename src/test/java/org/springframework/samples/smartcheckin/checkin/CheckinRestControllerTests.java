@@ -129,23 +129,31 @@ class CheckinRestControllerTests {
 	@Test
 	@WithMockUser
 	void qrCheckinFormationFlowInvalidLocation() throws Exception {
-		when(userService.findCurrentUser()).thenReturn(user);
-
 		Formation formation = new Formation();
-		formation.setId(5);
-		when(formationService.findAll()).thenReturn(List.of(formation));
-		when(totpService.verifyToken(eq("123456"), any())).thenReturn(true);
+		formation.setId(100);
+		formation.setName("Spring Course");
 
 		QrCheckinRequest req = new QrCheckinRequest();
 		req.setToken("123456");
-		req.setFormationId(5L);
-		req.setUserLat(0.0);
-		req.setUserLng(0.0);
-		req.setAdminLat(40.0);
-		req.setAdminLng(40.0);
+		req.setFormationId(100L);
+		req.setUserLat(37.3891);
+		req.setUserLng(-5.9845);
+		req.setAdminLat(37.4000);
+		req.setAdminLng(-6.0000);
 
-		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(req))).andExpect(status().isForbidden());
+    	when(userService.findCurrentUser()).thenReturn(user);
+    	when(formationService.findAll()).thenReturn(List.of(formation));
+    	when(totpService.verifyToken(eq("123456"), any())).thenReturn(true);
+
+    	mockMvc.perform(post(BASE_URL + "/qr-fichaje")
+            	.with(csrf())
+            	.with(request -> {
+                	request.setRemoteAddr("10.0.0.101");
+                	return request;
+            	})
+            	.contentType(MediaType.APPLICATION_JSON)
+            	.content(objectMapper.writeValueAsString(req)))
+            	.andExpect(status().isForbidden());
 	}
 
 	@Test
@@ -348,5 +356,62 @@ class CheckinRestControllerTests {
 				}) // Burlar el RateLimit
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isAccepted());
+	}
+
+	@Test
+	@WithMockUser
+	void testResolveFormationReturnsNullWhenFormationIdTokenInvalid() throws Exception {
+
+    	Formation formation = new Formation();
+    	formation.setId(100);
+
+    	QrCheckinRequest req = new QrCheckinRequest();
+    	req.setToken("123456"); // exactamente 6 caracteres
+    	req.setFormationId(100L);
+
+    	when(userService.findCurrentUser()).thenReturn(user);
+    	when(formationService.findAll()).thenReturn(List.of(formation));
+
+    	// El token de formación es inválido
+    	when(totpService.verifyToken("123456", 100L)).thenReturn(false);
+
+    	// El token global también es inválido
+    	when(totpService.verifyToken("123456")).thenReturn(false);
+
+    	mockMvc.perform(post(BASE_URL + "/qr-fichaje")
+            	.with(csrf())
+            	.with(request -> {
+                	request.setRemoteAddr("10.0.0.102");
+                	return request;
+            	})
+            	.contentType(MediaType.APPLICATION_JSON)
+            	.content(objectMapper.writeValueAsString(req)))
+            	.andExpect(status().isUnauthorized())
+            	.andExpect(jsonPath("$.message").value("Código inválido o expirado."));
+	}
+
+    @Test
+    @WithMockUser
+    void testResolveFormationReturnsNullWhenNoFormationMatchesToken() throws Exception {
+    	Formation formation = new Formation();
+    	formation.setId(300);
+
+    	QrCheckinRequest req = new QrCheckinRequest();
+    	req.setToken("WRONG_TOKEN");
+
+    	when(userService.findCurrentUser()).thenReturn(user);
+    	when(formationService.findAll()).thenReturn(List.of(formation));
+    	when(totpService.verifyToken("WRONG_TOKEN", 300)).thenReturn(false);
+    	when(totpService.verifyToken("WRONG_TOKEN")).thenReturn(false);
+
+    	mockMvc.perform(post(BASE_URL + "/qr-fichaje")
+            	.with(csrf())
+            	.with(request -> {
+                	request.setRemoteAddr("10.0.0.103");
+                	return request;
+            	})
+            	.contentType(MediaType.APPLICATION_JSON)
+            	.content(objectMapper.writeValueAsString(req)))
+            	.andExpect(status().isBadRequest());
 	}
 }

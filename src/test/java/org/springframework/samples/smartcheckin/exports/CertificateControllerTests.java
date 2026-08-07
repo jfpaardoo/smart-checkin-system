@@ -93,5 +93,14 @@ class CertificateControllerTests {
 
         mockMvc.perform(get(BASE_URL + ATTENDANCE_1_URL)).andExpect(status().isNotFound());
     }
+
+	@Test
+	@WithMockUser(username = "admin", authorities = {"ADMIN"})
+	void testDownloadCertificateInvalidId() throws Exception {
+
+		mockMvc.perform(get(BASE_URL + "/attendance/abc"))
+				.andExpect(status().isInternalServerError());
+	}
+
 }
 

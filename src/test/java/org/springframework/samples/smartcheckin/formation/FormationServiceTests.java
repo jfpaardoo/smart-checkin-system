@@ -441,4 +441,31 @@ class FormationServiceTests {
         assertDoesNotThrow(() -> formationService.deleteFormation(1));
         verify(formationRepository, times(1)).delete(formation);
     }
+
+    @Test
+    void testUpdateFormationWithNewFileAndNullDocumentUrls() throws Exception {
+        Formation existing = new Formation();
+        existing.setId(1);
+        existing.setName("Old");
+        // Inicializamos la lista como null explícitamente para reproducir el escenario
+        existing.setDocumentUrls(null);
+
+        Formation updatedDetails = new Formation();
+        updatedDetails.setName("New");
+        // Aseguramos que la lista en los detalles actualizados tampoco cause NPE si se evalúa
+        updatedDetails.setDocumentUrls(new ArrayList<>());
+
+        MockMultipartFile mockFile = 
+            new MockMultipartFile("file", "new.pdf", "application/pdf", new byte[]{4, 5, 6});
+
+        when(formationRepository.findById(1)).thenReturn(Optional.of(existing));
+        when(oneDriveService.uploadFile(mockFile, FORMATIONS_DIR)).thenReturn("https://onedrive.live.com/new.pdf");
+        when(formationRepository.save(any(Formation.class))).thenReturn(existing);
+
+        Formation res = formationService.updateFormation(updatedDetails, 1, mockFile);
+        
+        assertNotNull(res);
+        assertEquals("New", res.getName());
+        verify(oneDriveService, times(1)).uploadFile(mockFile, FORMATIONS_DIR);
+    }
 }

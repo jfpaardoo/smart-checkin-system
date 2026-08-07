@@ -216,4 +216,24 @@ class PushNotificationServiceTests {
 
         assertDoesNotThrow(serviceWithBadKeys::init);
     }
+
+    @Test
+    void testSendNotificationGenericExceptionWithout410() {
+        PushSubscriptionEntity sub = new PushSubscriptionEntity();
+        sub.setEndpoint("https://fcm.googleapis.com/fcm/send/errorEndpoint");
+        sub.setP256dh("p256dh");
+        sub.setAuth("auth");
+
+        nl.martijndwars.webpush.PushService mockPushService = mock(nl.martijndwars.webpush.PushService.class);
+        try {
+            doThrow(new RuntimeException("General Error")).when(mockPushService).send(any());
+        } catch (Exception e) {
+            // Ignorar
+        }
+
+        ReflectionTestUtils.setField(pushNotificationService, "pushService", mockPushService);
+
+        assertDoesNotThrow(() -> pushNotificationService.sendNotification(sub, "Title", "Body"));
+        verify(subscriptionRepository, never()).delete(any());
+    }
 }
