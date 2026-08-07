@@ -29,7 +29,7 @@ test.describe('Flujo de Autorregistro de Usuario (User Self-Registration E2E)', 
     await page.click('button[type="submit"]');
 
     // Verify Success Screen
-    await expect(page.locator('h4')).toContainText(/¡Solicitud Enviada!|Request Sent!|Request Submitted!/i);
+    await expect(page.locator('h3')).toContainText(/¡Solicitud Enviada!|Request Sent!|Request Submitted!/i);
   });
 
   test('Debe validar que las contraseñas coincidan', async ({ page }) => {
