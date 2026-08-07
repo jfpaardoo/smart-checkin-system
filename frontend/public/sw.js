@@ -1,8 +1,8 @@
 /* eslint-disable no-restricted-globals */
-/* Service Worker for BA Distribution Academy PWA */
+/* Service Worker for BA Distribution Academy PWA - v5 */
 
 self.addEventListener('push', function(event) {
-  if (!event.data) return;
+  if (!event.data) return;  
   
   const data = (() => {
     try {
@@ -11,15 +11,15 @@ self.addEventListener('push', function(event) {
       return {
         title: 'Distribution Academy',
         body: event.data.text(),
-        icon: '/ba-logo.png'
+        icon: '/favicon.png?v=5'
       };
     }
   })();
 
   const options = {
     body: data.body || '',
-    icon: data.icon || '/ba-logo.png',
-    badge: '/ba-logo.png',
+    icon: data.icon || '/favicon.png?v=5',
+    badge: '/favicon.png?v=5',
     vibrate: [200, 100, 200],
     tag: 'ba-notification-' + Date.now(),
     data: {
