@@ -50,7 +50,7 @@ public class SecurityConfiguration {
                 .headers(headers -> headers
                     .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
                     .xssProtection(HeadersConfigurer.XXssConfig::disable)
-                    .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'"))
+                    .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self' https: data: 'unsafe-inline'"))
                 )
                 .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(unauthorizedHandler))
 
@@ -61,8 +61,8 @@ public class SecurityConfiguration {
                         // 2. Recursos estáticos y consolas
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                         .requestMatchers(PathRequest.toH2Console()).permitAll()
-                        .requestMatchers("/h2-console/**", "/", "/oups", "/index.html", "/manifest.json", "/favicon.ico", "/*.png", "/static/**").permitAll()
-
+                        .requestMatchers("/h2-console/**", "/", "/oups", "/index.html", "/manifest.json", "/favicon.ico", "/*.png", "/static/**", "/locales/**").permitAll()
+                        
                         // 3. Swagger / OpenAPI (solo ADMIN)
                         .requestMatchers(
                                 "/v3/api-docs/**",
