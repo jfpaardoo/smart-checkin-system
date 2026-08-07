@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -150,7 +151,7 @@ class FormationRestControllerTests {
         FormationRequest req = new FormationRequest();
         req.setName("Spring Security 101");
         req.setDescription("Security Course");
-        req.setFormationDate(java.time.LocalDateTime.now());
+        req.setFormationDate(LocalDateTime.now());
 
         MockMultipartFile jsonPart = new MockMultipartFile(
                 "formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
@@ -171,7 +172,7 @@ class FormationRestControllerTests {
         FormationRequest req = new FormationRequest();
         req.setName("Spring Security Updated");
         req.setDescription("Updated Course");
-        req.setFormationDate(java.time.LocalDateTime.now());
+        req.setFormationDate(LocalDateTime.now());
         req.setExistingDocumentUrls(List.of());
 
         MockMultipartFile jsonPart = new MockMultipartFile(
@@ -204,7 +205,7 @@ class FormationRestControllerTests {
         FormationRequest req = new FormationRequest();
         req.setName("Java 101 Updated");
         req.setDescription("Intro to Java");
-        req.setFormationDate(java.time.LocalDateTime.now());
+        req.setFormationDate(LocalDateTime.now());
         req.setExistingDocumentUrls(List.of("file1.pdf||http://onedrive.link/file1.pdf||item123"));
 
         MockMultipartFile jsonPart = new MockMultipartFile(
@@ -280,7 +281,7 @@ class FormationRestControllerTests {
         FormationRequest req = new FormationRequest();
         req.setName("Spring Security Updated");
         req.setDescription("Updated Course");
-        req.setFormationDate(java.time.LocalDateTime.now());
+        req.setFormationDate(LocalDateTime.now());
 
         MockMultipartFile jsonPart = new MockMultipartFile(
                 "formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
@@ -323,7 +324,7 @@ class FormationRestControllerTests {
         FormationRequest req = new FormationRequest();
         req.setName("Java 101 Updated");
         req.setDescription("Intro to Java");
-        req.setFormationDate(java.time.LocalDateTime.now());
+        req.setFormationDate(LocalDateTime.now());
         req.setExistingDocumentUrls(List.of());
 
         MockMultipartFile jsonPart = new MockMultipartFile(
@@ -349,7 +350,7 @@ class FormationRestControllerTests {
         FormationRequest req = new FormationRequest();
         req.setName("Spring Security Updated");
         req.setDescription("Updated Course");
-        req.setFormationDate(java.time.LocalDateTime.now());
+        req.setFormationDate(LocalDateTime.now());
         req.setExistingDocumentUrls(List.of());
 
         MockMultipartFile jsonPart = new MockMultipartFile(
@@ -376,7 +377,7 @@ class FormationRestControllerTests {
         FormationRequest req = new FormationRequest();
         req.setName("Spring Security 101");
         req.setDescription("Security Course");
-        req.setFormationDate(java.time.LocalDateTime.now());
+        req.setFormationDate(LocalDateTime.now());
 
         MockMultipartFile jsonPart = new MockMultipartFile(
                 "formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
@@ -399,7 +400,7 @@ class FormationRestControllerTests {
         FormationRequest req = new FormationRequest();
         req.setName("Spring Security 101");
         req.setDescription("Security Course");
-        req.setFormationDate(java.time.LocalDateTime.now());
+        req.setFormationDate(LocalDateTime.now());
 
         MockMultipartFile jsonPart = new MockMultipartFile(
                 "formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
@@ -494,7 +495,7 @@ class FormationRestControllerTests {
     void createFormationWithNullFilesList() throws Exception {
         FormationRequest req = new FormationRequest();
         req.setName("Spring Security 101");
-        req.setFormationDate(java.time.LocalDateTime.now());
+        req.setFormationDate(LocalDateTime.now());
 
         MockMultipartFile jsonPart = new MockMultipartFile(
                 "formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
@@ -511,7 +512,7 @@ class FormationRestControllerTests {
     void updateFormationWithNullExistingUrlsAndNullFiles() throws Exception {
         FormationRequest req = new FormationRequest();
         req.setName("Spring Security Updated");
-        req.setFormationDate(java.time.LocalDateTime.now());
+        req.setFormationDate(LocalDateTime.now());
         req.setExistingDocumentUrls(null); 
 
         MockMultipartFile jsonPart = new MockMultipartFile(
@@ -544,7 +545,7 @@ class FormationRestControllerTests {
 
         FormationRequest req = new FormationRequest();
         req.setName("Spring Security 101");
-        req.setFormationDate(java.time.LocalDateTime.now());
+        req.setFormationDate(LocalDateTime.now());
 
         MockMultipartFile jsonPart = new MockMultipartFile(
                 "formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
