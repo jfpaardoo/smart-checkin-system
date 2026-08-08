@@ -95,23 +95,40 @@ export default function UserProfile() {
       <div className="mx-auto w-full max-w-[1000px]">
         <ProfileHeader userData={userData} formations={formations} t={t} />
 
-        <Nav pills className="ba-nav-pills border-0 mb-4 justify-content-center gap-3">
-          <NavItem>
-            <NavLink className={`px-4 py-2 shadow-sm ${activeTab === "1" ? "active" : ""}`} onClick={() => toggleTab("1")} style={{ cursor: "pointer" }}>
-              <FaUser className="me-2" />{t("profile.personalData", "Mis Datos")}
-            </NavLink>
-          </NavItem>
-          <NavItem>
-            <NavLink className={`px-4 py-2 shadow-sm ${activeTab === "2" ? "active" : ""}`} onClick={() => toggleTab("2")} style={{ cursor: "pointer" }}>
-              <FaGraduationCap className="me-2" />{t("profile.myFormations", "Formaciones")}
-            </NavLink>
-          </NavItem>
-          <NavItem>
-            <NavLink className={`px-4 py-2 shadow-sm ${activeTab === "3" ? "active" : ""}`} onClick={() => toggleTab("3")} style={{ cursor: "pointer" }}>
-              <FaShieldAlt className="me-2" />{t("profile.securityPassword", "Seguridad")}
-            </NavLink>
-          </NavItem>
-        </Nav>
+        <div className="px-1 px-md-3">
+          <Nav pills className="ba-nav-pills border-0 mb-4 justify-content-center flex-column flex-md-row gap-3">
+            <NavItem className="w-full md:w-auto">
+              <NavLink 
+                className={`px-4 py-2 shadow-sm d-flex flex-column align-items-center justify-content-center text-center w-full md:min-w-[240px] transition-all ${activeTab === "1" ? "active" : ""}`} 
+                onClick={() => toggleTab("1")} 
+                style={{ cursor: "pointer" }}
+              >
+                <FaUser className="mb-1" size={18} />
+                <span className="fw-semibold">{t("profile.personalData", "Datos Personales")}</span>
+              </NavLink>
+            </NavItem>
+            <NavItem className="w-full md:w-auto">
+              <NavLink 
+                className={`px-4 py-2 shadow-sm d-flex flex-column align-items-center justify-content-center text-center w-full md:min-w-[240px] transition-all ${activeTab === "2" ? "active" : ""}`} 
+                onClick={() => toggleTab("2")} 
+                style={{ cursor: "pointer" }}
+              >
+                <FaGraduationCap className="mb-1" size={18} />
+                <span className="fw-semibold">{t("profile.myFormations", "Mis Formaciones")}</span>
+              </NavLink>
+            </NavItem>
+            <NavItem className="w-full md:w-auto">
+              <NavLink 
+                className={`px-4 py-2 shadow-sm d-flex flex-column align-items-center justify-content-center text-center w-full md:min-w-[240px] transition-all ${activeTab === "3" ? "active" : ""}`} 
+                onClick={() => toggleTab("3")} 
+                style={{ cursor: "pointer" }}
+              >
+                <FaShieldAlt className="mb-1" size={18} />
+                <span className="fw-semibold">{t("profile.securityPassword", "Seguridad y Contraseña")}</span>
+              </NavLink>
+            </NavItem>
+          </Nav>
+        </div>
 
         <TabContent activeTab={activeTab} className="p-0 border-0 bg-transparent">
           <TabPane tabId="1" className="ba-fade-in">

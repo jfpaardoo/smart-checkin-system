@@ -21,7 +21,6 @@ export default function FormationListAdmin() {
   const fetchFormations = useCallback(async (query = '') => {
     setLoading(true);
     try {
-      // Eliminamos el ternario para que SonarLint no se queje (S3358)
       let url = `/api/v1/formations`;
       if (query) {
         url = `/api/v1/formations?search=${encodeURIComponent(query)}`;
@@ -75,9 +74,10 @@ export default function FormationListAdmin() {
           </div>
         </div>
         
+        {/* Usamos texto corto en pantallas pequeñas ('Buscar formación...') para que quepa entero sin cortarse al pulsar */}
         <div className="mb-4">
           <GlassSearchBar 
-            placeholder={t('formations.searchPlaceholder', 'Buscar formación por nombre o descripción...')}
+            placeholder={t('formations.searchPlaceholderShort', 'Buscar formación...')}
             onSearch={(query) => setSearchQuery(query)}
           />
         </div>

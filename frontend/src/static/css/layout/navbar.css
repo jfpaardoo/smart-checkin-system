@@ -1,134 +1,57 @@
 /* ==========================================
    SHIFTSYNC DESIGN SYSTEM - NAVBAR & DROPDOWNS
+   Refactorizado para Tailwind CSS (Liquid Glass Más Transparente)
    ========================================== */
 
 /* BA Glass Navbar - Official Capsule Style */
 .ba-navbar {
-  background: rgba(43, 51, 64, 0.784) !important; /* Slate dark but highly transparent */
-  backdrop-filter: blur(30px) saturate(210%) !important;
-  -webkit-backdrop-filter: blur(30px) saturate(210%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-top: 1px solid rgba(255, 255, 255, 0.45);
-  border-radius: 40px !important;
-  margin: 15px 20px !important;
-  padding: 10px 30px !important;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: relative;
-  z-index: 1050;
+  @apply flex items-center justify-between relative z-[1050] my-[15px] mx-[20px] px-[30px] py-[10px] rounded-[40px] bg-slate-800/5 backdrop-blur-sm backdrop-saturate-150 border border-white/30 border-t-white/45 shadow-[0_15px_35px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.4)] !important;
 }
 
 .ba-navbar-brand {
-  display: flex;
-  align-items: center;
-  font-weight: 600;
-  font-size: 1.4rem;
-  color: var(--ba-white) !important;
-  text-decoration: none;
-  letter-spacing: -0.5px;
+  @apply flex items-center font-semibold text-[1.4rem] text-white no-underline tracking-[-0.5px] !important;
 }
 
 .logo-crop {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 15px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  @apply flex items-center justify-center w-10 h-10 rounded-full overflow-hidden mr-[15px] shadow-[0_2px_5px_rgba(0,0,0,0.2)];
 }
 
 .logo-crop img {
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  filter: invert(1);
+  @apply w-[60px] h-[60px] object-cover invert;
 }
 
 .ba-nav-link {
-  color: var(--ba-white) !important;
-  font-weight: 500;
-  padding: 0.5rem 1.2rem !important;
-  transition: all 0.3s ease;
-  font-size: 0.95rem;
-  border-radius: 20px;
-}
-
-.ba-nav-link:hover {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  transform: translateY(-1px);
+  @apply text-white font-medium px-[1.2rem] py-2 text-[0.95rem] rounded-[20px] transition-all duration-300 ease-in-out hover:bg-white/15 hover:backdrop-blur-md hover:-translate-y-[1px] !important;
 }
 
 /* Custom Dropdown Styling - Vitreous Dark Glassmorphism */
 .dropdown-menu.ba-dropdown-menu {
-  border-radius: 24px !important;
-  border: 1px solid rgba(255, 255, 255, 0.25) !important;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2), inset 0 1px 1.5px rgba(255, 255, 255, 0.3) !important;
-  background: rgba(43, 51, 64, 0.784) !important;
-  backdrop-filter: blur(45px) saturate(250%) !important;
-  -webkit-backdrop-filter: blur(45px) saturate(250%) !important;
-  padding: 8px !important;
-  min-width: 230px !important;
-  display: block !important;
-  opacity: 0;
-  visibility: hidden;
-  margin-top: 2px !important;
-  transition: opacity 0.3s ease-out, margin-top 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  pointer-events: none;
+  @apply block rounded-[24px] border border-white/25 bg-slate-800/50 backdrop-blur-2xl backdrop-saturate-150 p-2 min-w-[230px] opacity-0 invisible mt-[2px] pointer-events-none transition-all duration-300 ease-out shadow-[0_25px_60px_rgba(0,0,0,0.2),inset_0_1px_1.5px_rgba(255,255,255,0.3)] !important;
 }
 
 .dropdown-menu.ba-dropdown-menu.show {
-  opacity: 1;
-  visibility: visible;
-  margin-top: 22px !important;
-  pointer-events: auto;
+  @apply opacity-100 visible mt-[22px] pointer-events-auto !important;
 }
 
 /* Capsule Hover Items for Dropdowns */
 .ba-dropdown-item {
-  padding: 10px 18px !important;
-  margin: 4px 0 !important;
-  color: var(--ba-white) !important;
-  font-size: 0.95rem;
-  font-weight: 500;
-  border-radius: 20px !important;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  background: transparent !important;
-}
-
-.ba-dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  transform: translateX(4px);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 4px 12px rgba(0, 0, 0, 0.15);
+  @apply bg-transparent text-white text-[0.95rem] font-medium px-[18px] py-[10px] my-1 rounded-[20px] transition-all duration-300 ease-in-out hover:bg-white/20 hover:backdrop-blur-md hover:translate-x-1 hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_4px_12px_rgba(0,0,0,0.15)] !important;
 }
 
 /* Light Liquid Glass Dropdown Menu for Forms & Selects */
 .ba-select-toggle + .dropdown-menu.ba-dropdown-menu,
 .dropdown-menu.ba-dropdown-menu.ba-light-dropdown {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(240, 245, 252, 0.85)) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.95) !important;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12), inset 0 1.5px 2px rgba(255, 255, 255, 1) !important;
-  backdrop-filter: blur(40px) saturate(210%) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(210%) !important;
+  @apply border-[1.5px] border-white/95 backdrop-blur-sm backdrop-saturate-150 shadow-[0_20px_50px_rgba(0,0,0,0.12),inset_0_1.5px_2px_white] !important;
 }
 
 .ba-select-toggle + .dropdown-menu.ba-dropdown-menu .ba-dropdown-item {
-  color: #2c3e50 !important;
+  @apply text-slate-800 !important;
 }
 
 .ba-select-toggle + .dropdown-menu.ba-dropdown-menu .ba-dropdown-item:hover,
 .ba-select-toggle + .dropdown-menu.ba-dropdown-menu .ba-dropdown-item.active {
-  background: rgba(204, 227, 100, 0.35) !important;
-  color: #2b3a04 !important;
-  font-weight: 600 !important;
-  transform: translateX(4px);
+  @apply bg-[#b3c34c]/35 text-[#2b3a04] font-semibold translate-x-1 !important;
 }
 
 /* ==========================================
@@ -136,17 +59,17 @@
    ========================================== */
 
 .ba-nav-capsule {
-  @apply bg-ba-dark/70 backdrop-blur-[40px] backdrop-saturate-[2.1] sticky top-4 z-40 border border-white/20 shadow-[0_8px_32px_0_rgba(31,38,135,0.3)] mx-4 md:mx-6 lg:mx-8 rounded-[40px] transition-all duration-300 mb-8;
+  @apply sticky top-4 z-40 mx-4 md:mx-6 lg:mx-8 mb-8 rounded-[40px] bg-slate-800/40 backdrop-blur-xl backdrop-saturate-150 border border-white/20 shadow-[0_8px_32px_0_rgba(31,38,135,0.3)] transition-all duration-300;
 }
 
 .ba-nav-btn {
-  @apply flex items-center gap-2 text-white hover:bg-white/15 px-4 py-2 rounded-[20px] font-medium transition-all duration-300 outline-none;
+  @apply flex items-center gap-2 px-4 py-2 text-white font-medium rounded-[20px] outline-none transition-all duration-300 hover:bg-white/15;
 }
 
 .ba-nav-dropdown-container {
-  @apply absolute mt-[16px] rounded-[24px] bg-ba-dark/70 backdrop-blur-[40px] backdrop-saturate-[2.1] border border-white/25 z-50 p-2 shadow-[0_10px_40px_rgba(0,0,0,0.6)];
+  @apply absolute mt-[16px] p-2 z-50 rounded-[24px] bg-slate-800/50 backdrop-blur-2xl backdrop-saturate-150 border border-white/25 shadow-[0_10px_40px_rgba(0,0,0,0.6)];
 }
 
 .ba-nav-dropdown-item {
-  @apply flex items-center gap-3 px-[18px] py-[10px] my-1 text-[0.95rem] font-medium text-white rounded-[20px] hover:bg-white/20 hover:backdrop-blur-[15px] hover:translate-x-1 hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_4px_12px_rgba(0,0,0,0.15)] transition-all duration-300 bg-transparent no-underline;
+  @apply flex items-center gap-3 px-[18px] py-[10px] my-1 text-[0.95rem] font-medium text-white bg-transparent rounded-[20px] no-underline transition-all duration-300 hover:bg-white/20 hover:backdrop-blur-md hover:translate-x-1 hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_4px_12px_rgba(0,0,0,0.15)];
 }
