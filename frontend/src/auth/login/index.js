@@ -1,13 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "../../components/ToastProvider";
-import { Button, Form, FormGroup, Label, Input } from "reactstrap";
 import FormGenerator from "../../components/formGenerator/formGenerator";
 import tokenService from "../../services/token.service";
-import "../../App.css";
-import "../../static/css/auth/authButton.css";
 import { loginFormInputs } from "./form/loginFormInputs";
-import { FaSignInAlt } from "react-icons/fa";
+import { FaSignInAlt, FaShieldAlt } from "react-icons/fa";
+import "../../App.css";
 
 export default function Login() {
   const { t } = useTranslation();
@@ -17,6 +15,16 @@ export default function Login() {
   const [username2FA, setUsername2FA] = useState("");
   const [totpCode, setTotpCode] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // 1. Bloqueamos el scroll de toda la ventana mientras estamos en el Login
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    
+    // Cleanup: Al salir del componente, restauramos el scroll a su estado original
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
 
   const localizedInputs = loginFormInputs.map(input => {
     if (input.name === 'username') {
@@ -41,7 +49,6 @@ export default function Login() {
       const data = await response.json();
 
       if (response.status === 200) {
-        // Comprobar si el backend requiere código 2FA
         if (data.requiresTwoFactor) {
           setRequires2FA(true);
           setUsername2FA(data.username);
@@ -98,29 +105,48 @@ export default function Login() {
     }
   }
 
+  // Estilo Glassmorphism para los botones extraído en una variable para mantener el código limpio
+  const glassButtonClass = "w-full mt-2 py-3.5 rounded-full font-bold text-slate-900 bg-[#b3c34c]/60 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(179,195,76,0.35)] hover:bg-[#b3c34c]/80 hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.55)] transition-all duration-300 active:scale-95 flex justify-center items-center gap-2";
+
   return (
-    <div className="auth-page-container">
-      <h1>{t('login.title')}</h1>
-      <div className="auth-form-container">
+    // Altura controlada al máximo posible dentro de la vista para evitar cortes raros si redimensionan
+    <div className="flex flex-col items-center justify-center h-[calc(100vh-80px)] w-full px-4 overflow-hidden">
+      
+      <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 mb-8 drop-shadow-sm text-center">
+        {t('login.title')}
+      </h1>
+      
+      <div className="w-full max-w-md bg-white/40 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-[32px] p-6 md:p-8 border border-white/60">
         {!requires2FA ? (
           <FormGenerator
             inputs={localizedInputs}
             onSubmit={handleSubmit}
             numberOfColumns={1}
             listenEnterKey
-            buttonText={<><FaSignInAlt style={{ marginRight: '8px' }}/>{t('login.title')}</>}
-            buttonClassName="auth-button auth-button-filled"
+            buttonText={
+              <span className="flex items-center justify-center gap-2">
+                <FaSignInAlt />
+                {t('login.title')}
+              </span>
+            }
+            // Inyectamos nuestra clase de botón Glassmorphic
+            buttonClassName={glassButtonClass + " border-0"}
           />
         ) : (
-          <Form onSubmit={handleVerify2FA}>
-            <div className="text-center mb-3">
-              <p className="text-muted small">
-                Autenticación de Doble Factor (2FA) requerida para <strong>{username2FA}</strong>
+          <form onSubmit={handleVerify2FA} className="flex flex-col gap-5">
+            <div className="text-center">
+              <FaShieldAlt className="text-4xl text-[#b3c34c] mx-auto mb-3 drop-shadow-sm" />
+              <h2 className="text-xl font-bold text-slate-800 mb-1">Verificación en dos pasos</h2>
+              <p className="text-sm text-slate-600">
+                Autenticación de Doble Factor (2FA) requerida para <strong className="text-slate-800">{username2FA}</strong>
               </p>
             </div>
-            <FormGroup className="mb-4">
-              <Label for="totpCode">Código de 6 dígitos</Label>
-              <Input
+            
+            <div className="flex flex-col gap-2">
+              <label htmlFor="totpCode" className="text-sm font-semibold text-slate-700 ml-1">
+                Código de 6 dígitos
+              </label>
+              <input
                 type="text"
                 inputMode="numeric"
                 maxLength="6"
@@ -130,13 +156,18 @@ export default function Login() {
                 onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ""))}
                 required
                 autoFocus
-                style={{ textAlign: 'center', fontSize: '1.5rem', letterSpacing: '0.5rem' }}
+                className="w-full text-center text-3xl tracking-[0.5rem] py-4 rounded-2xl border border-white/50 bg-white/50 backdrop-blur-sm focus:border-[#b3c34c] focus:bg-white/80 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition-all font-mono text-slate-800 shadow-inner"
               />
-            </FormGroup>
-            <Button className="auth-button w-100" type="submit" disabled={loading}>
+            </div>
+            
+            <button 
+              type="submit" 
+              disabled={loading}
+              className={`${glassButtonClass} disabled:opacity-50`}
+            >
               {loading ? "Verificando..." : "Verificar y Acceder"}
-            </Button>
-          </Form>
+            </button>
+          </form>
         )}
       </div>
     </div>

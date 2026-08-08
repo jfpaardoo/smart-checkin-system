@@ -145,11 +145,11 @@ export default function ScannerCheckin() {
         
         <div style={{ display: (!isManualInput && !needsSignature) ? 'block' : 'none' }}>
           <div className="text-center mb-6">
-            <FontAwesomeIcon icon={faQrcode} size="3x" style={{ color: 'var(--ba-primary)' }} className="mb-4 drop-shadow-md" />
-            <h2 className="text-white font-bold text-3xl mb-2 drop-shadow-sm">
-              {t('checkin.scanQr', 'Escanear Código QR')}
+            <FontAwesomeIcon icon={faQrcode} size="3x" style={{ color: 'var(--ba-primary)' }} className="mb-4" />
+            <h2 className="text-slate-800 font-bold text-3xl mb-2">
+              {t('checkin.scanQr', 'Escanear el QR')}
             </h2>
-            <p className="text-white/80 text-lg">
+            <p className="text-slate-600 text-lg">
               {t('checkin.qrSubtitle', 'Enfoca el código QR de la formación con tu cámara')}
             </p>
           </div>
@@ -167,7 +167,7 @@ export default function ScannerCheckin() {
             )}
 
             {!isScannerReady && (
-              <div className="p-4 text-center text-muted mx-auto mb-2">
+              <div className="p-4 text-center text-slate-500 mx-auto mb-2">
                 <FontAwesomeIcon icon={faCamera} className="fa-spin mb-2" size="2x" />
                 <p className="mb-0">{t('checkin.startingCamera', 'Iniciando cámara...')}</p>
               </div>
@@ -206,11 +206,11 @@ export default function ScannerCheckin() {
         {isManualInput && (
           <div>
             <div className="text-center mb-6">
-              <FontAwesomeIcon icon={faKeyboard} size="3x" style={{ color: 'var(--ba-primary)' }} className="mb-4 drop-shadow-md" />
-              <h2 className="text-white font-bold text-3xl mb-2 drop-shadow-sm">
+              <FontAwesomeIcon icon={faKeyboard} size="3x" style={{ color: 'var(--ba-primary)' }} className="mb-4" />
+              <h2 className="text-slate-800 font-bold text-3xl mb-2">
                 {t('checkin.manualCheckin', 'Check-in Manual')}
               </h2>
-              <p className="text-white/80 text-lg">
+              <p className="text-slate-600 text-lg">
                 {t('checkin.manualSubtitle', 'Introduce el código que te proporcionó el administrador')}
               </p>
             </div>
@@ -232,23 +232,23 @@ export default function ScannerCheckin() {
 
       <Modal isOpen={successModal} toggle={handleCloseSuccess} centered className="ba-glass-modal">
         <ModalHeader toggle={handleCloseSuccess} className="border-0 pb-0">
-          {t('checkin.successTitle', '¡Proceso Completado!')}
+          <span className="text-slate-800 font-bold">{t('checkin.successTitle', '¡Proceso Completado!')}</span>
         </ModalHeader>
         <ModalBody className="text-center py-5">
           <div className="mb-4">
-            <div className="d-inline-flex align-items-center justify-content-center rounded-circle" style={{ width: '80px', height: '80px', backgroundColor: 'rgba(179, 195, 76, 0.2)', color: 'var(--ba-primary)' }}>
+            <div className="d-inline-flex align-items-center justify-content-center rounded-circle shadow-sm border border-slate-100" style={{ width: '80px', height: '80px', backgroundColor: 'rgba(179, 195, 76, 0.1)', color: 'var(--ba-primary)' }}>
               <FontAwesomeIcon icon={faQrcode} size="3x" />
             </div>
           </div>
-          <h4 className="font-bold text-white mb-2 text-xl">
+          <h4 className="font-bold text-slate-800 mb-2 text-xl">
             {formationDetails?.description}
           </h4>
-          <p className="text-white/80 mb-3">
+          <p className="text-slate-600 mb-3">
             {t('checkin.formationLabel', 'Formación')}: <strong>{formationDetails?.name}</strong>
           </p>
           {formationDetails?.formationDate && (
-            <div className="p-3 mx-auto bg-white/10 rounded-xl border border-white/20 inline-block">
-              <p className="mb-0 font-medium text-white">
+            <div className="p-3 mx-auto bg-slate-50 rounded-xl border border-slate-200 inline-block shadow-sm">
+              <p className="mb-0 font-medium text-slate-700">
                 <FontAwesomeIcon icon={faCalendarCheck} className="me-2" style={{ color: 'var(--ba-primary)' }} />
                 {t('checkin.dateLabel', 'Fecha')}: {new Date(formationDetails.formationDate).toLocaleString()}
               </p>

@@ -162,32 +162,35 @@ export default function AuditDashboard() {
     <div className="ba-container">
       <div className="ba-card">
         
-        {/* Cabecera con botones de exportación en cápsula de cristal */}
-        <div className="ba-card-header flex-wrap gap-3 d-flex justify-content-between align-items-center border-0">
-          <h2>
-            <FaShieldAlt style={{ color: "var(--ba-primary)" }} className="me-2" />
+        {/* Cabecera con botones de exportación en Liquid Glass blanco y brillante */}
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-3 border-0">
+          <h2 className="flex items-center text-2xl font-bold text-slate-800 m-0 text-center sm:text-left">
+            <FaShieldAlt style={{ color: "var(--ba-primary)" }} className="me-2 shrink-0" />
             {t('audit.title', 'Registro de Auditoría')}
           </h2>
-          <div className="d-flex gap-2 flex-wrap">
+          <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto justify-center">
             <button 
               type="button" 
-              className="inline-flex items-center justify-center px-4 py-2 bg-[#b3c34c]/80 hover:bg-[#b3c34c] text-slate-900 font-semibold text-sm rounded-full transition-all shadow-sm border-0 backdrop-blur-md active:scale-95 hover:-translate-y-0.5 gap-2" 
+              className="inline-flex items-center justify-center px-5 py-2.5 bg-white/80 hover:bg-white text-slate-800 font-semibold text-sm rounded-full transition-all border border-white shadow-[0_8px_25px_rgba(0,0,0,0.06),inset_0_1px_2px_rgba(255,255,255,1)] backdrop-blur-xl active:scale-95 hover:-translate-y-0.5 gap-2 w-full sm:w-auto" 
               onClick={handleDownloadCsv}
             >
-              <FaDownload /> {t('audit.exportCSV', 'Exportar a CSV')}
+              <FaDownload className="text-[#b3c34c]" /> 
+              <span>{t('audit.exportCSV', 'Exportar a CSV')}</span>
             </button>
             <button 
               type="button" 
-              className="inline-flex items-center justify-center px-4 py-2 bg-slate-500/30 hover:bg-slate-500/50 text-slate-800 font-semibold text-sm rounded-full transition-all shadow-[0_8px_20px_0_rgba(31,38,135,0.07)] border border-white/60 backdrop-blur-xl active:scale-95 hover:-translate-y-0.5 gap-2" 
+              className="inline-flex items-center justify-center px-5 py-2.5 bg-white/80 hover:bg-white text-slate-800 font-semibold text-sm rounded-full transition-all border border-white shadow-[0_8px_25px_rgba(0,0,0,0.06),inset_0_1px_2px_rgba(255,255,255,1)] backdrop-blur-xl active:scale-95 hover:-translate-y-0.5 gap-2 w-full sm:w-auto" 
               onClick={handleDownloadPdf}
             >
-              <FaDownload /> {t('audit.exportPDF', 'Exportar a PDF')}
+              <FaDownload className="text-[#b3c34c]" /> 
+              <span>{t('audit.exportPDF', 'Exportar a PDF')}</span>
             </button>
           </div>
         </div>
         
-        <div className="mb-4">
-          <p className="text-muted">{t('audit.subtitle', 'Trazabilidad de acciones del sistema')}</p>
+        {/* Subtítulo centrado en móvil y alineado a la izquierda en escritorio */}
+        <div className="mb-4 text-center sm:text-left">
+          <p className="text-muted m-0">{t('audit.subtitle', 'Trazabilidad de acciones del sistema')}</p>
         </div>
 
         {/* Buscador Glassmorphism */}

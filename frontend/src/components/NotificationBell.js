@@ -20,17 +20,6 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
   const jwt = tokenService.getLocalAccessToken();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [desktopOpen, setDesktopOpen] = useState(false);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!event.target.closest('.notif-dropdown-container')) {
-        setDesktopOpen(false);
-      }
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
 
   const handleAlert = useCallback((message) => {
     if (message.body) {
@@ -129,10 +118,8 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
 
   const handleToggle = (e) => {
     e.stopPropagation();
-    if (isMobile && onToggle) {
-      onToggle();
-    } else {
-      setDesktopOpen(!desktopOpen);
+    if (onToggle) {
+      onToggle(e);
     }
     if (unreadCount > 0) markAllRead();
   };
@@ -152,10 +139,10 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
         )}
       </button>
 
-      {/* Solo renderiza el flotante desplegable en escritorio */}
+      {/* Solo renderiza el flotante desplegable en escritorio usando la prop isOpen del padre */}
       {!isMobile && (
         <div 
-          className={`absolute right-0 top-full mt-3 w-[300px] sm:w-[320px] ba-nav-dropdown-container transition-all duration-300 origin-top-right z-[100] ${desktopOpen ? 'opacity-100 scale-100 translate-y-0 visible' : 'opacity-0 scale-95 -translate-y-4 invisible pointer-events-none'}`}
+          className={`absolute right-0 top-full mt-3 w-[300px] sm:w-[320px] ba-nav-dropdown-container transition-all duration-300 origin-top-right z-[100] ${isOpen ? 'opacity-100 scale-100 translate-y-0 visible' : 'opacity-0 scale-95 -translate-y-4 invisible pointer-events-none'}`}
         >
           <div className="py-2" role="menu">
             <div className="flex justify-between items-center px-4 py-2 border-b border-white/10 mb-2">
