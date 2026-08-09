@@ -4,6 +4,7 @@ import { Table, Button } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye } from '@fortawesome/free-solid-svg-icons';
 import { TableGhostLoader } from '../../../components/GhostLoader';
+import { formatDate } from '../../../utils/dateUtils';
 
 export default function UserFormationsTable({
   attendances,
@@ -98,7 +99,9 @@ export default function UserFormationsTable({
                     </td>
 
                     <td style={{ color: '#64748b' }}>
-                      {new Date(f.formationDate).toLocaleString()}
+                      <span className="text-sm font-medium text-slate-700">
+                        {formatDate(f.formationDate)}
+                      </span>
                     </td>
 
                     <td>{statusBadge}</td>

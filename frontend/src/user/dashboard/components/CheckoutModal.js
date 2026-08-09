@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCamera } from '@fortawesome/free-solid-svg-icons';
 import { useQrScanner } from '../../../hooks/useQrScanner';
 import { getCleanFileInfo } from '../../../utils/fileUtils';
+import { formatDate } from '../../../utils/dateUtils';
 import GlassDropdown from '../../../components/GlassDropdown';
 import ManualCheckinForm from '../../checkin/components/ManualCheckinForm';
 import SignatureStep from '../../checkin/components/SignatureStep';
@@ -66,18 +67,18 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
         <div className="grid grid-cols-2 gap-2 mb-2.5">
           <div>
             <h6 style={{ color: '#64748b', fontSize: '0.8rem' }} className="mb-0.5">{t('dashboard.formationDate')}</h6>
-            <p className="mb-0 text-slate-800 text-xs font-semibold">{new Date(selectedAtt.formation.formationDate).toLocaleString()}</p>
+            <p className="mb-0 text-slate-800 text-xs font-semibold">{formatDate(selectedAtt.formation.formationDate)}</p>
           </div>
           <div>
             <h6 style={{ color: '#64748b', fontSize: '0.8rem' }} className="mb-0.5">{t('dashboard.checkInTime')}</h6>
-            <p className="mb-0 text-slate-800 text-xs font-semibold">{new Date(selectedAtt.checkInDate).toLocaleString()}</p>
+            <p className="mb-0 text-slate-800 text-xs font-semibold">{formatDate(selectedAtt.checkInDate)}</p>
           </div>
         </div>
 
         {selectedAtt.checkOutDate && (
           <div className="mb-2.5">
             <h6 style={{ color: '#64748b', fontSize: '0.8rem' }} className="mb-0.5">{t('dashboard.checkOutTime')}</h6>
-            <p className="mb-0 text-slate-800 text-xs font-semibold">{new Date(selectedAtt.checkOutDate).toLocaleString()}</p>
+            <p className="mb-0 text-slate-800 text-xs font-semibold">{formatDate(selectedAtt.checkOutDate)}</p>
           </div>
         )}
 

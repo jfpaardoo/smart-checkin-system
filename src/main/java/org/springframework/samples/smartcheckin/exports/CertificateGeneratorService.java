@@ -7,7 +7,7 @@ import java.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
-import org.springframework.samples.smartcheckin.storage.LocalFileSystemService;
+import org.springframework.samples.smartcheckin.storage.SignatureStorageService;
 import org.springframework.stereotype.Service;
 
 import com.lowagie.text.Document;
@@ -21,10 +21,10 @@ import com.lowagie.text.pdf.PdfWriter;
 @Service
 public class CertificateGeneratorService {
     
-    private final LocalFileSystemService localFileSystemService;
+    private final SignatureStorageService signatureStorageService;
 
-    public CertificateGeneratorService(LocalFileSystemService localFileSystemService) {
-        this.localFileSystemService = localFileSystemService;
+    public CertificateGeneratorService(SignatureStorageService signatureStorageService) {
+        this.signatureStorageService = signatureStorageService;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(CertificateGeneratorService.class);
@@ -100,7 +100,7 @@ public class CertificateGeneratorService {
                 String base64Image = signatureFileName.split(",")[1];
                 imageBytes = Base64.getDecoder().decode(base64Image);
             } else {
-                imageBytes = localFileSystemService.loadSignature(signatureFileName);
+                imageBytes = signatureStorageService.loadSignature(signatureFileName);
             }
             
             if (imageBytes != null && imageBytes.length > 0) {

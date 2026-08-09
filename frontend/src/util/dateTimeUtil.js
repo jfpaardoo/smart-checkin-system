@@ -29,7 +29,7 @@ export function formatDuration(minutes) {
  */
 export function formatDateTime(dateInput, formatPattern = 'DD/MM/YYYY HH:mm') {
   if (!dateInput) return '-';
-  return moment(dateInput).format(formatPattern);
+  return moment.utc(dateInput).local().format(formatPattern);
 }
 
 /**

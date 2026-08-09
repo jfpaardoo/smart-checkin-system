@@ -20,6 +20,8 @@ import org.springframework.test.web.servlet.MockMvc;
 class AuditControllerTests {
 
 	private static final String BASE_URL = "/api/v1/audit";
+	private static final String TEST_DETAILS = "details";
+	private static final String TEST_IP = "127.0.0.1";
 
 	@MockitoBean
 	private AuditLogRepository auditLogRepository;
@@ -30,7 +32,7 @@ class AuditControllerTests {
 	@Test
 	@WithMockUser(authorities = {"ADMIN"})
 	void testGetAuditLogs() throws Exception {
-		AuditLog log = new AuditLog("USER_SAVE", "user1", "details", "127.0.0.1");
+		AuditLog log = new AuditLog("USER_SAVE", "user1", TEST_DETAILS, TEST_IP);
 		when(auditLogRepository.findAllByOrderByTimestampDesc()).thenReturn(List.of(log));
 
 		mockMvc.perform(get(BASE_URL)).andExpect(status().isOk());
@@ -39,7 +41,7 @@ class AuditControllerTests {
 	@Test
 	@WithMockUser(authorities = {"ADMIN"})
 	void testExportAuditCsv() throws Exception {
-		AuditLog log = new AuditLog("USER_SAVE", "user1", "details", "127.0.0.1");
+		AuditLog log = new AuditLog("USER_SAVE", "user1", TEST_DETAILS, TEST_IP);
 		when(auditLogRepository.findAllByOrderByTimestampDesc()).thenReturn(List.of(log));
 		mockMvc.perform(get(BASE_URL + "/csv")).andExpect(status().isOk());
 	}
@@ -55,7 +57,7 @@ class AuditControllerTests {
 	@Test
     @WithMockUser(authorities = {"ADMIN"})
     void testExportAuditCsvWithExplicitNullTimestamp() throws Exception {
-        AuditLog log = new AuditLog("LOGIN", "admin", "details", "127.0.0.1");
+        AuditLog log = new AuditLog("LOGIN", "admin", TEST_DETAILS, TEST_IP);
         log.setTimestamp(null); // Fuerza explícitamente el valor nulo para evaluar la rama del ternario
 
         when(auditLogRepository.findAllByOrderByTimestampDesc()).thenReturn(List.of(log));

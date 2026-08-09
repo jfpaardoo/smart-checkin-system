@@ -20,6 +20,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 @SuppressWarnings({"null", "unused"})
 class AuditAspectTests {
 
+    private static final String DUMMY_STRING = "String";
+
     private AuditLogRepository auditLogRepository;
     private AuditAspect aspect;
 
@@ -255,7 +257,7 @@ class AuditAspectTests {
     @Test
     void testLogTwoFactorLoginSuccessNotResponseEntityOrNot2xx() {
         JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logTwoFactorLoginSuccess(joinPoint, "String");
+        aspect.logTwoFactorLoginSuccess(joinPoint, DUMMY_STRING);
         aspect.logTwoFactorLoginSuccess(joinPoint, ResponseEntity.badRequest().build());
         verify(auditLogRepository, never()).save(any(AuditLog.class));
     }
@@ -263,7 +265,7 @@ class AuditAspectTests {
     @Test
     void testLogPasswordChangeNotResponseEntityOrNot2xx() {
         JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logPasswordChange(joinPoint, "String");
+        aspect.logPasswordChange(joinPoint, DUMMY_STRING);
         aspect.logPasswordChange(joinPoint, ResponseEntity.badRequest().build());
         verify(auditLogRepository, never()).save(any(AuditLog.class));
     }
@@ -271,7 +273,7 @@ class AuditAspectTests {
     @Test
     void testLogTwoFactorEnableNotResponseEntityOrNot2xx() {
         JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logTwoFactorEnable(joinPoint, "String");
+        aspect.logTwoFactorEnable(joinPoint, DUMMY_STRING);
         aspect.logTwoFactorEnable(joinPoint, ResponseEntity.badRequest().build());
         verify(auditLogRepository, never()).save(any(AuditLog.class));
     }
@@ -279,7 +281,7 @@ class AuditAspectTests {
     @Test
     void testLogTwoFactorDisableNotResponseEntityOrNot2xx() {
         JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logTwoFactorDisable(joinPoint, "String");
+        aspect.logTwoFactorDisable(joinPoint, DUMMY_STRING);
         aspect.logTwoFactorDisable(joinPoint, ResponseEntity.badRequest().build());
         verify(auditLogRepository, never()).save(any(AuditLog.class));
     }
@@ -287,7 +289,7 @@ class AuditAspectTests {
     @Test
     void testLogDataExportNotResponseEntityOrNot2xx() {
         JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logDataExport(joinPoint, "String");
+        aspect.logDataExport(joinPoint, DUMMY_STRING);
         aspect.logDataExport(joinPoint, ResponseEntity.badRequest().build());
         verify(auditLogRepository, never()).save(any(AuditLog.class));
     }

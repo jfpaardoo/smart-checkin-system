@@ -105,6 +105,12 @@ class AuthControllerTests {
 	private static final String USER1 = "user1";
 	private static final String SECRET = "SECRET";
 	private static final String SIGNIN_URL = BASE_URL + "/signin";
+	private static final String SIGNUP_URL = BASE_URL + "/signup";
+	private static final String LOGOUT_URL = BASE_URL + "/logout";
+	private static final String JSON_PATH_TOKEN = "$.token";
+	private static final String VALID_TOTP_CODE = "123456";
+	private static final String MOCK_JWT_LITERAL = "MOCK_JWT";
+	private static final String NEW_USER_2 = "newUser2";
 
 	private LoginRequest loginRequest;
 	private UserDetailsImpl userDetails;
@@ -133,7 +139,7 @@ class AuthControllerTests {
 		mockMvc.perform(post(SIGNIN_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest))).andExpect(status().isOk())
 				.andExpect(jsonPath("$.username").value(loginRequest.getUsername()))
-				.andExpect(jsonPath("$.id").value(userDetails.getId())).andExpect(jsonPath("$.token").value(token));
+				.andExpect(jsonPath("$.id").value(userDetails.getId())).andExpect(jsonPath(JSON_PATH_TOKEN).value(token));
 	}
 
 	@Test
@@ -195,7 +201,7 @@ class AuthControllerTests {
 	void shouldVerifyTwoFactorSuccess() throws Exception {
 		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
 		req.setUsername(USER1);
-		req.setCode("123456");
+		req.setCode(VALID_TOTP_CODE);
 
 		User user = new User();
 		user.setId(1);
@@ -203,14 +209,14 @@ class AuthControllerTests {
 		user.setTwoFactorSecret(SECRET);
 
 		when(userService.findUser(USER1)).thenReturn(user);
-		when(totpService.validateCode(SECRET, "123456")).thenReturn(true);
+		when(totpService.validateCode(SECRET, VALID_TOTP_CODE)).thenReturn(true);
 		when(userDetailsService.loadUserByUsername(USER1)).thenReturn(userDetails);
-		when(jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn("MOCK_JWT");
+		when(jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn(MOCK_JWT_LITERAL);
 
 		mockMvc.perform(post(BASE_URL + VERIFY_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.token").value("MOCK_JWT"));
+				.andExpect(jsonPath(JSON_PATH_TOKEN).value(MOCK_JWT_LITERAL));
 	}
 
 	@Test
@@ -244,7 +250,7 @@ class AuthControllerTests {
 		when(userService.findUser(newUser)).thenThrow(new ResourceNotFoundException("User", "username", newUser));
 		when(authoritiesService.findByAuthority("EMPLOYEE")).thenReturn(new Authorities());
 
-		mockMvc.perform(post(BASE_URL + "/signup").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(SIGNUP_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(signup)))
 				.andExpect(status().isOk());
 	}
@@ -283,7 +289,7 @@ class AuthControllerTests {
 
 		when(userService.findUser(existingUser)).thenReturn(existing);
 
-		mockMvc.perform(post(BASE_URL + "/signup").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(SIGNUP_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(signup)))
 				.andExpect(status().isBadRequest());
 	}
@@ -334,22 +340,22 @@ class AuthControllerTests {
 	}
 
 	@Test
-    void testLogout_WithoutAuthorizationHeader_ReturnsBadRequest() throws Exception {
-        mockMvc.perform(post(BASE_URL + "/logout").with(csrf()))
+    void testLogoutWithoutAuthorizationHeaderReturnsBadRequest() throws Exception {
+        mockMvc.perform(post(LOGOUT_URL).with(csrf()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Error: No JWT token found in request."));
     }
 
     @Test
-    void testLogout_WithInvalidAuthorizationHeader_ReturnsBadRequest() throws Exception {
-        mockMvc.perform(post(BASE_URL + "/logout")
+    void testLogoutWithInvalidAuthorizationHeaderReturnsBadRequest() throws Exception {
+        mockMvc.perform(post(LOGOUT_URL)
                 .with(csrf())
                 .header("Authorization", "InvalidToken123"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void testSignin_SuccessfulLogin_ResetsFailedAttempts() throws Exception {
+    void testSigninSuccessfulLoginResetsFailedAttempts() throws Exception {
         User userWithFails = new User();
         userWithFails.setUsername(loginRequest.getUsername());
         userWithFails.setIsApproved(true);
@@ -372,18 +378,18 @@ class AuthControllerTests {
     }
 
     @Test
-    void testSignup_EmployeeAuthorityNotFound_CreatesNewAuthority() throws Exception {
+    void testSignupEmployeeAuthorityNotFoundCreatesNewAuthority() throws Exception {
         SignupRequest signup = new SignupRequest();
-        signup.setUsername("newUser2");
-        signup.setPassword("password");
+        signup.setUsername(NEW_USER_2);
+        signup.setPassword(PASSWORD);
         signup.setPersonalCode("9999");
         signup.setFirstName("New");
         signup.setLastName("User");
 
-        when(userService.findUser("newUser2")).thenThrow(new ResourceNotFoundException("User", "username", "newUser2"));
+        when(userService.findUser(NEW_USER_2)).thenThrow(new ResourceNotFoundException("User", "username", NEW_USER_2));
         when(authoritiesService.findByAuthority("EMPLOYEE")).thenThrow(new ResourceNotFoundException("Authority not found"));
 
-        mockMvc.perform(post(BASE_URL + "/signup").with(csrf())
+        mockMvc.perform(post(SIGNUP_URL).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(signup)))
                 .andExpect(status().isOk());
@@ -393,7 +399,7 @@ class AuthControllerTests {
 
 	@Test
     void shouldLogoutUserSuccessfully() throws Exception {
-        mockMvc.perform(post(BASE_URL + "/logout").with(csrf())
+        mockMvc.perform(post(LOGOUT_URL).with(csrf())
                 .header("Authorization", "Bearer MOCK_VALID_JWT_TOKEN"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Log out successful!"));
@@ -405,11 +411,11 @@ class AuthControllerTests {
     void shouldVerifyTwoFactorUserNotFound() throws Exception {
         TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
         req.setUsername("nonexistent");
-        req.setCode("123456");
+        req.setCode(VALID_TOTP_CODE);
 
         when(userService.findUser("nonexistent")).thenThrow(new ResourceNotFoundException("User not found"));
 
-        mockMvc.perform(post(BASE_URL + "/verify-2fa").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post(BASE_URL + VERIFY_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isNotFound());
     }
@@ -418,7 +424,7 @@ class AuthControllerTests {
     void shouldVerifyTwoFactorSuccessResetsFailedAttempts() throws Exception {
         TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
         req.setUsername(USER1);
-        req.setCode("123456");
+        req.setCode(VALID_TOTP_CODE);
 
         User user = new User();
         user.setId(1);
@@ -427,14 +433,14 @@ class AuthControllerTests {
         user.setFailedLoginAttempts(3); // Para cubrir la condición de restablecimiento de intentos
 
         when(userService.findUser(USER1)).thenReturn(user);
-        when(totpService.validateCode(SECRET, "123456")).thenReturn(true);
+        when(totpService.validateCode(SECRET, VALID_TOTP_CODE)).thenReturn(true);
         when(userDetailsService.loadUserByUsername(USER1)).thenReturn(userDetails);
-        when(jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn("MOCK_JWT");
+        when(jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn(MOCK_JWT_LITERAL);
 
-        mockMvc.perform(post(BASE_URL + "/verify-2fa").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post(BASE_URL + VERIFY_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("MOCK_JWT"));
+                .andExpect(jsonPath(JSON_PATH_TOKEN).value(MOCK_JWT_LITERAL));
 
         verify(userService, times(1)).saveUser(user);
         assertEquals(0, user.getFailedLoginAttempts());

@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 class UserTests {
+    private static final String ROLE_ADMIN = "ADMIN";
+    private static final String ROLE_EMPLOYEE = "EMPLOYEE";
 
     @Test
     void testEmployeeBlockFormatting() {
@@ -29,31 +31,31 @@ class UserTests {
     @Test
     void testHasAuthority() {
         Authorities auth = new Authorities();
-        auth.setAuthority("ADMIN");
+        auth.setAuthority(ROLE_ADMIN);
 
         User user = new User();
         user.setAuthority(auth);
 
-        assertTrue(user.hasAuthority("ADMIN"));
-        assertFalse(user.hasAuthority("EMPLOYEE"));
+        assertTrue(user.hasAuthority(ROLE_ADMIN));
+        assertFalse(user.hasAuthority(ROLE_EMPLOYEE));
     }
 
     @Test
     void testHasAnyAuthority() {
         Authorities auth = new Authorities();
-        auth.setAuthority("EMPLOYEE");
+        auth.setAuthority(ROLE_EMPLOYEE);
 
         User user = new User();
         user.setAuthority(auth);
 
-        assertTrue(user.hasAnyAuthority("ADMIN", "EMPLOYEE"));
-        assertFalse(user.hasAnyAuthority("ADMIN", "MANAGER"));
+        assertTrue(user.hasAnyAuthority(ROLE_ADMIN, ROLE_EMPLOYEE));
+        assertFalse(user.hasAnyAuthority(ROLE_ADMIN, "MANAGER"));
     }
 
     @Test
     void testGetAuthoritiesWithValidRole() {
         Authorities auth = new Authorities();
-        auth.setAuthority("ADMIN");
+        auth.setAuthority(ROLE_ADMIN);
 
         User user = new User();
         user.setAuthority(auth);
@@ -61,7 +63,7 @@ class UserTests {
         var authorities = user.getAuthorities();
         assertNotNull(authorities);
         assertEquals(1, authorities.size());
-        assertEquals("ADMIN", authorities.get(0).getAuthority());
+        assertEquals(ROLE_ADMIN, authorities.get(0).getAuthority());
     }
 
     @Test

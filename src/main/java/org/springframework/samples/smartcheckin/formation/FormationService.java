@@ -8,10 +8,10 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.smartcheckin.push.PushNotificationService;
+import org.springframework.samples.smartcheckin.storage.SignatureStorageService;
 import org.springframework.samples.smartcheckin.settings.OneDriveService;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
-import org.springframework.samples.smartcheckin.storage.LocalFileSystemService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,7 +25,7 @@ public class FormationService {
     private final UserService userService;
     private final OneDriveService oneDriveService;
     private final PushNotificationService pushNotificationService;
-    private final LocalFileSystemService localFileSystemService;
+    private final SignatureStorageService signatureStorageService;
 
     @Autowired
     public FormationService(FormationRepository formationRepository, 
@@ -33,13 +33,13 @@ public class FormationService {
                             UserService userService,
                             OneDriveService oneDriveService,
                             PushNotificationService pushNotificationService,
-                            LocalFileSystemService localFileSystemService) {
+                            SignatureStorageService signatureStorageService) {
         this.formationRepository = formationRepository;
         this.attendanceRepository = attendanceRepository;
         this.userService = userService;
         this.oneDriveService = oneDriveService;
         this.pushNotificationService = pushNotificationService;
-        this.localFileSystemService = localFileSystemService;
+        this.signatureStorageService = signatureStorageService;
     }
 
     private static final String FORMATION_NOT_FOUND_MSG = "Formation not found";
@@ -115,7 +115,9 @@ public class FormationService {
 
         att.setCheckOutDate(LocalDateTime.now(ZoneId.systemDefault()));
         if (signature != null && !signature.isEmpty()) {
-            String fileName = localFileSystemService.saveSignature(signature);
+            String fName = formation.getName() != null ? formation.getName() : "Unknown_Formation";
+            String pathContext = "formations/" + fName.replaceAll("[^a-zA-Z0-9.-]", "_");
+            String fileName = signatureStorageService.saveSignature(signature, pathContext);
             att.setSignature(fileName);
         }
         attendanceRepository.save(att);

@@ -14,6 +14,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @SuppressWarnings("null")
 class LocalFileSystemServiceTests {
 
+    private static final String TEST_CONTEXT = "testContext";
+
     private LocalFileSystemService service;
 
     @TempDir
@@ -34,15 +36,15 @@ class LocalFileSystemServiceTests {
 
     @Test
     void testSaveSignatureNullOrEmpty() {
-        assertNull(service.saveSignature(null));
-        assertNull(service.saveSignature("   "));
+        assertNull(service.saveSignature(null, TEST_CONTEXT));
+        assertNull(service.saveSignature("   ", TEST_CONTEXT));
     }
 
     @Test
     void testSaveSignatureFileTooLarge() {
         String hugeString = "a".repeat(700001); // Límite en 700000
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> service.saveSignature(hugeString));
+                () -> service.saveSignature(hugeString, TEST_CONTEXT));
         assertTrue(ex.getMessage().contains("exceeds maximum limit"));
     }
 
@@ -50,7 +52,7 @@ class LocalFileSystemServiceTests {
     void testSaveSignatureInvalidMimeType() {
         String invalidPrefix = "data:image/gif;base64,VGhpcyBpcyBhIHRlc3Q=";
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> service.saveSignature(invalidPrefix));
+                () -> service.saveSignature(invalidPrefix, TEST_CONTEXT));
         assertTrue(ex.getMessage().contains("Invalid signature image format"));
     }
 
@@ -60,7 +62,7 @@ class LocalFileSystemServiceTests {
         byte[] fakeBytes = new byte[] { 0x00, 0x00, 0x00, 0x00 };
         String base64 = "data:image/png;base64," + Base64.getEncoder().encodeToString(fakeBytes);
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> service.saveSignature(base64));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> service.saveSignature(base64, TEST_CONTEXT));
         assertTrue(ex.getMessage().contains("Payload magic bytes do not match"));
     }
 
@@ -69,7 +71,7 @@ class LocalFileSystemServiceTests {
         byte[] tinyBytes = new byte[] { 0x00, 0x01 };
         String base64 = Base64.getEncoder().encodeToString(tinyBytes);
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> service.saveSignature(base64));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> service.saveSignature(base64, TEST_CONTEXT));
         assertTrue(ex.getMessage().contains("Invalid image byte payload"));
     }
 
@@ -79,7 +81,7 @@ class LocalFileSystemServiceTests {
         byte[] pngBytes = new byte[] { (byte) 0x89, 0x50, 0x4E, 0x47, 0x00, 0x00 };
         String base64 = "data:image/png;base64," + Base64.getEncoder().encodeToString(pngBytes);
 
-        String fileName = service.saveSignature(base64);
+        String fileName = service.saveSignature(base64, TEST_CONTEXT);
         assertNotNull(fileName);
         assertTrue(fileName.endsWith(".png"));
     }
@@ -90,7 +92,7 @@ class LocalFileSystemServiceTests {
         byte[] jpegBytes = new byte[] { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, 0x00, 0x00 };
         String base64 = "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(jpegBytes);
 
-        String fileName = service.saveSignature(base64);
+        String fileName = service.saveSignature(base64, TEST_CONTEXT);
         assertNotNull(fileName);
         assertTrue(fileName.endsWith(".jpg"));
     }
@@ -98,7 +100,7 @@ class LocalFileSystemServiceTests {
     @Test
     void testLoadSignatureSuccessAndFailure() {
         byte[] pngBytes = new byte[] { (byte) 0x89, 0x50, 0x4E, 0x47, 0x00 };
-        String fileName = service.saveSignature(Base64.getEncoder().encodeToString(pngBytes));
+        String fileName = service.saveSignature(Base64.getEncoder().encodeToString(pngBytes), TEST_CONTEXT);
 
         byte[] loaded = service.loadSignature(fileName);
         assertTrue(loaded.length > 0);
@@ -110,7 +112,7 @@ class LocalFileSystemServiceTests {
     @Test
     void testDeleteSignature() {
         byte[] pngBytes = new byte[] { (byte) 0x89, 0x50, 0x4E, 0x47, 0x00 };
-        String fileName = service.saveSignature(Base64.getEncoder().encodeToString(pngBytes));
+        String fileName = service.saveSignature(Base64.getEncoder().encodeToString(pngBytes), TEST_CONTEXT);
 
         assertTrue(service.deleteSignature(fileName));
         assertFalse(service.deleteSignature(fileName));
@@ -129,7 +131,7 @@ class LocalFileSystemServiceTests {
         byte[] pngBytes = new byte[] { (byte) 0x89, 0x50, 0x4E, 0x47, 0x00, 0x00 };
         String pureBase64 = Base64.getEncoder().encodeToString(pngBytes);
 
-        String fileName = service.saveSignature(pureBase64);
+        String fileName = service.saveSignature(pureBase64, TEST_CONTEXT);
         assertNotNull(fileName);
         assertTrue(fileName.endsWith(".png"));
     }

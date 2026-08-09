@@ -27,6 +27,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @WebMvcTest(PushNotificationController.class)
 class PushNotificationControllerTests {
 
+    private static final String SUBSCRIBE_URL = "/api/v1/push/subscribe";
+    private static final String FCM_ENDPOINT = "https://fcm.googleapis.com/fcm/send/abc123";
+    private static final String TEST_ENDPOINT = "https://endpoint.com";
+    private static final String P256DH_KEY = "p256dh";
+    private static final String SUBSCRIPTION_JSON_BODY = """
+            {
+                "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
+                "keys": {
+                    "p256dh": "BNcRdreALRFXTkOOUHK1EtK2",
+                    "auth": "tBHItJI5svbpC7htfgIZAw"
+                }
+            }
+            """;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -82,20 +96,10 @@ class PushNotificationControllerTests {
         when(userService.findCurrentUser()).thenReturn(testUser);
         when(subscriptionRepository.findByEndpoint(anyString())).thenReturn(List.of());
 
-        String body = """
-            {
-                "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
-                "keys": {
-                    "p256dh": "BNcRdreALRFXTkOOUHK1EtK2",
-                    "auth": "tBHItJI5svbpC7htfgIZAw"
-                }
-            }
-            """;
-
-        mockMvc.perform(post("/api/v1/push/subscribe")
+        mockMvc.perform(post(SUBSCRIBE_URL)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(body))
+                .content(SUBSCRIPTION_JSON_BODY))
                 .andExpect(status().isOk());
 
         verify(subscriptionRepository).save(any(PushSubscriptionEntity.class));
@@ -107,25 +111,15 @@ class PushNotificationControllerTests {
         when(userService.findCurrentUser()).thenReturn(testUser);
 
         PushSubscriptionEntity existing = new PushSubscriptionEntity();
-        existing.setEndpoint("https://fcm.googleapis.com/fcm/send/abc123");
+        existing.setEndpoint(FCM_ENDPOINT);
         existing.setUser(testUser);
-        when(subscriptionRepository.findByEndpoint("https://fcm.googleapis.com/fcm/send/abc123"))
+        when(subscriptionRepository.findByEndpoint(FCM_ENDPOINT))
             .thenReturn(List.of(existing));
 
-        String body = """
-            {
-                "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
-                "keys": {
-                    "p256dh": "BNcRdreALRFXTkOOUHK1EtK2",
-                    "auth": "tBHItJI5svbpC7htfgIZAw"
-                }
-            }
-            """;
-
-        mockMvc.perform(post("/api/v1/push/subscribe")
+        mockMvc.perform(post(SUBSCRIBE_URL)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(body))
+                .content(SUBSCRIPTION_JSON_BODY))
                 .andExpect(status().isOk());
 
         // Al ser el mismo usuario y haber un solo registro, no guarda duplicado ni borra
@@ -135,7 +129,7 @@ class PushNotificationControllerTests {
     @Test
     @WithMockUser(username = "testuser")
     void unsubscribedeletesSubscription() throws Exception {
-        String body = "{\"endpoint\": \"https://fcm.googleapis.com/fcm/send/abc123\"}";
+        String body = "{\"endpoint\": \"" + FCM_ENDPOINT + "\"}";
 
         mockMvc.perform(post("/api/v1/push/unsubscribe")
                 .with(csrf())
@@ -143,25 +137,15 @@ class PushNotificationControllerTests {
                 .content(body))
                 .andExpect(status().isOk());
 
-        verify(subscriptionRepository).deleteByEndpoint("https://fcm.googleapis.com/fcm/send/abc123");
+        verify(subscriptionRepository).deleteByEndpoint(FCM_ENDPOINT);
     }
 
     @Test
     void subscribeunauthenticatedreturns401() throws Exception {
-        String body = """
-            {
-                "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
-                "keys": {
-                    "p256dh": "BNcRdreALRFXTkOOUHK1EtK2",
-                    "auth": "tBHItJI5svbpC7htfgIZAw"
-                }
-            }
-            """;
-
-        mockMvc.perform(post("/api/v1/push/subscribe")
+        mockMvc.perform(post(SUBSCRIBE_URL)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(body))
+                .content(SUBSCRIPTION_JSON_BODY))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -172,27 +156,27 @@ class PushNotificationControllerTests {
 
         PushSubscriptionEntity sub1 = new PushSubscriptionEntity();
         sub1.setId(10);
-        sub1.setEndpoint("https://endpoint.com");
+        sub1.setEndpoint(TEST_ENDPOINT);
         sub1.setUser(testUser);
 
         PushSubscriptionEntity sub2 = new PushSubscriptionEntity();
         sub2.setId(11);
-        sub2.setEndpoint("https://endpoint.com");
+        sub2.setEndpoint(TEST_ENDPOINT);
 
         PushSubscriptionEntity sub3 = new PushSubscriptionEntity();
         sub3.setId(12);
-        sub3.setEndpoint("https://endpoint.com");
+        sub3.setEndpoint(TEST_ENDPOINT);
 
-        when(subscriptionRepository.findByEndpoint("https://endpoint.com")).thenReturn(List.of(sub1, sub2, sub3));
+        when(subscriptionRepository.findByEndpoint(TEST_ENDPOINT)).thenReturn(List.of(sub1, sub2, sub3));
 
         PushSubscriptionDTO dto = new PushSubscriptionDTO();
-        dto.setEndpoint("https://endpoint.com");
+        dto.setEndpoint(TEST_ENDPOINT);
         PushSubscriptionDTO.Keys keys = new PushSubscriptionDTO.Keys();
         keys.setAuth("auth");
-        keys.setP256dh("p256dh");
+        keys.setP256dh(P256DH_KEY);
         dto.setKeys(keys);
 
-        mockMvc.perform(post("/api/v1/push/subscribe")
+        mockMvc.perform(post(SUBSCRIBE_URL)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
@@ -208,19 +192,19 @@ class PushNotificationControllerTests {
         when(userService.findCurrentUser()).thenReturn(testUser);
 
         PushSubscriptionEntity existingSub = new PushSubscriptionEntity();
-        existingSub.setEndpoint("https://endpoint.com");
+        existingSub.setEndpoint(TEST_ENDPOINT);
         existingSub.setUser(null);
 
-        when(subscriptionRepository.findByEndpoint("https://endpoint.com")).thenReturn(List.of(existingSub));
+        when(subscriptionRepository.findByEndpoint(TEST_ENDPOINT)).thenReturn(List.of(existingSub));
 
         PushSubscriptionDTO dto = new PushSubscriptionDTO();
-        dto.setEndpoint("https://endpoint.com");
+        dto.setEndpoint(TEST_ENDPOINT);
         PushSubscriptionDTO.Keys keys = new PushSubscriptionDTO.Keys();
         keys.setAuth("auth");
-        keys.setP256dh("p256dh");
+        keys.setP256dh(P256DH_KEY);
         dto.setKeys(keys);
 
-        mockMvc.perform(post("/api/v1/push/subscribe")
+        mockMvc.perform(post(SUBSCRIBE_URL)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
@@ -239,19 +223,19 @@ class PushNotificationControllerTests {
         oldUser.setId(99);
 
         PushSubscriptionEntity existingSub = new PushSubscriptionEntity();
-        existingSub.setEndpoint("https://endpoint.com");
+        existingSub.setEndpoint(TEST_ENDPOINT);
         existingSub.setUser(oldUser);
 
-        when(subscriptionRepository.findByEndpoint("https://endpoint.com")).thenReturn(List.of(existingSub));
+        when(subscriptionRepository.findByEndpoint(TEST_ENDPOINT)).thenReturn(List.of(existingSub));
 
         PushSubscriptionDTO dto = new PushSubscriptionDTO();
-        dto.setEndpoint("https://endpoint.com");
+        dto.setEndpoint(TEST_ENDPOINT);
         PushSubscriptionDTO.Keys keys = new PushSubscriptionDTO.Keys();
         keys.setAuth("auth");
-        keys.setP256dh("p256dh");
+        keys.setP256dh(P256DH_KEY);
         dto.setKeys(keys);
 
-        mockMvc.perform(post("/api/v1/push/subscribe")
+        mockMvc.perform(post(SUBSCRIBE_URL)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))

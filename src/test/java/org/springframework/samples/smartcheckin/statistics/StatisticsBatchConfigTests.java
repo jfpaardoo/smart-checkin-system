@@ -99,9 +99,7 @@ class StatisticsBatchConfigTests {
         ChunkContext chunkContext = mock(ChunkContext.class);
 
         // Verificamos que el tasklet maneja la excepción del repositorio o finaliza de forma controlada
-        Exception exception = assertThrows(Exception.class, () -> {
-            tasklet.execute(contribution, chunkContext);
-        });
+        Exception exception = assertThrows(Exception.class, () -> tasklet.execute(contribution, chunkContext));
 
         assertNotNull(exception);
     }

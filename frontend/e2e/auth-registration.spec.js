@@ -1,10 +1,11 @@
+/* eslint-disable testing-library/prefer-screen-queries */
 const { test, expect } = require('@playwright/test');
 
 test.describe('Flujo de Autorregistro de Usuario (User Self-Registration E2E)', () => {
 
   test('Debe permitir a un nuevo empleado llenar y enviar su formulario de registro', async ({ page }) => {
     // Intercept API signup call to mock successful response
-    await page.route('/api/v1/auth/signup', async (route) => {
+    await page.route('**/api/v1/auth/signup', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -15,7 +16,7 @@ test.describe('Flujo de Autorregistro de Usuario (User Self-Registration E2E)', 
     await page.goto('/register');
 
     // Verify Title (bilingual support)
-    await expect(page.locator('h2')).toContainText(/Solicitud de Registro|Registration Request/i);
+    await expect(page.getByRole('heading', { name: /Solicitud de Registro|Registration Request/i })).toBeVisible();
 
     // Fill form fields
     await page.fill('input#firstName', 'Carlos');
@@ -29,7 +30,7 @@ test.describe('Flujo de Autorregistro de Usuario (User Self-Registration E2E)', 
     await page.click('button[type="submit"]');
 
     // Verify Success Screen
-    await expect(page.locator('h3')).toContainText(/¡Solicitud Enviada!|Request Sent!|Request Submitted!/i);
+    await expect(page.getByRole('heading', { name: /¡Solicitud Enviada!|Request Sent!|Request Submitted!/i })).toBeVisible();
   });
 
   test('Debe validar que las contraseñas coincidan', async ({ page }) => {
@@ -45,6 +46,6 @@ test.describe('Flujo de Autorregistro de Usuario (User Self-Registration E2E)', 
     await page.click('button[type="submit"]');
 
     // Confirm that submission did not navigate away
-    await expect(page.locator('h2')).toContainText(/Solicitud de Registro|Registration Request/i);
+    await expect(page.getByRole('heading', { name: /Solicitud de Registro|Registration Request/i })).toBeVisible();
   });
 });
