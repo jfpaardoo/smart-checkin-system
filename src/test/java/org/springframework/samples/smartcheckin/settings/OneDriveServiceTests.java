@@ -66,7 +66,7 @@ class OneDriveServiceTests {
         ResponseEntity<Map<String, Object>> uploadEntity = new ResponseEntity<>(uploadResponse, HttpStatus.OK);
 
         when(restTemplate.exchange(
-                eq("https://graph.microsoft.com/v1.0/me/drive/root:/formations/{folder}/{filename}:/content"),
+                eq("https://graph.microsoft.com/v1.0/me/drive/root:/ba/formations/{folder}/documents/{filename}:/content"),
                 eq(HttpMethod.PUT),
                 any(HttpEntity.class),
                 org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
@@ -115,7 +115,7 @@ class OneDriveServiceTests {
         ResponseEntity<Map<String, Object>> uploadEntity = new ResponseEntity<>(uploadResponse, HttpStatus.OK);
 
         when(restTemplate.exchange(
-                eq("https://graph.microsoft.com/v1.0/me/drive/root:/backups/{filename}:/content"),
+                eq("https://graph.microsoft.com/v1.0/me/drive/root:/ba/backups/{filename}:/content"),
                 eq(HttpMethod.PUT),
                 any(HttpEntity.class),
                 org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
@@ -315,7 +315,7 @@ class OneDriveServiceTests {
         ResponseEntity<Map<String, Object>> uploadEntity = new ResponseEntity<>(uploadResponse, HttpStatus.OK);
 
         when(restTemplate.exchange(
-                eq("https://graph.microsoft.com/v1.0/me/drive/root:/backups/{filename}:/content"),
+                eq("https://graph.microsoft.com/v1.0/me/drive/root:/ba/backups/{filename}:/content"),
                 eq(HttpMethod.PUT),
                 any(HttpEntity.class),
                 org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
@@ -359,7 +359,7 @@ class OneDriveServiceTests {
         Map<String, Object> uploadResponse = Map.of("id", "item123");
         ResponseEntity<Map<String, Object>> uploadEntity = new ResponseEntity<>(uploadResponse, HttpStatus.OK);
         when(restTemplate.exchange(
-                eq("https://graph.microsoft.com/v1.0/me/drive/root:/formations/{folder}/{filename}:/content"),
+                eq("https://graph.microsoft.com/v1.0/me/drive/root:/ba/formations/{folder}/documents/{filename}:/content"),
                 eq(HttpMethod.PUT),
                 any(HttpEntity.class),
                 org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),

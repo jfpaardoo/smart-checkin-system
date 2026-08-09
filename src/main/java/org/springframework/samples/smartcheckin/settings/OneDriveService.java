@@ -81,7 +81,7 @@ public class OneDriveService {
             cleanFolderName = "general";
         }
 
-        String uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/formations/{folder}/{filename}:/content";
+        String uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/ba/formations/{folder}/documents/{filename}:/content";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -139,7 +139,7 @@ public class OneDriveService {
         String accessToken = getAccessToken(settings);
         String safeFileName = fileName != null ? fileName.replaceAll(SAFE_CHARS_REGEX, "_") : "backup.zip";
         
-        String uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/backups/{filename}:/content";
+        String uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/ba/backups/{filename}:/content";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -159,6 +159,61 @@ public class OneDriveService {
         String itemId = (String) bodyRes.get("id");
 
         return createShareLink(itemId, accessToken);
+    }
+
+    public String uploadSignature(byte[] data, String fileName, String pathContext) {
+        CloudSettings settings = cloudSettingsService.getSettings();
+        if (settings == null || settings.getOneDriveClientId() == null) {
+            throw new IllegalStateException("OneDrive credentials not configured");
+        }
+
+        String accessToken = getAccessToken(settings);
+        String safeFileName = fileName != null ? fileName.replaceAll(SAFE_CHARS_REGEX, "_") : "signature.png";
+        
+        // Clean pathContext and construct URL
+        String safePathContext = pathContext != null ? pathContext.replaceAll(SAFE_CHARS_REGEX, "_").trim() : "checkins";
+        String uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/ba/{pathContext}/signatures/{filename}:/content";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+
+        HttpEntity<byte[]> request = new HttpEntity<>(data, headers);
+
+        ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
+        
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                uploadUrl, HttpMethod.PUT, request, responseType, safePathContext, safeFileName);
+        
+        Map<String, Object> bodyRes = response.getBody();
+        if (bodyRes == null || !bodyRes.containsKey("id")) {
+            throw new IllegalStateException("Empty or invalid response from OneDrive upload endpoint");
+        }
+        return (String) bodyRes.get("id"); // Returns itemId for storage reference
+    }
+
+    public byte[] downloadFile(String itemId) {
+        CloudSettings settings = cloudSettingsService.getSettings();
+        if (settings == null || settings.getOneDriveClientId() == null) {
+            throw new IllegalStateException("OneDrive credentials not configured");
+        }
+
+        String accessToken = getAccessToken(settings);
+        String downloadUrl = "https://graph.microsoft.com/v1.0/me/drive/items/{itemId}/content";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+        
+        try {
+            ResponseEntity<byte[]> response = restTemplate.exchange(
+                    downloadUrl, HttpMethod.GET, request, byte[].class, itemId);
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("Error downloading file from OneDrive: {}", e.getMessage());
+            return new byte[0];
+        }
     }
 
     public void deleteFile(String fileIdOrUrl) {

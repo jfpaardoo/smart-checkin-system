@@ -13,8 +13,8 @@ import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.UUID;
 
-@Service
-public class LocalFileSystemService {
+@Service("localSignatureStorageService")
+public class LocalFileSystemService implements SignatureStorageService {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalFileSystemService.class);
 
@@ -38,9 +38,10 @@ public class LocalFileSystemService {
     /**
      * Saves a base64 encoded PNG signature to the file system.
      * @param base64Data The base64 string (e.g. data:image/png;base64,...)
+     * @param pathContext the context path for the file (e.g., "formations/My_Course" or "checkins")
      * @return the unique file name generated.
      */
-    public String saveSignature(String base64Data) {
+    public String saveSignature(String base64Data, String pathContext) {
         if (base64Data == null || base64Data.trim().isEmpty()) {
             return null;
         }

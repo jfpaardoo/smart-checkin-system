@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.ZoneId;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,12 @@ import org.springframework.test.web.servlet.MockMvc;
 class ExportRestControllerTests {
 
 	private static final String BASE_URL = "/api/v1/exports";
+	private static final String USERS_CSV = "/users/csv";
+	private static final String USERS_EXCEL = "/users/excel";
+	private static final String CHECKINS_CSV = "/checkins/csv";
+	private static final String CHECKINS_EXCEL = "/checkins/excel";
+	private static final String FORMATIONS_CSV = "/formations/csv";
+	private static final String FORMATIONS_EXCEL = "/formations/excel";
 
 	@MockitoBean
 	private CheckinRepository checkinRepository;
@@ -104,7 +111,7 @@ class ExportRestControllerTests {
 	@WithMockUser(authorities = {"ADMIN"})
 	void testExportUsersCsv() throws Exception {
 		when(userRepository.findAll()).thenReturn(List.of(user));
-		mockMvc.perform(get(BASE_URL + "/users/csv"))
+		mockMvc.perform(get(BASE_URL + USERS_CSV))
 				.andExpect(status().isOk());
 	}
 
@@ -113,7 +120,7 @@ class ExportRestControllerTests {
 	void shouldExportUsersExcel() throws Exception {
 		when(userRepository.findAll()).thenReturn(List.of(user));
 
-		mockMvc.perform(get(BASE_URL + "/users/excel"))
+		mockMvc.perform(get(BASE_URL + USERS_EXCEL))
 				.andExpect(status().isOk());
 	}
 
@@ -132,7 +139,7 @@ class ExportRestControllerTests {
 	@WithMockUser(authorities = {"ADMIN"})
 	void testExportCheckinsCsv() throws Exception {
 		when(checkinRepository.findAll()).thenReturn(List.of(checkin));
-		mockMvc.perform(get(BASE_URL + "/checkins/csv"))
+		mockMvc.perform(get(BASE_URL + CHECKINS_CSV))
 				.andExpect(status().isOk());
 	}
 
@@ -140,7 +147,7 @@ class ExportRestControllerTests {
 	@WithMockUser(authorities = {"ADMIN"})
 	void testExportCheckinsExcel() throws Exception {
 		when(checkinRepository.findAll()).thenReturn(List.of(checkin));
-		mockMvc.perform(get(BASE_URL + "/checkins/excel"))
+		mockMvc.perform(get(BASE_URL + CHECKINS_EXCEL))
 				.andExpect(status().isOk());
 	}
 
@@ -148,7 +155,7 @@ class ExportRestControllerTests {
 	@WithMockUser(authorities = {"ADMIN"})
 	void testExportFormationsCsv() throws Exception {
 		when(attendanceRepository.findAll()).thenReturn(List.of(attendance));
-		mockMvc.perform(get(BASE_URL + "/formations/csv"))
+		mockMvc.perform(get(BASE_URL + FORMATIONS_CSV))
 				.andExpect(status().isOk());
 	}
 
@@ -160,7 +167,7 @@ class ExportRestControllerTests {
 		nullAttendance.setUser(null);
 		nullAttendance.setFormation(null);
 		when(attendanceRepository.findAll()).thenReturn(List.of(attendance, nullAttendance));
-		mockMvc.perform(get(BASE_URL + "/formations/excel"))
+		mockMvc.perform(get(BASE_URL + FORMATIONS_EXCEL))
 				.andExpect(status().isOk());
 	}
 
@@ -171,7 +178,7 @@ class ExportRestControllerTests {
 		nullAttendance.setUser(null);
 		nullAttendance.setFormation(null);
 		when(attendanceRepository.findAll()).thenReturn(List.of(attendance, nullAttendance));
-		mockMvc.perform(get(BASE_URL + "/formations/csv"))
+		mockMvc.perform(get(BASE_URL + FORMATIONS_CSV))
 				.andExpect(status().isOk());
 	}
 
@@ -182,9 +189,9 @@ class ExportRestControllerTests {
 		nullUser.setAuthority(null);
 		when(userRepository.findAll()).thenReturn(List.of(user, nullUser));
 		
-		mockMvc.perform(get(BASE_URL + "/users/csv"))
+		mockMvc.perform(get(BASE_URL + USERS_CSV))
 				.andExpect(status().isOk());
-		mockMvc.perform(get(BASE_URL + "/users/excel"))
+		mockMvc.perform(get(BASE_URL + USERS_EXCEL))
 				.andExpect(status().isOk());
 	}
 
@@ -195,9 +202,9 @@ class ExportRestControllerTests {
 		nullCheckin.setUser(null);
 		when(checkinRepository.findAll()).thenReturn(List.of(checkin, nullCheckin));
 		
-		mockMvc.perform(get(BASE_URL + "/checkins/csv"))
+		mockMvc.perform(get(BASE_URL + CHECKINS_CSV))
 				.andExpect(status().isOk());
-		mockMvc.perform(get(BASE_URL + "/checkins/excel"))
+		mockMvc.perform(get(BASE_URL + CHECKINS_EXCEL))
 				.andExpect(status().isOk());
 	}
 
@@ -215,7 +222,7 @@ class ExportRestControllerTests {
 
         when(userRepository.findAll()).thenReturn(List.of(userWithNulls));
 
-        mockMvc.perform(get(BASE_URL + "/users/csv"))
+        mockMvc.perform(get(BASE_URL + USERS_CSV))
                 .andExpect(status().isOk());
     }
 
@@ -233,7 +240,7 @@ class ExportRestControllerTests {
 
         when(userRepository.findAll()).thenReturn(List.of(userWithNulls));
 
-        mockMvc.perform(get(BASE_URL + "/users/excel"))
+        mockMvc.perform(get(BASE_URL + USERS_EXCEL))
                 .andExpect(status().isOk());
     }
 
@@ -248,7 +255,7 @@ class ExportRestControllerTests {
 
         when(checkinRepository.findAll()).thenReturn(List.of(checkinWithNulls));
 
-        mockMvc.perform(get(BASE_URL + "/checkins/csv"))
+        mockMvc.perform(get(BASE_URL + CHECKINS_CSV))
                 .andExpect(status().isOk());
     }
 
@@ -263,7 +270,7 @@ class ExportRestControllerTests {
 
         when(checkinRepository.findAll()).thenReturn(List.of(checkinWithNulls));
 
-        mockMvc.perform(get(BASE_URL + "/checkins/excel"))
+        mockMvc.perform(get(BASE_URL + CHECKINS_EXCEL))
                 .andExpect(status().isOk());
     }
 
@@ -293,13 +300,13 @@ class ExportRestControllerTests {
         FormationAttendance attPartials = new FormationAttendance();
         attPartials.setFormation(f);
         attPartials.setUser(u);
-        attPartials.setCheckInDate(LocalDateTime.now());
-        attPartials.setCheckOutDate(LocalDateTime.now().plusHours(1));
+        attPartials.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
+        attPartials.setCheckOutDate(LocalDateTime.now(ZoneId.systemDefault()).plusHours(1));
         attPartials.setSignature("valid_sig");
 
         when(attendanceRepository.findAll()).thenReturn(List.of(attNulls, attPartials));
 
-        mockMvc.perform(get(BASE_URL + "/formations/csv"))
+        mockMvc.perform(get(BASE_URL + FORMATIONS_CSV))
                 .andExpect(status().isOk());
     }
 
@@ -322,7 +329,7 @@ class ExportRestControllerTests {
         when(formationRepository.findAll()).thenReturn(List.of(f));
         when(attendanceRepository.findAll()).thenReturn(List.of(attNulls));
 
-        mockMvc.perform(get(BASE_URL + "/formations/excel"))
+        mockMvc.perform(get(BASE_URL + FORMATIONS_EXCEL))
                 .andExpect(status().isOk());
     }
 
@@ -332,7 +339,7 @@ class ExportRestControllerTests {
         Formation f = new Formation();
         f.setId(10);
         f.setName("Course");
-        f.setFormationDate(LocalDateTime.now());
+        f.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
 
         User u = new User();
         u.setId(1);
@@ -343,8 +350,8 @@ class ExportRestControllerTests {
         FormationAttendance att = new FormationAttendance();
         att.setFormation(f);
         att.setUser(u);
-        att.setCheckInDate(LocalDateTime.now());
-        att.setCheckOutDate(LocalDateTime.now().plusHours(1));
+        att.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
+        att.setCheckOutDate(LocalDateTime.now(ZoneId.systemDefault()).plusHours(1));
         att.setSignature("sig");
 
         when(attendanceRepository.findAll()).thenReturn(List.of(att));
@@ -353,7 +360,7 @@ class ExportRestControllerTests {
             mockedDigest.when(() -> java.security.MessageDigest.getInstance("SHA-256"))
                     .thenThrow(new java.security.NoSuchAlgorithmException("No SHA-256"));
 
-            mockMvc.perform(get(BASE_URL + "/formations/csv"))
+            mockMvc.perform(get(BASE_URL + FORMATIONS_CSV))
                     .andExpect(status().isOk());
         }
     }

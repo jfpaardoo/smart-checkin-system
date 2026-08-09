@@ -9,68 +9,72 @@ import org.springframework.samples.smartcheckin.auth.payload.response.JwtRespons
 
 class JwtResponseTests {
 
+    private static final String TOKEN_123 = "token123";
+    private static final String USER_1 = "user1";
+    private static final String ADMIN_ROLE = "ADMIN";
+
     @Test
     void testDefaultConstructorAndSetters() {
         JwtResponse response = new JwtResponse();
-        response.setToken("token123");
+        response.setToken(TOKEN_123);
         response.setType("BearerToken");
         response.setId(1);
-        response.setUsername("user1");
-        response.setRoles(List.of("ADMIN"));
+        response.setUsername(USER_1);
+        response.setRoles(List.of(ADMIN_ROLE));
         response.setRequiresTwoFactor(true);
 
-        assertEquals("token123", response.getToken());
+        assertEquals(TOKEN_123, response.getToken());
         assertEquals("BearerToken", response.getType());
         assertEquals(1, response.getId());
-        assertEquals("user1", response.getUsername());
-        assertTrue(response.getRoles().contains("ADMIN"));
+        assertEquals(USER_1, response.getUsername());
+        assertTrue(response.getRoles().contains(ADMIN_ROLE));
         assertTrue(response.getRequiresTwoFactor());
     }
 
     @Test
     void testIntegerConstructor() {
-        JwtResponse response = new JwtResponse("token123", 1, "user1", List.of("ADMIN"));
+        JwtResponse response = new JwtResponse(TOKEN_123, 1, USER_1, List.of(ADMIN_ROLE));
         
-        assertEquals("token123", response.getToken());
+        assertEquals(TOKEN_123, response.getToken());
         assertEquals("Bearer", response.getType());
         assertEquals(1, response.getId());
-        assertEquals("user1", response.getUsername());
-        assertTrue(response.getRoles().contains("ADMIN"));
+        assertEquals(USER_1, response.getUsername());
+        assertTrue(response.getRoles().contains(ADMIN_ROLE));
         assertFalse(response.getRequiresTwoFactor()); // Valor por defecto
     }
 
     @Test
     void testLongConstructorWithNonNullId() {
-        JwtResponse response = new JwtResponse("token123", 100L, "user1", List.of("USER"));
+        JwtResponse response = new JwtResponse(TOKEN_123, 100L, USER_1, List.of("USER"));
         
-        assertEquals("token123", response.getToken());
+        assertEquals(TOKEN_123, response.getToken());
         assertEquals(100, response.getId());
-        assertEquals("user1", response.getUsername());
+        assertEquals(USER_1, response.getUsername());
     }
 
     // --- TEST PARA LA RAMA CONDICIONAL FALTANTE ---
 
     @Test
     void testLongConstructorWithNullId() {
-        JwtResponse response = new JwtResponse("token123", (Long) null, "user1", List.of("USER"));
+        JwtResponse response = new JwtResponse(TOKEN_123, (Long) null, USER_1, List.of("USER"));
         
-        assertEquals("token123", response.getToken());
+        assertEquals(TOKEN_123, response.getToken());
         assertNull(response.getId());
-        assertEquals("user1", response.getUsername());
+        assertEquals(USER_1, response.getUsername());
     }
 
     @Test
     void testToString() {
-        JwtResponse response = new JwtResponse("token123", 1, "user1", List.of("ADMIN"));
+        JwtResponse response = new JwtResponse(TOKEN_123, 1, USER_1, List.of(ADMIN_ROLE));
         response.setRequiresTwoFactor(true);
         
         String str = response.toString();
         
-        assertTrue(str.contains("token=token123"));
+        assertTrue(str.contains("token=" + TOKEN_123));
         assertTrue(str.contains("type=Bearer"));
         assertTrue(str.contains("id=1"));
-        assertTrue(str.contains("username=user1"));
-        assertTrue(str.contains("roles=[ADMIN]"));
+        assertTrue(str.contains("username=" + USER_1));
+        assertTrue(str.contains("roles=[" + ADMIN_ROLE + "]"));
         assertTrue(str.contains("requiresTwoFactor=true"));
     }
 }

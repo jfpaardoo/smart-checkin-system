@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 /**
  * Helper function to calculate duration between two dates in minutes.
  * @param {string|Date} checkIn - The check-in date
@@ -6,9 +8,9 @@
  */
 export function calculateDuration(checkIn, checkOut) {
   if (!checkIn || !checkOut) return "-";
-  const start = new Date(checkIn);
-  const end = new Date(checkOut);
-  const diffMs = end - start;
+  const start = moment.utc(checkIn).local();
+  const end = moment.utc(checkOut).local();
+  const diffMs = end.diff(start);
   if (diffMs <= 0) return "0 min";
   const mins = Math.floor(diffMs / 60000);
   return `${mins} min`;
@@ -21,5 +23,5 @@ export function calculateDuration(checkIn, checkOut) {
  */
 export function formatDate(date) {
   if (!date) return "-";
-  return new Date(date).toLocaleString();
+  return moment.utc(date).local().format('YYYY-MM-DD HH:mm:ss');
 }

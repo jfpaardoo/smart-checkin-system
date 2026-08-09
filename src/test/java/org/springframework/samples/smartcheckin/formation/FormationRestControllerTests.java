@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,6 +45,18 @@ import org.springframework.test.context.ContextConfiguration;
 class FormationRestControllerTests {
 
     private static final String BASE_URL = "/api/v1/formations";
+    private static final String JAVA_101 = "Java 101";
+    private static final String INTRO_TO_JAVA = "Intro to Java";
+    private static final String ATTEND_PATH = "/1/attend";
+    private static final String SEARCH_PARAM = "search";
+    private static final String SPRING_SECURITY_101 = "Spring Security 101";
+    private static final String SECURITY_COURSE = "Security Course";
+    private static final String FORMATION_PART = "formation";
+    private static final String FILES_PART = "files";
+    private static final String DOC_PDF = "doc.pdf";
+    private static final String SPRING_SECURITY_UPDATED = "Spring Security Updated";
+    private static final String UPDATED_COURSE = "Updated Course";
+    private static final String FILE1_ONEDRIVE_URL = "file1.pdf||http://onedrive.link/file1.pdf||item123";
 
     @MockitoBean
     private FormationService formationService;
@@ -70,8 +83,8 @@ class FormationRestControllerTests {
     void setUp() {
         formation = new Formation();
         formation.setId(1);
-        formation.setName("Java 101");
-        formation.setDescription("Intro to Java");
+        formation.setName(JAVA_101);
+        formation.setDescription(INTRO_TO_JAVA);
 
         user = new User();
         user.setId(10);
@@ -108,7 +121,7 @@ class FormationRestControllerTests {
         when(userService.findCurrentUser()).thenReturn(user);
         when(formationService.registerAttendance(eq(1), anyString())).thenReturn(formation);
 
-        mockMvc.perform(post(BASE_URL + "/1/attend").with(csrf())).andExpect(status().isOk());
+        mockMvc.perform(post(BASE_URL + ATTEND_PATH).with(csrf())).andExpect(status().isOk());
     }
 
     @Test
@@ -142,21 +155,21 @@ class FormationRestControllerTests {
     void testGetAllFormationsWithSearch() throws Exception {
         when(formationService.findAll()).thenReturn(List.of(formation));
 
-        mockMvc.perform(get(BASE_URL).param("search", "Java")).andExpect(status().isOk());
+        mockMvc.perform(get(BASE_URL).param(SEARCH_PARAM, "Java")).andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(authorities = {"ADMIN"})
     void testCreateFormationWithFiles() throws Exception {
         FormationRequest req = new FormationRequest();
-        req.setName("Spring Security 101");
-        req.setDescription("Security Course");
-        req.setFormationDate(LocalDateTime.now());
+        req.setName(SPRING_SECURITY_101);
+        req.setDescription(SECURITY_COURSE);
+        req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
 
         MockMultipartFile jsonPart = new MockMultipartFile(
-                "formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
+                FORMATION_PART, "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
         MockMultipartFile filePart = new MockMultipartFile(
-                "files", "doc.pdf", MediaType.APPLICATION_PDF_VALUE, "content".getBytes());
+                FILES_PART, DOC_PDF, MediaType.APPLICATION_PDF_VALUE, "content".getBytes());
 
         when(oneDriveService.uploadFile(any(), anyString())).thenReturn("http://onedrive.link/doc.pdf");
         when(formationService.saveFormation(any(Formation.class))).thenReturn(formation);
@@ -170,15 +183,15 @@ class FormationRestControllerTests {
     @WithMockUser(authorities = {"ADMIN"})
     void testUpdateFormationWithFiles() throws Exception {
         FormationRequest req = new FormationRequest();
-        req.setName("Spring Security Updated");
-        req.setDescription("Updated Course");
-        req.setFormationDate(LocalDateTime.now());
+        req.setName(SPRING_SECURITY_UPDATED);
+        req.setDescription(UPDATED_COURSE);
+        req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
         req.setExistingDocumentUrls(List.of());
 
         MockMultipartFile jsonPart = new MockMultipartFile(
-                "formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
+                FORMATION_PART, "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
         MockMultipartFile filePart = new MockMultipartFile(
-                "files", "doc2.pdf", MediaType.APPLICATION_PDF_VALUE, "content2".getBytes());
+                FILES_PART, "doc2.pdf", MediaType.APPLICATION_PDF_VALUE, "content2".getBytes());
 
         when(formationService.findById(1)).thenReturn(Optional.of(formation));
         when(oneDriveService.uploadFile(any(), anyString())).thenReturn("http://onedrive.link/doc2.pdf");
@@ -197,19 +210,19 @@ class FormationRestControllerTests {
     void testUpdateFormationRemovesFileTriggersOneDriveDelete() throws Exception {
         Formation existing = new Formation();
         existing.setId(1);
-        existing.setName("Java 101");
-        existing.setDescription("Intro to Java");
-        existing.getDocumentUrls().add("file1.pdf||http://onedrive.link/file1.pdf||item123");
+        existing.setName(JAVA_101);
+        existing.setDescription(INTRO_TO_JAVA);
+        existing.getDocumentUrls().add(FILE1_ONEDRIVE_URL);
         existing.getDocumentUrls().add("file2.pdf||http://onedrive.link/file2.pdf||item456");
 
         FormationRequest req = new FormationRequest();
         req.setName("Java 101 Updated");
-        req.setDescription("Intro to Java");
-        req.setFormationDate(LocalDateTime.now());
-        req.setExistingDocumentUrls(List.of("file1.pdf||http://onedrive.link/file1.pdf||item123"));
+        req.setDescription(INTRO_TO_JAVA);
+        req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
+        req.setExistingDocumentUrls(List.of(FILE1_ONEDRIVE_URL));
 
         MockMultipartFile jsonPart = new MockMultipartFile(
-                "formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
+                FORMATION_PART, "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
 
         when(formationService.findById(1)).thenReturn(Optional.of(existing));
         when(formationService.updateFormation(any(Formation.class), eq(1))).thenReturn(existing);
@@ -222,7 +235,7 @@ class FormationRestControllerTests {
         mockMvc.perform(builder).andExpect(status().isOk());
 
         verify(oneDriveService, times(1)).deleteFile("file2.pdf||http://onedrive.link/file2.pdf||item456");
-        verify(oneDriveService, never()).deleteFile("file1.pdf||http://onedrive.link/file1.pdf||item123");
+        verify(oneDriveService, never()).deleteFile(FILE1_ONEDRIVE_URL);
     }
 
     @Test
@@ -232,7 +245,7 @@ class FormationRestControllerTests {
         req.setPersonalCode("9999");
         when(formationService.registerAttendance(1, "9999")).thenReturn(formation);
 
-        mockMvc.perform(post(BASE_URL + "/1/attend").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post(BASE_URL + ATTEND_PATH).with(csrf()).contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req))).andExpect(status().isOk());
     }
 
@@ -242,7 +255,7 @@ class FormationRestControllerTests {
         when(userService.findCurrentUser()).thenReturn(user);
         when(formationService.registerAttendance(eq(1), anyString())).thenThrow(new IllegalArgumentException("Already registered"));
 
-        mockMvc.perform(post(BASE_URL + "/1/attend").with(csrf())).andExpect(status().isBadRequest());
+        mockMvc.perform(post(BASE_URL + ATTEND_PATH).with(csrf())).andExpect(status().isBadRequest());
     }
 
     @Test
@@ -279,12 +292,12 @@ class FormationRestControllerTests {
     @WithMockUser(authorities = {"ADMIN"})
     void testUpdateFormationNotFound() throws Exception {
         FormationRequest req = new FormationRequest();
-        req.setName("Spring Security Updated");
-        req.setDescription("Updated Course");
-        req.setFormationDate(LocalDateTime.now());
+        req.setName(SPRING_SECURITY_UPDATED);
+        req.setDescription(UPDATED_COURSE);
+        req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
 
         MockMultipartFile jsonPart = new MockMultipartFile(
-                "formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
+                FORMATION_PART, "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
 
         when(formationService.findById(1)).thenReturn(Optional.empty());
 
@@ -317,18 +330,18 @@ class FormationRestControllerTests {
     void testUpdateFormationRemovesFileOneDriveException() throws Exception {
         Formation existing = new Formation();
         existing.setId(1);
-        existing.setName("Java 101");
-        existing.setDescription("Intro to Java");
-        existing.getDocumentUrls().add("file1.pdf||http://onedrive.link/file1.pdf||item123");
+        existing.setName(JAVA_101);
+        existing.setDescription(INTRO_TO_JAVA);
+        existing.getDocumentUrls().add(FILE1_ONEDRIVE_URL);
 
         FormationRequest req = new FormationRequest();
         req.setName("Java 101 Updated");
-        req.setDescription("Intro to Java");
-        req.setFormationDate(LocalDateTime.now());
+        req.setDescription(INTRO_TO_JAVA);
+        req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
         req.setExistingDocumentUrls(List.of());
 
         MockMultipartFile jsonPart = new MockMultipartFile(
-                "formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
+                FORMATION_PART, "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
 
         when(formationService.findById(1)).thenReturn(Optional.of(existing));
         when(formationService.updateFormation(any(Formation.class), eq(1))).thenReturn(existing);
@@ -348,15 +361,15 @@ class FormationRestControllerTests {
     @WithMockUser(authorities = {"ADMIN"})
     void testUpdateFormationUploadFileOneDriveException() throws Exception {
         FormationRequest req = new FormationRequest();
-        req.setName("Spring Security Updated");
-        req.setDescription("Updated Course");
-        req.setFormationDate(LocalDateTime.now());
+        req.setName(SPRING_SECURITY_UPDATED);
+        req.setDescription(UPDATED_COURSE);
+        req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
         req.setExistingDocumentUrls(List.of());
 
         MockMultipartFile jsonPart = new MockMultipartFile(
-                "formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
+                FORMATION_PART, "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
         MockMultipartFile filePart = new MockMultipartFile(
-                "files", "doc2.pdf", MediaType.APPLICATION_PDF_VALUE, "content2".getBytes());
+                FILES_PART, "doc2.pdf", MediaType.APPLICATION_PDF_VALUE, "content2".getBytes());
 
         when(formationService.findById(1)).thenReturn(Optional.of(formation));
         when(oneDriveService.uploadFile(any(), anyString())).thenThrow(new RuntimeException("Upload error"));
@@ -375,14 +388,14 @@ class FormationRestControllerTests {
     @WithMockUser(authorities = {"ADMIN"})
     void testCreateFormationEmptyFile() throws Exception {
         FormationRequest req = new FormationRequest();
-        req.setName("Spring Security 101");
-        req.setDescription("Security Course");
-        req.setFormationDate(LocalDateTime.now());
+        req.setName(SPRING_SECURITY_101);
+        req.setDescription(SECURITY_COURSE);
+        req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
 
         MockMultipartFile jsonPart = new MockMultipartFile(
-                "formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
+                FORMATION_PART, "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
         MockMultipartFile filePart = new MockMultipartFile(
-                "files", "doc.pdf", MediaType.APPLICATION_PDF_VALUE, new byte[0]); // empty file
+                FILES_PART, DOC_PDF, MediaType.APPLICATION_PDF_VALUE, new byte[0]); // empty file
 
         when(formationService.saveFormation(any(Formation.class))).thenReturn(formation);
 
@@ -398,14 +411,14 @@ class FormationRestControllerTests {
     @WithMockUser(authorities = {"ADMIN"})
     void testCreateFormationUploadFileOneDriveException() throws Exception {
         FormationRequest req = new FormationRequest();
-        req.setName("Spring Security 101");
-        req.setDescription("Security Course");
-        req.setFormationDate(LocalDateTime.now());
+        req.setName(SPRING_SECURITY_101);
+        req.setDescription(SECURITY_COURSE);
+        req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
 
         MockMultipartFile jsonPart = new MockMultipartFile(
-                "formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
+                FORMATION_PART, "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
         MockMultipartFile filePart = new MockMultipartFile(
-                "files", "doc.pdf", MediaType.APPLICATION_PDF_VALUE, "content".getBytes());
+                FILES_PART, DOC_PDF, MediaType.APPLICATION_PDF_VALUE, "content".getBytes());
 
         when(oneDriveService.uploadFile(any(), anyString())).thenThrow(new RuntimeException("Upload error"));
         when(formationService.saveFormation(any(Formation.class))).thenReturn(formation);
@@ -435,7 +448,7 @@ class FormationRestControllerTests {
 
         when(formationService.findAll()).thenReturn(List.of(f1, f2, f3, f4));
 
-        mockMvc.perform(get(BASE_URL).param("search", "match"))
+        mockMvc.perform(get(BASE_URL).param(SEARCH_PARAM, "match"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
     }
@@ -445,7 +458,7 @@ class FormationRestControllerTests {
     void getAllFormationsWithBlankSearch() throws Exception {
         when(formationService.findAll()).thenReturn(List.of(formation));
 
-        mockMvc.perform(get(BASE_URL).param("search", "   "))
+        mockMvc.perform(get(BASE_URL).param(SEARCH_PARAM, "   "))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1));
     }
@@ -456,7 +469,7 @@ class FormationRestControllerTests {
         when(userService.findCurrentUser()).thenReturn(user);
         when(formationService.registerAttendance(1, "1234")).thenReturn(formation);
 
-        mockMvc.perform(post(BASE_URL + "/1/attend").with(csrf()))
+        mockMvc.perform(post(BASE_URL + ATTEND_PATH).with(csrf()))
                 .andExpect(status().isOk());
     }
 
@@ -469,7 +482,7 @@ class FormationRestControllerTests {
         AttendRequest req = new AttendRequest();
         req.setPersonalCode(null);
 
-        mockMvc.perform(post(BASE_URL + "/1/attend").with(csrf())
+        mockMvc.perform(post(BASE_URL + ATTEND_PATH).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk());
@@ -484,7 +497,7 @@ class FormationRestControllerTests {
         AttendRequest req = new AttendRequest();
         req.setPersonalCode("   ");
 
-        mockMvc.perform(post(BASE_URL + "/1/attend").with(csrf())
+        mockMvc.perform(post(BASE_URL + ATTEND_PATH).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk());
@@ -494,11 +507,11 @@ class FormationRestControllerTests {
     @WithMockUser(authorities = {"ADMIN"})
     void createFormationWithNullFilesList() throws Exception {
         FormationRequest req = new FormationRequest();
-        req.setName("Spring Security 101");
-        req.setFormationDate(LocalDateTime.now());
+        req.setName(SPRING_SECURITY_101);
+        req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
 
         MockMultipartFile jsonPart = new MockMultipartFile(
-                "formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
+                FORMATION_PART, "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
 
         when(formationService.saveFormation(any(Formation.class))).thenReturn(formation);
 
@@ -511,12 +524,12 @@ class FormationRestControllerTests {
     @WithMockUser(authorities = {"ADMIN"})
     void updateFormationWithNullExistingUrlsAndNullFiles() throws Exception {
         FormationRequest req = new FormationRequest();
-        req.setName("Spring Security Updated");
-        req.setFormationDate(LocalDateTime.now());
+        req.setName(SPRING_SECURITY_UPDATED);
+        req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
         req.setExistingDocumentUrls(null); 
 
         MockMultipartFile jsonPart = new MockMultipartFile(
-                "formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
+                FORMATION_PART, "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
 
         when(formationService.findById(1)).thenReturn(Optional.of(formation));
         when(formationService.updateFormation(any(Formation.class), eq(1))).thenReturn(formation);
@@ -544,11 +557,11 @@ class FormationRestControllerTests {
         nullIdFormation.setName("No ID Formation");
 
         FormationRequest req = new FormationRequest();
-        req.setName("Spring Security 101");
-        req.setFormationDate(LocalDateTime.now());
+        req.setName(SPRING_SECURITY_101);
+        req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
 
         MockMultipartFile jsonPart = new MockMultipartFile(
-                "formation", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
+                FORMATION_PART, "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(req));
 
         when(formationService.saveFormation(any(Formation.class))).thenReturn(nullIdFormation);
 

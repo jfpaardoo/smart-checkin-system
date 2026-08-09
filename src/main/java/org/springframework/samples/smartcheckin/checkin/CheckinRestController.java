@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
-import org.springframework.samples.smartcheckin.storage.LocalFileSystemService;
+import org.springframework.samples.smartcheckin.storage.SignatureStorageService;
 import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,17 +34,17 @@ public class CheckinRestController {
     private final TotpService totpService;
     private final FormationService formationService;
     private final SimpMessagingTemplate messagingTemplate;
-    private final LocalFileSystemService localFileSystemService;
+    private final SignatureStorageService signatureStorageService;
     private static final String MESSAGE_KEY = "message";
 
     @Autowired
-    public CheckinRestController(CheckinService checkInService, UserService userService, TotpService totpService, FormationService formationService, SimpMessagingTemplate messagingTemplate, LocalFileSystemService localFileSystemService) {
+    public CheckinRestController(CheckinService checkInService, UserService userService, TotpService totpService, FormationService formationService, SimpMessagingTemplate messagingTemplate, SignatureStorageService signatureStorageService) {
         this.checkInService = checkInService;
         this.userService = userService;
         this.totpService = totpService;
         this.formationService = formationService;
         this.messagingTemplate = messagingTemplate;
-        this.localFileSystemService = localFileSystemService;
+        this.signatureStorageService = signatureStorageService;
     }
 
     @GetMapping("/my-history")
@@ -174,7 +174,7 @@ public class CheckinRestController {
     private Checkin processCheckinRecord(User user, CheckinType type, String signature) {
         Checkin saved = checkInService.performCheckIn(user, type);
         if (signature != null && !signature.isEmpty()) {
-            String fileName = localFileSystemService.saveSignature(signature);
+            String fileName = signatureStorageService.saveSignature(signature, "checkins");
             saved.setSignature(fileName);
             saved = checkInService.save(saved);
         }

@@ -105,8 +105,8 @@ export default function FormationAttendeesTable({
                       <td style={{ color: '#2c3e50', fontWeight: 600, paddingLeft: '1rem' }}>{user.personalCode}</td>
                       <td style={{ color: '#2c3e50' }}>{user.firstName} {user.lastName}</td>
                       <td style={{ color: '#64748b' }}>{user.username}</td>
-                      <td style={{ color: '#64748b' }}>{hasCheckedIn ? moment(att.checkInDate).format('HH:mm:ss') : '-'}</td>
-                      <td style={{ color: '#64748b' }}>{isCompleted ? moment(att.checkOutDate).format('HH:mm:ss') : '-'}</td>
+                      <td style={{ color: '#64748b' }}>{hasCheckedIn ? moment.utc(att.checkInDate).local().format('HH:mm:ss') : '-'}</td>
+                      <td style={{ color: '#64748b' }}>{isCompleted ? moment.utc(att.checkOutDate).local().format('HH:mm:ss') : '-'}</td>
                       <td>{renderAttendanceBadge(att)}</td>
                       <td className="text-center" style={{ paddingRight: '1rem' }}>
                         <div className="flex justify-center gap-2 items-center w-full">
@@ -179,8 +179,8 @@ export default function FormationAttendeesTable({
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 border-t border-slate-200/50 pt-3 text-xs text-slate-600">
-                    <div><span className="font-semibold text-slate-500">Check-in:</span> {hasCheckedIn ? moment(att.checkInDate).format('HH:mm:ss') : '-'}</div>
-                    <div><span className="font-semibold text-slate-500">Check-out:</span> {isCompleted ? moment(att.checkOutDate).format('HH:mm:ss') : '-'}</div>
+                    <div><span className="font-semibold text-slate-500">Check-in:</span> {hasCheckedIn ? moment.utc(att.checkInDate).local().format('HH:mm:ss') : '-'}</div>
+                    <div><span className="font-semibold text-slate-500">Check-out:</span> {isCompleted ? moment.utc(att.checkOutDate).local().format('HH:mm:ss') : '-'}</div>
                   </div>
 
                   {/* Botones móviles ordenados en grid simétrica (Mismo diseño previo) */}

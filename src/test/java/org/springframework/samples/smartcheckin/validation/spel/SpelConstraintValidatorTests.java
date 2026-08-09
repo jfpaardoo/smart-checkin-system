@@ -15,13 +15,14 @@ class SpelConstraintValidatorTests {
 	private static final String CHILD = "child";
 	private static final String APPLE = "apple";
 	private static final String BANANA = "banana";
+	private static final String PARENT_LIST = "parentList";
 
 	@BeforeEach
 	void setUp() {
 		validator = new SpelConstraintValidator();
 		ValidateElementIn annotation = mock(ValidateElementIn.class);
 		when(annotation.element()).thenReturn(CHILD);
-		when(annotation.collection()).thenReturn("parentList");
+		when(annotation.collection()).thenReturn(PARENT_LIST);
 		validator.initialize(annotation);
 	}
 
@@ -66,7 +67,7 @@ class SpelConstraintValidatorTests {
 		when(badAnnotation.collection()).thenReturn(CHILD);
 		validator.initialize(badAnnotation);
 
-		DummyClass target = new DummyClass("apple", List.of("apple", "banana"));
+		DummyClass target = new DummyClass(APPLE, List.of(APPLE, BANANA));
 		assertFalse(validator.isValid(target, context));
 	}
 
@@ -75,10 +76,10 @@ class SpelConstraintValidatorTests {
 		ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
 		ValidateElementIn badAnnotation = mock(ValidateElementIn.class);
 		when(badAnnotation.element()).thenReturn("invalid#@expr");
-		when(badAnnotation.collection()).thenReturn("parentList");
+		when(badAnnotation.collection()).thenReturn(PARENT_LIST);
 		validator.initialize(badAnnotation);
 
-		DummyClass target = new DummyClass("apple", List.of("apple", "banana"));
+		DummyClass target = new DummyClass(APPLE, List.of(APPLE, BANANA));
 		assertFalse(validator.isValid(target, context));
 	}
 
@@ -87,7 +88,7 @@ class SpelConstraintValidatorTests {
         ConstraintValidatorContext context = mock(ConstraintValidatorContext.class);
         ValidateElementIn nullElemAnnotation = mock(ValidateElementIn.class);
         when(nullElemAnnotation.element()).thenReturn(null);
-        when(nullElemAnnotation.collection()).thenReturn("parentList");
+        when(nullElemAnnotation.collection()).thenReturn(PARENT_LIST);
         validator.initialize(nullElemAnnotation);
 
         DummyClass target = new DummyClass(APPLE, List.of(APPLE, BANANA));

@@ -15,19 +15,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.samples.smartcheckin.formation.Formation;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.samples.smartcheckin.user.User;
-import org.springframework.samples.smartcheckin.storage.LocalFileSystemService;
+import org.springframework.samples.smartcheckin.storage.SignatureStorageService;
 
 @ExtendWith(MockitoExtension.class)
 class CertificateGeneratorServiceTests {
 
     @Mock
-    private LocalFileSystemService localFileSystemService;
+    private SignatureStorageService signatureStorageService;
 
     @InjectMocks
     private CertificateGeneratorService certificateGeneratorService;
 
     private static final String SPRING_SECURITY_101 = "Spring Security 101";
     private static final String NULL_SIGNATURE = "null_signature.png";
+    private static final String VALID_SIGNATURE_PNG = "valid_signature.png";
 
     @Test
     void testGenerateCertificatePdfWithoutSignature() {
@@ -153,16 +154,16 @@ class CertificateGeneratorServiceTests {
         attendance.setUser(user);
         attendance.setFormation(formation);
         attendance.setCheckInDate(LocalDateTime.of(2026, Month.AUGUST, 1, 10, 0));
-        attendance.setSignature("valid_signature.png"); 
+        attendance.setSignature(VALID_SIGNATURE_PNG); 
 
         byte[] fakePng = Base64.getDecoder().decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=");
-        when(localFileSystemService.loadSignature("valid_signature.png")).thenReturn(fakePng);
+        when(signatureStorageService.loadSignature(VALID_SIGNATURE_PNG)).thenReturn(fakePng);
 
         byte[] pdfBytes = certificateGeneratorService.generateCertificatePdf(attendance);
 
         assertNotNull(pdfBytes);
         assertTrue(pdfBytes.length > 0);
-        verify(localFileSystemService, times(1)).loadSignature("valid_signature.png");
+        verify(signatureStorageService, times(1)).loadSignature(VALID_SIGNATURE_PNG);
     }
 
     @Test
@@ -181,7 +182,7 @@ class CertificateGeneratorServiceTests {
         attendance.setCheckInDate(LocalDateTime.of(2026, Month.AUGUST, 1, 10, 0));
         attendance.setSignature("empty_signature.png");
 
-        when(localFileSystemService.loadSignature("empty_signature.png")).thenReturn(new byte[0]);
+        when(signatureStorageService.loadSignature("empty_signature.png")).thenReturn(new byte[0]);
 
         byte[] pdfBytes = certificateGeneratorService.generateCertificatePdf(attendance);
 
@@ -216,12 +217,12 @@ class CertificateGeneratorServiceTests {
         attendance.setCheckInDate(LocalDateTime.of(2026, Month.AUGUST, 1, 10, 0));
         attendance.setSignature(NULL_SIGNATURE);
 
-        when(localFileSystemService.loadSignature(NULL_SIGNATURE)).thenReturn(null);
+        when(signatureStorageService.loadSignature(NULL_SIGNATURE)).thenReturn(null);
 
         byte[] pdfBytes = certificateGeneratorService.generateCertificatePdf(attendance);
 
         assertNotNull(pdfBytes);
         assertTrue(pdfBytes.length > 0);
-        verify(localFileSystemService, times(1)).loadSignature(NULL_SIGNATURE);
+        verify(signatureStorageService, times(1)).loadSignature(NULL_SIGNATURE);
     }
 }

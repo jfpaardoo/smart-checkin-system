@@ -3,8 +3,8 @@ import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
-import moment from "moment";
 import { getFileIconAndType, getEmbedUrl } from "../../../utils/fileUtils";
+import { formatDate } from "../../../utils/dateUtils";
 import SecureImage from "../../../components/SecureImage";
 
 export function DocumentPreviewModal({ isOpen, toggle, document }) {
@@ -103,13 +103,13 @@ export function AttendanceDetailsModal({ isOpen, toggle, attendance, formationNa
             <div className="mb-2">{renderBadge(attendance)}</div>
 
             <h6 className="text-muted mb-0" style={{ fontSize: '0.85rem' }}>{t('formationDetails.checkInTime')}:</h6>
-            <p className="mb-2" style={{ fontWeight: '500', fontSize: '0.9rem' }}>
-              {attendance.checkInDate ? moment(attendance.checkInDate).format('YYYY-MM-DD HH:mm:ss') : t('formationDetails.notRecorded')}
+            <p className="mb-2 notranslate" style={{ fontWeight: '600', color: '#2c3e50', fontSize: '0.9rem' }} translate="no">
+              {attendance.checkInDate ? formatDate(attendance.checkInDate) : t('formationDetails.notRecorded')}
             </p>
 
             <h6 className="text-muted mb-0" style={{ fontSize: '0.85rem' }}>{t('formationDetails.checkOutTime')}:</h6>
-            <p className="mb-3" style={{ fontWeight: '500', fontSize: '0.9rem' }}>
-              {attendance.checkOutDate ? moment(attendance.checkOutDate).format('YYYY-MM-DD HH:mm:ss') : t('formationDetails.notRecorded')}
+            <p className="mb-3 notranslate" style={{ fontWeight: '600', color: '#2c3e50', fontSize: '0.9rem' }} translate="no">
+              {attendance.checkOutDate ? formatDate(attendance.checkOutDate) : t('formationDetails.notRecorded')}
             </p>
 
             <h6 className="text-muted mb-1" style={{ fontSize: '0.85rem' }}>{t('formationDetails.digitalSignature')}:</h6>

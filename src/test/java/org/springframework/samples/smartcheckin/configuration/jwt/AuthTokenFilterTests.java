@@ -16,6 +16,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 @SuppressWarnings("null")
 class AuthTokenFilterTests {
 
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String VALID_JWT_TOKEN = "validJwtToken";
+
     private JwtUtils jwtUtils;
     private UserDetailsServiceImpl userDetailsService;
     private JwtBlacklistService jwtBlacklistService;
@@ -41,10 +44,10 @@ class AuthTokenFilterTests {
 
     @Test
     void testDoFilterInternalValidJwt() throws Exception {
-        when(request.getHeader("Authorization")).thenReturn("Bearer validJwtToken");
-        when(jwtUtils.validateJwtToken("validJwtToken")).thenReturn(true);
-        when(jwtBlacklistService.isBlacklisted("validJwtToken")).thenReturn(false);
-        when(jwtUtils.getUserNameFromJwtToken("validJwtToken")).thenReturn("testuser");
+        when(request.getHeader(AUTHORIZATION_HEADER)).thenReturn("Bearer " + VALID_JWT_TOKEN);
+        when(jwtUtils.validateJwtToken(VALID_JWT_TOKEN)).thenReturn(true);
+        when(jwtBlacklistService.isBlacklisted(VALID_JWT_TOKEN)).thenReturn(false);
+        when(jwtUtils.getUserNameFromJwtToken(VALID_JWT_TOKEN)).thenReturn("testuser");
 
         UserDetails userDetails = mock(UserDetails.class);
         when(userDetailsService.loadUserByUsername("testuser")).thenReturn(userDetails);
@@ -57,7 +60,7 @@ class AuthTokenFilterTests {
 
     @Test
     void testDoFilterInternalInvalidJwt() throws Exception {
-        when(request.getHeader("Authorization")).thenReturn("Bearer invalidJwtToken");
+        when(request.getHeader(AUTHORIZATION_HEADER)).thenReturn("Bearer invalidJwtToken");
         when(jwtUtils.validateJwtToken("invalidJwtToken")).thenReturn(false);
 
         authTokenFilter.doFilterInternal(request, response, filterChain);
@@ -68,7 +71,7 @@ class AuthTokenFilterTests {
 
     @Test
     void testDoFilterInternalNoHeader() throws Exception {
-        when(request.getHeader("Authorization")).thenReturn(null);
+        when(request.getHeader(AUTHORIZATION_HEADER)).thenReturn(null);
 
         authTokenFilter.doFilterInternal(request, response, filterChain);
 
@@ -78,8 +81,8 @@ class AuthTokenFilterTests {
 
     @Test
     void testDoFilterInternalException() throws Exception {
-        when(request.getHeader("Authorization")).thenReturn("Bearer validJwtToken");
-        when(jwtUtils.validateJwtToken("validJwtToken")).thenThrow(new RuntimeException("Token error"));
+        when(request.getHeader(AUTHORIZATION_HEADER)).thenReturn("Bearer " + VALID_JWT_TOKEN);
+        when(jwtUtils.validateJwtToken(VALID_JWT_TOKEN)).thenThrow(new RuntimeException("Token error"));
 
         authTokenFilter.doFilterInternal(request, response, filterChain);
 
@@ -91,7 +94,7 @@ class AuthTokenFilterTests {
 
     @Test
     void testDoFilterInternalBlacklistedJwt() throws Exception {
-        when(request.getHeader("Authorization")).thenReturn("Bearer blacklistedJwtToken");
+        when(request.getHeader(AUTHORIZATION_HEADER)).thenReturn("Bearer blacklistedJwtToken");
         when(jwtUtils.validateJwtToken("blacklistedJwtToken")).thenReturn(true);
         when(jwtBlacklistService.isBlacklisted("blacklistedJwtToken")).thenReturn(true);
 
@@ -109,7 +112,7 @@ class AuthTokenFilterTests {
 
     @Test
     void testDoFilterInternalHeaderWithoutBearerPrefix() throws Exception {
-        when(request.getHeader("Authorization")).thenReturn("Basic user:password");
+        when(request.getHeader(AUTHORIZATION_HEADER)).thenReturn("Basic user:password");
 
         authTokenFilter.doFilterInternal(request, response, filterChain);
 

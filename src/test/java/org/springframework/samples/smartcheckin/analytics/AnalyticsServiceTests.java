@@ -22,6 +22,8 @@ import org.springframework.samples.smartcheckin.user.UserRepository;
 
 class AnalyticsServiceTests {
 
+    private static final String COURSE_NAME = "Course";
+
     private UserRepository userRepository;
     private CheckinRepository checkinRepository;
     private FormationAttendanceRepository attendanceRepository;
@@ -61,7 +63,7 @@ class AnalyticsServiceTests {
 
         Formation formation = new Formation();
         formation.setId(10);
-        formation.setName("Course");
+        formation.setName(COURSE_NAME);
         formation.setFormationDate(LocalDateTime.of(2026, Month.AUGUST, 1, 10, 0));
 
         FormationAttendance att = new FormationAttendance();
@@ -95,7 +97,7 @@ class AnalyticsServiceTests {
         
         Formation formation = new Formation();
         formation.setId(10);
-        formation.setName("Course");
+        formation.setName(COURSE_NAME);
         
         FormationAttendance att = new FormationAttendance();
         att.setFormation(formation);
@@ -261,11 +263,11 @@ class AnalyticsServiceTests {
 
         Formation formation = new Formation();
         formation.setId(10);
-        formation.setName("Course");
+        formation.setName(COURSE_NAME);
         
         FormationAttendance att = new FormationAttendance();
         att.setFormation(formation);
-        att.setCheckInDate(LocalDateTime.now());
+        att.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
         // Evaluamos el isBlank() de signature false
         att.setSignature("   ");
 

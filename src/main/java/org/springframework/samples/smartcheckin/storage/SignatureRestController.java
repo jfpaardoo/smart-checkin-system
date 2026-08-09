@@ -12,21 +12,21 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/signatures")
 public class SignatureRestController {
 
-    private final LocalFileSystemService localFileSystemService;
+    private final SignatureStorageService signatureStorageService;
 
     @Autowired
-    public SignatureRestController(LocalFileSystemService localFileSystemService) {
-        this.localFileSystemService = localFileSystemService;
+    public SignatureRestController(SignatureStorageService signatureStorageService) {
+        this.signatureStorageService = signatureStorageService;
     }
 
     @GetMapping("/{fileName}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<byte[]> getSignature(@PathVariable String fileName) {
         // Sanitize the filename to prevent directory traversal attacks
-        String safeFileName = fileName.replaceAll("[^a-zA-Z0-9.-]", "");
-        
-        byte[] image = localFileSystemService.loadSignature(safeFileName);
-        
+        String safeFileName = fileName.replaceAll("[^a-zA-Z0-9._!\\-]", "");
+
+        byte[] image = signatureStorageService.loadSignature(safeFileName);
+
         if (image == null || image.length == 0) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

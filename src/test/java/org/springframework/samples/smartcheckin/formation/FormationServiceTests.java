@@ -16,7 +16,7 @@ import org.springframework.samples.smartcheckin.settings.OneDriveService;
 import org.springframework.samples.smartcheckin.push.PushNotificationService;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
-import org.springframework.samples.smartcheckin.storage.LocalFileSystemService;
+import org.springframework.samples.smartcheckin.storage.SignatureStorageService;
 
 @SuppressWarnings("null")
 class FormationServiceTests {
@@ -25,10 +25,13 @@ class FormationServiceTests {
     private FormationAttendanceRepository attendanceRepository;
     private UserService userService;
     private OneDriveService oneDriveService;
-    private LocalFileSystemService localFileSystemService;
+    private SignatureStorageService signatureStorageService;
     private FormationService formationService;
 
     private static final String FORMATIONS_DIR = "formations";
+    private static final String APP_PDF = "application/pdf";
+    private static final String NEW_PDF = "new.pdf";
+    private static final String NEW_ONEDRIVE_URL = "https://onedrive.live.com/new.pdf";
 
     @BeforeEach
     void setUp() {
@@ -37,9 +40,9 @@ class FormationServiceTests {
         userService = mock(UserService.class);
         oneDriveService = mock(OneDriveService.class);
         PushNotificationService pushNotificationService = mock(PushNotificationService.class);
-        localFileSystemService = mock(LocalFileSystemService.class);
+        signatureStorageService = mock(SignatureStorageService.class);
         
-        formationService = new FormationService(formationRepository, attendanceRepository, userService, oneDriveService, pushNotificationService, localFileSystemService);
+        formationService = new FormationService(formationRepository, attendanceRepository, userService, oneDriveService, pushNotificationService, signatureStorageService);
     }
 
     @Test
@@ -108,12 +111,12 @@ class FormationServiceTests {
         when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
         when(userService.findByPersonalCode("1234")).thenReturn(user);
         when(attendanceRepository.findByFormationAndUser(formation, user)).thenReturn(Optional.of(att));
-        when(localFileSystemService.saveSignature(anyString())).thenReturn("sig");
+        when(signatureStorageService.saveSignature(anyString(), anyString())).thenReturn("test-signature.png");
 
         Formation res = formationService.checkoutAttendance(1, "1234", "sig");
         assertNotNull(res);
         assertFalse(user.getIsWorking());
-        assertEquals("sig", att.getSignature());
+        assertEquals("test-signature.png", att.getSignature());
         assertNotNull(att.getCheckOutDate());
     }
 
@@ -277,7 +280,7 @@ class FormationServiceTests {
         formation.setName("Physics with file");
         
         org.springframework.web.multipart.MultipartFile mockFile = 
-            new MockMultipartFile("file", "test.pdf", "application/pdf", new byte[]{1, 2, 3});
+            new MockMultipartFile("file", "test.pdf", APP_PDF, new byte[]{1, 2, 3});
             
         when(oneDriveService.uploadFile(mockFile, FORMATIONS_DIR)).thenReturn("https://onedrive.live.com/test.pdf");
         when(formationRepository.save(any(Formation.class))).thenReturn(formation);
@@ -299,10 +302,10 @@ class FormationServiceTests {
         updatedDetails.setName("New");
 
         MockMultipartFile mockFile = 
-            new MockMultipartFile("file", "new.pdf", "application/pdf", new byte[]{4, 5, 6});
+            new MockMultipartFile("file", NEW_PDF, APP_PDF, new byte[]{4, 5, 6});
 
         when(formationRepository.findById(1)).thenReturn(Optional.of(existing));
-        when(oneDriveService.uploadFile(mockFile, FORMATIONS_DIR)).thenReturn("https://onedrive.live.com/new.pdf");
+        when(oneDriveService.uploadFile(mockFile, FORMATIONS_DIR)).thenReturn(NEW_ONEDRIVE_URL);
         when(formationRepository.save(any(Formation.class))).thenReturn(existing);
 
         Formation res = formationService.updateFormation(updatedDetails, 1, mockFile);
@@ -311,7 +314,7 @@ class FormationServiceTests {
         assertEquals("New", res.getName());
         verify(oneDriveService, times(1)).deleteFile("https://onedrive.live.com/old.pdf");
         verify(oneDriveService, times(1)).uploadFile(mockFile, FORMATIONS_DIR);
-        assertTrue(res.getDocumentUrls().contains("https://onedrive.live.com/new.pdf"));
+        assertTrue(res.getDocumentUrls().contains(NEW_ONEDRIVE_URL));
     }
 
     @Test
@@ -389,10 +392,10 @@ class FormationServiceTests {
         updatedDetails.setName("New");
 
         MockMultipartFile mockFile = 
-            new MockMultipartFile("file", "new.pdf", "application/pdf", new byte[]{4, 5, 6});
+            new MockMultipartFile("file", NEW_PDF, APP_PDF, new byte[]{4, 5, 6});
 
         when(formationRepository.findById(1)).thenReturn(Optional.of(existing));
-        when(oneDriveService.uploadFile(mockFile, FORMATIONS_DIR)).thenReturn("https://onedrive.live.com/new.pdf");
+        when(oneDriveService.uploadFile(mockFile, FORMATIONS_DIR)).thenReturn(NEW_ONEDRIVE_URL);
         when(formationRepository.save(any(Formation.class))).thenReturn(existing);
         
         // Forzamos que el borrado del archivo antiguo en OneDrive falle para entrar en el catch defensivo
@@ -422,7 +425,7 @@ class FormationServiceTests {
 
         // Instanciamos temporalmente con el mock de push fallido
         FormationService customService = new FormationService(
-            formationRepository, attendanceRepository, userService, oneDriveService, pushNotificationServiceMock, localFileSystemService
+            formationRepository, attendanceRepository, userService, oneDriveService, pushNotificationServiceMock, signatureStorageService
         );
 
         assertDoesNotThrow(() -> customService.addAttendee(1, 10));
@@ -456,10 +459,10 @@ class FormationServiceTests {
         updatedDetails.setDocumentUrls(new ArrayList<>());
 
         MockMultipartFile mockFile = 
-            new MockMultipartFile("file", "new.pdf", "application/pdf", new byte[]{4, 5, 6});
+            new MockMultipartFile("file", NEW_PDF, APP_PDF, new byte[]{4, 5, 6});
 
         when(formationRepository.findById(1)).thenReturn(Optional.of(existing));
-        when(oneDriveService.uploadFile(mockFile, FORMATIONS_DIR)).thenReturn("https://onedrive.live.com/new.pdf");
+        when(oneDriveService.uploadFile(mockFile, FORMATIONS_DIR)).thenReturn(NEW_ONEDRIVE_URL);
         when(formationRepository.save(any(Formation.class))).thenReturn(existing);
 
         Formation res = formationService.updateFormation(updatedDetails, 1, mockFile);
