@@ -8,6 +8,7 @@ export const useUserEdit = (id, jwt, toast, t) => {
     id: null,
     username: "",
     password: "",
+    email: "",
     personalCode: "",
     firstName: "",
     lastName: "",

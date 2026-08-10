@@ -29,8 +29,8 @@ public class UserService {
 
 	@Transactional(readOnly = true)
 	public User findUser(String username) {
-		return userRepository.findByUsername(username)
-				.orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
+		return userRepository.findByUsernameOrEmail(username, username)
+				.orElseThrow(() -> new ResourceNotFoundException("User", "username or email", username));
 	}
 
 	@Transactional(readOnly = true)
@@ -50,8 +50,8 @@ public class UserService {
 		if (auth == null)
 			throw new ResourceNotFoundException("Nobody authenticated!");
 		else
-			return userRepository.findByUsername(auth.getName())
-					.orElseThrow(() -> new ResourceNotFoundException("User", "Username", auth.getName()));
+			return userRepository.findByUsernameOrEmail(auth.getName(), auth.getName())
+					.orElseThrow(() -> new ResourceNotFoundException("User", "username or email", auth.getName()));
 	}
 
 	public Boolean existsUser(String username) {
@@ -87,6 +87,10 @@ public class UserService {
 		toUpdate.setPersonalCode(user.getPersonalCode());
 		toUpdate.setIsWorking(user.getIsWorking());
 		toUpdate.setAuthority(user.getAuthority());
+		toUpdate.setEmail(user.getEmail());
+		toUpdate.setTwoFactorType(user.getTwoFactorType());
+		toUpdate.setEmailNotificationsEnabled(user.getEmailNotificationsEnabled());
+		toUpdate.setPushNotificationsEnabled(user.getPushNotificationsEnabled());
 		
 		if (user.getPassword() != null && !user.getPassword().isEmpty()) {
 			toUpdate.setPassword(user.getPassword());

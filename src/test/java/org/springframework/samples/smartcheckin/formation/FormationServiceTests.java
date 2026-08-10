@@ -13,10 +13,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.samples.smartcheckin.settings.OneDriveService;
-import org.springframework.samples.smartcheckin.push.PushNotificationService;
+import org.springframework.samples.smartcheckin.notification.NotificationContext;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
 import org.springframework.samples.smartcheckin.storage.SignatureStorageService;
+import org.springframework.context.ApplicationEventPublisher;
 
 @SuppressWarnings("null")
 class FormationServiceTests {
@@ -39,10 +40,11 @@ class FormationServiceTests {
         attendanceRepository = mock(FormationAttendanceRepository.class);
         userService = mock(UserService.class);
         oneDriveService = mock(OneDriveService.class);
-        PushNotificationService pushNotificationService = mock(PushNotificationService.class);
+        NotificationContext notificationContext = mock(NotificationContext.class);
         signatureStorageService = mock(SignatureStorageService.class);
+        ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
         
-        formationService = new FormationService(formationRepository, attendanceRepository, userService, oneDriveService, pushNotificationService, signatureStorageService);
+        formationService = new FormationService(formationRepository, attendanceRepository, userService, oneDriveService, notificationContext, signatureStorageService, eventPublisher);
     }
 
     @Test
@@ -420,12 +422,13 @@ class FormationServiceTests {
         when(attendanceRepository.findByFormationAndUser(formation, user)).thenReturn(Optional.empty());
         
         // Forzamos que el servicio de notificaciones push falle para comprobar que el catch ignora el error
-        PushNotificationService pushNotificationServiceMock = mock(PushNotificationService.class);
-        doThrow(new RuntimeException("Push failed")).when(pushNotificationServiceMock).sendToUser(any(), anyString(), anyString());
+        NotificationContext notificationContextMock = mock(NotificationContext.class);
+        doThrow(new RuntimeException("Push failed")).when(notificationContextMock).sendNotification(any(), anyString(), anyString());
+        ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
 
         // Instanciamos temporalmente con el mock de push fallido
         FormationService customService = new FormationService(
-            formationRepository, attendanceRepository, userService, oneDriveService, pushNotificationServiceMock, signatureStorageService
+            formationRepository, attendanceRepository, userService, oneDriveService, notificationContextMock, signatureStorageService, eventPublisher
         );
 
         assertDoesNotThrow(() -> customService.addAttendee(1, 10));

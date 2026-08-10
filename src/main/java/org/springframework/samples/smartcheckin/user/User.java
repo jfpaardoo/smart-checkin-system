@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.samples.smartcheckin.checkin.Checkin;
+import org.springframework.samples.smartcheckin.configuration.StringCryptoConverter;
 
 import java.time.LocalDateTime;
 
@@ -27,6 +28,7 @@ import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Email;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.EqualsAndHashCode;
@@ -42,6 +44,12 @@ public class User extends BaseEntity {
     @Size(min = 1, max = 255)
     @Column(unique = true)
     private String username;
+
+    @NotBlank
+    @Email
+    @Size(min = 1, max = 255)
+    @Column(unique = true)
+    private String email;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
@@ -76,9 +84,20 @@ public class User extends BaseEntity {
     @Column(name = "two_factor_enabled")
     private Boolean twoFactorEnabled = false;
 
+    @Column(name = "two_factor_type", columnDefinition = "varchar(10) default 'APP'")
+    private String twoFactorType = "APP"; // Can be 'APP', 'EMAIL'
+
     @Column(name = "two_factor_secret")
-    @Convert(converter = org.springframework.samples.smartcheckin.configuration.StringCryptoConverter.class)
+    @Convert(converter = StringCryptoConverter.class)
     private String twoFactorSecret;
+
+    @NotNull
+    @Column(name = "email_notifications_enabled", columnDefinition = "boolean default true")
+    private Boolean emailNotificationsEnabled = true;
+
+    @NotNull
+    @Column(name = "push_notifications_enabled", columnDefinition = "boolean default true")
+    private Boolean pushNotificationsEnabled = true;
 
     @Column(name = "privacy_policy_accepted", columnDefinition = "boolean default false")
     private Boolean privacyPolicyAccepted = false;

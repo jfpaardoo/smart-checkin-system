@@ -66,7 +66,7 @@ export default function UserTable({ users, loading, activeTab, onApprove, onReje
                         className="ba-btn-blue w-100 fw-bold shadow-sm"
                         style={{ borderRadius: '20px' }}
                         tag={Link}
-                        to={"/admin/users/" + user.id}
+                        to={"/users/" + user.id}
                       >
                         <FontAwesomeIcon icon={faEdit} className="me-1" /> {t('users.edit', 'Editar')}
                       </Button>
@@ -142,7 +142,7 @@ export default function UserTable({ users, loading, activeTab, onApprove, onReje
                     className="ba-btn-blue flex-1 fw-bold shadow-sm"
                     style={{ borderRadius: '20px' }}
                     tag={Link}
-                    to={"/admin/users/" + user.id}
+                    to={"/users/" + user.id}
                   >
                     <FontAwesomeIcon icon={faEdit} className="me-1" /> {t('users.edit', 'Editar')}
                   </Button>

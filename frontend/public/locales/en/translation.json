@@ -62,7 +62,9 @@
     "username": "Username",
     "password": "Password",
     "badCredentials": "Incorrect username or password",
-    "accountLocked": "Account is locked due to too many failed attempts. Try again later."
+    "accountLocked": "Account is locked due to too many failed attempts. Try again later.",
+    "usernameOrEmail": "User or Email",
+    "2faInfo": "Enter your authenticator app (2FA) code."
   },
   "users": {
     "title": "Users Management",
@@ -100,7 +102,17 @@
     "userEntity": "User",
     "registrationRequest": "Registration request",
     "approvedSuccess": "Employee approved and activated successfully.",
-    "approveError": "Error approving employee."
+    "approveError": "Error approving employee.",
+    "name": "Employee",
+    "noActiveUsers": "No active users found",
+    "noPendingUsers": "There are no pending registration requests",
+    "statusWorking": "Working",
+    "statusResting": "Resting",
+    "statusPending": "Pending Approval",
+    "approve": "Approve",
+    "reject": "Decline",
+    "email": "Email",
+    "searchPlaceholder": "Search by name, code..."
   },
   "formations": {
     "title": "Formations Management",
@@ -139,7 +151,14 @@
     "signature": "Digital Signature",
     "document": "Formation Document (Optional)",
     "documentExists": "A linked document already exists.",
-    "viewCurrentDocument": "View current document"
+    "viewCurrentDocument": "View current document",
+    "attachments": "Attached Documents",
+    "existingFiles": "Current files",
+    "removeFile": "Delete file",
+    "dragDropFiles": "Drag files here or click to upload",
+    "acceptedFormats": "Accepted formats: PDF, Word, Excel, PowerPoint, Images",
+    "filesSelected": "selected file(s)",
+    "searchPlaceholderShort": "Find training..."
   },
   "formationDetails": {
     "title": "Formation Details",
@@ -180,7 +199,11 @@
     "userRemoveError": "Error removing user.",
     "userRemoveConfirm": "Are you sure you want to remove this attendee?",
     "documentation": "Documentation",
-    "viewDocumentation": "View Documentation"
+    "viewDocumentation": "View Documentation",
+    "previewNotAvailable": "Preview not available",
+    "cspMessage": "Due to Microsoft OneDrive security policies, this document cannot be directly embedded here.",
+    "cloudDocDescription": "This document is stored securely in the cloud. Click the button below to open it.",
+    "downloadPdfError": "Error downloading the PDF."
   },
   "qr": {
     "title": "Formation QR",
@@ -255,7 +278,22 @@
     "checkoutRecorded": "Check-out recorded",
     "qrDetected": "QR code detected.",
     "codeMustBe6Digits": "The code must be 6 digits.",
-    "provideSignature": "Please provide your signature."
+    "provideSignature": "Please provide your signature.",
+    "enterCodeManually": "Enter Code Manually",
+    "enter6DigitCode": "Enter the 6-digit training code.",
+    "cancel": "Cancel",
+    "validate": "Validate Code",
+    "signStepTitle": "Please sign below to finish",
+    "processing": "Processing registration...",
+    "qrSubtitle": "Focus the training QR code with your camera",
+    "startingCamera": "Starting camera...",
+    "cantScan": "Can't scan? Enter code manually",
+    "manualCheckin": "Manual Check-in",
+    "manualSubtitle": "Enter the code provided to you by the administrator",
+    "successTitle": "Process Completed!",
+    "formationLabel": "Training",
+    "dateLabel": "Date",
+    "close": "Close"
   },
   "common": {
     "save": "Save",
@@ -279,7 +317,13 @@
     "sessionExpired": "Session expired. Please log in again.",
     "genericError": "An error occurred during the request",
     "networkError": "Network connection error",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "details": "Details",
+    "openSecure": "Open/View Document in the Cloud",
+    "search": "Look for...",
+    "camera": "Camera",
+    "unknownError": "An unknown error occurred.",
+    "duplicateConflict": "Conflict error: Record already exists."
   },
   "lang": {
     "es": "Español",
@@ -295,7 +339,7 @@
     "title": "Analytics Dashboard",
     "exportCsv": "Export to CSV",
     "exportExcel": "Export to Excel",
-    "totalCheckins": "Total Check-ins (Last 30 Days)",
+    "totalCheckins": "Formation Attendances (Last 30 Days)",
     "formationAttendance": "Formation Attendance",
     "attendance": "Attendance",
     "absence": "Absence",
@@ -309,6 +353,9 @@
     "formationExports": "Formations & Signatures",
     "formationsCsv": "Formations & Signatures (CSV)",
     "formationsExcel": "Formations & Signatures (Excel)",
+    "employeeExports": "Employee Analytics",
+    "employeesCsv": "Employee Analytics (CSV)",
+    "employeesExcel": "Employee Analytics (Excel)",
     "searchEmployee": "Search employee by name or code...",
     "totalEmployees": "Total Employees",
     "formationsCount": "Formations (Attended / Assigned)",
@@ -328,7 +375,10 @@
     "signed": "Signed",
     "inProgress": "In Progress",
     "pending": "Pending",
-    "noFormationsUser": "No formations assigned to this employee."
+    "noFormationsUser": "No formations assigned to this employee.",
+    "noEmployees": "No employees were found.",
+    "workCheckins": "Check-ins",
+    "workTime": "T. Work"
   },
   "profile": {
     "myProfileTitle": "My Profile",
@@ -373,7 +423,23 @@
     "incorrectCode": "Incorrect code.",
     "disable2FAPrompt": "Enter 2FA code to confirm deactivation:",
     "twoFactorDisableSuccess": "2FA successfully disabled.",
-    "twoFactorDisableError": "Error disabling 2FA."
+    "twoFactorDisableError": "Error disabling 2FA.",
+    "preferencesUpdated": "Updated preferences",
+    "preferencesUpdateError": "Error updating preferences",
+    "exportDataTitle": "Export My Data (GDPR)",
+    "exportDataBtn": "Request Export",
+    "deleteAccountTitle": "Delete Account",
+    "deleteAccountBtn": "Delete My Account",
+    "emailSentCode": "Te hemos enviado un correo con el código de confirmación.",
+    "exportSuccess": "Your data has been exported successfully.",
+    "exportError": "Your data could not be exported.",
+    "deleteTypeConfirmError": "You must type DELETE to confirm.",
+    "deleteSuccess": "Your account has been deleted.",
+    "deleteError": "Error deleting account.",
+    "deleteConfirmTitle": "Delete Account Permanently",
+    "areYouSure": "Are you completely sure?",
+    "deleteWarningText": "This action will permanently delete all your data.",
+    "deleteConfirmBtn": "Delete Account"
   },
   "register": {
     "title": "Registration Request",
@@ -392,7 +458,10 @@
     "receivedDesc": "Your request has been registered successfully. An administrator will review it and activate your account.",
     "goToLogin": "Back to Login",
     "alreadyHaveAccount": "Already have an active account?",
-    "loginHere": "Login here"
+    "loginHere": "Login here",
+    "genericError": "Error processing registration request.",
+    "successMessage": "Registration request sent successfully. The administrator will activate your account.",
+    "email": "Email"
   },
   "audit": {
     "title": "Audit Log",
@@ -438,7 +507,8 @@
       "dbBackup": "Database backup triggered",
       "userSavedNoName": "User saved/updated",
       "formationSavedNoName": "Formation created/updated"
-    }
+    },
+    "exportPDF": "Export to PDF"
   },
   "cloudSettings": {
     "saveSuccess": "Cloud settings saved successfully",
@@ -459,5 +529,17 @@
     "refreshTokenLabel": "Refresh Token (Long-lived)",
     "refreshTokenHelp": "This token will be used to automatically obtain Access Tokens from the Graph API without user intervention.",
     "saveBtn": "Save Settings"
-  }
+  },
+  "formations/csv": "signature_formations.csv",
+  "formations/excel": "signature_formations.xlsx",
+  "formationId": "formationId",
+  "users/csv": "users.csv",
+  "users/excel": "users.xlsx",
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "clearAll": "Clean everything"
+  },
+  "web-vitals": "web-vitals",
+  "genericError": "Error loading trainings"
 }

@@ -62,7 +62,9 @@
     "username": "Benutzername",
     "password": "Passwort",
     "badCredentials": "Benutzername oder Passwort falsch",
-    "accountLocked": "Das Konto ist aufgrund zu vieler fehlgeschlagener Versuche gesperrt. Versuchen Sie es später noch einmal."
+    "accountLocked": "Das Konto ist aufgrund zu vieler fehlgeschlagener Versuche gesperrt. Versuchen Sie es später noch einmal.",
+    "usernameOrEmail": "Benutzer oder E-Mail",
+    "2faInfo": "Geben Sie den Code Ihrer Authentifizierungs-App (2FA) ein."
   },
   "users": {
     "title": "Benutzerverwaltung",
@@ -100,7 +102,17 @@
     "userEntity": "Benutzer",
     "registrationRequest": "Registrierungsanfrage",
     "approvedSuccess": "Mitarbeiter erfolgreich genehmigt und aktiviert.",
-    "approveError": "Fehler bei der Genehmigung des Mitarbeiters."
+    "approveError": "Fehler bei der Genehmigung des Mitarbeiters.",
+    "name": "Mitarbeiter",
+    "noActiveUsers": "Keine aktiven Benutzer gefunden",
+    "noPendingUsers": "Es sind keine Registrierungsanfragen ausstehend",
+    "statusWorking": "Arbeiten",
+    "statusResting": "Ausruhen",
+    "statusPending": "Ausstehende Genehmigung",
+    "approve": "Genehmigen",
+    "reject": "Abfall",
+    "email": "E-Mail",
+    "searchPlaceholder": "Suche nach Name, Code..."
   },
   "formations": {
     "title": "Schulungsverwaltung",
@@ -139,7 +151,14 @@
     "signature": "Digitale Signatur",
     "document": "Schulungsdokument (Optional)",
     "documentExists": "Ein verknüpftes Dokument existiert bereits.",
-    "viewCurrentDocument": "Aktuelles Dokument anzeigen"
+    "viewCurrentDocument": "Aktuelles Dokument anzeigen",
+    "attachments": "Angehängte Dokumente",
+    "existingFiles": "Aktuelle Dateien",
+    "removeFile": "Datei löschen",
+    "dragDropFiles": "Ziehen Sie Dateien hierher oder klicken Sie zum Hochladen",
+    "acceptedFormats": "Akzeptierte Formate: PDF, Word, Excel, PowerPoint, Bilder",
+    "filesSelected": "ausgewählte Datei(en)",
+    "searchPlaceholderShort": "Ausbildung finden..."
   },
   "formationDetails": {
     "title": "Schulungsdetails",
@@ -180,7 +199,11 @@
     "userRemoveError": "Fehler beim Entfernen.",
     "userRemoveConfirm": "Möchten Sie diesen Teilnehmer wirklich entfernen?",
     "documentation": "Dokumentation",
-    "viewDocumentation": "Dokumentation anzeigen"
+    "viewDocumentation": "Dokumentation anzeigen",
+    "previewNotAvailable": "Vorschau nicht verfügbar",
+    "cspMessage": "Aufgrund der Sicherheitsrichtlinien von Microsoft OneDrive kann dieses Dokument hier nicht direkt eingebettet werden.",
+    "cloudDocDescription": "Dieses Dokument wird sicher in der Cloud gespeichert. Klicken Sie auf die Schaltfläche unten, um es zu öffnen.",
+    "downloadPdfError": "Fehler beim Herunterladen der PDF-Datei."
   },
   "qr": {
     "title": "Schulungs-QR",
@@ -255,7 +278,22 @@
     "checkoutRecorded": "Check-out erfasst",
     "qrDetected": "QR-Code erkannt.",
     "codeMustBe6Digits": "Der Code muss 6-stellig sein.",
-    "provideSignature": "Bitte leisten Sie Ihre Unterschrift."
+    "provideSignature": "Bitte leisten Sie Ihre Unterschrift.",
+    "enterCodeManually": "Geben Sie den Code manuell ein",
+    "enter6DigitCode": "Geben Sie den 6-stelligen Schulungscode ein.",
+    "cancel": "Stornieren",
+    "validate": "Code validieren",
+    "signStepTitle": "Bitte unterschreiben Sie unten, um den Vorgang abzuschließen",
+    "processing": "Registrierung wird bearbeitet...",
+    "qrSubtitle": "Fokussieren Sie den Trainings-QR-Code mit Ihrer Kamera",
+    "startingCamera": "Kamera wird gestartet...",
+    "cantScan": "Kann nicht scannen? Geben Sie den Code manuell ein",
+    "manualCheckin": "Manueller Check-in",
+    "manualSubtitle": "Geben Sie den Code ein, den Sie vom Administrator erhalten haben",
+    "successTitle": "Vorgang abgeschlossen!",
+    "formationLabel": "Ausbildung",
+    "dateLabel": "Datum",
+    "close": "Schließen"
   },
   "common": {
     "save": "Speichern",
@@ -279,7 +317,13 @@
     "sessionExpired": "Sitzung abgelaufen. Bitte melden Sie sich erneut an.",
     "genericError": "Bei der Anfrage ist ein Fehler aufgetreten",
     "networkError": "Netzwerkverbindungsfehler",
-    "saving": "Speichern..."
+    "saving": "Speichern...",
+    "details": "Details",
+    "openSecure": "Dokument in der Cloud öffnen/ansehen",
+    "search": "Suchen...",
+    "camera": "Kamera",
+    "unknownError": "Es ist ein unbekannter Fehler aufgetreten.",
+    "duplicateConflict": "Konfliktfehler: Datensatz existiert bereits."
   },
   "lang": {
     "es": "Español",
@@ -295,7 +339,7 @@
     "title": "Analyse-Dashboard",
     "exportCsv": "CSV exportieren",
     "exportExcel": "Excel exportieren",
-    "totalCheckins": "Gesamte Check-ins (Letzte 30 Tage)",
+    "totalCheckins": "Schulungsteilnahmen (Letzte 30 Tage)",
     "formationAttendance": "Schulungsanwesenheit",
     "attendance": "Anwesenheit",
     "absence": "Abwesenheit",
@@ -309,6 +353,9 @@
     "formationExports": "Schulungen & Unterschriften",
     "formationsCsv": "Schulungen & Unterschriften (CSV)",
     "formationsExcel": "Schulungen & Unterschriften (Excel)",
+    "employeeExports": "Mitarbeiteranalysen",
+    "employeesCsv": "Mitarbeiteranalysen (CSV)",
+    "employeesExcel": "Mitarbeiteranalysen (Excel)",
     "searchEmployee": "Mitarbeiter nach Name oder Code suchen...",
     "totalEmployees": "Mitarbeiter gesamt",
     "formationsCount": "Schulungen (Besucht / Zugewiesen)",
@@ -328,7 +375,10 @@
     "signed": "Unterschrieben",
     "inProgress": "Laufend",
     "pending": "Ausstehend",
-    "noFormationsUser": "Keine zugewiesenen Schulungen für diesen Mitarbeiter."
+    "noFormationsUser": "Keine zugewiesenen Schulungen für diesen Mitarbeiter.",
+    "noEmployees": "Es wurden keine Mitarbeiter gefunden.",
+    "workCheckins": "Check-ins",
+    "workTime": "T. Arbeit"
   },
   "profile": {
     "myProfileTitle": "Mein Profil",
@@ -373,7 +423,23 @@
     "incorrectCode": "Falscher Code.",
     "disable2FAPrompt": "Geben Sie den 2FA-Code ein, um die Deaktivierung zu bestätigen:",
     "twoFactorDisableSuccess": "2FA erfolgreich deaktiviert.",
-    "twoFactorDisableError": "Fehler beim Deaktivieren von 2FA."
+    "twoFactorDisableError": "Fehler beim Deaktivieren von 2FA.",
+    "preferencesUpdated": "Aktualisierte Einstellungen",
+    "preferencesUpdateError": "Fehler beim Aktualisieren der Einstellungen",
+    "exportDataTitle": "Meine Daten exportieren (DSGVO)",
+    "exportDataBtn": "Export anfordern",
+    "deleteAccountTitle": "Konto löschen",
+    "deleteAccountBtn": "Mein Konto löschen",
+    "emailSentCode": "Te hemos enviado un correo con el código de confirmación.",
+    "exportSuccess": "Ihre Daten wurden erfolgreich exportiert.",
+    "exportError": "Ihre Daten konnten nicht exportiert werden.",
+    "deleteTypeConfirmError": "Zur Bestätigung müssen Sie DELETE eingeben.",
+    "deleteSuccess": "Ihr Konto wurde gelöscht.",
+    "deleteError": "Fehler beim Löschen des Kontos.",
+    "deleteConfirmTitle": "Konto dauerhaft löschen",
+    "areYouSure": "Sind Sie ganz sicher?",
+    "deleteWarningText": "Durch diese Aktion werden alle Ihre Daten dauerhaft gelöscht.",
+    "deleteConfirmBtn": "Konto löschen"
   },
   "register": {
     "title": "Registrierungsantrag",
@@ -392,7 +458,10 @@
     "receivedDesc": "Ihr Antrag wurde erfolgreich registriert. Ein Administrator wird ihn prüfen und Ihr Konto aktivieren.",
     "goToLogin": "Zurück zur Anmeldung",
     "alreadyHaveAccount": "Haben Sie bereits ein aktives Konto?",
-    "loginHere": "Hier anmelden"
+    "loginHere": "Hier anmelden",
+    "genericError": "Fehler beim Verarbeiten der Registrierungsanfrage.",
+    "successMessage": "Registrierungsanfrage erfolgreich gesendet. Der Administrator wird Ihr Konto aktivieren.",
+    "email": "E-Mail"
   },
   "audit": {
     "title": "Audit-Protokoll",
@@ -438,7 +507,8 @@
       "dbBackup": "Datenbank-Backup ausgelöst",
       "userSavedNoName": "Benutzer gespeichert/aktualisiert",
       "formationSavedNoName": "Schulung erstellt/aktualisiert"
-    }
+    },
+    "exportPDF": "Als PDF exportieren"
   },
   "cloudSettings": {
     "saveSuccess": "Cloud-Einstellungen erfolgreich gespeichert",
@@ -459,5 +529,17 @@
     "refreshTokenLabel": "Refresh Token (Langzeit)",
     "refreshTokenHelp": "Dieser Token wird verwendet, um automatisch Access Tokens von der Graph-API ohne Benutzereingriff zu beziehen.",
     "saveBtn": "Einstellungen speichern"
-  }
+  },
+  "formations/csv": "signatur_formations.csv",
+  "formations/excel": "signatur_formations.xlsx",
+  "formationId": "formationId",
+  "users/csv": "Benutzer.csv",
+  "users/excel": "user.xlsx",
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "empty": "Keine Benachrichtigungen",
+    "clearAll": "Alles reinigen"
+  },
+  "web-vitals": "web-vitals",
+  "genericError": "Fehler beim Laden der Schulungen"
 }

@@ -44,6 +44,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.SimpleMailMessage;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -61,13 +63,14 @@ public class AuthController {
     private final AnomalyDetectionService anomalyDetectionService;
     private final HttpServletRequest request;
     private final org.springframework.samples.smartcheckin.configuration.jwt.JwtBlacklistService jwtBlacklistService;
+    private final JavaMailSender javaMailSender;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager, UserService userService, 
             AuthoritiesService authoritiesService, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, 
             SimpMessagingTemplate messagingTemplate, TotpService totpService, UserDetailsServiceImpl userDetailsServiceImpl,
             AnomalyDetectionService anomalyDetectionService, HttpServletRequest request,
-            JwtBlacklistService jwtBlacklistService) {
+            JwtBlacklistService jwtBlacklistService, JavaMailSender javaMailSender) {
         this.userService = userService;
         this.authoritiesService = authoritiesService;
         this.jwtUtils = jwtUtils;
@@ -79,6 +82,7 @@ public class AuthController {
         this.anomalyDetectionService = anomalyDetectionService;
         this.request = request;
         this.jwtBlacklistService = jwtBlacklistService;
+        this.javaMailSender = javaMailSender;
     }
 
     @PostMapping("/logout")
@@ -119,6 +123,7 @@ public class AuthController {
             // Si las credenciales son correctas pero el usuario tiene activado 2FA, 
             // detenemos la emisión del JWT y exigimos el código del segundo factor.
             if (user != null && Boolean.TRUE.equals(user.getTwoFactorEnabled())) {
+                sendTwoFactorEmailIfConfigured(user);
                 JwtResponse challengeResponse = new JwtResponse();
                 challengeResponse.setRequiresTwoFactor(true);
                 challengeResponse.setUsername(user.getUsername());
@@ -191,6 +196,7 @@ public class AuthController {
 
         User user = new User();
         user.setUsername(signupRequest.getUsername());
+        user.setEmail(signupRequest.getEmail());
         user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
         user.setPersonalCode(signupRequest.getPersonalCode());
         user.setFirstName(signupRequest.getFirstName());
@@ -241,6 +247,23 @@ public class AuthController {
         } else {
             // Unregistered user attempted login
             anomalyDetectionService.recordFailedLogin(username, ipAddress, 1);
+        }
+    }
+
+    private void sendTwoFactorEmailIfConfigured(User user) {
+        if ("EMAIL".equalsIgnoreCase(user.getTwoFactorType())) {
+            String code = totpService.generateCode(user.getTwoFactorSecret());
+            if (code != null) {
+                try {
+                    SimpleMailMessage mailMessage = new SimpleMailMessage();
+                    mailMessage.setTo(user.getEmail());
+                    mailMessage.setSubject("Código de Verificación 2FA");
+                    mailMessage.setText("Tu código de verificación de 2 factores es: " + code);
+                    javaMailSender.send(mailMessage);
+                } catch (Exception e) {
+                    // Si falla, el usuario no recibirá el correo
+                }
+            }
         }
     }
 

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Notificación</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            color: #333333;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid #e0e5e2;
+        }
+        .header {
+            background-color: #8a9e29;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .greeting {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .message-body {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #555555;
+        }
+        .message-box {
+            background-color: #f9fbf9;
+            border-left: 4px solid #8a9e29;
+            padding: 15px 20px;
+            border-radius: 4px;
+            font-style: italic;
+            margin-bottom: 30px;
+            color: #444444;
+        }
+        .btn-container {
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 10px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #546e1e;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .footer {
+            background-color: #f9faf9;
+            padding: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #555555;
+            border-top: 1px solid #eeeeee;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 th:text="${title}">Notificación Importante</h1>
+        </div>
+        <div class="content">
+            <div class="greeting">Hola, <span th:text="${username}">Usuario</span>:</div>
+            
+            <div class="message-body">
+                Tienes una nueva actualización en tu perfil de Smart Check-in.
+            </div>
+
+            <div class="message-box" th:text="${message}">
+                Este es el mensaje de la notificación.
+            </div>
+
+            <div class="btn-container">
+                <a href="http://localhost:3000/profile" class="btn">Ir a mi panel</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Smart Check-in System</p>
+            <p>Has recibido este correo porque tienes las notificaciones activadas en tu perfil.</p>
+        </div>
+    </div>
+</body>
+</html>

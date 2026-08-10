@@ -62,7 +62,9 @@
     "username": "Nazwa użytkownika",
     "password": "Hasło",
     "badCredentials": "Nieprawidłowa nazwa użytkownika lub hasło",
-    "accountLocked": "Konto jest zablokowane z powodu zbyt wielu nieudanych prób. Spróbuj ponownie później."
+    "accountLocked": "Konto jest zablokowane z powodu zbyt wielu nieudanych prób. Spróbuj ponownie później.",
+    "usernameOrEmail": "Użytkownik lub e-mail",
+    "2faInfo": "Wprowadź kod aplikacji uwierzytelniającej (2FA)."
   },
   "users": {
     "title": "Zarządzanie Użytkownikami",
@@ -100,7 +102,17 @@
     "userEntity": "Użytkownik",
     "registrationRequest": "Wniosek o rejestrację",
     "approvedSuccess": "Pracownik został pomyślnie zatwierdzony i aktywowany.",
-    "approveError": "Błąd podczas zatwierdzania pracownika."
+    "approveError": "Błąd podczas zatwierdzania pracownika.",
+    "name": "Pracownik",
+    "noActiveUsers": "Nie znaleziono aktywnych użytkowników",
+    "noPendingUsers": "Brak oczekujących wniosków o rejestrację",
+    "statusWorking": "Pracujący",
+    "statusResting": "Spoczynkowy",
+    "statusPending": "Oczekujące na zatwierdzenie",
+    "approve": "Zatwierdzić",
+    "reject": "Spadek",
+    "email": "E-mail",
+    "searchPlaceholder": "Szukaj według nazwy, kodu..."
   },
   "formations": {
     "title": "Zarządzanie Szkoleniami",
@@ -139,7 +151,14 @@
     "signature": "Podpis Cyfrowy",
     "document": "Dokument Szkoleniowy (Opcjonalnie)",
     "documentExists": "Istnieje już powiązany dokument.",
-    "viewCurrentDocument": "Zobacz aktualny dokument"
+    "viewCurrentDocument": "Zobacz aktualny dokument",
+    "attachments": "Załączone dokumenty",
+    "existingFiles": "Aktualne pliki",
+    "removeFile": "Usuń plik",
+    "dragDropFiles": "Przeciągnij pliki tutaj lub kliknij, aby przesłać",
+    "acceptedFormats": "Akceptowane formaty: PDF, Word, Excel, PowerPoint, Obrazy",
+    "filesSelected": "wybrane pliki",
+    "searchPlaceholderShort": "Znajdź szkolenie..."
   },
   "formationDetails": {
     "title": "Szczegóły Szkolenia",
@@ -180,7 +199,11 @@
     "userRemoveError": "Błąd podczas usuwania użytkownika.",
     "userRemoveConfirm": "Czy na pewno chcesz usunąć tego uczestnika?",
     "documentation": "Dokumentacja",
-    "viewDocumentation": "Zobacz Dokumentację"
+    "viewDocumentation": "Zobacz Dokumentację",
+    "previewNotAvailable": "Podgląd niedostępny",
+    "cspMessage": "Ze względu na zasady bezpieczeństwa Microsoft OneDrive nie można tutaj bezpośrednio osadzić tego dokumentu.",
+    "cloudDocDescription": "Ten dokument jest bezpiecznie przechowywany w chmurze. Kliknij przycisk poniżej, aby go otworzyć.",
+    "downloadPdfError": "Błąd podczas pobierania pliku PDF."
   },
   "qr": {
     "title": "QR Szkolenia",
@@ -255,7 +278,22 @@
     "checkoutRecorded": "Wyjście zarejestrowane",
     "qrDetected": "Wykryto kod QR.",
     "codeMustBe6Digits": "Kod musi składać się z 6 cyfr.",
-    "provideSignature": "Proszę złożyć podpis."
+    "provideSignature": "Proszę złożyć podpis.",
+    "enterCodeManually": "Wprowadź kod ręcznie",
+    "enter6DigitCode": "Wprowadź 6-cyfrowy kod szkoleniowy.",
+    "cancel": "Anulować",
+    "validate": "Zweryfikuj kod",
+    "signStepTitle": "Aby zakończyć, podpisz się poniżej",
+    "processing": "Przetwarzanie rejestracji...",
+    "qrSubtitle": "Skoncentruj szkoleniowy kod QR za pomocą aparatu",
+    "startingCamera": "Uruchamiam kamerę...",
+    "cantScan": "Nie możesz skanować? Wprowadź kod ręcznie",
+    "manualCheckin": "Ręczne zameldowanie",
+    "manualSubtitle": "Wpisz kod otrzymany od administratora",
+    "successTitle": "Proces zakończony!",
+    "formationLabel": "Szkolenie",
+    "dateLabel": "Data",
+    "close": "Zamknąć"
   },
   "common": {
     "save": "Zapisz",
@@ -278,7 +316,14 @@
     "exportError": "Błąd podczas pobierania raportu",
     "sessionExpired": "Sesja wygasła. Zaloguj się ponownie.",
     "genericError": "Wystąpił błąd podczas żądania",
-    "networkError": "Błąd połączenia sieciowego"
+    "networkError": "Błąd połączenia sieciowego",
+    "details": "Bliższe dane",
+    "openSecure": "Otwórz/wyświetl dokument w chmurze",
+    "saving": "common.saving",
+    "search": "Szukać...",
+    "camera": "Kamera",
+    "unknownError": "Wystąpił nieznany błąd.",
+    "duplicateConflict": "Błąd konfliktu: rekord już istnieje."
   },
   "lang": {
     "es": "Español",
@@ -294,7 +339,7 @@
     "title": "Panel Analityczny",
     "exportCsv": "Eksportuj do CSV",
     "exportExcel": "Eksportuj do Excel",
-    "totalCheckins": "Łączne Rejestracje (Ostatnie 30 Dni)",
+    "totalCheckins": "Obecność na Szkoleniach (Ostatnie 30 Dni)",
     "formationAttendance": "Obecność na Szkoleniach",
     "attendance": "Obecność",
     "absence": "Nieobecność",
@@ -308,6 +353,9 @@
     "formationExports": "Szkolenia i Podpisy",
     "formationsCsv": "Szkolenia i Podpisy (CSV)",
     "formationsExcel": "Szkolenia i Podpisy (Excel)",
+    "employeeExports": "Analityka Pracowników",
+    "employeesCsv": "Analityka Pracowników (CSV)",
+    "employeesExcel": "Analityka Pracowników (Excel)",
     "searchEmployee": "Szukaj pracownika po nazwisku lub kodzie...",
     "totalEmployees": "Łącznie Pracowników",
     "formationsCount": "Szkolenia (Ukończone / Przypisane)",
@@ -327,7 +375,10 @@
     "signed": "Podpisano",
     "inProgress": "W trakcie",
     "pending": "Oczekujące",
-    "noFormationsUser": "Brak przypisanych szkoleń dla tego pracownika."
+    "noFormationsUser": "Brak przypisanych szkoleń dla tego pracownika.",
+    "noEmployees": "Nie znaleziono żadnych pracowników.",
+    "workCheckins": "Zameldowania",
+    "workTime": "T. Pracuj"
   },
   "profile": {
     "myProfileTitle": "Mój Profil",
@@ -372,7 +423,23 @@
     "incorrectCode": "Nieprawidłowy kod.",
     "disable2FAPrompt": "Wprowadź kod 2FA, aby potwierdzić dezaktywację:",
     "twoFactorDisableSuccess": "2FA zostało pomyślnie wyłączone.",
-    "twoFactorDisableError": "Błąd podczas wyłączania 2FA."
+    "twoFactorDisableError": "Błąd podczas wyłączania 2FA.",
+    "preferencesUpdated": "Zaktualizowane preferencje",
+    "preferencesUpdateError": "Błąd podczas aktualizowania preferencji",
+    "exportDataTitle": "Eksportuj moje dane (RODO)",
+    "exportDataBtn": "Poproś o eksport",
+    "deleteAccountTitle": "Usuń konto",
+    "deleteAccountBtn": "Usuń moje konto",
+    "emailSentCode": "Te hemos enviado un correo con el código de confirmación.",
+    "exportSuccess": "Twoje dane zostały pomyślnie wyeksportowane.",
+    "exportError": "Nie można wyeksportować Twoich danych.",
+    "deleteTypeConfirmError": "Aby potwierdzić, musisz wpisać DELETE.",
+    "deleteSuccess": "Twoje konto zostało usunięte.",
+    "deleteError": "Błąd podczas usuwania konta.",
+    "deleteConfirmTitle": "Usuń konto trwale",
+    "areYouSure": "Czy jesteś całkowicie pewien?",
+    "deleteWarningText": "Ta czynność spowoduje trwałe usunięcie wszystkich Twoich danych.",
+    "deleteConfirmBtn": "Usuń konto"
   },
   "register": {
     "title": "Wniosek o Rejestrację",
@@ -391,7 +458,10 @@
     "receivedDesc": "Twój wniosek został pomyślnie zarejestrowany. Administrator przeanalizuje go i aktywuje Twoje konto.",
     "goToLogin": "Powrót do Logowania",
     "alreadyHaveAccount": "Masz już aktywne konto?",
-    "loginHere": "Zaloguj się tutaj"
+    "loginHere": "Zaloguj się tutaj",
+    "genericError": "Błąd podczas przetwarzania żądania rejestracji.",
+    "successMessage": "Żądanie rejestracji zostało wysłane pomyślnie. Administrator aktywuje Twoje konto.",
+    "email": "E-mail"
   },
   "audit": {
     "title": "Rejestr Audytu",
@@ -437,7 +507,8 @@
       "dbBackup": "Kopia zapasowa bazy danych uruchomiona",
       "userSavedNoName": "Użytkownik zapisany/zaktualizowany",
       "formationSavedNoName": "Szkolenie utworzone/zaktualizowane"
-    }
+    },
+    "exportPDF": "Eksportuj do pliku PDF"
   },
   "cloudSettings": {
     "saveSuccess": "Ustawienia chmury zostały pomyślnie zapisane",
@@ -458,5 +529,17 @@
     "refreshTokenLabel": "Refresh Token (Długoterminowy)",
     "refreshTokenHelp": "Ten token będzie używany do automatycznego pobierania Access Tokens z Graph API bez interwencji użytkownika.",
     "saveBtn": "Zapisz Ustawienia"
-  }
+  },
+  "formations/csv": "podpis_formacje.csv",
+  "formations/excel": "podpis_formacje.xlsx",
+  "formationId": "formationId",
+  "users/csv": "użytkownicy.csv",
+  "users/excel": "użytkownicy.xlsx",
+  "notifications": {
+    "title": "Powiadomienia",
+    "empty": "Brak powiadomień",
+    "clearAll": "Wyczyść wszystko"
+  },
+  "web-vitals": "web-vitals",
+  "genericError": "Błąd podczas ładowania treningów"
 }

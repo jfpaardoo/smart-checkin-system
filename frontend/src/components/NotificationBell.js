@@ -69,6 +69,18 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
       const registration = await navigator.serviceWorker.register('/sw.js');
       await navigator.serviceWorker.ready;
 
+      if (!jwt) return;
+      try {
+        const decoded = JSON.parse(atob(jwt.split('.')[1]));
+        if (decoded.exp * 1000 < Date.now()) {
+          console.log("JWT expired, skipping push subscription");
+          return;
+        }
+      } catch (e) {
+        console.warn("Invalid JWT format, skipping push subscription", e);
+        return; // invalid jwt
+      }
+
       const response = await fetch('/api/v1/push/vapid-key', {
         headers: { Authorization: `Bearer ${jwt}` }
       });

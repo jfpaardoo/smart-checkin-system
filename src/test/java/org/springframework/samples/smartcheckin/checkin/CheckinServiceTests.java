@@ -14,6 +14,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.samples.smartcheckin.user.User;
 
 @SuppressWarnings("null")
@@ -25,6 +26,9 @@ class CheckinServiceTests {
 
     @Mock
     private CheckinRepository checkInRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private CheckinService checkinService;

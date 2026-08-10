@@ -861,7 +861,7 @@
 
 /* Success: BA primary olive-green */
 .ba-toast-success .ba-toast-icon {
-  background: #7a9e2e;
+  background: #546e1e; /* Darkened for contrast */
   color: #ffffff;
   border: 1.5px solid #6b8a28;
   box-shadow: 0 0 14px rgba(179, 195, 76, 0.35);
@@ -897,10 +897,9 @@
 }
 
 .ba-toast-close {
-  background: rgba(30, 41, 59, 0.08);
-  border: 1px solid rgba(30, 41, 59, 0.15);
-  border-radius: 50%;
-  color: #475569;
+  background: #e2e8f0; /* Solid background for contrast check */
+  border: 1px solid #cbd5e1;
+  color: #0f172a; /* Darker text */
   font-size: 1rem;
   cursor: pointer;
   width: 26px;
@@ -915,8 +914,8 @@
 }
 
 .ba-toast-close:hover {
-  background: rgba(30, 41, 59, 0.15);
-  color: #1e293b;
+  background: #cbd5e1;
+  color: #0f172a;
   transform: scale(1.1);
 }
 
@@ -952,9 +951,9 @@
 
 /* Confirm no — neutral slate */
 .ba-toast-btn-no {
-  background: rgba(30, 41, 59, 0.08);
-  border: 1px solid rgba(30, 41, 59, 0.18);
-  color: #1e293b;
+  background: #e2e8f0;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
 }
 
 .ba-toast-btn-no:hover {
@@ -1117,9 +1116,13 @@ select option {
   color: var(--ba-primary-hover) !important;
 }
 .ba-nav-pills .nav-link.active {
-  background-color: var(--ba-primary) !important;
+  background: var(--ba-primary) !important;
   color: #fff !important;
   box-shadow: 0 4px 10px rgba(179, 195, 76, 0.4);
+}
+.ba-nav-pills .nav-link.active:hover {
+  background: var(--ba-primary) !important;
+  color: #fff !important;
 }
 
 /* BA Small Glass Card */

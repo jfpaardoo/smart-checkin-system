@@ -16,6 +16,7 @@ export default function Register() {
     confirmPassword: '',
     firstName: '',
     lastName: '',
+    email: '',
     personalCode: ''
   });
 
@@ -65,6 +66,7 @@ export default function Register() {
           password: form.password,
           firstName: form.firstName.trim(),
           lastName: form.lastName.trim(),
+          email: form.email.trim(),
           personalCode: form.personalCode.trim()
         })
       });
@@ -93,10 +95,9 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center px-4 py-8 bg-gradient-to-br from-slate-100 via-white to-slate-200">
+    <div className="ba-container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
       
-      {/* Tarjeta con efecto Glassmorphic profundo */}
-      <div className="w-full max-w-lg bg-white/55 backdrop-blur-xl rounded-[2.5rem] border border-white/60 shadow-[0_8px_32px_0_rgba(31,38,135,0.12)] p-8 sm:p-10 transition-all duration-300">
+      <div className="ba-card" style={{ maxWidth: '1080px', margin: '2rem auto', padding: '50px' }}>
         
         {submittedSuccess ? (
           /* Pantalla de Éxito Centrada y Limpia */
@@ -140,12 +141,32 @@ export default function Register() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-4">
               
+              {/* Email */}
+              <div className="relative md:col-span-2">
+                <input
+                  className="w-full bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl px-4 pt-5 pb-2 text-sm text-slate-800 outline-none focus:border-[#b3c34c] focus:bg-white/70 transition-all shadow-sm placeholder-transparent peer"
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="Correo Electrónico"
+                  value={form.email}
+                  onChange={handleChange}
+                  required
+                />
+                <label 
+                  htmlFor="email" 
+                  className="absolute left-4 top-1.5 text-[10px] font-semibold text-slate-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-[#8fa228] pointer-events-none"
+                >
+                  {t('register.email', 'Correo Electrónico')}
+                </label>
+              </div>
+
               {/* Nombre */}
               <div className="relative">
                 <input
-                  className="w-full bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl px-4 py-3 text-sm text-slate-800 outline-none focus:border-[#b3c34c] focus:bg-white/70 transition-all shadow-sm placeholder-transparent peer"
+                  className="w-full bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl px-4 pt-5 pb-2 text-sm text-slate-800 outline-none focus:border-[#b3c34c] focus:bg-white/70 transition-all shadow-sm placeholder-transparent peer"
                   type="text"
                   id="firstName"
                   name="firstName"
@@ -156,7 +177,7 @@ export default function Register() {
                 />
                 <label 
                   htmlFor="firstName" 
-                  className="absolute left-4 top-3 text-xs font-semibold text-slate-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-[#8fa228] pointer-events-none"
+                  className="absolute left-4 top-1.5 text-[10px] font-semibold text-slate-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-[#8fa228] pointer-events-none"
                 >
                   {t('register.firstName', 'Nombre')}
                 </label>
@@ -165,7 +186,7 @@ export default function Register() {
               {/* Apellidos */}
               <div className="relative">
                 <input
-                  className="w-full bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl px-4 py-3 text-sm text-slate-800 outline-none focus:border-[#b3c34c] focus:bg-white/70 transition-all shadow-sm placeholder-transparent peer"
+                  className="w-full bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl px-4 pt-5 pb-2 text-sm text-slate-800 outline-none focus:border-[#b3c34c] focus:bg-white/70 transition-all shadow-sm placeholder-transparent peer"
                   type="text"
                   id="lastName"
                   name="lastName"
@@ -176,7 +197,7 @@ export default function Register() {
                 />
                 <label 
                   htmlFor="lastName" 
-                  className="absolute left-4 top-3 text-xs font-semibold text-slate-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-[#8fa228] pointer-events-none"
+                  className="absolute left-4 top-1.5 text-[10px] font-semibold text-slate-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-[#8fa228] pointer-events-none"
                 >
                   {t('register.lastName', 'Apellidos')}
                 </label>
@@ -185,7 +206,7 @@ export default function Register() {
               {/* Nombre de Usuario */}
               <div className="relative">
                 <input
-                  className="w-full bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl px-4 py-3 text-sm text-slate-800 outline-none focus:border-[#b3c34c] focus:bg-white/70 transition-all shadow-sm placeholder-transparent peer"
+                  className="w-full bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl px-4 pt-5 pb-2 text-sm text-slate-800 outline-none focus:border-[#b3c34c] focus:bg-white/70 transition-all shadow-sm placeholder-transparent peer"
                   type="text"
                   id="username"
                   name="username"
@@ -196,7 +217,7 @@ export default function Register() {
                 />
                 <label 
                   htmlFor="username" 
-                  className="absolute left-4 top-3 text-xs font-semibold text-slate-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-[#8fa228] pointer-events-none"
+                  className="absolute left-4 top-1.5 text-[10px] font-semibold text-slate-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-[#8fa228] pointer-events-none"
                 >
                   {t('register.username', 'Nombre de Usuario')}
                 </label>
@@ -205,7 +226,7 @@ export default function Register() {
               {/* Código Personal */}
               <div className="relative">
                 <input
-                  className="w-full bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl px-4 py-3 text-sm text-slate-800 outline-none focus:border-[#b3c34c] focus:bg-white/70 transition-all shadow-sm placeholder-transparent peer"
+                  className="w-full bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl px-4 pt-5 pb-2 text-sm text-slate-800 outline-none focus:border-[#b3c34c] focus:bg-white/70 transition-all shadow-sm placeholder-transparent peer"
                   type="text"
                   id="personalCode"
                   name="personalCode"
@@ -217,7 +238,7 @@ export default function Register() {
                 />
                 <label 
                   htmlFor="personalCode" 
-                  className="absolute left-4 top-3 text-xs font-semibold text-slate-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-[#8fa228] pointer-events-none"
+                  className="absolute left-4 top-1.5 text-[10px] font-semibold text-slate-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-[#8fa228] pointer-events-none"
                 >
                   {t('register.personalCode', 'Código Personal (4 dígitos)')}
                 </label>
@@ -226,7 +247,7 @@ export default function Register() {
               {/* Contraseña */}
               <div className="relative">
                 <input
-                  className="w-full bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl px-4 py-3 pe-12 text-sm text-slate-800 outline-none focus:border-[#b3c34c] focus:bg-white/70 transition-all shadow-sm placeholder-transparent peer"
+                  className="w-full bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl px-4 pt-5 pb-2 pe-12 text-sm text-slate-800 outline-none focus:border-[#b3c34c] focus:bg-white/70 transition-all shadow-sm placeholder-transparent peer"
                   type={showPassword ? 'text' : 'password'}
                   id="password"
                   name="password"
@@ -238,7 +259,7 @@ export default function Register() {
                 />
                 <label 
                   htmlFor="password" 
-                  className="absolute left-4 top-3 text-xs font-semibold text-slate-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-[#8fa228] pointer-events-none"
+                  className="absolute left-4 top-1.5 text-[10px] font-semibold text-slate-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-[#8fa228] pointer-events-none"
                 >
                   {t('register.password', 'Contraseña')}
                 </label>
@@ -254,7 +275,7 @@ export default function Register() {
               {/* Repetir Contraseña */}
               <div className="relative">
                 <input
-                  className="w-full bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl px-4 py-3 pe-12 text-sm text-slate-800 outline-none focus:border-[#b3c34c] focus:bg-white/70 transition-all shadow-sm placeholder-transparent peer"
+                  className="w-full bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl px-4 pt-5 pb-2 pe-12 text-sm text-slate-800 outline-none focus:border-[#b3c34c] focus:bg-white/70 transition-all shadow-sm placeholder-transparent peer"
                   type={showConfirmPassword ? 'text' : 'password'}
                   id="confirmPassword"
                   name="confirmPassword"
@@ -266,7 +287,7 @@ export default function Register() {
                 />
                 <label 
                   htmlFor="confirmPassword" 
-                  className="absolute left-4 top-3 text-xs font-semibold text-slate-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-[#8fa228] pointer-events-none"
+                  className="absolute left-4 top-1.5 text-[10px] font-semibold text-slate-500 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-[#8fa228] pointer-events-none"
                 >
                   {t('register.confirmPassword', 'Repetir Contraseña')}
                 </label>
@@ -279,18 +300,20 @@ export default function Register() {
                 </button>
               </div>
 
-              {/* Botón de Enviar con Liquid Glass */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full mt-2 inline-flex items-center justify-center py-3.5 px-6 rounded-full font-semibold text-slate-900 bg-[#b3c34c]/60 hover:bg-[#b3c34c]/80 border border-white/80 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_8px_20px_rgba(179,195,76,0.3)] transition-all duration-300 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50"
-              >
-                {loading ? <Spinner size="sm" className="me-2" /> : <FaUserPlus className="me-2" />}
-                {t('register.submitBtn', 'Enviar Solicitud de Registro')}
-              </button>
+              {/* Contenedor del Botón (Ocupa 2 columnas en PC) */}
+              <div className="md:col-span-2 mt-2">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full inline-flex items-center justify-center py-3.5 px-6 rounded-full font-semibold text-slate-900 bg-[#b3c34c]/60 hover:bg-[#b3c34c]/80 border border-white/80 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_8px_20px_rgba(179,195,76,0.3)] transition-all duration-300 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50"
+                >
+                  {loading ? <Spinner size="sm" className="me-2" /> : <FaUserPlus className="me-2" />}
+                  {t('register.submitBtn', 'Enviar Solicitud de Registro')}
+                </button>
+              </div>
 
               {/* Enlace para ir al Login */}
-              <div className="text-center mt-4">
+              <div className="text-center md:col-span-2">
                 <span className="text-xs text-slate-500">{t('register.alreadyHaveAccount', '¿Ya tienes cuenta activa?')} </span>
                 <Link to="/login" className="text-xs font-bold text-slate-700 hover:text-slate-900 underline decoration-[#b3c34c] decoration-2 underline-offset-4">
                   {t('register.loginHere', 'Iniciar Sesión')}

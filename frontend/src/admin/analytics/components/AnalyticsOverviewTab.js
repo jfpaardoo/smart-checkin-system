@@ -31,7 +31,7 @@ export default function AnalyticsOverviewTab({ statistics }) {
                 <FontAwesomeIcon icon={faUserCheck} />
             </div>
             <div className="analytics-kpi-content">
-                <h6>{t('analytics.totalCheckins', 'Total Check-ins')}</h6>
+                <h6>{t('analytics.totalCheckins', 'Asistencias Totales')}</h6>
                 <p className="kpi-value">{latestTotalCheckins}</p>
             </div>
         </div>
@@ -61,18 +61,28 @@ export default function AnalyticsOverviewTab({ statistics }) {
           <div className="col-lg-8">
               <div className="analytics-chart-card">
                   <div className="analytics-chart-title">
-                      <span>{t('analytics.totalCheckins', 'Total Check-ins (Last 30 Days)')}</span>
+                      <span>{t('analytics.totalCheckins', 'Asistencias Totales (Últimos 30 Días)')}</span>
                   </div>
                   <div className="chart-container-wrapper">
                       <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={chronologicalStatistics} margin={{ top: 15, right: 25, left: -15, bottom: 5 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 0, 0, 0.06)" />
-                              <XAxis dataKey="date" stroke="#64748b" fontSize={12} tickLine={false} />
+                              <XAxis 
+                                  dataKey="date" 
+                                  stroke="#64748b" 
+                                  fontSize={12} 
+                                  tickLine={false} 
+                                  tickFormatter={(val) => {
+                                      if (!val) return '';
+                                      const d = new Date(val);
+                                      return Number.isNaN(d.valueOf()) ? val : new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(d);
+                                  }}
+                              />
                               <YAxis stroke="#64748b" fontSize={12} tickLine={false} />
                               <RechartsTooltip />
                               <Line 
                                   type="monotone" 
-                                  name={t('analytics.totalCheckins', 'Check-ins')} 
+                                  name={t('analytics.totalCheckins', 'Asistencias')} 
                                   dataKey="totalCheckins" 
                                   stroke="#2563eb" 
                                   strokeWidth={3} 

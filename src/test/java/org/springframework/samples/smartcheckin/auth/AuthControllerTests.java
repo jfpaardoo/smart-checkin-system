@@ -19,6 +19,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.samples.smartcheckin.audit.AnomalyDetectionService;
 import org.springframework.samples.smartcheckin.auth.payload.request.LoginRequest;
@@ -92,6 +93,9 @@ class AuthControllerTests {
 
 	@MockitoBean
 	private JwtBlacklistService jwtBlacklistService;
+
+	@MockitoBean
+	private JavaMailSender javaMailSender;
 
 	@Autowired
 	@SuppressWarnings("java:S6813")
@@ -246,6 +250,7 @@ class AuthControllerTests {
 		signup.setPersonalCode("9999");
 		signup.setFirstName("New");
 		signup.setLastName("User");
+		signup.setEmail("newuser@example.com");
 
 		when(userService.findUser(newUser)).thenThrow(new ResourceNotFoundException("User", "username", newUser));
 		when(authoritiesService.findByAuthority("EMPLOYEE")).thenReturn(new Authorities());
@@ -283,6 +288,7 @@ class AuthControllerTests {
 		signup.setPersonalCode("9999");
 		signup.setFirstName("New");
 		signup.setLastName("User");
+		signup.setEmail("existinguser@example.com");
 
 		User existing = new User();
 		existing.setUsername(existingUser);
@@ -385,6 +391,7 @@ class AuthControllerTests {
         signup.setPersonalCode("9999");
         signup.setFirstName("New");
         signup.setLastName("User");
+        signup.setEmail("newUser2@example.com");
 
         when(userService.findUser(NEW_USER_2)).thenThrow(new ResourceNotFoundException("User", "username", NEW_USER_2));
         when(authoritiesService.findByAuthority("EMPLOYEE")).thenThrow(new ResourceNotFoundException("Authority not found"));

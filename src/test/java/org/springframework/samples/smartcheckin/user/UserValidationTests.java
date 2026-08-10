@@ -31,6 +31,7 @@ class UserValidationTests {
         user.setPersonalCode("1234");
         user.setFirstName("John");
         user.setLastName("Doe");
+        user.setEmail("test@example.com");
 
         Authorities auth = new Authorities();
         auth.setAuthority("USER");

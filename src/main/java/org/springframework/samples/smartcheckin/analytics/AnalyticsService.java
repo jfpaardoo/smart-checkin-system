@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.smartcheckin.checkin.Checkin;
 import org.springframework.samples.smartcheckin.checkin.CheckinRepository;
 import org.springframework.samples.smartcheckin.checkin.CheckinType;
+import org.springframework.samples.smartcheckin.formation.Formation;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.samples.smartcheckin.formation.FormationAttendanceRepository;
+import org.springframework.samples.smartcheckin.formation.FormationRepository;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserRepository;
 import org.springframework.stereotype.Service;
@@ -23,14 +25,17 @@ public class AnalyticsService {
     private final UserRepository userRepository;
     private final CheckinRepository checkinRepository;
     private final FormationAttendanceRepository attendanceRepository;
+    private final FormationRepository formationRepository;
 
     @Autowired
     public AnalyticsService(UserRepository userRepository,
                             CheckinRepository checkinRepository,
-                            FormationAttendanceRepository attendanceRepository) {
+                            FormationAttendanceRepository attendanceRepository,
+                            FormationRepository formationRepository) {
         this.userRepository = userRepository;
         this.checkinRepository = checkinRepository;
         this.attendanceRepository = attendanceRepository;
+        this.formationRepository = formationRepository;
     }
 
     @Transactional(readOnly = true)
@@ -175,5 +180,52 @@ public class AnalyticsService {
             }
         }
         return totalMinutes;
+    }
+
+    @Transactional(readOnly = true)
+    public List<FormationAnalyticsDTO> getFormationAnalytics() {
+        List<FormationAnalyticsDTO> dtos = new ArrayList<>();
+        Iterable<Formation> formations = formationRepository.findAll();
+        long totalActiveUsers = calculateTotalActiveUsers();
+
+        for (Formation f : formations) {
+            dtos.add(createFormationAnalyticsDTO(f, totalActiveUsers));
+        }
+
+        dtos.sort(Comparator.comparing(FormationAnalyticsDTO::getFormationDate, Comparator.nullsLast(Comparator.reverseOrder())));
+        return dtos;
+    }
+
+    private long calculateTotalActiveUsers() {
+        long total = 0;
+        for (User u : userRepository.findAll()) {
+            if (u.getAuthority() != null && "USER".equals(u.getAuthority().getAuthority()) && Boolean.TRUE.equals(u.getIsWorking())) {
+                total++;
+            }
+        }
+        return total == 0 ? 1 : total;
+    }
+
+    private FormationAnalyticsDTO createFormationAnalyticsDTO(Formation f, long totalActiveUsers) {
+        int attended = 0;
+        if (f.getAttendances() != null) {
+            for (FormationAttendance att : f.getAttendances()) {
+                if (att.getCheckInDate() != null) {
+                    attended++;
+                }
+            }
+        }
+        
+        double percentage = Math.round(((double) attended / totalActiveUsers) * 100.0 * 10.0) / 10.0;
+        if (percentage > 100.0) percentage = 100.0;
+
+        return FormationAnalyticsDTO.builder()
+            .formationId(f.getId())
+            .formationName(f.getName())
+            .formationDate(f.getFormationDate())
+            .totalExpected((int) totalActiveUsers)
+            .totalAttended(attended)
+            .attendancePercentage(percentage)
+            .build();
     }
 }

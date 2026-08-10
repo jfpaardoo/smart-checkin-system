@@ -2,7 +2,6 @@ package org.springframework.samples.smartcheckin.analytics;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.samples.smartcheckin.checkin.CheckinRepository;
 import org.springframework.samples.smartcheckin.statistics.PlatformStatistic;
 import org.springframework.samples.smartcheckin.statistics.StatisticsRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,30 +19,37 @@ public class AnalyticsRestController {
 
     private final StatisticsRepository statisticsRepository;
     private final AnalyticsService analyticsService;
-    private final CheckinRepository checkinRepository;
 
     @Autowired
-    public AnalyticsRestController(StatisticsRepository statisticsRepository, AnalyticsService analyticsService, CheckinRepository checkinRepository) {
+    public AnalyticsRestController(StatisticsRepository statisticsRepository, AnalyticsService analyticsService) {
         this.statisticsRepository = statisticsRepository;
         this.analyticsService = analyticsService;
-        this.checkinRepository = checkinRepository;
     }
 
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<List<PlatformStatistic>> getAnalytics() {
-        List<PlatformStatistic> stats = new ArrayList<>(statisticsRepository.findLast30Days());
+    public ResponseEntity<List<PlatformStatistic>> getAnalytics(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        
+        List<PlatformStatistic> stats;
+        
+        if (startDate != null && endDate != null) {
+            LocalDate start = LocalDate.parse(startDate);
+            LocalDate end = LocalDate.parse(endDate);
+            stats = new ArrayList<>(statisticsRepository.findByDateBetweenOrderByDateAsc(start, end));
+        } else {
+            stats = new ArrayList<>(statisticsRepository.findLast30Days());
+            // findLast30Days returns descending, so reverse it for chronological order if needed, but frontend reverses it.
+        }
         
         LocalDate today = LocalDate.now(ZoneId.systemDefault());
-        Long liveTotalCheckins = checkinRepository.count();
         
         Optional<PlatformStatistic> todayStat = stats.stream().filter(s -> s.getDate().equals(today)).findFirst();
-        if (todayStat.isPresent()) {
-            todayStat.get().setTotalCheckins(liveTotalCheckins);
-        } else {
+        if (!todayStat.isPresent()) {
             PlatformStatistic stat = new PlatformStatistic();
             stat.setDate(today);
-            stat.setTotalCheckins(liveTotalCheckins);
+            stat.setTotalCheckins(0L);
             
             if (!stats.isEmpty()) {
                 PlatformStatistic last = stats.get(0);
@@ -78,5 +84,11 @@ public class AnalyticsRestController {
         return analyticsService.getUserAnalytics(userId)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/formations")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<List<FormationAnalyticsDTO>> getFormationAnalytics() {
+        return ResponseEntity.ok(analyticsService.getFormationAnalytics());
     }
 }

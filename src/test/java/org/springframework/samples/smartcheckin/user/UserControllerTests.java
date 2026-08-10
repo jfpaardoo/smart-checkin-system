@@ -21,6 +21,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest;
 import org.springframework.samples.smartcheckin.configuration.SecurityConfiguration;
 import org.springframework.samples.smartcheckin.exceptions.AccessDeniedException;
@@ -58,10 +59,21 @@ class UserControllerTests {
 	private static final String UPDATED = "UPDATED";
 	private static final String USERNAME_PATH = "$.username";
 	private static final String NAME_PATH = "PRUEBA";
-	private static final String TWO_FACTOR_PATH = "/2fa/enable";
+	private static final String TWO_FACTOR_ENABLE_PATH = "/2fa/enable";
+	private static final String TWO_FACTOR_DISABLE_PATH = "/2fa/disable";
+	private static final String PASSWORD_PATH = "/me/password";
+	private static final String ENCODED_OLD_PASS = "encodedOld";
+	private static final String OLD_PASS = "oldPass123";
+	private static final String NEW_PASS = "newPass123";
+	private static final String TOTP_SECRET = "SECRET";
+	private static final String TOTP_CODE = "123456";
+	private static final String SEARCH_PARAM = "search";
 
 	@MockitoBean
 	private UserService userService;
+
+	@MockitoBean
+	private JavaMailSender javaMailSender;
 
 	@MockitoBean
 	private AuthoritiesService authService;
@@ -98,6 +110,7 @@ class UserControllerTests {
 		user.setFirstName("TEST");
 		user.setLastName("USER");
 		user.setPersonalCode("1234");
+		user.setEmail("user@example.com");
 		user.setIsWorking(false);
 		user.setAuthority(auth);
 
@@ -126,6 +139,7 @@ class UserControllerTests {
 		mockUser.setId(1);
 		mockUser.setUsername("user");
 		mockUser.setPassword(PASSWORD);
+		mockUser.setEmail("mock@example.com");
 		mockUser.setAuthority(auth);
 		mockUser.setPersonalCode("1000");
 
@@ -133,6 +147,7 @@ class UserControllerTests {
 		juan.setId(3);
 		juan.setUsername("Juan");
 		juan.setPassword(PASSWORD);
+		juan.setEmail("juan@example.com");
 		juan.setAuthority(auth);
 		juan.setPersonalCode("1002");
 
@@ -187,6 +202,7 @@ class UserControllerTests {
 		aux.setPassword(NAME_PATH);
 		aux.setFirstName(NAME_PATH);
 		aux.setLastName("TEST");
+		aux.setEmail("aux@example.com");
 		aux.setPersonalCode("5678");
 		aux.setIsWorking(false);
 		aux.setAuthority(auth);
@@ -206,7 +222,7 @@ class UserControllerTests {
 
 		mockMvc.perform(put(BASE_URL + ID_PATH, TEST_USER_ID).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(user))).andExpect(status().isOk())
-				.andExpect(jsonPath("$.username").value(UPDATED));
+				.andExpect(jsonPath(USERNAME_PATH).value(UPDATED));
 	}
 
 	@Test
@@ -268,16 +284,16 @@ class UserControllerTests {
 	@Test
 	@WithMockUser("admin")
 	void shouldChangePasswordSuccess() throws Exception {
-		user.setPassword("encodedOld");
+		user.setPassword(ENCODED_OLD_PASS);
 		when(userService.findCurrentUser()).thenReturn(user);
-		when(passwordEncoder.matches("oldPass123", "encodedOld")).thenReturn(true);
+		when(passwordEncoder.matches(OLD_PASS, ENCODED_OLD_PASS)).thenReturn(true);
 
 		ChangePasswordRequest req = new ChangePasswordRequest();
-		req.setCurrentPassword("oldPass123");
-		req.setNewPassword("newPass123");
-		req.setConfirmPassword("newPass123");
+		req.setCurrentPassword(OLD_PASS);
+		req.setNewPassword(NEW_PASS);
+		req.setConfirmPassword(NEW_PASS);
 
-		mockMvc.perform(put(BASE_URL + "/me/password").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(put(BASE_URL + PASSWORD_PATH).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isOk());
 	}
 
@@ -294,28 +310,28 @@ class UserControllerTests {
 	@Test
 	@WithMockUser("admin")
 	void shouldEnableTwoFactorSuccess() throws Exception {
-		user.setTwoFactorSecret("SECRET");
+		user.setTwoFactorSecret(TOTP_SECRET);
 		when(userService.findUser(anyString())).thenReturn(user);
-		when(totpService.validateCode("SECRET", "123456")).thenReturn(true);
+		when(totpService.validateCode(TOTP_SECRET, TOTP_CODE)).thenReturn(true);
 
 		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
-		req.setCode("123456");
+		req.setCode(TOTP_CODE);
 
-		mockMvc.perform(post(BASE_URL + TWO_FACTOR_PATH).with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(BASE_URL + TWO_FACTOR_ENABLE_PATH).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isOk());
 	}
 
 	@Test
 	@WithMockUser("admin")
 	void shouldDisableTwoFactor() throws Exception {
-		user.setTwoFactorSecret("SECRET");
+		user.setTwoFactorSecret(TOTP_SECRET);
 		when(userService.findUser(anyString())).thenReturn(user);
-		when(totpService.validateCode("SECRET", "123456")).thenReturn(true);
+		when(totpService.validateCode(TOTP_SECRET, TOTP_CODE)).thenReturn(true);
 
 		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
-		req.setCode("123456");
+		req.setCode(TOTP_CODE);
 
-		mockMvc.perform(post(BASE_URL + "/2fa/disable").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(BASE_URL + TWO_FACTOR_DISABLE_PATH).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isOk());
 	}
 
@@ -336,12 +352,13 @@ class UserControllerTests {
 		searchUser.setUsername("specialSearch");
 		searchUser.setFirstName("John");
 		searchUser.setLastName("Doe");
+		searchUser.setEmail("search@example.com");
 		searchUser.setPersonalCode("9999");
 		searchUser.setAuthority(auth);
 
 		when(userService.findApprovedUsers()).thenReturn(List.of(user, searchUser));
 
-		mockMvc.perform(get(BASE_URL).param("search", "special")).andExpect(status().isOk())
+		mockMvc.perform(get(BASE_URL).param(SEARCH_PARAM, "special")).andExpect(status().isOk())
 				.andExpect(jsonPath(SIZE_PATH).value(1))
 				.andExpect(jsonPath("$[0].username").value("specialSearch"));
 	}
@@ -349,62 +366,62 @@ class UserControllerTests {
 	@Test
 	@WithMockUser("admin")
 	void shouldFailChangePasswordWrongCurrentPassword() throws Exception {
-		user.setPassword("encodedOld");
+		user.setPassword(ENCODED_OLD_PASS);
 		when(userService.findCurrentUser()).thenReturn(user);
-		when(passwordEncoder.matches("wrongPass", "encodedOld")).thenReturn(false);
+		when(passwordEncoder.matches("wrongPass", ENCODED_OLD_PASS)).thenReturn(false);
 
 		ChangePasswordRequest req = new ChangePasswordRequest();
 		req.setCurrentPassword("wrongPass");
-		req.setNewPassword("newPass123");
-		req.setConfirmPassword("newPass123");
+		req.setNewPassword(NEW_PASS);
+		req.setConfirmPassword(NEW_PASS);
 
-		mockMvc.perform(put(BASE_URL + "/me/password").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(put(BASE_URL + PASSWORD_PATH).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest());
 	}
 
 	@Test
 	@WithMockUser("admin")
 	void shouldFailChangePasswordShortNewPassword() throws Exception {
-		user.setPassword("encodedOld");
+		user.setPassword(ENCODED_OLD_PASS);
 		when(userService.findCurrentUser()).thenReturn(user);
-		when(passwordEncoder.matches("oldPass123", "encodedOld")).thenReturn(true);
+		when(passwordEncoder.matches(OLD_PASS, ENCODED_OLD_PASS)).thenReturn(true);
 
 		ChangePasswordRequest req = new ChangePasswordRequest();
-		req.setCurrentPassword("oldPass123");
+		req.setCurrentPassword(OLD_PASS);
 		req.setNewPassword("123");
 		req.setConfirmPassword("123");
 
-		mockMvc.perform(put(BASE_URL + "/me/password").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(put(BASE_URL + PASSWORD_PATH).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest());
 	}
 
 	@Test
 	@WithMockUser("admin")
 	void shouldFailChangePasswordMismatchConfirm() throws Exception {
-		user.setPassword("encodedOld");
+		user.setPassword(ENCODED_OLD_PASS);
 		when(userService.findCurrentUser()).thenReturn(user);
-		when(passwordEncoder.matches("oldPass123", "encodedOld")).thenReturn(true);
+		when(passwordEncoder.matches(OLD_PASS, ENCODED_OLD_PASS)).thenReturn(true);
 
 		ChangePasswordRequest req = new ChangePasswordRequest();
-		req.setCurrentPassword("oldPass123");
-		req.setNewPassword("newPass123");
+		req.setCurrentPassword(OLD_PASS);
+		req.setNewPassword(NEW_PASS);
 		req.setConfirmPassword("different123");
 
-		mockMvc.perform(put(BASE_URL + "/me/password").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(put(BASE_URL + PASSWORD_PATH).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest());
 	}
 
 	@Test
 	@WithMockUser("admin")
 	void shouldFailEnableTwoFactor() throws Exception {
-		user.setTwoFactorSecret("SECRET");
+		user.setTwoFactorSecret(TOTP_SECRET);
 		when(userService.findUser(anyString())).thenReturn(user);
-		when(totpService.validateCode("SECRET", "123456")).thenReturn(false); // Wrong code
+		when(totpService.validateCode(TOTP_SECRET, TOTP_CODE)).thenReturn(false); // Wrong code
 
 		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
-		req.setCode("123456");
+		req.setCode(TOTP_CODE);
 
-		mockMvc.perform(post(BASE_URL + "/2fa/enable").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(BASE_URL + TWO_FACTOR_ENABLE_PATH).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest());
 	}
 
@@ -416,6 +433,7 @@ class UserControllerTests {
 		// No password set
 		aux.setFirstName("PRUEBA");
 		aux.setLastName("TEST");
+		aux.setEmail("aux2@example.com");
 		aux.setPersonalCode("5678");
 		aux.setIsWorking(false);
 		aux.setAuthority(auth);
@@ -434,6 +452,7 @@ class UserControllerTests {
 		aux.setPassword(null);
 		aux.setFirstName("PRUEBA");
 		aux.setLastName("TEST");
+		aux.setEmail("aux3@example.com");
 		aux.setPersonalCode("5678");
 		aux.setIsWorking(false);
 		aux.setAuthority(auth);
@@ -462,6 +481,7 @@ class UserControllerTests {
 		aux.setPassword("");
 		aux.setFirstName("PRUEBA");
 		aux.setLastName("TEST");
+		aux.setEmail("aux@example.com");
 		aux.setPersonalCode("5678");
 		aux.setIsWorking(false);
 		aux.setAuthority(auth);
@@ -481,12 +501,13 @@ class UserControllerTests {
 		searchUser.setUsername("other");
 		searchUser.setFirstName("SpecialName");
 		searchUser.setLastName("Doe");
+		searchUser.setEmail("search2@example.com");
 		searchUser.setPersonalCode("9999");
 		searchUser.setAuthority(auth);
 
 		when(userService.findApprovedUsers()).thenReturn(List.of(user, searchUser));
 
-		mockMvc.perform(get(BASE_URL).param("search", "specialname")).andExpect(status().isOk())
+		mockMvc.perform(get(BASE_URL).param(SEARCH_PARAM, "specialname")).andExpect(status().isOk())
 				.andExpect(jsonPath(SIZE_PATH).value(1))
 				.andExpect(jsonPath("$[0].firstName").value("SpecialName"));
 	}
@@ -498,26 +519,26 @@ class UserControllerTests {
 
 		ChangePasswordRequest req = new ChangePasswordRequest();
 		req.setCurrentPassword(null);
-		req.setNewPassword("newPass123");
-		req.setConfirmPassword("newPass123");
+		req.setNewPassword(NEW_PASS);
+		req.setConfirmPassword(NEW_PASS);
 
-		mockMvc.perform(put(BASE_URL + "/me/password").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(put(BASE_URL + PASSWORD_PATH).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest());
 	}
 
 	@Test
 	@WithMockUser("admin")
 	void shouldFailChangePasswordNullNewPassword() throws Exception {
-		user.setPassword("encodedOld");
+		user.setPassword(ENCODED_OLD_PASS);
 		when(userService.findCurrentUser()).thenReturn(user);
-		when(passwordEncoder.matches("oldPass123", "encodedOld")).thenReturn(true);
+		when(passwordEncoder.matches(OLD_PASS, ENCODED_OLD_PASS)).thenReturn(true);
 
 		ChangePasswordRequest req = new ChangePasswordRequest();
-		req.setCurrentPassword("oldPass123");
+		req.setCurrentPassword(OLD_PASS);
 		req.setNewPassword(null);
 		req.setConfirmPassword(null);
 
-		mockMvc.perform(put(BASE_URL + "/me/password").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(put(BASE_URL + PASSWORD_PATH).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest());
 	}
 
@@ -550,12 +571,13 @@ class UserControllerTests {
         searchUser.setUsername("dummy");
         searchUser.setFirstName("John");
         searchUser.setLastName("UniqueLastName");
+        searchUser.setEmail("unique@example.com");
         searchUser.setPersonalCode("9999");
         searchUser.setAuthority(auth);
 
         when(userService.findApprovedUsers()).thenReturn(List.of(user, searchUser));
 
-        mockMvc.perform(get(BASE_URL).param("search", "uniquelastname")).andExpect(status().isOk())
+        mockMvc.perform(get(BASE_URL).param(SEARCH_PARAM, "uniquelastname")).andExpect(status().isOk())
                 .andExpect(jsonPath(SIZE_PATH).value(1))
                 .andExpect(jsonPath("$[0].lastName").value("UniqueLastName"));
     }
@@ -568,12 +590,13 @@ class UserControllerTests {
         searchUser.setUsername("dummy");
         searchUser.setFirstName("John");
         searchUser.setLastName("Doe");
+        searchUser.setEmail("doe@example.com");
         searchUser.setPersonalCode("5555");
         searchUser.setAuthority(auth);
 
         when(userService.findApprovedUsers()).thenReturn(List.of(user, searchUser));
 
-        mockMvc.perform(get(BASE_URL).param("search", "5555")).andExpect(status().isOk())
+        mockMvc.perform(get(BASE_URL).param(SEARCH_PARAM, "5555")).andExpect(status().isOk())
                 .andExpect(jsonPath(SIZE_PATH).value(1))
                 .andExpect(jsonPath("$[0].personalCode").value("5555"));
     }
@@ -583,7 +606,7 @@ class UserControllerTests {
     void shouldFindAllWithSearchBlank() throws Exception {
         when(userService.findApprovedUsers()).thenReturn(List.of(user));
 
-        mockMvc.perform(get(BASE_URL).param("search", "   ")).andExpect(status().isOk())
+        mockMvc.perform(get(BASE_URL).param(SEARCH_PARAM, "   ")).andExpect(status().isOk())
                 .andExpect(jsonPath(SIZE_PATH).value(1));
     }
 
@@ -617,6 +640,7 @@ class UserControllerTests {
         aux.setPassword(null);
         aux.setFirstName("PRUEBA");
         aux.setLastName("TEST");
+        aux.setEmail("prueba2@example.com");
         aux.setPersonalCode("5678");
         aux.setIsWorking(false);
         aux.setAuthority(auth);
@@ -630,14 +654,14 @@ class UserControllerTests {
 	@Test
     @WithMockUser("admin")
     void shouldFailDisableTwoFactorWrongCode() throws Exception {
-        user.setTwoFactorSecret("SECRET");
-        when(userService.findUser(anyString())).thenReturn(user);
-        when(totpService.validateCode("SECRET", "000000")).thenReturn(false);
+		user.setTwoFactorSecret(TOTP_SECRET);
+		when(userService.findUser(anyString())).thenReturn(user);
+		when(totpService.validateCode(TOTP_SECRET, "000000")).thenReturn(false);
 
-        TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
-        req.setCode("000000");
+		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
+		req.setCode("000000");
 
-        mockMvc.perform(post(BASE_URL + "/2fa/disable").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post(BASE_URL + TWO_FACTOR_DISABLE_PATH).with(csrf()).contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest());
     }
 
@@ -649,6 +673,7 @@ class UserControllerTests {
         testUser.setFirstName("TestName");
         testUser.setLastName("TestLastName");
         testUser.setUsername("testuser");
+        testUser.setEmail("testuser@example.com");
         testUser.setPersonalCode("1234");
         Authorities testAuth = new Authorities();
         testAuth.setAuthority("USER");
@@ -656,7 +681,7 @@ class UserControllerTests {
 
         when(userService.findApprovedUsers()).thenReturn(List.of(testUser));
 
-        mockMvc.perform(get(BASE_URL).param("search", "TestName"))
+        mockMvc.perform(get(BASE_URL).param(SEARCH_PARAM, "TestName"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(SIZE_PATH).value(1));
     }

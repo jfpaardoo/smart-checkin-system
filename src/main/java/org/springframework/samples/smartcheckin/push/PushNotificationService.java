@@ -22,6 +22,9 @@ public class PushNotificationService {
     @Value("${vapid.private.key:defaultPrivateKey}")
     private String vapidPrivateKey;
 
+    @Value("${vapid.subject:mailto:admin@example.com}")
+    private String vapidSubject;
+
     private PushService pushService;
 
     private final PushSubscriptionRepository subscriptionRepository;
@@ -37,6 +40,7 @@ public class PushNotificationService {
         }
         try {
             pushService = new PushService(vapidPublicKey, vapidPrivateKey);
+            pushService.setSubject(vapidSubject);
         } catch (Exception e) {
             // CAMBIO: Capturamos 'Exception' genérica. 
             // Si usamos claves por defecto (no Base64) en tests, web-push lanza IllegalArgumentException.

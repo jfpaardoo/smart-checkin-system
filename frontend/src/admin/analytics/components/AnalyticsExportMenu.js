@@ -30,6 +30,16 @@ export default function AnalyticsExportMenu() {
           <FontAwesomeIcon icon={faFileExcel} className="me-2 text-success" /> 
           <span className="fw-bold" style={{ color: '#2c3e50' }}>{t('analytics.formationsExcel', 'Formations & Signatures (Excel)')}</span>
         </DropdownItem>
+        <DropdownItem divider />
+        <DropdownItem header className="fw-bold text-muted">{t('analytics.employeeExports', 'Employee Analytics')}</DropdownItem>
+        <DropdownItem onClick={() => handleDownloadExport('users/csv', 'empleados_analiticas.csv')} className="py-2 ba-dropdown-item">
+          <FontAwesomeIcon icon={faFileCsv} className="me-2" style={{ color: 'var(--ba-primary)' }} /> 
+          <span className="fw-bold" style={{ color: '#2c3e50' }}>{t('analytics.employeesCsv', 'Employee Analytics (CSV)')}</span>
+        </DropdownItem>
+        <DropdownItem onClick={() => handleDownloadExport('users/excel', 'empleados_analiticas.xlsx')} className="py-2 ba-dropdown-item">
+          <FontAwesomeIcon icon={faFileExcel} className="me-2 text-success" /> 
+          <span className="fw-bold" style={{ color: '#2c3e50' }}>{t('analytics.employeesExcel', 'Employee Analytics (Excel)')}</span>
+        </DropdownItem>
       </DropdownMenu>
     </UncontrolledDropdown>
   );

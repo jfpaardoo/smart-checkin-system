@@ -1,5 +1,6 @@
 package org.springframework.samples.smartcheckin.formation;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,4 +13,5 @@ public interface FormationAttendanceRepository extends CrudRepository<FormationA
     Optional<FormationAttendance> findByFormationAndUser(Formation formation, User user);
     List<FormationAttendance> findByUser(User user);
     List<FormationAttendance> findByUserId(Integer userId);
+    Long countByCheckInDateBetween(LocalDateTime start, LocalDateTime end);
 }

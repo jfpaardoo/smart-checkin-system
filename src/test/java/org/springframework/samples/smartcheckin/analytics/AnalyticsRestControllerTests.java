@@ -48,7 +48,7 @@ class AnalyticsRestControllerTests {
 	@WithMockUser(authorities = {"ADMIN"})
 	void testGetAnalyticsEmptyStats() throws Exception {
 		when(statisticsRepository.findLast30Days()).thenReturn(List.of());
-		when(checkinRepository.count()).thenReturn(5L);
+		when(checkinRepository.countByCheckInDateBetween(any(), any())).thenReturn(5L);
 
 		mockMvc.perform(get(BASE_URL))
 				.andExpect(status().isOk())
@@ -70,7 +70,7 @@ class AnalyticsRestControllerTests {
 		todayStat.setFormationAttendanceRate(95.0);
 		
 		when(statisticsRepository.findLast30Days()).thenReturn(List.of(todayStat));
-		when(checkinRepository.count()).thenReturn(20L); // New live value
+		when(checkinRepository.countByCheckInDateBetween(any(), any())).thenReturn(20L); // New live value
 
 		mockMvc.perform(get(BASE_URL))
 				.andExpect(status().isOk())
@@ -90,7 +90,7 @@ class AnalyticsRestControllerTests {
 		yesterdayStat.setFormationAttendanceRate(90.0);
 		
 		when(statisticsRepository.findLast30Days()).thenReturn(List.of(yesterdayStat));
-		when(checkinRepository.count()).thenReturn(25L);
+		when(checkinRepository.countByCheckInDateBetween(any(), any())).thenReturn(25L);
 
 		mockMvc.perform(get(BASE_URL))
 				.andExpect(status().isOk())
@@ -112,7 +112,7 @@ class AnalyticsRestControllerTests {
 		}
 		
 		when(statisticsRepository.findLast30Days()).thenReturn(mockStats);
-		when(checkinRepository.count()).thenReturn(100L);
+		when(checkinRepository.countByCheckInDateBetween(any(), any())).thenReturn(100L);
 
 		mockMvc.perform(get(BASE_URL))
 				.andExpect(status().isOk())

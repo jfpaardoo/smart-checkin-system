@@ -116,6 +116,20 @@ export default function UserEditAdmin() {
           </Row>
 
           <Row>
+            <Col md={6}>
+              <FormGroup>
+                <Label for="email">{t('users.email', 'Correo Electrónico')}</Label>
+                <Input
+                  type="email"
+                  required
+                  name="email"
+                  id="email"
+                  value={user.email || ""}
+                  onChange={handleChange}
+                />
+              </FormGroup>
+            </Col>
+
             {!user.id && (
               <Col md={6}>
                 <FormGroup>
@@ -136,7 +150,7 @@ export default function UserEditAdmin() {
               </Col>
             )}
             
-            <Col md={user.id ? 12 : 6}>
+            <Col md={user.id ? 6 : 12}>
               <FormGroup>
                 <Label for="authority">{t('users.role')}</Label>
                 <UncontrolledDropdown className="w-100">

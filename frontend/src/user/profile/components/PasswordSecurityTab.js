@@ -1,5 +1,4 @@
 import React from "react";
-import { Row, Col } from "reactstrap";
 import TwoFactorSettings from "./TwoFactorSettings";
 import PasswordChangeCard from "./PasswordChangeCard";
 import PrivacyDataTab from "./PrivacyDataTab";
@@ -25,15 +24,15 @@ export default function PasswordSecurityTab({
   isDeleting
 }) {
   return (
-    <div className="p-3">
-      <Row className="g-4 mb-4">
+    <div className="w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 items-stretch">
         {/* Card: 2FA Configuration */}
-        <Col xs={12} lg={6}>
+        <div>
           <TwoFactorSettings userData={userData} setUserData={setUserData} t={t} toast={toast} />
-        </Col>
+        </div>
 
         {/* Card: Password Change */}
-        <Col xs={12} lg={6}>
+        <div>
           <PasswordChangeCard 
             passwordForm={passwordForm}
             setPasswordForm={setPasswordForm}
@@ -47,11 +46,11 @@ export default function PasswordSecurityTab({
             setShowConfirmPassword={setShowConfirmPassword}
             t={t}
           />
-        </Col>
-      </Row>
+        </div>
+      </div>
 
-      {/* Sección de Privacidad y Datos debajo con su diseño original exacto */}
-      <div className="mt-4">
+      {/* Sección de Privacidad y Datos */}
+      <div className="mt-6">
         <PrivacyDataTab 
           t={t}
           handleExportData={handleExportData}
