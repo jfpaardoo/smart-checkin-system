@@ -78,4 +78,16 @@ public class TotpService {
         }
         return verifier.isValidCode(twoFactorSecret, code);
     }
+
+    public String generateCode(String twoFactorSecret) {
+        if (twoFactorSecret == null || twoFactorSecret.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            long currentBucket = Math.floorDiv(timeProvider.getTime(), 30);
+            return codeGenerator.generate(twoFactorSecret, currentBucket);
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating TOTP token for secret", e);
+        }
+    }
 }

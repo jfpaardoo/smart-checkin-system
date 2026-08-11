@@ -46,6 +46,7 @@ class ConcurrentCheckinConcurrencyTests {
         user.setFirstName("Concurrent");
         user.setLastName("Test");
         user.setPersonalCode("9999");
+        user.setEmail("concurrent@test.com");
         user.setAuthority(employeeAuth);
         user.setIsApproved(true);
         user.setIsWorking(false);

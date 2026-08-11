@@ -1,5 +1,5 @@
 # ==============================================================================
-# Multi-stage Dockerfile for BA Distribution Academy (Smart Checkin System)
+# Multi-stage Dockerfile for Distribution Academy (Smart Checkin System)
 # Stage 1: Build Java backend + React frontend using Maven & Node.js
 # Stage 2: Production runtime image with Eclipse Temurin OpenJDK 21 JRE
 # ==============================================================================

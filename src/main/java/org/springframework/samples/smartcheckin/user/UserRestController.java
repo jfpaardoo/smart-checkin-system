@@ -20,6 +20,8 @@ import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.springframework.samples.smartcheckin.util.RestPreconditions;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,15 +48,18 @@ class UserRestController {
     private static final String TOPIC_UPDATE_USERS = "/topic/users";
     private static final String UPDATE = "update";
 	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private final JavaMailSender javaMailSender;
 
     @Autowired
     public UserRestController(UserService userService, AuthoritiesService authService, 
-            PasswordEncoder passwordEncoder, SimpMessagingTemplate messagingTemplate, TotpService totpService) {
+            PasswordEncoder passwordEncoder, SimpMessagingTemplate messagingTemplate, TotpService totpService,
+            JavaMailSender javaMailSender) {
         this.userService = userService;
         this.authService = authService;
         this.passwordEncoder = passwordEncoder;
         this.messagingTemplate = messagingTemplate;
         this.totpService = totpService;
+        this.javaMailSender = javaMailSender;
     }
 
     @GetMapping
@@ -92,6 +97,31 @@ class UserRestController {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
+    public static class NotificationPreferencesRequest {
+        private Boolean emailNotificationsEnabled;
+        private Boolean pushNotificationsEnabled;
+        public Boolean getEmailNotificationsEnabled() { return emailNotificationsEnabled; }
+        public void setEmailNotificationsEnabled(Boolean emailNotificationsEnabled) { this.emailNotificationsEnabled = emailNotificationsEnabled; }
+        public Boolean getPushNotificationsEnabled() { return pushNotificationsEnabled; }
+        public void setPushNotificationsEnabled(Boolean pushNotificationsEnabled) { this.pushNotificationsEnabled = pushNotificationsEnabled; }
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<User> updateMyProfile(@RequestBody NotificationPreferencesRequest userUpdates) {
+        User currentUser = userService.findCurrentUser();
+        
+        // Only allow updating safe fields, like notification preferences
+        if (userUpdates.getEmailNotificationsEnabled() != null) {
+            currentUser.setEmailNotificationsEnabled(userUpdates.getEmailNotificationsEnabled());
+        }
+        if (userUpdates.getPushNotificationsEnabled() != null) {
+            currentUser.setPushNotificationsEnabled(userUpdates.getPushNotificationsEnabled());
+        }
+        
+        User updated = userService.saveUser(currentUser);
+        return new ResponseEntity<>(updated, HttpStatus.OK);
+    }
+
     @DeleteMapping("/me")
     public ResponseEntity<Void> deleteMyAccount() {
         User user = userService.findCurrentUser();
@@ -127,9 +157,8 @@ class UserRestController {
     }
 
     @PostMapping("2fa/setup")
-    public ResponseEntity<Map<String, String>> setupTwoFactor(Principal principal) {
+    public ResponseEntity<Map<String, String>> setupTwoFactor(@RequestParam(required = false, defaultValue = "APP") String type, Principal principal) {
         User user = userService.findUser(principal.getName());
-        // Generar secreto base32 de 16 caracteres aleatorios para TOTP
         byte[] buffer = new byte[10];
         SECURE_RANDOM.nextBytes(buffer);
         String secret = new Base32().encodeAsString(buffer).replace("=", "");
@@ -137,11 +166,27 @@ class UserRestController {
         user.setTwoFactorSecret(secret);
         userService.saveUser(user);
         
-        String qrUri = String.format("otpauth://totp/SmartCheckin:%s?secret=%s&issuer=BAGlass", user.getUsername(), secret);
-        
         Map<String, String> response = new HashMap<>();
         response.put("secret", secret);
-        response.put("qrUri", qrUri);
+        
+        if ("EMAIL".equalsIgnoreCase(type)) {
+            String code = totpService.generateCode(secret);
+            if (code != null) {
+                try {
+                    SimpleMailMessage mailMessage = new SimpleMailMessage();
+                    mailMessage.setTo(user.getEmail());
+                    mailMessage.setSubject("Código de Verificación 2FA");
+                    mailMessage.setText("Tu código de configuración de 2 factores es: " + code);
+                    javaMailSender.send(mailMessage);
+                } catch (Exception e) {
+                    // Ignore
+                }
+            }
+        } else {
+            String qrUri = String.format("otpauth://totp/SmartCheckin:%s?secret=%s&issuer=DistributionAcademy", user.getUsername(), secret);
+            response.put("qrUri", qrUri);
+        }
+        
         return ResponseEntity.ok(response);
     }
 
@@ -150,6 +195,11 @@ class UserRestController {
         User user = userService.findUser(principal.getName());
         if (user.getTwoFactorSecret() != null && totpService.validateCode(user.getTwoFactorSecret(), request.getCode())) {
             user.setTwoFactorEnabled(true);
+            if (request.getType() != null && !request.getType().isBlank()) {
+                user.setTwoFactorType(request.getType());
+            } else {
+                user.setTwoFactorType("APP"); // Default
+            }
             userService.saveUser(user);
             return ResponseEntity.ok(new MessageResponse("2FA activado correctamente."));
         }

@@ -3,7 +3,7 @@
 **Asignatura:** Diseño y Pruebas (Grado en Ingeniería del Software, Universidad de Sevilla)  
 **Curso académico:** 2025/2026  
 **Grupo/Equipo:** <!-- Completar -->  
-**Nombre del proyecto:** BA Distribution Academy – Smart Check-in System  
+**Nombre del proyecto:** Distribution Academy – Smart Check-in System  
 **Repositorio:** https://github.com/jfpaardoo/smart-checkin-system  
 **Integrantes (máx. 6):** Juan Felipe Pardo Carrillo
 
@@ -13,7 +13,7 @@
 
 ## Descripción general
 
-BA Distribution Academy – Smart Check-in System es una plataforma web destinada a digitalizar el control de asistencia y la gestión de acciones formativas de los empleados de BA Glass. El sistema sustituye los procesos manuales de fichaje por un mecanismo seguro basado en códigos QR dinámicos y autenticación temporal mediante algoritmos TOTP, reduciendo el fraude asociado al intercambio de credenciales y mejorando la trazabilidad de la actividad de los empleados.
+Distribution Academy – Smart Check-in System es una plataforma web destinada a digitalizar el control de asistencia y la gestión de acciones formativas de los empleados de la empresa. El sistema sustituye los procesos manuales de fichaje por un mecanismo seguro basado en códigos QR dinámicos y autenticación temporal mediante algoritmos TOTP, reduciendo el fraude asociado al intercambio de credenciales y mejorando la trazabilidad de la actividad de los empleados.
 
 La aplicación se compone de un backend desarrollado con Spring Boot, responsable de la lógica de negocio, autenticación, persistencia de datos y exposición de una API REST, y de un frontend implementado en React como Progressive Web Application (PWA), optimizado para su uso tanto en equipos de escritorio como en dispositivos móviles utilizados en entornos industriales.
 
@@ -2123,7 +2123,7 @@ La plataforma depende de diferentes tecnologías y servicios para ofrecer todas 
 
 # Conclusiones
 
-El análisis realizado permite concluir que BA Distribution Academy – Smart Check-in System constituye una plataforma orientada a la digitalización del control horario y la gestión de acciones formativas dentro del entorno corporativo.
+El análisis realizado permite concluir que Distribution Academy – Smart Check-in System constituye una plataforma orientada a la digitalización del control horario y la gestión de acciones formativas dentro del entorno corporativo.
 
 La solución proporciona mecanismos de autenticación robustos, control de acceso basado en roles, registro seguro de asistencia mediante códigos QR dinámicos, auditoría de operaciones, generación de estadísticas, gestión documental e integración con servicios externos.
 

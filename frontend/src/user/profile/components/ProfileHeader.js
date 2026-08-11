@@ -20,7 +20,7 @@ function getUserFullName(user) {
 
 export default function ProfileHeader({ userData, formations, t }) {
   return (
-    <div className="p-4 mb-4 rounded-4 ba-glass-card profile-header-container">
+    <div className="p-4 mb-4 rounded-4 da-glass-card profile-header-container">
       <div className="d-flex align-items-center flex-wrap gap-4 profile-header-content">
         <div
           className="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm flex-shrink-0"
@@ -49,7 +49,7 @@ export default function ProfileHeader({ userData, formations, t }) {
             <span>•</span>
             <span>{t('users.personalCode', 'Código Personal')}: <strong>{userData?.personalCode || "----"}</strong></span>
             <span>•</span>
-            <span className={`ba-badge ${userData?.isWorking ? 'ba-badge-active' : 'ba-badge-inactive'}`}>
+            <span className={`da-badge ${userData?.isWorking ? 'da-badge-active' : 'da-badge-inactive'}`}>
               {userData?.isWorking ? t('users.working', 'En formación') : t('users.offDuty', 'Fuera de formación')}
             </span>
           </div>
@@ -58,7 +58,7 @@ export default function ProfileHeader({ userData, formations, t }) {
           <Button
             tag={Link}
             to="/checkin"
-            className="ba-btn-primary d-inline-flex align-items-center gap-2 px-3 py-2 fw-bold"
+            className="da-btn-primary d-inline-flex align-items-center gap-2 px-3 py-2 fw-bold"
           >
             <FaQrcode /> {t('profile.scanQR', 'Escanear QR')}
           </Button>

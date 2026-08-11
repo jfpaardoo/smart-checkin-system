@@ -54,7 +54,7 @@ export function DocumentPreviewModal({ isOpen, toggle, document }) {
             href={document.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-primary ba-btn-blue px-4 py-2 d-inline-flex align-items-center gap-2 text-wrap"
+            className="btn btn-primary da-btn-blue px-4 py-2 d-inline-flex align-items-center gap-2 text-wrap"
             style={{ lineHeight: '1.4' }}
           >
             <FontAwesomeIcon icon={faExternalLinkAlt} />

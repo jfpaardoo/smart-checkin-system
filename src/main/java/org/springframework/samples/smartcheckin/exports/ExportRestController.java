@@ -19,8 +19,9 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import org.springframework.samples.smartcheckin.user.User;
-import org.springframework.samples.smartcheckin.user.UserRepository;
 import org.springframework.samples.smartcheckin.user.UserService;
+import org.springframework.samples.smartcheckin.analytics.AnalyticsService;
+import org.springframework.samples.smartcheckin.analytics.UserAnalyticsDTO;
 import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.audit.AuditLogRepository;
 
@@ -47,76 +48,92 @@ public class ExportRestController {
     private final CheckinRepository checkinRepository;
     private final FormationAttendanceRepository attendanceRepository;
     private final FormationRepository formationRepository;
-    private final UserRepository userRepository;
     private final UserService userService;
     private final AuditLogRepository auditLogRepository;
     private final PdfReportGenerator pdfReportGenerator;
+    private final AnalyticsService analyticsService;
     private static final String PERSONAL_CODE = "Personal Code";
     
     @Autowired
     public ExportRestController(CheckinRepository checkinRepository,
                                 FormationAttendanceRepository attendanceRepository,
                                 FormationRepository formationRepository,
-                                UserRepository userRepository,
                                 UserService userService,
                                 AuditLogRepository auditLogRepository,
-                                PdfReportGenerator pdfReportGenerator) {
+                                PdfReportGenerator pdfReportGenerator,
+                                AnalyticsService analyticsService) {
         this.checkinRepository = checkinRepository;
         this.attendanceRepository = attendanceRepository;
         this.formationRepository = formationRepository;
-        this.userRepository = userRepository;
         this.userService = userService;
         this.auditLogRepository = auditLogRepository;
         this.pdfReportGenerator = pdfReportGenerator;
+        this.analyticsService = analyticsService;
     }
 
     @GetMapping("/users/csv")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<byte[]> exportUsersCsv() {
-        List<User> users = (List<User>) userRepository.findAll();
+        List<UserAnalyticsDTO> users = analyticsService.getAllUsersAnalytics("");
         StringBuilder csvBuilder = new StringBuilder();
-        csvBuilder.append("ID,Username,PersonalCode,FirstName,LastName,Role,CurrentlyInFormation\n");
+        csvBuilder.append("ID,Username,PersonalCode,FirstName,LastName,Role,CurrentlyInFormation,FormationsAssigned,FormationsAttended,AttendanceRate,TotalFormationMinutes\n");
 
-        for (User u : users) {
-            String role = u.getAuthority() != null ? u.getAuthority().getAuthority() : "N/A";
-            csvBuilder.append(u.getId()).append(",")
-                    .append(u.getUsername() != null ? u.getUsername().replace(",", " ") : "").append(",")
-                    .append(u.getPersonalCode() != null ? u.getPersonalCode() : "").append(",")
-                    .append(u.getFirstName() != null ? u.getFirstName().replace(",", " ") : "").append(",")
-                    .append(u.getLastName() != null ? u.getLastName().replace(",", " ") : "").append(",")
-                    .append(role).append(",")
-                    .append(Boolean.TRUE.equals(u.getIsWorking()) ? "YES" : "NO").append("\n");
+        for (UserAnalyticsDTO u : users) {
+            appendUserCsvRow(csvBuilder, u);
         }
 
-        return createCsvResponse(csvBuilder.toString(), "usuarios.csv");
+        return createCsvResponse(csvBuilder.toString(), "empleados_analiticas.csv");
+    }
+
+    private void appendUserCsvRow(StringBuilder csvBuilder, UserAnalyticsDTO u) {
+        String role = u.getAuthority() != null ? u.getAuthority() : "N/A";
+        csvBuilder.append(u.getUserId()).append(",")
+                .append(u.getUsername() != null ? u.getUsername().replace(",", " ") : "").append(",")
+                .append(u.getPersonalCode() != null ? u.getPersonalCode() : "").append(",")
+                .append(u.getFirstName() != null ? u.getFirstName().replace(",", " ") : "").append(",")
+                .append(u.getLastName() != null ? u.getLastName().replace(",", " ") : "").append(",")
+                .append(role).append(",")
+                .append(Boolean.TRUE.equals(u.getIsWorking()) ? "YES" : "NO").append(",")
+                .append(u.getFormationsAssigned() != null ? u.getFormationsAssigned() : 0).append(",")
+                .append(u.getFormationsAttended() != null ? u.getFormationsAttended() : 0).append(",")
+                .append(u.getAttendancePercentage() != null ? u.getAttendancePercentage() : 0.0).append(",")
+                .append(u.getTotalFormationMinutes() != null ? u.getTotalFormationMinutes() : 0).append("\n");
     }
 
     @GetMapping("/users/excel")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<byte[]> exportUsersExcel() throws IOException {
-        List<User> users = (List<User>) userRepository.findAll();
+        List<UserAnalyticsDTO> users = analyticsService.getAllUsersAnalytics("");
 
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            Sheet sheet = workbook.createSheet("Users");
+            Sheet sheet = workbook.createSheet("Employees Analytics");
             Row headerRow = sheet.createRow(0);
-            createHeaderCells(headerRow, "ID", "Username", PERSONAL_CODE, "First Name", "Last Name", "Role / Authority", "Currently In Formation");
+            createHeaderCells(headerRow, "ID", "Username", PERSONAL_CODE, "First Name", "Last Name", "Role", "In Formation", "Formations Assigned", "Formations Attended", "Attendance Rate (%)", "Total Formation Minutes");
 
             int rowIdx = 1;
-            for (User u : users) {
+            for (UserAnalyticsDTO u : users) {
                 Row row = sheet.createRow(rowIdx++);
-                String role = u.getAuthority() != null ? u.getAuthority().getAuthority() : "N/A";
-                row.createCell(0).setCellValue(u.getId() != null ? u.getId() : 0);
-                row.createCell(1).setCellValue(u.getUsername() != null ? u.getUsername() : "");
-                row.createCell(2).setCellValue(u.getPersonalCode() != null ? u.getPersonalCode() : "");
-                row.createCell(3).setCellValue(u.getFirstName() != null ? u.getFirstName() : "");
-                row.createCell(4).setCellValue(u.getLastName() != null ? u.getLastName() : "");
-                row.createCell(5).setCellValue(role);
-                row.createCell(6).setCellValue(Boolean.TRUE.equals(u.getIsWorking()) ? "YES" : "NO");
+                appendUserExcelRow(row, u);
             }
 
             workbook.write(out);
-            return createExcelResponse(out.toByteArray(), "usuarios.xlsx");
+            return createExcelResponse(out.toByteArray(), "empleados_analiticas.xlsx");
         }
+    }
+
+    private void appendUserExcelRow(Row row, UserAnalyticsDTO u) {
+        String role = u.getAuthority() != null ? u.getAuthority() : "N/A";
+        row.createCell(0).setCellValue(u.getUserId() != null ? u.getUserId() : 0);
+        row.createCell(1).setCellValue(u.getUsername() != null ? u.getUsername() : "");
+        row.createCell(2).setCellValue(u.getPersonalCode() != null ? u.getPersonalCode() : "");
+        row.createCell(3).setCellValue(u.getFirstName() != null ? u.getFirstName() : "");
+        row.createCell(4).setCellValue(u.getLastName() != null ? u.getLastName() : "");
+        row.createCell(5).setCellValue(role);
+        row.createCell(6).setCellValue(Boolean.TRUE.equals(u.getIsWorking()) ? "YES" : "NO");
+        row.createCell(7).setCellValue(u.getFormationsAssigned() != null ? u.getFormationsAssigned() : 0);
+        row.createCell(8).setCellValue(u.getFormationsAttended() != null ? u.getFormationsAttended() : 0);
+        row.createCell(9).setCellValue(u.getAttendancePercentage() != null ? u.getAttendancePercentage() : 0.0);
+        row.createCell(10).setCellValue(u.getTotalFormationMinutes() != null ? u.getTotalFormationMinutes() : 0);
     }
 
     @GetMapping("/checkins/csv")

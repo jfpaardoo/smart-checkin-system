@@ -1,14 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --ba-dark: #1e293b;
-  --ba-green: #b3c34c;
-  --ba-green-glow: #9eb038;
-  --ba-white: #ffffff;
-  --ba-glass-border: rgba(255, 255, 255, 0.6);
-  --ba-light-grey: transparent;
-  --ba-border: rgba(255, 255, 255, 0.4);
-  --ba-radius: 24px;
+  --da-dark: #1e293b;
+  --da-green: #b3c34c;
+  --da-green-glow: #9eb038;
+  --da-white: #ffffff;
+  --da-glass-border: rgba(255, 255, 255, 0.6);
+  --da-light-grey: transparent;
+  --da-border: rgba(255, 255, 255, 0.4);
+  --da-radius: 24px;
 }
 
 @tailwind base;
@@ -22,7 +22,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #cbd5e1 100%);
   background-attachment: fixed;
-  color: var(--ba-dark);
+  color: var(--da-dark);
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;

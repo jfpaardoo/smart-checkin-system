@@ -128,9 +128,9 @@ export default function ScannerCheckin() {
 
   if (loading) {
     return (
-      <div className="ba-container flex justify-center items-center min-h-screen w-full">
+      <div className="da-container flex justify-center items-center min-h-screen w-full">
         <div className="bg-white/70 backdrop-blur-md rounded-[28px] p-8 border border-white/60 shadow-lg text-center flex flex-col items-center gap-4 max-w-[400px] w-full mx-4">
-          <FontAwesomeIcon icon={faSpinner} className="fa-spin text-3xl" style={{ color: 'var(--ba-primary)' }} />
+          <FontAwesomeIcon icon={faSpinner} className="fa-spin text-3xl" style={{ color: 'var(--da-primary)' }} />
           <p className="text-slate-700 font-semibold mb-0 text-lg">
             {t('checkin.processing', 'Procesando registro...')}
           </p>
@@ -140,12 +140,12 @@ export default function ScannerCheckin() {
   }
 
   return (
-    <div className="ba-container flex flex-col justify-center min-h-screen py-10">
-      <div className="ba-card mx-auto w-full max-w-[600px] p-8">
+    <div className="da-container flex flex-col justify-center min-h-screen py-10">
+      <div className="da-card mx-auto w-full max-w-[600px] p-8">
         
         <div style={{ display: (!isManualInput && !needsSignature) ? 'block' : 'none' }}>
           <div className="text-center mb-6">
-            <FontAwesomeIcon icon={faQrcode} size="3x" style={{ color: 'var(--ba-primary)' }} className="mb-4" />
+            <FontAwesomeIcon icon={faQrcode} size="3x" style={{ color: 'var(--da-primary)' }} className="mb-4" />
             <h2 className="text-slate-800 font-bold text-3xl mb-2">
               {t('checkin.scanQr', 'Escanear el QR')}
             </h2>
@@ -192,7 +192,7 @@ export default function ScannerCheckin() {
             <div className="mt-4 pt-2">
               <button 
                 type="button" 
-                className="ba-btn ba-btn-secondary py-3 px-4 w-100" 
+                className="da-btn da-btn-secondary py-3 px-4 w-100" 
                 style={{ maxWidth: '350px' }}
                 onClick={() => setIsManualInput(true)}
               >
@@ -206,7 +206,7 @@ export default function ScannerCheckin() {
         {isManualInput && (
           <div>
             <div className="text-center mb-6">
-              <FontAwesomeIcon icon={faKeyboard} size="3x" style={{ color: 'var(--ba-primary)' }} className="mb-4" />
+              <FontAwesomeIcon icon={faKeyboard} size="3x" style={{ color: 'var(--da-primary)' }} className="mb-4" />
               <h2 className="text-slate-800 font-bold text-3xl mb-2">
                 {t('checkin.manualCheckin', 'Check-in Manual')}
               </h2>
@@ -230,13 +230,13 @@ export default function ScannerCheckin() {
         )}
       </div>
 
-      <Modal isOpen={successModal} toggle={handleCloseSuccess} centered className="ba-glass-modal">
+      <Modal isOpen={successModal} toggle={handleCloseSuccess} centered className="da-glass-modal">
         <ModalHeader toggle={handleCloseSuccess} className="border-0 pb-0">
           <span className="text-slate-800 font-bold">{t('checkin.successTitle', '¡Proceso Completado!')}</span>
         </ModalHeader>
         <ModalBody className="text-center py-5">
           <div className="mb-4">
-            <div className="d-inline-flex align-items-center justify-content-center rounded-circle shadow-sm border border-slate-100" style={{ width: '80px', height: '80px', backgroundColor: 'rgba(179, 195, 76, 0.1)', color: 'var(--ba-primary)' }}>
+            <div className="d-inline-flex align-items-center justify-content-center rounded-circle shadow-sm border border-slate-100" style={{ width: '80px', height: '80px', backgroundColor: 'rgba(179, 195, 76, 0.1)', color: 'var(--da-primary)' }}>
               <FontAwesomeIcon icon={faQrcode} size="3x" />
             </div>
           </div>
@@ -249,7 +249,7 @@ export default function ScannerCheckin() {
           {formationDetails?.formationDate && (
             <div className="p-3 mx-auto bg-slate-50 rounded-xl border border-slate-200 inline-block shadow-sm">
               <p className="mb-0 font-medium text-slate-700">
-                <FontAwesomeIcon icon={faCalendarCheck} className="me-2" style={{ color: 'var(--ba-primary)' }} />
+                <FontAwesomeIcon icon={faCalendarCheck} className="me-2" style={{ color: 'var(--da-primary)' }} />
                 {t('checkin.dateLabel', 'Fecha')}: {new Date(formationDetails.formationDate).toLocaleString()}
               </p>
             </div>
@@ -258,7 +258,7 @@ export default function ScannerCheckin() {
         <ModalFooter className="border-0 pt-0 justify-content-center">
           <button 
             type="button" 
-            className="ba-btn ba-btn-primary px-8 py-3 rounded-full text-lg font-bold" 
+            className="da-btn da-btn-primary px-8 py-3 rounded-full text-lg font-bold" 
             onClick={handleCloseSuccess}
           >
             {t('checkin.close', 'Cerrar')}

@@ -112,8 +112,8 @@ const QRGeneratorAdmin = () => {
     };
 
     return (
-        <div className="ba-container justify-content-center">
-            <div className="ba-card ba-card-qr p-4 p-md-5 my-auto mx-auto">
+        <div className="da-container justify-content-center">
+            <div className="da-card da-card-qr p-4 p-md-5 my-auto mx-auto">
                 <div className="card-body p-2 d-flex flex-column justify-content-center my-auto">
                     {loading ? (
                         <QRGhostLoader />

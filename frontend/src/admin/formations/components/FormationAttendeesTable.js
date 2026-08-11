@@ -54,7 +54,7 @@ export default function FormationAttendeesTable({
 
   return (
     <>
-      <div className="ba-card-header pt-3">
+      <div className="da-card-header pt-3">
         <h3>{t('formationDetails.attendeesSection')}</h3>
         <Form className="formation-add-form d-flex gap-2 align-items-stretch" style={{ height: '42px' }} onSubmit={handleSubmit}>
           <FormGroup className="mb-0 h-100" style={{ minWidth: '280px', flex: 1, maxWidth: '400px' }}>
@@ -69,7 +69,7 @@ export default function FormationAttendeesTable({
               searchable={true}
             />
           </FormGroup>
-          <Button className="ba-btn-primary h-100 d-flex align-items-center justify-content-center px-4" type="submit" disabled={!selectedUserId || isAddingUser}>
+          <Button className="da-btn-primary h-100 d-flex align-items-center justify-content-center px-4" type="submit" disabled={!selectedUserId || isAddingUser}>
             {isAddingUser ? 'Añadiendo...' : t('formationDetails.addUser')}
           </Button>
         </Form>
@@ -83,7 +83,7 @@ export default function FormationAttendeesTable({
         <div className="w-full">
           {/* 1. VISTA ESCRITORIO (Botones uniformes y armonizados) */}
           <div className="hidden lg:block overflow-x-auto pb-2">
-            <Table responsive hover className="ba-table align-middle" style={{ minWidth: '700px', width: '100%' }}>
+            <Table responsive hover className="da-table align-middle" style={{ minWidth: '700px', width: '100%' }}>
               <thead>
                 <tr>
                   <th style={{ color: '#2c3e50', paddingLeft: '1rem' }}>{t('formationDetails.personalCode')}</th>
@@ -113,7 +113,7 @@ export default function FormationAttendeesTable({
                           {/* Botón 1: Detalles (Texto corto para cuadrar tamaño) */}
                           <Button
                             size="sm"
-                            className="ba-btn-primary fw-bold shadow-sm"
+                            className="da-btn-primary fw-bold shadow-sm"
                             style={actionButtonStyle}
                             onClick={() => onViewSignature(att)}
                             title={t('formationDetails.viewSignature')} // Tooltip con el texto completo
@@ -126,7 +126,7 @@ export default function FormationAttendeesTable({
                           {att.signature && (
                             <Button
                               size="sm"
-                              className="ba-btn-blue fw-bold shadow-sm"
+                              className="da-btn-blue fw-bold shadow-sm"
                               style={actionButtonStyle}
                               onClick={() => onDownloadPdf(att.id)}
                               title="PDF"
@@ -142,7 +142,7 @@ export default function FormationAttendeesTable({
                           {/* Botón 3: Eliminar */}
                           <Button
                             size="sm"
-                            className="ba-btn-danger fw-bold shadow-sm"
+                            className="da-btn-danger fw-bold shadow-sm"
                             style={actionButtonStyle}
                             onClick={() => handleRemoveUser(user.id)}
                             title={t('formations.delete', 'Eliminar')}
@@ -187,7 +187,7 @@ export default function FormationAttendeesTable({
                   <div className="border-t border-slate-200/50 pt-3 grid grid-cols-2 gap-2">
                     <Button
                       size="sm"
-                      className="ba-btn-primary fw-bold shadow-sm !rounded-full py-2.5 inline-flex items-center justify-center gap-1.5 text-xs col-span-2"
+                      className="da-btn-primary fw-bold shadow-sm !rounded-full py-2.5 inline-flex items-center justify-center gap-1.5 text-xs col-span-2"
                       onClick={() => onViewSignature(att)}
                       title={t('formationDetails.viewSignature')}
                     >
@@ -198,7 +198,7 @@ export default function FormationAttendeesTable({
                     {att.signature ? (
                       <Button
                         size="sm"
-                        className="ba-btn-blue fw-bold shadow-sm !rounded-full py-2 inline-flex items-center justify-center gap-1.5 text-xs"
+                        className="da-btn-blue fw-bold shadow-sm !rounded-full py-2 inline-flex items-center justify-center gap-1.5 text-xs"
                         onClick={() => onDownloadPdf(att.id)}
                       >
                         <FontAwesomeIcon icon={faFilePdf} size="lg" />
@@ -208,7 +208,7 @@ export default function FormationAttendeesTable({
 
                     <Button
                       size="sm"
-                      className="ba-btn-danger fw-bold shadow-sm !rounded-full py-2 inline-flex items-center justify-center gap-1.5 text-xs"
+                      className="da-btn-danger fw-bold shadow-sm !rounded-full py-2 inline-flex items-center justify-center gap-1.5 text-xs"
                       onClick={() => handleRemoveUser(user.id)}
                     >
                       <FontAwesomeIcon icon={faTrash} size="lg" />

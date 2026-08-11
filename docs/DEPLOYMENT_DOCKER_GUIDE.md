@@ -1,6 +1,6 @@
 # 🚀 Guía de Despliegue en Servidor con Docker
 
-Esta guía explica cómo desplegar el proyecto **BA Distribution Academy (Smart Checkin System)** en cualquier servidor Linux (Ubuntu/Debian, AWS EC2, GCP Compute Engine, DigitalOcean, etc.) en menos de 1 minuto usando Docker y Docker Compose.
+Esta guía explica cómo desplegar el proyecto **Distribution Academy (Smart Checkin System)** en cualquier servidor Linux (Ubuntu/Debian, AWS EC2, GCP Compute Engine, DigitalOcean, etc.) en menos de 1 minuto usando Docker y Docker Compose.
 
 ---
 

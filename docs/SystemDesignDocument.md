@@ -1,6 +1,6 @@
 # Documento de Diseño del Sistema
 
-**Nombre del proyecto:** BA Distribution Academy — Sistema Integrado de Fichaje y Formaciones
+**Nombre del proyecto:** Distribution Academy — Sistema Integrado de Fichaje y Formaciones
 
 **Repositorio:** https://github.com/jfpaardoo/smart-checkin-system
 
@@ -10,7 +10,7 @@
 
 ## 1. Introducción
 
-El proyecto **BA Distribution Academy** es una plataforma de gestión integral de grado empresarial orientada al control de asistencia mediante fichajes dinámicos con códigos QR temporales y a la administración del ciclo de vida de las formaciones corporativas. El sistema está diseñado específicamente para las operaciones de **BA Glass**, empresa líder mundial en la producción de envases de vidrio, con más de 110 años de historia, presencia en 7 países, 13 plantas de producción y más de 4.500 empleados.
+El proyecto **Distribution Academy** es una plataforma de gestión integral de grado empresarial orientada al control de asistencia mediante fichajes dinámicos con códigos QR temporales y a la administración del ciclo de vida de las formaciones corporativas. El sistema está diseñado para manejar un alto volumen de usuarios y sedes.
 
 ### ¿Qué valor aporta?
 
@@ -578,7 +578,7 @@ Las formaciones corporativas requieren documentación adjunta (PDFs, manuales de
 
 **Justificación:**
 Se optó por integrar **Microsoft Graph API** usando el flujo OAuth 2.0 de Refresh Token. Los motivos fueron:
-1. BA Glass ya usa el ecosistema Microsoft 365, así que no requiere una nueva cuenta.
+1. la empresa ya usa el ecosistema Microsoft 365, así que no requiere una nueva cuenta.
 2. El `refreshToken` persistido en `CloudSettings` (cifrado con AES-256 en BD) permite autenticación desatendida sin intervención humana cada hora.
 3. Los archivos pueden previsualizarse directamente desde la UI mediante un `<iframe>` nativo con `action=embedview`, sin descargar el archivo al servidor de Spring Boot.
 4. Las copias de seguridad de la BD se exportan como JSON comprimido en ZIP y se suben automáticamente a la carpeta `/backups/` del OneDrive, brindando un plan de recuperación ante desastres sin coste de almacenamiento extra.

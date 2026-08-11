@@ -5,7 +5,7 @@
 
 <div align="center">
 
-# BA Distribution Academy
+# Distribution Academy
 ## Sistema Integrado de Fichaje Inteligente y Gestión de Formaciones
 
 ---
@@ -51,7 +51,7 @@ https://github.com/jfpaardoo/smart-checkin-system
 
 ## 1.1 Descripción general del proyecto
 
-**BA Distribution Academy** es una plataforma web desarrollada para la gestión integral del control de asistencia de empleados y de las formaciones impartidas dentro del entorno empresarial de **BA Glass**.
+**Distribution Academy** es una plataforma web desarrollada para la gestión integral del control de asistencia de empleados y de las formaciones impartidas dentro del entorno empresarial de **la empresa**.
 
 El sistema combina un mecanismo de fichaje mediante códigos QR dinámicos con una plataforma de administración de cursos, asistencia, generación de informes y análisis estadístico. Toda la aplicación ha sido diseñada bajo una arquitectura cliente-servidor basada en **Spring Boot** para el backend y **React** para el frontend, permitiendo una separación clara entre la lógica de negocio y la interfaz de usuario.
 

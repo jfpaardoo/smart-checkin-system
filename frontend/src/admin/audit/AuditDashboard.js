@@ -56,9 +56,10 @@ export default function AuditDashboard() {
   const getActionColor = (action) => {
     if (action.includes('SECURITY_ANOMALY')) return 'danger';
     if (action.includes('FAILED')) return 'warning';
-    if (action.includes('SAVE')) return 'primary';
+    if (action.includes('SAVE') || action.includes('CREATE') || action.includes('UPDATE')) return 'primary';
     if (action.includes('DELETE')) return 'danger';
-    if (action.includes('SUCCESS')) return 'success';
+    if (action.includes('SUCCESS') || action.includes('APPROVE')) return 'success';
+    if (action.includes('FORMATION') || action.includes('2FA')) return 'info';
     return 'secondary';
   };
 
@@ -128,15 +129,22 @@ export default function AuditDashboard() {
     'User disabled Two-Factor Authentication': ['audit.details.2faDisable', 'Usuario deshabilitó la autenticación en dos pasos'],
     'Database backup triggered': ['audit.details.dbBackup', 'Se inició copia de seguridad de la base de datos'],
     'User saved/updated': ['audit.details.userSavedNoName', 'Usuario guardado/actualizado'],
-    'Formation created/updated': ['audit.details.formationSavedNoName', 'Formación guardada/actualizada']
+    'Formation created/updated': ['audit.details.formationSavedNoName', 'Formación guardada/actualizada'],
+    'User updated their profile preferences': ['audit.details.userUpdatePrefs', 'El usuario actualizó sus preferencias de perfil'],
+    'User initiated 2FA setup': ['audit.details.2faSetupInit', 'Usuario inició la configuración de 2FA'],
+    '2FA verification code sent to user': ['audit.details.2faCodeSent', 'Código de verificación 2FA enviado al usuario']
   };
 
   const PREFIX_MATCHES = [
     { prefix: 'Data exported via method: ', key: 'audit.details.dataExported', defaultText: 'Datos exportados mediante método: {{method}}', paramName: 'method' },
     { prefix: 'User deleted: ID ', key: 'audit.details.userDeleted', defaultText: 'Usuario eliminado: ID {{id}}', paramName: 'id' },
     { prefix: 'User saved/updated: ', key: 'audit.details.userSaved', defaultText: 'Usuario guardado/actualizado: {{user}}', paramName: 'user' },
+    { prefix: 'Admin created user: ', key: 'audit.details.adminCreatedUser', defaultText: 'Administrador creó al usuario: {{user}}', paramName: 'user' },
+    { prefix: 'Admin updated user: ', key: 'audit.details.adminUpdatedUser', defaultText: 'Administrador actualizó al usuario: {{user}}', paramName: 'user' },
+    { prefix: 'Admin approved user ID: ', key: 'audit.details.adminApprovedUser', defaultText: 'Administrador aprobó al usuario con ID: {{id}}', paramName: 'id' },
     { prefix: 'Formation created/updated: ', key: 'audit.details.formationSaved', defaultText: 'Formación guardada/actualizada: {{form}}', paramName: 'form' },
     { prefix: 'Formation deleted: ID ', key: 'audit.details.formationDeleted', defaultText: 'Formación eliminada: ID {{id}}', paramName: 'id' },
+    { prefix: 'User checked into formation ID: ', key: 'audit.details.userCheckedInFormation', defaultText: 'Usuario registró asistencia en la formación ID: {{id}}', paramName: 'id' },
     { prefix: 'Failed login attempt for user: ', key: 'audit.details.failedLogin', defaultText: 'Intento de login fallido para el usuario: {{user}}', paramName: 'user' }
   ];
 
@@ -159,13 +167,13 @@ export default function AuditDashboard() {
   };
 
   return (
-    <div className="ba-container">
-      <div className="ba-card">
+    <div className="da-container">
+      <div className="da-card">
         
         {/* Cabecera con botones de exportación en Liquid Glass blanco y brillante */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-3 border-0">
           <h2 className="flex items-center text-2xl font-bold text-slate-800 m-0 text-center sm:text-left">
-            <FaShieldAlt style={{ color: "var(--ba-primary)" }} className="me-2 shrink-0" />
+            <FaShieldAlt style={{ color: "var(--da-primary)" }} className="me-2 shrink-0" />
             {t('audit.title', 'Registro de Auditoría')}
           </h2>
           <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto justify-center">
@@ -195,10 +203,10 @@ export default function AuditDashboard() {
 
         {/* Buscador Glassmorphism */}
         <div className="mb-4 position-relative">
-          <FaSearch className="position-absolute ba-search-bar-icon" />
+          <FaSearch className="position-absolute da-search-bar-icon" />
           <input
             type="text"
-            className="form-control ba-glass-search-input w-100"
+            className="form-control da-glass-search-input w-100"
             placeholder={t('audit.searchPlaceholder', 'Buscar por acción, usuario o detalles...')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -211,7 +219,7 @@ export default function AuditDashboard() {
           <>
             {/* 1. VISTA ESCRITORIO (Tabla clásica flotante) */}
             <div className="hidden lg:block overflow-x-auto pb-4">
-              <Table responsive hover className="ba-table align-middle" style={{ tableLayout: 'fixed', minWidth: '850px', width: '100%', wordBreak: 'break-word' }}>
+              <Table responsive hover className="da-table align-middle" style={{ tableLayout: 'fixed', minWidth: '850px', width: '100%', wordBreak: 'break-word' }}>
                 <thead>
                   <tr>
                     <th style={{ width: '15%' }}>{t('audit.columns.date', 'Fecha y Hora')}</th>
@@ -225,7 +233,7 @@ export default function AuditDashboard() {
                   {filteredLogs.map(log => (
                     <tr key={log.id} className={log.action === 'SECURITY_ANOMALY' ? 'table-danger border-danger' : ''}>
                       <td className={`small fw-medium ${log.action === 'SECURITY_ANOMALY' ? 'text-danger fw-bold' : 'text-muted'}`}>
-                        {moment(log.timestamp).format('DD/MM/YYYY HH:mm:ss')}
+                        {moment.utc(log.timestamp).local().format('DD/MM/YYYY HH:mm:ss')}
                       </td>
                       <td>
                         <Badge color={getActionColor(log.action)} pill className="px-3 py-2 fw-semibold text-wrap" style={{ wordBreak: 'break-all', minWidth: '100px' }}>
@@ -256,7 +264,7 @@ export default function AuditDashboard() {
                     <div className="flex justify-between items-start gap-3">
                       <div>
                         <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
-                          {moment(log.timestamp).format('DD/MM/YYYY HH:mm:ss')}
+                          {moment.utc(log.timestamp).local().format('DD/MM/YYYY HH:mm:ss')}
                         </span>
                         <h3 className="font-bold text-slate-800 m-0 text-base mt-0.5">{log.username || 'Sistema'}</h3>
                       </div>

@@ -94,7 +94,7 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
                     href={fileMeta.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ba-btn ba-btn-secondary px-2.5 py-1 text-xs text-truncate rounded-full"
+                    className="da-btn da-btn-secondary px-2.5 py-1 text-xs text-truncate rounded-full"
                     style={{ textDecoration: 'none', maxWidth: '100%' }}
                   >
                     {fileMeta.name}
@@ -155,7 +155,7 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
             <div className="text-center mt-2">
               <button
                 type="button"
-                className="ba-btn ba-btn-secondary w-full py-2 text-xs font-semibold rounded-full"
+                className="da-btn da-btn-secondary w-full py-2 text-xs font-semibold rounded-full"
                 onClick={() => setIsManualCheckout(true)}
               >
                 {t('dashboard.cameraIssue', '¿Problemas con la cámara? Entrada manual')}
@@ -198,12 +198,12 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
         <div className="flex justify-end mt-3 pt-2 border-t border-black/5">
           {step !== 'details' ? (
             step !== 'sign' && (
-              <button type="button" className="ba-btn ba-btn-secondary m-0 px-3 py-1.5 text-xs rounded-full" onClick={() => setStep('details')}>
+              <button type="button" className="da-btn da-btn-secondary m-0 px-3 py-1.5 text-xs rounded-full" onClick={() => setStep('details')}>
                 {t('dashboard.backToDetails')}
               </button>
             )
           ) : (
-            <button type="button" className="ba-btn ba-btn-secondary m-0 px-3 py-1.5 text-xs rounded-full" onClick={handleClose}>
+            <button type="button" className="da-btn da-btn-secondary m-0 px-3 py-1.5 text-xs rounded-full" onClick={handleClose}>
               {t('dashboard.close')}
             </button>
           )}

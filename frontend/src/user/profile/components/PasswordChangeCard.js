@@ -1,5 +1,4 @@
 import React from "react";
-import { Form, Spinner } from "reactstrap";
 import { FaLock, FaKey, FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function PasswordChangeCard({
@@ -15,102 +14,106 @@ export default function PasswordChangeCard({
   setShowConfirmPassword,
   t,
 }) {
+  const glassInputClass = "w-full px-4 pt-6 pb-2 rounded-2xl border border-white/50 bg-white/60 focus:border-[#b3c34c] focus:bg-white/90 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition-all font-medium text-slate-800 shadow-inner peer";
+  const glassLabelClass = "absolute text-sm text-slate-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 font-semibold pointer-events-none";
+  const glassButtonClass = "w-full mt-4 py-3.5 rounded-full font-bold text-slate-900 bg-[#b3c34c]/60 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(179,195,76,0.35)] hover:bg-[#b3c34c]/80 hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.55)] transition-all duration-300 active:scale-95 flex justify-center items-center gap-2";
+
   return (
-    <div className="p-4 ba-glass-card h-100">
-      <h5 className="fw-bold mb-4 d-flex align-items-center text-dark">
-        <FaLock className="me-2" style={{ color: "#8a9e29" }} /> {t('profile.changePasswordTitle', 'Modificar Contraseña')}
-      </h5>
-      <Form onSubmit={handlePasswordChangeSubmit}>
-        {/* Contraseña Actual */}
-        <div className="class-form-group mb-4" style={{ marginTop: "15px" }}>
-          <input
-            className="class-form-input pe-5"
-            type={showCurrentPassword ? "text" : "password"}
-            id="currentPassword"
-            name="currentPassword"
-            placeholder=" "
-            value={passwordForm.currentPassword}
-            onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-            required
-          />
-          <label htmlFor="currentPassword" className="class-form-label">
-            {t('profile.currentPassword', 'Contraseña Actual')}
-          </label>
-          <button
-            type="button"
-            className="password-eye-btn text-secondary me-2"
-            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-          >
-            {showCurrentPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
-          </button>
-        </div>
+    <div className="p-6 bg-white/40 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-[32px] border border-white/60 h-full flex flex-col justify-between">
+      <div>
+        <h5 className="text-xl font-bold mb-6 flex items-center text-slate-800 drop-shadow-sm">
+          <FaLock className="mr-3 text-[#8a9e29] text-2xl" /> 
+          {t('profile.changePasswordTitle', 'Modificar Contraseña')}
+        </h5>
+        
+        <form onSubmit={handlePasswordChangeSubmit} className="flex flex-col gap-5">
+          {/* Contraseña Actual */}
+          <div className="relative group">
+            <input
+              className={glassInputClass}
+              type={showCurrentPassword ? "text" : "password"}
+              id="currentPassword"
+              name="currentPassword"
+              placeholder=" "
+              value={passwordForm.currentPassword}
+              onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+              required
+            />
+            <label htmlFor="currentPassword" className={glassLabelClass}>
+              {t('profile.currentPassword', 'Contraseña Actual')}
+            </label>
+            <button
+              type="button"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#b3c34c] transition-colors p-1"
+              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+            >
+              {showCurrentPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+            </button>
+          </div>
 
-        {/* Nueva Contraseña */}
-        <div className="class-form-group mb-4">
-          <input
-            className="class-form-input pe-5"
-            type={showNewPassword ? "text" : "password"}
-            id="newPassword"
-            name="newPassword"
-            placeholder=" "
-            value={passwordForm.newPassword}
-            onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-            required
-            minLength={6}
-          />
-          <label htmlFor="newPassword" className="class-form-label">
-            {t('profile.newPassword', 'Nueva Contraseña')}
-          </label>
-          <button
-            type="button"
-            className="password-eye-btn text-secondary me-2"
-            onClick={() => setShowNewPassword(!showNewPassword)}
-          >
-            {showNewPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
-          </button>
-        </div>
+          {/* Nueva Contraseña */}
+          <div className="relative group">
+            <input
+              className={glassInputClass}
+              type={showNewPassword ? "text" : "password"}
+              id="newPassword"
+              name="newPassword"
+              placeholder=" "
+              value={passwordForm.newPassword}
+              onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+              required
+              minLength={6}
+            />
+            <label htmlFor="newPassword" className={glassLabelClass}>
+              {t('profile.newPassword', 'Nueva Contraseña')}
+            </label>
+            <button
+              type="button"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#b3c34c] transition-colors p-1"
+              onClick={() => setShowNewPassword(!showNewPassword)}
+            >
+              {showNewPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+            </button>
+          </div>
 
-        {/* Repetir Nueva Contraseña */}
-        <div className="class-form-group mb-4">
-          <input
-            className="class-form-input pe-5"
-            type={showConfirmPassword ? "text" : "password"}
-            id="confirmPassword"
-            name="confirmPassword"
-            placeholder=" "
-            value={passwordForm.confirmPassword}
-            onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-            required
-            minLength={6}
-          />
-          <label htmlFor="confirmPassword" className="class-form-label">
-            {t('profile.confirmNewPassword', 'Repetir Nueva Contraseña')}
-          </label>
-          <button
-            type="button"
-            className="password-eye-btn text-secondary me-2"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-          >
-            {showConfirmPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
-          </button>
-        </div>
+          {/* Repetir Nueva Contraseña */}
+          <div className="relative group">
+            <input
+              className={glassInputClass}
+              type={showConfirmPassword ? "text" : "password"}
+              id="confirmPassword"
+              name="confirmPassword"
+              placeholder=" "
+              value={passwordForm.confirmPassword}
+              onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+              required
+              minLength={6}
+            />
+            <label htmlFor="confirmPassword" className={glassLabelClass}>
+              {t('profile.confirmNewPassword', 'Repetir Nueva Contraseña')}
+            </label>
+            <button
+              type="button"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#b3c34c] transition-colors p-1"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              {showConfirmPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+            </button>
+          </div>
 
-        <button
-          type="submit"
-          disabled={submittingPassword}
-          className="ba-btn-primary w-100 py-3 fw-bold mt-3"
-        >
-          {submittingPassword ? (
-            <>
-              <Spinner size="sm" className="me-2" /> {t('profile.updatingPassword', 'Actualizando...')}
-            </>
-          ) : (
-            <>
-              <FaKey className="me-2" /> {t('profile.updatePasswordBtn', 'Actualizar Contraseña')}
-            </>
-          )}
-        </button>
-      </Form>
+          <button
+            type="submit"
+            disabled={submittingPassword}
+            className={`${glassButtonClass} disabled:opacity-50`}
+          >
+            {submittingPassword ? "..." : (
+              <>
+                <FaKey className="text-lg" /> {t('profile.updatePasswordBtn', 'Actualizar Contraseña')}
+              </>
+            )}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

@@ -47,23 +47,23 @@ export default function FormationDetailsAdmin() {
   if (!formation) return <CardGhostLoader />;
 
   return (
-    <div className="ba-container">
-      <div className="ba-card">
-        <div className="ba-card-header ba-admin-header border-0 flex-wrap">
+    <div className="da-container">
+      <div className="da-card">
+        <div className="da-card-header da-admin-header border-0 flex-wrap">
           <h2 className="mb-0 flex-grow-1 text-wrap" style={{ lineHeight: '1.2' }}>
             {t('formationDetails.title')}: {formation.name}
           </h2>
-          <div className="ba-admin-header-actions">
-            <Button size="sm" className="ba-btn-secondary px-3 py-2 text-nowrap" tag={Link} to={`/formations/${id}`} title={t('formations.edit')}>
+          <div className="da-admin-header-actions">
+            <Button size="sm" className="da-btn-secondary px-3 py-2 text-nowrap" tag={Link} to={`/formations/${id}`} title={t('formations.edit')}>
               <FontAwesomeIcon icon={faPencil} className="me-1" />{t('formations.edit')}
             </Button>
-            <Button size="sm" className="ba-btn-blue px-3 py-2 text-nowrap" tag={Link} to={`/qr-generator?formationId=${id}`} title={t('formationDetails.qrButton')}>
+            <Button size="sm" className="da-btn-blue px-3 py-2 text-nowrap" tag={Link} to={`/qr-generator?formationId=${id}`} title={t('formationDetails.qrButton')}>
               <FontAwesomeIcon icon={faQrcode} className="me-1" />{t('formationDetails.qrButton')}
             </Button>
-            <Button size="sm" className="ba-btn-danger px-3 py-2 text-nowrap" onClick={handleDeleteFormation} title={t('formations.delete')}>
+            <Button size="sm" className="da-btn-danger px-3 py-2 text-nowrap" onClick={handleDeleteFormation} title={t('formations.delete')}>
               <FontAwesomeIcon icon={faTrash} className="me-1" />{t('formations.delete')}
             </Button>
-            <Button size="sm" className="ba-btn-secondary px-3 py-2 text-nowrap" tag={Link} to="/formations">
+            <Button size="sm" className="da-btn-secondary px-3 py-2 text-nowrap" tag={Link} to="/formations">
               {t('formationDetails.backToList')}
             </Button>
           </div>
@@ -83,7 +83,7 @@ export default function FormationDetailsAdmin() {
                 onClick={() => setDocsOpen(!docsOpen)}
                 style={{ cursor: 'pointer' }}
               >
-                <span className="h4 mb-0 text-primary d-flex align-items-center gap-2" style={{ fontFamily: 'var(--ba-font-family)', fontWeight: 700 }}>
+                <span className="h4 mb-0 text-primary d-flex align-items-center gap-2" style={{ fontFamily: 'var(--da-font-family)', fontWeight: 700 }}>
                   <FontAwesomeIcon icon={faFileLines} />
                   {t('formationDetails.documentation', 'Documentación Adjunta')} ({formation.documentUrls.length})
                 </span>
@@ -93,14 +93,14 @@ export default function FormationDetailsAdmin() {
               </button>
               
               <Collapse isOpen={docsOpen}>
-                <div className="ba-file-list">
+                <div className="da-file-list">
                   {formation.documentUrls.map((item) => {
                     const fileMeta = getCleanFileInfo(item);
 
                     return (
                       <Button
                         key={item}
-                        className="ba-btn ba-btn-blue px-3 py-2 d-flex align-items-center gap-2"
+                        className="da-btn da-btn-blue px-3 py-2 d-flex align-items-center gap-2"
                         onClick={(e) => openDocumentModal(e, fileMeta.url, fileMeta.name)}
                       >
                         <FontAwesomeIcon icon={fileMeta.icon} style={{ color: fileMeta.color }} />

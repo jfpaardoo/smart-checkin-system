@@ -14,7 +14,7 @@
     "cloudSettings": "Setări Cloud"
   },
   "home": {
-    "welcome": "Bine ați venit la ShiftSync",
+    "welcome": "Bine ați venit la Distribution Academy",
     "subtitle": "Sistem de Gestionare a Formării în Distribuție",
     "loggedIn": "Sunteți autentificat. Accesați panoul dvs.",
     "goToDashboard": "Merg la Panou",
@@ -62,7 +62,9 @@
     "username": "Nume de utilizator",
     "password": "Parolă",
     "badCredentials": "Nume de utilizator sau parolă incorecte",
-    "accountLocked": "Contul este blocat din cauza a prea multe încercări eșuate. Încercați din nou mai târziu."
+    "accountLocked": "Contul este blocat din cauza a prea multe încercări eșuate. Încercați din nou mai târziu.",
+    "usernameOrEmail": "Utilizator sau e-mail",
+    "2faInfo": "Introduceți codul aplicației dvs. de autentificare (2FA)."
   },
   "users": {
     "title": "Gestionare Utilizatori",
@@ -100,7 +102,17 @@
     "userEntity": "Utilizator",
     "registrationRequest": "Cerere de înregistrare",
     "approvedSuccess": "Angajat aprobat și activat cu succes.",
-    "approveError": "Eroare la aprobarea angajatului."
+    "approveError": "Eroare la aprobarea angajatului.",
+    "name": "Angajat",
+    "noActiveUsers": "Nu s-au găsit utilizatori activi",
+    "noPendingUsers": "Nu există cereri de înregistrare în așteptare",
+    "statusWorking": "Lucru",
+    "statusResting": "Odihnind",
+    "statusPending": "În așteptarea aprobării",
+    "approve": "Aproba",
+    "reject": "Declin",
+    "email": "E-mail",
+    "searchPlaceholder": "Cauta dupa nume, cod..."
   },
   "formations": {
     "title": "Gestionare Formări",
@@ -139,7 +151,14 @@
     "signature": "Semnătură Digitală",
     "document": "Document de Formare (Opțional)",
     "documentExists": "Există deja un document asociat.",
-    "viewCurrentDocument": "Vizualizează documentul actual"
+    "viewCurrentDocument": "Vizualizează documentul actual",
+    "attachments": "Documente atașate",
+    "existingFiles": "Fișiere curente",
+    "removeFile": "Ștergeți fișierul",
+    "dragDropFiles": "Trageți fișierele aici sau faceți clic pentru a încărca",
+    "acceptedFormats": "Formate acceptate: PDF, Word, Excel, PowerPoint, Imagini",
+    "filesSelected": "fișiere selectate",
+    "searchPlaceholderShort": "Găsiți antrenament..."
   },
   "formationDetails": {
     "title": "Detalii Formare",
@@ -180,7 +199,11 @@
     "userRemoveError": "Eroare la eliminarea utilizatorului.",
     "userRemoveConfirm": "Sigur doriți să eliminați acest participant?",
     "documentation": "Documentație",
-    "viewDocumentation": "Vizualizare Documentație"
+    "viewDocumentation": "Vizualizare Documentație",
+    "previewNotAvailable": "Previzualizarea nu este disponibilă",
+    "cspMessage": "Din cauza politicilor de securitate Microsoft OneDrive, acest document nu poate fi încorporat direct aici.",
+    "cloudDocDescription": "Acest document este stocat în siguranță în cloud. Faceți clic pe butonul de mai jos pentru a-l deschide.",
+    "downloadPdfError": "Eroare la descărcarea PDF-ului."
   },
   "qr": {
     "title": "QR Formare",
@@ -255,7 +278,22 @@
     "checkoutRecorded": "Ieșire înregistrată",
     "qrDetected": "Cod QR detectat.",
     "codeMustBe6Digits": "Codul trebuie să aibă 6 cifre.",
-    "provideSignature": "Vă rugăm să furnizați semnătura dvs."
+    "provideSignature": "Vă rugăm să furnizați semnătura dvs.",
+    "enterCodeManually": "Introduceți codul manual",
+    "enter6DigitCode": "Introduceți codul de antrenament din 6 cifre.",
+    "cancel": "Anula",
+    "validate": "Validați codul",
+    "signStepTitle": "Vă rugăm să semnați mai jos pentru a finaliza",
+    "processing": "Se procesează înregistrarea...",
+    "qrSubtitle": "Focalizează codul QR de antrenament cu camera ta",
+    "startingCamera": "Se pornește camera...",
+    "cantScan": "Nu se poate scana? Introdu codul manual",
+    "manualCheckin": "Înregistrare manuală",
+    "manualSubtitle": "Introdu codul oferit de administrator",
+    "successTitle": "Proces finalizat!",
+    "formationLabel": "Antrenamentul",
+    "dateLabel": "Data",
+    "close": "Aproape"
   },
   "common": {
     "save": "Salvează",
@@ -278,7 +316,14 @@
     "exportError": "Eroare la descărcarea raportului",
     "sessionExpired": "Sesiune expirată. Vă rugăm să vă autentificați din nou.",
     "genericError": "A apărut o eroare în timpul solicitării",
-    "networkError": "Eroare de conexiune la rețea"
+    "networkError": "Eroare de conexiune la rețea",
+    "details": "Detalii",
+    "openSecure": "Deschide/Vezi documentul în cloud",
+    "saving": "common.saving",
+    "search": "Caută...",
+    "camera": "Camera foto",
+    "unknownError": "A apărut o eroare necunoscută.",
+    "duplicateConflict": "Eroare de conflict: înregistrarea există deja."
   },
   "lang": {
     "es": "Español",
@@ -294,7 +339,7 @@
     "title": "Panou Analitic",
     "exportCsv": "Exportă CSV",
     "exportExcel": "Exportă Excel",
-    "totalCheckins": "Total Pontaje (Ultimele 30 Zile)",
+    "totalCheckins": "Prezențe la Formări (Ultimele 30 Zile)",
     "formationAttendance": "Prezență la Formări",
     "attendance": "Prezență",
     "absence": "Absență",
@@ -308,6 +353,9 @@
     "formationExports": "Formări și Semnături",
     "formationsCsv": "Formări și Semnături (CSV)",
     "formationsExcel": "Formări și Semnături (Excel)",
+    "employeeExports": "Analize Angajați",
+    "employeesCsv": "Analize Angajați (CSV)",
+    "employeesExcel": "Analize Angajați (Excel)",
     "searchEmployee": "Căutare angajat după nume sau cod...",
     "totalEmployees": "Total Angajați",
     "formationsCount": "Formări (Participat / Atribuit)",
@@ -327,7 +375,10 @@
     "signed": "Semnat",
     "inProgress": "În curs",
     "pending": "În așteptare",
-    "noFormationsUser": "Fără formări atribuite acestui angajat."
+    "noFormationsUser": "Fără formări atribuite acestui angajat.",
+    "noEmployees": "Nu au fost găsiți angajați.",
+    "workCheckins": "Înregistrări",
+    "workTime": "T. Munca"
   },
   "profile": {
     "myProfileTitle": "Profilul Meu",
@@ -372,7 +423,23 @@
     "incorrectCode": "Cod incorect.",
     "disable2FAPrompt": "Introduceți codul 2FA pentru a confirma dezactivarea:",
     "twoFactorDisableSuccess": "2FA a fost dezactivată cu succes.",
-    "twoFactorDisableError": "Eroare la dezactivarea 2FA."
+    "twoFactorDisableError": "Eroare la dezactivarea 2FA.",
+    "preferencesUpdated": "Preferințe actualizate",
+    "preferencesUpdateError": "Eroare la actualizarea preferințelor",
+    "exportDataTitle": "Exportați datele mele (GDPR)",
+    "exportDataBtn": "Solicitați export",
+    "deleteAccountTitle": "Șterge contul",
+    "deleteAccountBtn": "Ștergeți contul meu",
+    "emailSentCode": "Te hemos enviado un correo con el código de confirmación.",
+    "exportSuccess": "Datele dvs. au fost exportate cu succes.",
+    "exportError": "Datele dvs. nu au putut fi exportate.",
+    "deleteTypeConfirmError": "Trebuie să tastați DELETE pentru a confirma.",
+    "deleteSuccess": "Contul dvs. a fost șters.",
+    "deleteError": "Eroare la ștergerea contului.",
+    "deleteConfirmTitle": "Ștergeți permanent contul",
+    "areYouSure": "Ești complet sigur?",
+    "deleteWarningText": "Această acțiune va șterge definitiv toate datele dvs.",
+    "deleteConfirmBtn": "Șterge contul"
   },
   "register": {
     "title": "Solicitare de Înregistrare",
@@ -391,7 +458,10 @@
     "receivedDesc": "Solicitarea dvs. a fost înregistrată cu succes. Un administrator o va revizui și vă va activa profilul.",
     "goToLogin": "Înapoi la Autentificare",
     "alreadyHaveAccount": "Aveți deja un cont activ?",
-    "loginHere": "Autentificare"
+    "loginHere": "Autentificare",
+    "genericError": "Eroare la procesarea cererii de înregistrare.",
+    "successMessage": "Solicitarea de înregistrare a fost trimisă cu succes. Administratorul vă va activa contul.",
+    "email": "E-mail"
   },
   "audit": {
     "title": "Jurnal de Audit",
@@ -437,7 +507,8 @@
       "dbBackup": "Backup baza de date declanșat",
       "userSavedNoName": "Utilizator salvat/actualizat",
       "formationSavedNoName": "Formare creată/actualizată"
-    }
+    },
+    "exportPDF": "Exportați în PDF"
   },
   "cloudSettings": {
     "saveSuccess": "Setările cloud au fost salvate cu succes",
@@ -458,5 +529,17 @@
     "refreshTokenLabel": "Refresh Token (Durată lungă)",
     "refreshTokenHelp": "Acest token va fi utilizat pentru a obține automat Access Tokens de la API-ul Graph fără intervenția utilizatorului.",
     "saveBtn": "Salvează Setările"
-  }
+  },
+  "formations/csv": "signature_formations.csv",
+  "formations/excel": "semnătură_formații.xlsx",
+  "formationId": "formationId",
+  "users/csv": "users.csv",
+  "users/excel": "utilizatori.xlsx",
+  "notifications": {
+    "title": "Notificări",
+    "empty": "Fără notificări",
+    "clearAll": "Curățați totul"
+  },
+  "web-vitals": "web-vitals",
+  "genericError": "Eroare la încărcarea antrenamentelor"
 }

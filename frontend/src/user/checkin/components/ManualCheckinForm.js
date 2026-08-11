@@ -38,7 +38,7 @@ export default function ManualCheckinForm({ onSubmit, onCancel }) {
               const val = e.target.value.replace(/\D/g, '');
               if (val.length <= 6) setManualCode(val);
             }}
-            className="ba-input mx-auto"
+            className="da-input mx-auto"
             style={{
               fontSize: '2.5rem',
               textAlign: 'center',
@@ -53,7 +53,7 @@ export default function ManualCheckinForm({ onSubmit, onCancel }) {
         <div className="d-flex justify-content-center gap-3">
           <button
             type="button"
-            className="ba-btn ba-btn-secondary py-3 px-4"
+            className="da-btn da-btn-secondary py-3 px-4"
             onClick={onCancel}
             style={{ flex: 1, maxWidth: '200px' }}
           >
@@ -62,7 +62,7 @@ export default function ManualCheckinForm({ onSubmit, onCancel }) {
           
           <button
             type="submit"
-            className="ba-btn ba-btn-primary py-3 px-4"
+            className="da-btn da-btn-primary py-3 px-4"
             disabled={manualCode.length !== 6}
             style={{ flex: 1, maxWidth: '200px' }}
           >

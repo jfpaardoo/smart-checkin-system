@@ -8,7 +8,7 @@ describe('AppNavbar', () => {
         const linkDocsElement = screen.getByRole('link', { name: 'Docs' });
         expect(linkDocsElement).toBeInTheDocument();
 
-        const linkHomeElement = screen.getByRole('link', { name: /ba distribution academy/i });
+        const linkHomeElement = screen.getByRole('link', { name: /DISTRIBUTION ACADEMY/i });
         expect(linkHomeElement).toBeInTheDocument();
     });
 

@@ -14,7 +14,7 @@
     "cloudSettings": "Облачни Настройки"
   },
   "home": {
-    "welcome": "Добре дошли в ShiftSync",
+    "welcome": "Добре дошли в Distribution Academy",
     "subtitle": "Система за Управление на Обучението в Дистрибуцията",
     "loggedIn": "Влезли сте в системата. Влезте в таблото си.",
     "goToDashboard": "Към Таблото",
@@ -62,7 +62,9 @@
     "username": "Потребителско име",
     "password": "Парола",
     "badCredentials": "Невалидно потребителско име или парола",
-    "accountLocked": "Акаунтът е заключен поради твърде много неуспешни опити. Опитайте отново по-късно."
+    "accountLocked": "Акаунтът е заключен поради твърде много неуспешни опити. Опитайте отново по-късно.",
+    "usernameOrEmail": "Потребител или имейл",
+    "2faInfo": "Въведете кода на вашето приложение за удостоверяване (2FA)."
   },
   "users": {
     "title": "Управление на Потребители",
@@ -100,7 +102,17 @@
     "userEntity": "Потребител",
     "registrationRequest": "Заявка за регистрация",
     "approvedSuccess": "Служителят е одобрен и активиран успешно.",
-    "approveError": "Грешка при одобряването на служител."
+    "approveError": "Грешка при одобряването на служител.",
+    "name": "служител",
+    "noActiveUsers": "Няма намерени активни потребители",
+    "noPendingUsers": "Няма чакащи заявки за регистрация",
+    "statusWorking": "Работещ",
+    "statusResting": "Почивайки",
+    "statusPending": "Очаква одобрение",
+    "approve": "Одобряване",
+    "reject": "Откажи",
+    "email": "Имейл",
+    "searchPlaceholder": "Търсене по име, код..."
   },
   "formations": {
     "title": "Управление на Обучения",
@@ -139,7 +151,14 @@
     "signature": "Цифров Подпис",
     "document": "Документ за Обучение (По избор)",
     "documentExists": "Вече има свързан документ.",
-    "viewCurrentDocument": "Преглед на текущия документ"
+    "viewCurrentDocument": "Преглед на текущия документ",
+    "attachments": "Приложени документи",
+    "existingFiles": "Текущи файлове",
+    "removeFile": "Изтриване на файл",
+    "dragDropFiles": "Плъзнете файлове тук или щракнете, за да качите",
+    "acceptedFormats": "Допустими формати: PDF, Word, Excel, PowerPoint, изображения",
+    "filesSelected": "избран файл(ове)",
+    "searchPlaceholderShort": "Намерете обучение..."
   },
   "formationDetails": {
     "title": "Детайли за Обучението",
@@ -180,7 +199,11 @@
     "userRemoveError": "Грешка при премахване на потребителя.",
     "userRemoveConfirm": "Сигурни ли сте, че искате да премахнете този участник?",
     "documentation": "Документация",
-    "viewDocumentation": "Преглед на Документацията"
+    "viewDocumentation": "Преглед на Документацията",
+    "previewNotAvailable": "Прегледът не е наличен",
+    "cspMessage": "Поради правилата за сигурност на Microsoft OneDrive, този документ не може да бъде директно вграден тук.",
+    "cloudDocDescription": "Този документ се съхранява сигурно в облака. Щракнете върху бутона по-долу, за да го отворите.",
+    "downloadPdfError": "Грешка при изтеглянето на PDF."
   },
   "qr": {
     "title": "QR на Обучение",
@@ -255,7 +278,22 @@
     "checkoutRecorded": "Регистрирано излизане",
     "qrDetected": "Открит е QR код.",
     "codeMustBe6Digits": "Кодът трябва да съдържа 6 цифри.",
-    "provideSignature": "Моля, предоставете вашия подпис."
+    "provideSignature": "Моля, предоставете вашия подпис.",
+    "enterCodeManually": "Въведете кода ръчно",
+    "enter6DigitCode": "Въведете 6-цифрения код за обучение.",
+    "cancel": "Отказ",
+    "validate": "Код за валидиране",
+    "signStepTitle": "Моля, подпишете се по-долу, за да завършите",
+    "processing": "Регистрацията се обработва...",
+    "qrSubtitle": "Фокусирайте тренировъчния QR код с вашата камера",
+    "startingCamera": "Камерата се стартира...",
+    "cantScan": "Не можете да сканирате? Въведете кода ръчно",
+    "manualCheckin": "Ръчно настаняване",
+    "manualSubtitle": "Въведете кода, предоставен ви от администратора",
+    "successTitle": "Процесът е завършен!",
+    "formationLabel": "обучение",
+    "dateLabel": "Дата",
+    "close": "затвори"
   },
   "common": {
     "save": "Запази",
@@ -278,7 +316,14 @@
     "exportError": "Грешка при изтегляне на доклада",
     "sessionExpired": "Сесията е изтекла. Моля, влезте отново.",
     "genericError": "Възникна грешка при заявката",
-    "networkError": "Грешка в мрежовата връзка"
+    "networkError": "Грешка в мрежовата връзка",
+    "details": "Подробности",
+    "openSecure": "Отворете/прегледайте документ в облака",
+    "saving": "common.saving",
+    "search": "Търсете...",
+    "camera": "Камера",
+    "unknownError": "Възникна неизвестна грешка.",
+    "duplicateConflict": "Грешка при конфликт: Записът вече съществува."
   },
   "lang": {
     "es": "Español",
@@ -294,7 +339,7 @@
     "title": "Аналитично табло",
     "exportCsv": "Експортиране на CSV",
     "exportExcel": "Експортиране на Excel",
-    "totalCheckins": "Общо чекирания (Последни 30 дни)",
+    "totalCheckins": "Посещаемост на обучения (Последни 30 дни)",
     "formationAttendance": "Присъствие на обучения",
     "attendance": "Присъствие",
     "absence": "Отсъствие",
@@ -308,6 +353,9 @@
     "formationExports": "Обучения и подписи",
     "formationsCsv": "Обучения и подписи (CSV)",
     "formationsExcel": "Обучения и подписи (Excel)",
+    "employeeExports": "Анализи на служители",
+    "employeesCsv": "Анализи на служители (CSV)",
+    "employeesExcel": "Анализи на служители (Excel)",
     "searchEmployee": "Търсене по име или код...",
     "totalEmployees": "Общо служители",
     "formationsCount": "Обучения (Посетени / Възложени)",
@@ -327,7 +375,10 @@
     "signed": "Подписано",
     "inProgress": "В процес",
     "pending": "Предстоящо",
-    "noFormationsUser": "Няма назначени обучения за този служител."
+    "noFormationsUser": "Няма назначени обучения за този служител.",
+    "noEmployees": "Не са открити служители.",
+    "workCheckins": "Настанявания",
+    "workTime": "Т. Работа"
   },
   "profile": {
     "myProfileTitle": "Моят Профил",
@@ -372,7 +423,23 @@
     "incorrectCode": "Грешен код.",
     "disable2FAPrompt": "Въведете 2FA кода, за да потвърдите деактивирането:",
     "twoFactorDisableSuccess": "2FA е деактивирана успешно.",
-    "twoFactorDisableError": "Грешка при деактивиране на 2FA."
+    "twoFactorDisableError": "Грешка при деактивиране на 2FA.",
+    "preferencesUpdated": "Актуализирани предпочитания",
+    "preferencesUpdateError": "Грешка при актуализиране на предпочитанията",
+    "exportDataTitle": "Експортиране на моите данни (GDPR)",
+    "exportDataBtn": "Заявка за експортиране",
+    "deleteAccountTitle": "Изтриване на акаунт",
+    "deleteAccountBtn": "Изтриване на моя акаунт",
+    "emailSentCode": "Te hemos enviado un correo con el código de confirmación.",
+    "exportSuccess": "Вашите данни бяха експортирани успешно.",
+    "exportError": "Вашите данни не можаха да бъдат експортирани.",
+    "deleteTypeConfirmError": "Трябва да въведете DELETE, за да потвърдите.",
+    "deleteSuccess": "Вашият акаунт е изтрит.",
+    "deleteError": "Грешка при изтриване на акаунт.",
+    "deleteConfirmTitle": "Изтриване на акаунта за постоянно",
+    "areYouSure": "Сигурен ли си напълно?",
+    "deleteWarningText": "Това действие ще изтрие завинаги всички ваши данни.",
+    "deleteConfirmBtn": "Изтриване на акаунт"
   },
   "register": {
     "title": "Заявка за Регистрация",
@@ -391,7 +458,10 @@
     "receivedDesc": "Вашата заявка беше регистрирана успешно. Администратор ще я прегледа и активира профила ви.",
     "goToLogin": "Обратно към Вход",
     "alreadyHaveAccount": "Вече имате активен профил?",
-    "loginHere": "Вход"
+    "loginHere": "Вход",
+    "genericError": "Грешка при обработката на заявката за регистрация.",
+    "successMessage": "Заявката за регистрация е изпратена успешно. Администраторът ще активира вашия акаунт.",
+    "email": "Имейл"
   },
   "audit": {
     "title": "Одитен Журнал",
@@ -437,7 +507,8 @@
       "dbBackup": "Стартирано е архивиране на базата данни",
       "userSavedNoName": "Запазен/Актуализиран потребител",
       "formationSavedNoName": "Създадено/Актуализирано обучение"
-    }
+    },
+    "exportPDF": "Експортиране в PDF"
   },
   "cloudSettings": {
     "saveSuccess": "Облачните настройки са запазени успешно",
@@ -458,5 +529,17 @@
     "refreshTokenLabel": "Refresh Token (Дълготраен)",
     "refreshTokenHelp": "Този токен ще се използва за автоматично получаване на Access Tokens от Graph API без намеса на потребителя.",
     "saveBtn": "Запази Настройките"
-  }
+  },
+  "formations/csv": "signature_formations.csv",
+  "formations/excel": "signature_formations.xlsx",
+  "formationId": "formationId",
+  "users/csv": "потребители.csv",
+  "users/excel": "потребители.xlsx",
+  "notifications": {
+    "title": "Известия",
+    "empty": "Няма известия",
+    "clearAll": "Почистете всичко"
+  },
+  "web-vitals": "web-vitals",
+  "genericError": "Грешка при зареждане на обучения"
 }

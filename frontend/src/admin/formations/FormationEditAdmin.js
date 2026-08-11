@@ -39,13 +39,13 @@ export default function FormationEditAdmin() {
   }
 
   return (
-    <div className="ba-container justify-content-center">
-      <div className="ba-card ba-card-form my-auto mx-auto">
-        <div className="ba-card-header">
+    <div className="da-container justify-content-center">
+      <div className="da-card da-card-form my-auto mx-auto">
+        <div className="da-card-header">
           <h2>{formation.id ? t('formations.editFormation') : t('formations.createNew')}</h2>
         </div>
         <Form onSubmit={handleSubmit}>
-          <div className="ba-form-row-2">
+          <div className="da-form-row-2">
               <FormGroup>
                 <Label for="name">{t('formations.formationName')}</Label>
                 <Input
@@ -71,7 +71,7 @@ export default function FormationEditAdmin() {
               </FormGroup>
           </div>
 
-          <div className="ba-form-row-1">
+          <div className="da-form-row-1">
               <FormGroup>
                 <Label for="description">{t('formations.description')}</Label>
                 <Input
@@ -86,7 +86,7 @@ export default function FormationEditAdmin() {
               </FormGroup>
           </div>
 
-          <div className="ba-form-row-1 mt-3 mb-4">
+          <div className="da-form-row-1 mt-3 mb-4">
             <div>
               <Label className="fw-bold">{t('formations.attachments', 'Documentos Adjuntos')}</Label>
               
@@ -98,7 +98,7 @@ export default function FormationEditAdmin() {
                     {formation.documentUrls.map((item) => {
                       const fileMeta = getCleanFileInfo(item);
                       return (
-                        <div key={item} className="ba-badge bg-white text-dark d-flex align-items-center gap-2 border">
+                        <div key={item} className="da-badge bg-white text-dark d-flex align-items-center gap-2 border">
                           <FontAwesomeIcon icon={fileMeta.icon} style={{ color: fileMeta.color }} />
                           <span className="text-truncate" style={{ maxWidth: '200px' }} title={fileMeta.name}>{fileMeta.name}</span>
                           <button 
@@ -127,14 +127,14 @@ export default function FormationEditAdmin() {
                     style={{ zIndex: 2, cursor: 'pointer', left: 0, top: 0 }}
                     accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.webp"
                   />
-                  <div className="upload-dropzone p-4 text-center rounded border-dashed" style={{ backgroundColor: 'rgba(255,255,255,0.6)', border: '2px dashed var(--ba-primary)', transition: 'all 0.3s ease' }}>
+                  <div className="upload-dropzone p-4 text-center rounded border-dashed" style={{ backgroundColor: 'rgba(255,255,255,0.6)', border: '2px dashed var(--da-primary)', transition: 'all 0.3s ease' }}>
                     <FontAwesomeIcon icon={faUpload} size="2x" className="mb-2 text-primary" style={{ opacity: 0.7 }} />
                     <h6 className="fw-bold mb-1" style={{ color: '#2c3e50' }}>{t('formations.dragDropFiles', 'Arrastra archivos aquí o haz clic para subir')}</h6>
                     <p className="text-muted small mb-0">{t('formations.acceptedFormats', 'Formatos aceptados: PDF, Word, Excel, PowerPoint, Imágenes')}</p>
                     
                     {files.length > 0 && (
                       <div className="mt-3 text-start">
-                        <span className="fw-bold small" style={{ color: 'var(--ba-primary)' }}>
+                        <span className="fw-bold small" style={{ color: 'var(--da-primary)' }}>
                           {files.length} {t('formations.filesSelected', 'archivo(s) seleccionado(s)')}
                         </span>
                         <ul className="list-unstyled mb-0 mt-2">
@@ -152,11 +152,11 @@ export default function FormationEditAdmin() {
             </div>
           </div>
 
-          <div className="ba-form-actions">
-            <Button className="ba-btn-secondary" onClick={() => window.history.back()} disabled={isSaving}>
+          <div className="da-form-actions">
+            <Button className="da-btn-secondary" onClick={() => window.history.back()} disabled={isSaving}>
               <FontAwesomeIcon icon={faTimes} className="me-1" /> {t('common.cancel')}
             </Button>
-            <Button className="ba-btn-primary" type="submit" disabled={isSaving}>
+            <Button className="da-btn-primary" type="submit" disabled={isSaving}>
               <FontAwesomeIcon icon={faPlus} className="me-1" /> 
               {isSaving ? t('common.saving') : null}
               {!isSaving && formation.id ? t('common.save') : null}

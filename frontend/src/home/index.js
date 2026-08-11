@@ -37,16 +37,16 @@ export default function Home() {
   }
 
   return (
-    <div className="ba-container">
-      <div className="ba-card home-card text-center py-4 px-4 px-md-5" style={{ maxWidth: '1080px', margin: '1.5rem auto' }}>
+    <div className="da-container">
+      <div className="da-card home-card text-center py-4 px-4 px-md-5" style={{ maxWidth: '1080px', margin: '1.5rem auto' }}>
         
         {/* LOGO & TITLE HEADER */}
-        <div className="ba-home-header">
-          <div className="ba-home-logo-group">
-            <div className="ba-home-logo">
+        <div className="da-home-header">
+          <div className="da-home-logo-group">
+            <div className="da-home-logo">
               <img
                 src="/favicon.png"
-                alt="BA Glass"
+                alt="la empresa"
                 style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.15)' }}
               />
             </div>
@@ -66,25 +66,25 @@ export default function Home() {
           <div>
             <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 text-start">
               <h5 className="fw-bold m-0 text-dark d-flex align-items-center gap-2">
-                <FaShieldAlt style={{ color: 'var(--ba-primary)' }} /> {t('home.quickActions', 'Acciones Rápidas')}
+                <FaShieldAlt style={{ color: 'var(--da-primary)' }} /> {t('home.quickActions', 'Acciones Rápidas')}
               </h5>
               <span className="text-muted small">
                 {t('home.sessionStartedAs', 'Sesión iniciada como:')} <strong className="text-dark">@{user?.username}</strong>
               </span>
             </div>
 
-            <div className="ba-home-grid-4">
+            <div className="da-home-grid-4">
               <div>
                 <Link to="/qr-generator" className="text-decoration-none d-block h-100">
-                  <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
+                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
-                      <div className="ba-action-icon-wrapper">
+                      <div className="da-action-icon-wrapper">
                         <FaQrcode size={30} />
                       </div>
                       <h6 className="fw-bold text-dark mb-1">{t('home.projectQR', 'Generar Código QR')}</h6>
                       <p className="small text-muted mb-0">{t('home.projectQRDesc', 'Proyectar QR para asistencia a formación')}</p>
                     </div>
-                    <span className="ba-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
+                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
                       {t('home.projectQRBtn', 'Proyectar QR →')}
                     </span>
                   </div>
@@ -93,15 +93,15 @@ export default function Home() {
 
               <div>
                 <Link to="/analytics" className="text-decoration-none d-block h-100">
-                  <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
+                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
-                      <div className="ba-action-icon-wrapper">
+                      <div className="da-action-icon-wrapper">
                         <FaChartBar size={30} />
                       </div>
                       <h6 className="fw-bold text-dark mb-1">{t('home.viewAnalytics', 'Analíticas y Reportes')}</h6>
                       <p className="small text-muted mb-0">{t('home.viewAnalyticsDesc', 'Descargar informes Excel y PDF')}</p>
                     </div>
-                    <span className="ba-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
+                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
                       {t('home.viewDataBtn', 'Ver Datos →')}
                     </span>
                   </div>
@@ -110,15 +110,15 @@ export default function Home() {
 
               <div>
                 <Link to="/formations" className="text-decoration-none d-block h-100">
-                  <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
+                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
-                      <div className="ba-action-icon-wrapper">
+                      <div className="da-action-icon-wrapper">
                         <FaGraduationCap size={30} />
                       </div>
                       <h6 className="fw-bold text-dark mb-1">{t('home.manageFormations', 'Gestionar Formaciones')}</h6>
                       <p className="small text-muted mb-0">{t('home.manageFormationsDesc', 'Crear y administrar convocatorias')}</p>
                     </div>
-                    <span className="ba-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
+                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
                       {t('home.manageBtn', 'Administrar →')}
                     </span>
                   </div>
@@ -127,15 +127,15 @@ export default function Home() {
 
               <div>
                 <Link to="/users" className="text-decoration-none d-block h-100">
-                  <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
+                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
-                      <div className="ba-action-icon-wrapper">
+                      <div className="da-action-icon-wrapper">
                         <FaUsers size={30} />
                       </div>
                       <h6 className="fw-bold text-dark mb-1">{t('home.manageUsers', 'Gestionar Usuarios')}</h6>
                       <p className="small text-muted mb-0">{t('home.manageUsersDesc', 'Administrar plantilla de empleados')}</p>
                     </div>
-                    <span className="ba-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
+                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
                       {t('home.viewEmployeesBtn', 'Ver Empleados →')}
                     </span>
                   </div>
@@ -150,29 +150,29 @@ export default function Home() {
           <div>
             <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 text-start">
               <h5 className="fw-bold m-0 text-dark d-flex align-items-center gap-2">
-                <FaUser style={{ color: 'var(--ba-primary)' }} /> {t('home.employeeQuickAccess', 'Acceso Rápido del Empleado')}
+                <FaUser style={{ color: 'var(--da-primary)' }} /> {t('home.employeeQuickAccess', 'Acceso Rápido del Empleado')}
               </h5>
               <div className="d-flex align-items-center gap-2">
                 <span className="text-muted small">{t('home.statusLabel', 'Tu estado actual:')}</span>
-                <span className={`ba-badge ${userData?.isWorking ? 'ba-badge-active' : 'ba-badge-inactive'} fs-6 py-1 px-3`}>
+                <span className={`da-badge ${userData?.isWorking ? 'da-badge-active' : 'da-badge-inactive'} fs-6 py-1 px-3`}>
                   {userData?.isWorking ? t('users.working', 'En formación') : t('users.offDuty', 'Fuera de formación')}
                 </span>
               </div>
             </div>
 
-            <div className="ba-home-grid-3">
+            <div className="da-home-grid-3">
               {/* Card 1: Fichaje Directo QR */}
               <div>
                 <Link to="/checkin" className="text-decoration-none d-block h-100">
-                  <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
+                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
-                      <div className="ba-action-icon-wrapper">
+                      <div className="da-action-icon-wrapper">
                         <FaQrcode size={30} />
                       </div>
                       <h6 className="fw-bold text-dark mb-1">{t('home.directQRCheckin', 'Fichaje Directo QR')}</h6>
                       <p className="small text-muted mb-0">{t('home.directQRCheckinDesc', 'Escanea el código QR del aula para registrar asistencia')}</p>
                     </div>
-                    <span className="ba-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
+                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
                       {t('home.scanQRBtn', 'Escanear QR →')}
                     </span>
                   </div>
@@ -182,15 +182,15 @@ export default function Home() {
               {/* Card 2: Mi Perfil */}
               <div>
                 <Link to="/profile" className="text-decoration-none d-block h-100">
-                  <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
+                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
-                      <div className="ba-action-icon-wrapper">
+                      <div className="da-action-icon-wrapper">
                         <FaUser size={30} />
                       </div>
                       <h6 className="fw-bold text-dark mb-1">{t('home.myProfileBtn', 'Ver Mi Perfil')}</h6>
                       <p className="small text-muted mb-0">{t('home.myProfileDesc', 'Consultar datos personales y cambiar contraseña')}</p>
                     </div>
-                    <span className="ba-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
+                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
                       {t('home.goToProfileBtn', 'Ir a Mi Perfil →')}
                     </span>
                   </div>
@@ -200,15 +200,15 @@ export default function Home() {
               {/* Card 3: Mis Formaciones */}
               <div>
                 <Link to="/dashboard" className="text-decoration-none d-block h-100">
-                  <div className="ba-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
+                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
                     <div className="d-flex flex-column align-items-center">
-                      <div className="ba-action-icon-wrapper">
+                      <div className="da-action-icon-wrapper">
                         <FaGraduationCap size={30} />
                       </div>
                       <h6 className="fw-bold text-dark mb-1">{t('home.myFormationsBtn', 'Ver Mis Formaciones')}</h6>
                       <p className="small text-muted mb-0">{t('home.myFormationsDesc', 'Historial y estado de tus capacitaciones')}</p>
                     </div>
-                    <span className="ba-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
+                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
                       {t('home.viewFormationsBtn', 'Ver Formaciones →')}
                     </span>
                   </div>
@@ -228,18 +228,18 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="ba-home-auth-actions">
+            <div className="da-home-auth-actions">
               <Button
                 tag={Link}
                 to="/login"
-                className="ba-btn-primary ba-home-auth-btn"
+                className="da-btn-primary da-home-auth-btn"
               >
                 <FaSignInAlt /> {t('nav.login', 'Iniciar Sesión')}
               </Button>
               <Button
                 tag={Link}
                 to="/register"
-                className="ba-btn-secondary ba-home-auth-btn"
+                className="da-btn-secondary da-home-auth-btn"
               >
                 <FaUserPlus /> {t('nav.register', 'Solicitar Registro')}
               </Button>

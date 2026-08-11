@@ -48,12 +48,11 @@ class AnalyticsRestControllerTests {
 	@WithMockUser(authorities = {"ADMIN"})
 	void testGetAnalyticsEmptyStats() throws Exception {
 		when(statisticsRepository.findLast30Days()).thenReturn(List.of());
-		when(checkinRepository.count()).thenReturn(5L);
 
 		mockMvc.perform(get(BASE_URL))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(1)))
-				.andExpect(jsonPath("$[0].totalCheckins").value(5))
+				.andExpect(jsonPath("$[0].totalCheckins").value(0))
 				.andExpect(jsonPath("$[0].activeFormations").value(0))
 				.andExpect(jsonPath("$[0].averageHoursPerEmployee").value(0.0))
 				.andExpect(jsonPath("$[0].formationAttendanceRate").value(100.0));
@@ -64,18 +63,17 @@ class AnalyticsRestControllerTests {
 	void testGetAnalyticsContainsToday() throws Exception {
 		PlatformStatistic todayStat = new PlatformStatistic();
 		todayStat.setDate(LocalDate.now(ZoneId.systemDefault()));
-		todayStat.setTotalCheckins(2L); // Old value
+		todayStat.setTotalCheckins(2L);
 		todayStat.setActiveFormations(10L);
 		todayStat.setAverageHoursPerEmployee(8.0);
 		todayStat.setFormationAttendanceRate(95.0);
 		
 		when(statisticsRepository.findLast30Days()).thenReturn(List.of(todayStat));
-		when(checkinRepository.count()).thenReturn(20L); // New live value
 
 		mockMvc.perform(get(BASE_URL))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(1)))
-				.andExpect(jsonPath("$[0].totalCheckins").value(20))
+				.andExpect(jsonPath("$[0].totalCheckins").value(2))
 				.andExpect(jsonPath("$[0].activeFormations").value(10));
 	}
 
@@ -90,12 +88,11 @@ class AnalyticsRestControllerTests {
 		yesterdayStat.setFormationAttendanceRate(90.0);
 		
 		when(statisticsRepository.findLast30Days()).thenReturn(List.of(yesterdayStat));
-		when(checkinRepository.count()).thenReturn(25L);
 
 		mockMvc.perform(get(BASE_URL))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(2)))
-				.andExpect(jsonPath("$[0].totalCheckins").value(25))
+				.andExpect(jsonPath("$[0].totalCheckins").value(0))
 				.andExpect(jsonPath("$[0].activeFormations").value(5)) // copied from yesterday
 				.andExpect(jsonPath("$[1].totalCheckins").value(15));
 	}
@@ -112,13 +109,12 @@ class AnalyticsRestControllerTests {
 		}
 		
 		when(statisticsRepository.findLast30Days()).thenReturn(mockStats);
-		when(checkinRepository.count()).thenReturn(100L);
 
 		mockMvc.perform(get(BASE_URL))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(30)))
-				.andExpect(jsonPath("$[0].totalCheckins").value(100))
-				.andExpect(jsonPath("$[29].totalCheckins").value(29)); // The last one (which had 30 checkins) was removed
+				.andExpect(jsonPath("$[0].totalCheckins").value(0))
+				.andExpect(jsonPath("$[29].totalCheckins").value(29));
 	}
 
 	@Test

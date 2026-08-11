@@ -35,7 +35,7 @@ class UserDetailsServiceImplTests {
 		auth.setAuthority("ADMIN");
 		user.setAuthority(auth);
 
-		when(userRepository.findByUsername(USER1_USERNAME)).thenReturn(Optional.of(user));
+		when(userRepository.findByUsernameOrEmail(USER1_USERNAME, USER1_USERNAME)).thenReturn(Optional.of(user));
 
 		UserDetails details = userDetailsService.loadUserByUsername(USER1_USERNAME);
 		assertNotNull(details);
@@ -49,7 +49,7 @@ class UserDetailsServiceImplTests {
 
 	@Test
 	void testLoadUserByUsernameNotFound() {
-		when(userRepository.findByUsername("unknown")).thenReturn(Optional.empty());
+		when(userRepository.findByUsernameOrEmail("unknown", "unknown")).thenReturn(Optional.empty());
 
 		assertThrows(UsernameNotFoundException.class, () -> userDetailsService.loadUserByUsername("unknown"));
 	}

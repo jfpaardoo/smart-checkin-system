@@ -29,9 +29,9 @@ export default function UserEditAdmin() {
   }
 
   return (
-    <div className="ba-container justify-content-center">
-      <div className="ba-card ba-card-form my-auto mx-auto">
-        <div className="ba-card-header">
+    <div className="da-container justify-content-center">
+      <div className="da-card da-card-form my-auto mx-auto">
+        <div className="da-card-header">
           <h2>{user.id ? t('users.editUser') : t('users.addNewUser')}</h2>
         </div>
         <Form onSubmit={handleSubmit}>
@@ -116,6 +116,20 @@ export default function UserEditAdmin() {
           </Row>
 
           <Row>
+            <Col md={6}>
+              <FormGroup>
+                <Label for="email">{t('users.email', 'Correo Electrónico')}</Label>
+                <Input
+                  type="email"
+                  required
+                  name="email"
+                  id="email"
+                  value={user.email || ""}
+                  onChange={handleChange}
+                />
+              </FormGroup>
+            </Col>
+
             {!user.id && (
               <Col md={6}>
                 <FormGroup>
@@ -136,23 +150,23 @@ export default function UserEditAdmin() {
               </Col>
             )}
             
-            <Col md={user.id ? 12 : 6}>
+            <Col md={user.id ? 6 : 12}>
               <FormGroup>
                 <Label for="authority">{t('users.role')}</Label>
                 <UncontrolledDropdown className="w-100">
                   <DropdownToggle
                     tag="button"
                     type="button"
-                    className="ba-select-toggle w-100 d-flex align-items-center justify-content-between"
+                    className="da-select-toggle w-100 d-flex align-items-center justify-content-between"
                   >
                     <span>{user.authority?.authority || t('users.selectRole')}</span>
                     <span className="dropdown-caret-icon">▼</span>
                   </DropdownToggle>
-                  <DropdownMenu className="ba-dropdown-menu w-100">
+                  <DropdownMenu className="da-dropdown-menu w-100">
                     {auths.map((auth) => (
                       <DropdownItem
                         key={auth.id}
-                        className="ba-dropdown-item d-flex align-items-center justify-content-between"
+                        className="da-dropdown-item d-flex align-items-center justify-content-between"
                         onClick={() => handleChange({ target: { name: 'authority', value: auth.id } })}
                       >
                         <span>{auth.authority}</span>
@@ -166,12 +180,12 @@ export default function UserEditAdmin() {
           </Row>
 
           <div className="form-action-group">
-            <button className="ba-btn-primary" type="submit" disabled={isSaving}>
+            <button className="da-btn-primary" type="submit" disabled={isSaving}>
               {isSaving ? t('common.saving') : null}
               {!isSaving && user.id ? t('users.saveUser', 'Guardar') : null}
               {!isSaving && !user.id ? t('users.addNewUser') : null}
             </button>
-            <button type="button" onClick={() => window.history.back()} className="ba-btn-secondary form-action-link" disabled={isSaving}>
+            <button type="button" onClick={() => window.history.back()} className="da-btn-secondary form-action-link" disabled={isSaving}>
               {t('users.cancel')}
             </button>
           </div>

@@ -60,15 +60,15 @@ export default function FormationListAdmin() {
   );
 
   return (
-    <div className="ba-container">
-      <div className="ba-card">
-        <div className="ba-card-header ba-admin-header border-0">
+    <div className="da-container">
+      <div className="da-card">
+        <div className="da-card-header da-admin-header border-0">
           <h2>
-            <FontAwesomeIcon icon={faGraduationCap} style={{ color: 'var(--ba-primary)' }} className="me-2" />
+            <FontAwesomeIcon icon={faGraduationCap} style={{ color: 'var(--da-primary)' }} className="me-2" />
             {t('formations.title')}
           </h2>
-          <div className="ba-admin-header-actions">
-            <Button className="ba-btn-primary" tag={Link} to="/formations/new">
+          <div className="da-admin-header-actions">
+            <Button className="da-btn-primary" tag={Link} to="/formations/new">
               <FontAwesomeIcon icon={faPlus} className="me-1" /> {t('formations.createFormation')}
             </Button>
           </div>

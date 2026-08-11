@@ -16,6 +16,7 @@ import org.springframework.samples.smartcheckin.checkin.CheckinType;
 import org.springframework.samples.smartcheckin.formation.Formation;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.samples.smartcheckin.formation.FormationAttendanceRepository;
+import org.springframework.samples.smartcheckin.formation.FormationRepository;
 import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserRepository;
@@ -27,6 +28,7 @@ class AnalyticsServiceTests {
     private UserRepository userRepository;
     private CheckinRepository checkinRepository;
     private FormationAttendanceRepository attendanceRepository;
+    private FormationRepository formationRepository;
     private AnalyticsService analyticsService;
 
     @BeforeEach
@@ -34,7 +36,8 @@ class AnalyticsServiceTests {
         userRepository = mock(UserRepository.class);
         checkinRepository = mock(CheckinRepository.class);
         attendanceRepository = mock(FormationAttendanceRepository.class);
-        analyticsService = new AnalyticsService(userRepository, checkinRepository, attendanceRepository);
+        formationRepository = mock(FormationRepository.class);
+        analyticsService = new AnalyticsService(userRepository, checkinRepository, attendanceRepository, formationRepository);
     }
 
     @Test

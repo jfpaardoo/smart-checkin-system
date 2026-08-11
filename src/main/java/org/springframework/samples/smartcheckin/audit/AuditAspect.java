@@ -17,6 +17,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 @Component
 public class AuditAspect {
 
+    private static final String UNKNOWN_ID = "unknown";
+    private static final String CHECKIN_SUCCESS_ACTION = "CHECKIN_SUCCESS";
+
     private final AuditLogRepository auditLogRepository;
     private final HttpServletRequest request;
     private final SimpMessagingTemplate messagingTemplate;
@@ -31,27 +34,74 @@ public class AuditAspect {
     private void logAudit(String action, String details) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = (auth != null && auth.getName() != null) ? auth.getName() : "anonymous";
-        String ipAddress = request.getRemoteAddr();
+        String ipAddress = "127.0.0.1";
+        try {
+            if (request != null && request.getRemoteAddr() != null) {
+                ipAddress = request.getRemoteAddr();
+            }
+        } catch (Exception e) {
+            // Request scope not active (e.g. background/async thread)
+        }
 
         AuditLog log = new AuditLog(action, username, details, ipAddress);
         auditLogRepository.save(log);
         messagingTemplate.convertAndSend("/topic/audit", "NEW_LOG");
     }
 
-    // Intercept user creation/update
-    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.user.UserService.saveUser(..))", returning = "result")
-    public void logUserSave(JoinPoint joinPoint, Object result) {
-        String details = "User saved/updated";
-        if (result != null) {
-            try {
-                java.lang.reflect.Method getUsernameMethod = result.getClass().getMethod("getUsername");
-                String username = (String) getUsernameMethod.invoke(result);
-                details += ": " + username;
-            } catch (Exception e) {
-                details += ": " + result.toString();
+    // Intercept user creation (Admin)
+    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.user.UserRestController.create(..))", returning = "result")
+    public void logUserCreate(JoinPoint joinPoint, Object result) {
+        String details = "Admin created user";
+        if (result instanceof ResponseEntity<?> responseEntity && responseEntity.getStatusCode().is2xxSuccessful()) {
+            Object body = responseEntity.getBody();
+            if (body != null) {
+                try {
+                    java.lang.reflect.Method getUsernameMethod = body.getClass().getMethod("getUsername");
+                    String username = (String) getUsernameMethod.invoke(body);
+                    details += ": " + username;
+                } catch (Exception e) {
+                    // Ignore
+                }
             }
+            logAudit("USER_CREATE", details);
         }
-        logAudit("USER_SAVE", details);
+    }
+
+    // Intercept user update (Admin)
+    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.user.UserRestController.update(..))", returning = "result")
+    public void logUserUpdate(JoinPoint joinPoint, Object result) {
+        String details = "Admin updated user";
+        if (result instanceof ResponseEntity<?> responseEntity && responseEntity.getStatusCode().is2xxSuccessful()) {
+            Object body = responseEntity.getBody();
+            if (body != null) {
+                try {
+                    java.lang.reflect.Method getUsernameMethod = body.getClass().getMethod("getUsername");
+                    String username = (String) getUsernameMethod.invoke(body);
+                    details += ": " + username;
+                } catch (Exception e) {
+                    // Ignore
+                }
+            }
+            logAudit("USER_UPDATE", details);
+        }
+    }
+
+    // Intercept user profile update (Self)
+    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.user.UserRestController.updateMyProfile(..))", returning = "result")
+    public void logUserProfileUpdate(JoinPoint joinPoint, Object result) {
+        if (result instanceof ResponseEntity<?> responseEntity && responseEntity.getStatusCode().is2xxSuccessful()) {
+            logAudit("USER_UPDATE_PREFS", "User updated their profile preferences");
+        }
+    }
+
+    // Intercept user approval (Admin)
+    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.user.UserRestController.approveUser(..))", returning = "result")
+    public void logUserApprove(JoinPoint joinPoint, Object result) {
+        Object[] args = joinPoint.getArgs();
+        String userId = args.length > 0 ? args[0].toString() : UNKNOWN_ID;
+        if (result instanceof ResponseEntity<?> responseEntity && responseEntity.getStatusCode().is2xxSuccessful()) {
+            logAudit("USER_APPROVE", "Admin approved user ID: " + userId);
+        }
     }
 
     // Intercept formation creation
@@ -70,24 +120,42 @@ public class AuditAspect {
         logAudit("FORMATION_SAVE", details);
     }
 
+    // Intercept formation attendance (Checkin)
+    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.formation.FormationService.registerAttendance(..))", returning = "result")
+    public void logFormationAttendance(JoinPoint joinPoint, Object result) {
+        Object[] args = joinPoint.getArgs();
+        String formationId = args.length > 0 ? args[0].toString() : UNKNOWN_ID;
+        logAudit("CHECKIN_FORMATION", "User checked into formation ID: " + formationId);
+    }
+
     // Intercept formation deletion
     @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.formation.FormationService.deleteFormation(..))")
     public void logFormationDelete(JoinPoint joinPoint) {
         Object[] args = joinPoint.getArgs();
-        String formationId = args.length > 0 ? args[0].toString() : "unknown";
+        String formationId = args.length > 0 ? args[0].toString() : UNKNOWN_ID;
         logAudit("FORMATION_DELETE", "Formation deleted: ID " + formationId);
     }
     
-    // Intercept TOTP verification (Checkin)
-    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.checkin.CheckinService.verifyTotpAndCheckIn(..))", returning = "result")
-    public void logCheckIn(JoinPoint joinPoint, Object result) {
-        logAudit("CHECKIN_SUCCESS", "User successfully checked in");
-    }
-    
-    // Intercept sign-out
-    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.checkin.CheckinService.checkOut(..))", returning = "result")
-    public void logCheckOut(JoinPoint joinPoint, Object result) {
-        logAudit("CHECKOUT_SUCCESS", "User successfully checked out with signature");
+    // Intercept global checkin (ENTRADA / SALIDA)
+    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.checkin.CheckinService.performCheckIn(..))", returning = "result")
+    public void logPerformCheckIn(JoinPoint joinPoint, Object result) {
+        if (result != null) {
+            try {
+                java.lang.reflect.Method getTypeMethod = result.getClass().getMethod("getType");
+                Object typeObj = getTypeMethod.invoke(result);
+                String typeStr = (typeObj != null) ? typeObj.toString() : "UNKNOWN";
+                
+                if ("ENTRADA".equalsIgnoreCase(typeStr)) {
+                    logAudit(CHECKIN_SUCCESS_ACTION, "User successfully checked in");
+                } else if ("SALIDA".equalsIgnoreCase(typeStr)) {
+                    logAudit("CHECKOUT_SUCCESS", "User successfully checked out with signature");
+                } else {
+                    logAudit(CHECKIN_SUCCESS_ACTION, "User checked in/out");
+                }
+            } catch (Exception e) {
+                logAudit(CHECKIN_SUCCESS_ACTION, "User successfully checked in");
+            }
+        }
     }
 
     // Intercept successful logins
@@ -132,11 +200,27 @@ public class AuditAspect {
         }
     }
 
+    // Intercept 2FA setup initiation
+    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.user.UserRestController.setupTwoFactor(..))", returning = "result")
+    public void logTwoFactorSetup(JoinPoint joinPoint, Object result) {
+        if (result instanceof ResponseEntity<?> responseEntity && responseEntity.getStatusCode().is2xxSuccessful()) {
+            logAudit("2FA_SETUP_INIT", "User initiated 2FA setup");
+        }
+    }
+
+    // Intercept 2FA code email sending
+    @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.auth.AuthController.generateLoginTwoFactorCode(..))", returning = "result")
+    public void logTwoFactorCodeEmail(JoinPoint joinPoint, Object result) {
+        if (result instanceof ResponseEntity<?> responseEntity && responseEntity.getStatusCode().is2xxSuccessful()) {
+            logAudit("2FA_CODE_SENT", "2FA verification code sent to user");
+        }
+    }
+
     // Intercept user deletion
     @AfterReturning(pointcut = "execution(* org.springframework.samples.smartcheckin.user.UserService.deleteUser(..))")
     public void logUserDelete(JoinPoint joinPoint) {
         Object[] args = joinPoint.getArgs();
-        String userId = args.length > 0 ? args[0].toString() : "unknown";
+        String userId = args.length > 0 ? args[0].toString() : UNKNOWN_ID;
         logAudit("USER_DELETE", "User deleted: ID " + userId);
     }
 

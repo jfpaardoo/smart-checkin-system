@@ -40,7 +40,7 @@ export default function UserFormationsTable({
           <Table
             responsive
             hover
-            className="ba-table align-middle"
+            className="da-table align-middle"
             style={{ minWidth: '600px', width: '100%' }}
           >
             <thead>
@@ -113,7 +113,7 @@ export default function UserFormationsTable({
                       <div className="flex justify-center gap-2">
                         <Button
                           size="sm"
-                          className="ba-btn-primary fw-bold shadow-sm !rounded-full px-4 py-1.5 inline-flex items-center justify-center gap-1.5 text-xs"
+                          className="da-btn-primary fw-bold shadow-sm !rounded-full px-4 py-1.5 inline-flex items-center justify-center gap-1.5 text-xs"
                           onClick={() => onOpenDetails(att)}
                         >
                           <FontAwesomeIcon icon={faEye} />
@@ -123,7 +123,7 @@ export default function UserFormationsTable({
                         {!att.checkOutDate && (
                           <Button
                             size="sm"
-                            className="ba-btn-secondary fw-bold shadow-sm !rounded-full px-4 py-1.5 text-xs"
+                            className="da-btn-secondary fw-bold shadow-sm !rounded-full px-4 py-1.5 text-xs"
                             onClick={() => onCheckout(att)}
                           >
                             {t('dashboard.checkout')}
@@ -191,7 +191,7 @@ export default function UserFormationsTable({
                 <div className="border-t border-slate-200/50 pt-3 flex flex-col gap-2">
                   <Button
                     size="sm"
-                    className="ba-btn-primary fw-bold shadow-sm !rounded-full px-5 py-2 inline-flex items-center justify-center gap-2 text-xs w-full"
+                    className="da-btn-primary fw-bold shadow-sm !rounded-full px-5 py-2 inline-flex items-center justify-center gap-2 text-xs w-full"
                     onClick={() => onOpenDetails(att)}
                   >
                     <FontAwesomeIcon icon={faEye} />
@@ -201,7 +201,7 @@ export default function UserFormationsTable({
                   {!att.checkOutDate && (
                     <Button
                       size="sm"
-                      className="ba-btn-secondary fw-bold shadow-sm !rounded-full px-5 py-2 text-xs w-full"
+                      className="da-btn-secondary fw-bold shadow-sm !rounded-full px-5 py-2 text-xs w-full"
                       onClick={() => onCheckout(att)}
                     >
                       {t('dashboard.checkout')}

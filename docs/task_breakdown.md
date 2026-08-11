@@ -1,4 +1,4 @@
-# Desglose de Tareas: BA Distribution Academy (BA Glass)
+# Desglose de Tareas: Distribution Academy (la empresa)
 
 Este documento detalla la división del proyecto en pequeñas tareas abordables en jornadas máximas de 24 horas de esfuerzo. Cada tarea define una rama de Git utilizando los prefijos estándar de la industria (Conventional Commits):
 * `feat/`: Nuevas funcionalidades.

@@ -7,9 +7,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.samples.smartcheckin.push.PushNotificationService;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.samples.smartcheckin.notification.NotificationContext;
 import org.springframework.samples.smartcheckin.storage.SignatureStorageService;
 import org.springframework.samples.smartcheckin.settings.OneDriveService;
+import org.springframework.samples.smartcheckin.statistics.events.FormationAttendanceEvent;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
 import org.springframework.stereotype.Service;
@@ -24,22 +26,25 @@ public class FormationService {
     private final FormationAttendanceRepository attendanceRepository;
     private final UserService userService;
     private final OneDriveService oneDriveService;
-    private final PushNotificationService pushNotificationService;
+    private final NotificationContext notificationContext;
     private final SignatureStorageService signatureStorageService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Autowired
     public FormationService(FormationRepository formationRepository, 
                             FormationAttendanceRepository attendanceRepository, 
                             UserService userService,
                             OneDriveService oneDriveService,
-                            PushNotificationService pushNotificationService,
-                            SignatureStorageService signatureStorageService) {
+                            NotificationContext notificationContext,
+                            SignatureStorageService signatureStorageService,
+                            ApplicationEventPublisher eventPublisher) {
         this.formationRepository = formationRepository;
         this.attendanceRepository = attendanceRepository;
         this.userService = userService;
         this.oneDriveService = oneDriveService;
-        this.pushNotificationService = pushNotificationService;
+        this.notificationContext = notificationContext;
         this.signatureStorageService = signatureStorageService;
+        this.eventPublisher = eventPublisher;
     }
 
     private static final String FORMATION_NOT_FOUND_MSG = "Formation not found";
@@ -80,15 +85,30 @@ public class FormationService {
             att.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
             attendanceRepository.save(att);
             formation.getAttendances().add(att);
+            try {
+                notificationContext.sendNotification(user, 
+                    "Asistencia registrada",
+                    "Has registrado correctamente tu entrada a la formación: " + formation.getName());
+            } catch (Exception e) {
+                // Non-critical: do not block registration
+            }
         } else {
             FormationAttendance att = existing.get();
             if (att.getCheckInDate() == null) {
                 att.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
                 attendanceRepository.save(att);
+                try {
+                    notificationContext.sendNotification(user, 
+                        "Asistencia registrada",
+                        "Has registrado correctamente tu entrada a la formación: " + formation.getName());
+                } catch (Exception e) {
+                    // Non-critical
+                }
             }
         }
         user.setIsWorking(true);
         userService.saveUser(user);
+        eventPublisher.publishEvent(new FormationAttendanceEvent(this));
         return formation;
     }
 
@@ -125,6 +145,15 @@ public class FormationService {
         user.setIsWorking(false);
         userService.saveUser(user);
 
+        try {
+            notificationContext.sendNotification(user, 
+                "Salida registrada",
+                "Has registrado correctamente tu salida de la formación: " + formation.getName());
+        } catch (Exception e) {
+            // Non-critical
+        }
+
+        eventPublisher.publishEvent(new FormationAttendanceEvent(this));
         return formation;
     }
 
@@ -188,9 +217,9 @@ public class FormationService {
             att.setUser(user);
             attendanceRepository.save(att);
 
-            // Send push notification to the assigned user
+            // Send notification to the assigned user
             try {
-                pushNotificationService.sendToUser(user, 
+                notificationContext.sendNotification(user, 
                     "Nueva formación asignada",
                     "Se te ha asignado la formación: " + formation.getName());
             } catch (Exception e) {

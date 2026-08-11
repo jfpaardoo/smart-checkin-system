@@ -1,6 +1,6 @@
 # Documento de Análisis de Requisitos del Sistema
 
-**Nombre del proyecto:** BA Distribution Academy – Smart Check-in System
+**Nombre del proyecto:** Distribution Academy – Smart Check-in System
 
 **Repositorio:** https://github.com/jfpaardoo/smart-checkin-system
 
@@ -12,7 +12,7 @@
 
 ## 1.1 Descripción general
 
-BA Distribution Academy – Smart Check-in System es una aplicación web desarrollada para digitalizar la gestión del control de asistencia y el seguimiento de la formación interna de los empleados de BA Glass. La plataforma sustituye los procedimientos manuales tradicionales por un sistema centralizado que permite registrar la actividad de los usuarios de forma segura, mantener un histórico completo de la información y facilitar la gestión administrativa asociada a los procesos de formación corporativa.
+Distribution Academy – Smart Check-in System es una aplicación web desarrollada para digitalizar la gestión del control de asistencia y el seguimiento de la formación interna de los empleados de la empresa. La plataforma sustituye los procedimientos manuales tradicionales por un sistema centralizado que permite registrar la actividad de los usuarios de forma segura, mantener un histórico completo de la información y facilitar la gestión administrativa asociada a los procesos de formación corporativa.
 
 El sistema está orientado principalmente a tres áreas funcionales: la gestión de usuarios, el registro de fichajes y la administración de formaciones. A través de estos módulos, la organización puede controlar el acceso de los empleados a la plataforma, registrar la asistencia mediante mecanismos de validación seguros y gestionar el ciclo de vida completo de las formaciones impartidas dentro de la empresa.
 

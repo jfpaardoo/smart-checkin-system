@@ -46,14 +46,41 @@ class AuditAspectTests {
     }
 
     @Test
-    void testLogUserSave() {
+    void testLogUserCreate() {
         JoinPoint joinPoint = mock(JoinPoint.class);
-        
         class DummyUser {
             public String getUsername() { return "john_doe"; }
         }
-        
-        aspect.logUserSave(joinPoint, new DummyUser());
+        ResponseEntity<Object> responseEntity = ResponseEntity.ok(new DummyUser());
+        aspect.logUserCreate(joinPoint, responseEntity);
+        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
+    }
+
+    @Test
+    void testLogUserUpdate() {
+        JoinPoint joinPoint = mock(JoinPoint.class);
+        class DummyUser {
+            public String getUsername() { return "john_doe"; }
+        }
+        ResponseEntity<Object> responseEntity = ResponseEntity.ok(new DummyUser());
+        aspect.logUserUpdate(joinPoint, responseEntity);
+        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
+    }
+
+    @Test
+    void testLogUserProfileUpdate() {
+        JoinPoint joinPoint = mock(JoinPoint.class);
+        ResponseEntity<Object> responseEntity = ResponseEntity.ok().build();
+        aspect.logUserProfileUpdate(joinPoint, responseEntity);
+        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
+    }
+
+    @Test
+    void testLogUserApprove() {
+        JoinPoint joinPoint = mock(JoinPoint.class);
+        when(joinPoint.getArgs()).thenReturn(new Object[]{"123"});
+        ResponseEntity<Object> responseEntity = ResponseEntity.ok().build();
+        aspect.logUserApprove(joinPoint, responseEntity);
         verify(auditLogRepository, times(1)).save(any(AuditLog.class));
     }
 
@@ -78,16 +105,25 @@ class AuditAspectTests {
     }
 
     @Test
-    void testLogCheckIn() {
+    void testLogFormationAttendance() {
         JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logCheckIn(joinPoint, new Object());
+        when(joinPoint.getArgs()).thenReturn(new Object[]{"123"});
+        aspect.logFormationAttendance(joinPoint, new Object());
         verify(auditLogRepository, times(1)).save(any(AuditLog.class));
     }
 
-    @Test
-    void testLogCheckOut() {
+    static class DummyCheckin {
+        private final String type;
+        public DummyCheckin(String type) { this.type = type; }
+        public String getType() { return type; }
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"ENTRADA", "SALIDA", "DESCANSO"})
+    @org.junit.jupiter.params.provider.NullSource
+    void testLogPerformCheckInParameterized(String checkinType) {
         JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logCheckOut(joinPoint, new Object());
+        aspect.logPerformCheckIn(joinPoint, new DummyCheckin(checkinType));
         verify(auditLogRepository, times(1)).save(any(AuditLog.class));
     }
 
@@ -95,21 +131,7 @@ class AuditAspectTests {
     void testLogAuditNullAuth() {
         SecurityContextHolder.clearContext();
         JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logCheckIn(joinPoint, new Object());
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogUserSaveNullResult() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logUserSave(joinPoint, null);
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogUserSaveException() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logUserSave(joinPoint, new Object());
+        aspect.logPerformCheckIn(joinPoint, new DummyCheckin("ENTRADA"));
         verify(auditLogRepository, times(1)).save(any(AuditLog.class));
     }
 
@@ -184,6 +206,20 @@ class AuditAspectTests {
     }
 
     @Test
+    void testLogTwoFactorSetup() {
+        JoinPoint joinPoint = mock(JoinPoint.class);
+        aspect.logTwoFactorSetup(joinPoint, ResponseEntity.ok().build());
+        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
+    }
+
+    @Test
+    void testLogTwoFactorCodeEmail() {
+        JoinPoint joinPoint = mock(JoinPoint.class);
+        aspect.logTwoFactorCodeEmail(joinPoint, ResponseEntity.ok().build());
+        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
+    }
+
+    @Test
     void testLogUserDelete() {
         JoinPoint joinPoint = mock(JoinPoint.class);
         when(joinPoint.getArgs()).thenReturn(new Object[]{"999"});
@@ -217,7 +253,7 @@ class AuditAspectTests {
         SecurityContextHolder.setContext(securityContext);
         
         JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logCheckIn(joinPoint, new Object());
+        aspect.logPerformCheckIn(joinPoint, new DummyCheckin("ENTRADA"));
         verify(auditLogRepository, times(1)).save(any(AuditLog.class));
     }
 

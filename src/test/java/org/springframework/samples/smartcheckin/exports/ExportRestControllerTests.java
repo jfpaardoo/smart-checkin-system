@@ -27,6 +27,7 @@ import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserRepository;
 import org.springframework.samples.smartcheckin.user.UserService;
+import org.springframework.samples.smartcheckin.analytics.AnalyticsService;
 import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.audit.AuditLogRepository;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
@@ -65,6 +66,9 @@ class ExportRestControllerTests {
 
 	@MockitoBean
 	private UserService userService;
+
+	@MockitoBean
+	private AnalyticsService analyticsService;
 
 	@Autowired
 	private MockMvc mockMvc;

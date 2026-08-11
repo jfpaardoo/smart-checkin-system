@@ -126,19 +126,19 @@ export default function UserListAdmin() {
   };
 
   return (
-    <div className="ba-container">
-      <div className="ba-card">
+    <div className="da-container">
+      <div className="da-card">
         
         {/* Cabecera con el botón de Excel mejorado con Liquid Glass */}
-        <div className="ba-card-header ba-admin-header border-0">
+        <div className="da-card-header da-admin-header border-0">
             <h2>
-                <FontAwesomeIcon icon={faUsers} style={{ color: 'var(--ba-primary)' }} className="me-2" /> 
+                <FontAwesomeIcon icon={faUsers} style={{ color: 'var(--da-primary)' }} className="me-2" /> 
                 {t('users.title', 'Gestión de Empleados')}
             </h2>
-            <div className="ba-admin-header-actions">
+            <div className="da-admin-header-actions">
                 {/* Botón CSV */}
                 <Button 
-                  className="ba-btn-primary btn-icon-expand btn-expand-lg bg-[#b3c34c]/80 hover:bg-[#b3c34c] text-slate-900 border-0 shadow-sm" 
+                  className="da-btn-primary btn-icon-expand btn-expand-lg bg-[#b3c34c]/80 hover:bg-[#b3c34c] text-slate-900 border-0 shadow-sm" 
                   onClick={() => handleDownloadExport('users/csv', 'usuarios.csv')}
                 >
                     <FontAwesomeIcon icon={faFileCsv} />
@@ -147,7 +147,7 @@ export default function UserListAdmin() {
                 
                 {/* Botón Excel con efecto Liquid Glass acentuado */}
                 <Button 
-                  className="ba-btn-secondary btn-icon-expand btn-expand-lg bg-slate-500/30 hover:bg-slate-500/50 text-slate-800 border border-white/60 backdrop-blur-xl shadow-[0_8px_20px_0_rgba(31,38,135,0.07)] transition-all duration-300 hover:-translate-y-0.5" 
+                  className="da-btn-secondary btn-icon-expand btn-expand-lg bg-slate-500/30 hover:bg-slate-500/50 text-slate-800 border border-white/60 backdrop-blur-xl shadow-[0_8px_20px_0_rgba(31,38,135,0.07)] transition-all duration-300 hover:-translate-y-0.5" 
                   onClick={() => handleDownloadExport('users/excel', 'usuarios.xlsx')}
                 >
                     <FontAwesomeIcon icon={faFileExcel} className="text-slate-700" />
@@ -155,14 +155,14 @@ export default function UserListAdmin() {
                 </Button>
 
                 {/* Botón Principal Añadir */}
-                <Button className="ba-btn-primary shadow-[0_0_15px_rgba(179,195,76,0.6)]" tag={Link} to="/users/new">
+                <Button className="da-btn-primary shadow-[0_0_15px_rgba(179,195,76,0.6)]" tag={Link} to="/users/new">
                     <FontAwesomeIcon icon={faPlus} className="me-1" /> {t('users.addUser', 'Añadir Empleado')}
                 </Button>
             </div>
         </div>
 
         {/* Controles y pestañas originales */}
-        <div className="ba-admin-controls">
+        <div className="da-admin-controls">
           <UserListTabs 
             activeTab={activeTab} 
             setActiveTab={setActiveTab} 
@@ -170,7 +170,7 @@ export default function UserListAdmin() {
             pendingCount={pendingUsers.length} 
           />
 
-          <div className="ba-admin-search-wrapper">
+          <div className="da-admin-search-wrapper">
             <GlassSearchBar 
               placeholder={t('users.searchPlaceholder', 'Buscar por nombre, código...')}
               onSearch={(query) => setSearchQuery(query)}

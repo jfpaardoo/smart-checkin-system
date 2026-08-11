@@ -1,14 +1,14 @@
 /* ==========================================
-   SHIFTSYNC DESIGN SYSTEM - NAVBAR & DROPDOWNS
+   Distribution Academy DESIGN SYSTEM - NAVBAR & DROPDOWNS
    Refactorizado para Tailwind CSS (Liquid Glass Más Transparente)
    ========================================== */
 
-/* BA Glass Navbar - Official Capsule Style */
-.ba-navbar {
+/* la empresa Navbar - Official Capsule Style */
+.da-navbar {
   @apply flex items-center justify-between relative z-[1050] my-[15px] mx-[20px] px-[30px] py-[10px] rounded-[40px] bg-slate-800/5 backdrop-blur-sm backdrop-saturate-150 border border-white/30 border-t-white/45 shadow-[0_15px_35px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.4)] !important;
 }
 
-.ba-navbar-brand {
+.da-navbar-brand {
   @apply flex items-center font-semibold text-[1.4rem] text-white no-underline tracking-[-0.5px] !important;
 }
 
@@ -17,40 +17,40 @@
 }
 
 .logo-crop img {
-  @apply w-[60px] h-[60px] object-cover invert;
+  @apply w-[60px] h-[60px] object-cover;
 }
 
-.ba-nav-link {
+.da-nav-link {
   @apply text-white font-medium px-[1.2rem] py-2 text-[0.95rem] rounded-[20px] transition-all duration-300 ease-in-out hover:bg-white/15 hover:backdrop-blur-md hover:-translate-y-[1px] !important;
 }
 
 /* Custom Dropdown Styling - Vitreous Dark Glassmorphism */
-.dropdown-menu.ba-dropdown-menu {
+.dropdown-menu.da-dropdown-menu {
   @apply block rounded-[24px] border border-white/25 bg-slate-800/50 backdrop-blur-2xl backdrop-saturate-150 p-2 min-w-[230px] opacity-0 invisible mt-[2px] pointer-events-none transition-all duration-300 ease-out shadow-[0_25px_60px_rgba(0,0,0,0.2),inset_0_1px_1.5px_rgba(255,255,255,0.3)] !important;
 }
 
-.dropdown-menu.ba-dropdown-menu.show {
+.dropdown-menu.da-dropdown-menu.show {
   @apply opacity-100 visible mt-[22px] pointer-events-auto !important;
 }
 
 /* Capsule Hover Items for Dropdowns */
-.ba-dropdown-item {
+.da-dropdown-item {
   @apply bg-transparent text-white text-[0.95rem] font-medium px-[18px] py-[10px] my-1 rounded-[20px] transition-all duration-300 ease-in-out hover:bg-white/20 hover:backdrop-blur-md hover:translate-x-1 hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_4px_12px_rgba(0,0,0,0.15)] !important;
 }
 
 /* Light Liquid Glass Dropdown Menu for Forms & Selects */
-.ba-select-toggle + .dropdown-menu.ba-dropdown-menu,
-.dropdown-menu.ba-dropdown-menu.ba-light-dropdown {
+.da-select-toggle + .dropdown-menu.da-dropdown-menu,
+.dropdown-menu.da-dropdown-menu.da-light-dropdown {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(240, 245, 252, 0.85)) !important;
   @apply border-[1.5px] border-white/95 backdrop-blur-sm backdrop-saturate-150 shadow-[0_20px_50px_rgba(0,0,0,0.12),inset_0_1.5px_2px_white] !important;
 }
 
-.ba-select-toggle + .dropdown-menu.ba-dropdown-menu .ba-dropdown-item {
+.da-select-toggle + .dropdown-menu.da-dropdown-menu .da-dropdown-item {
   @apply text-slate-800 !important;
 }
 
-.ba-select-toggle + .dropdown-menu.ba-dropdown-menu .ba-dropdown-item:hover,
-.ba-select-toggle + .dropdown-menu.ba-dropdown-menu .ba-dropdown-item.active {
+.da-select-toggle + .dropdown-menu.da-dropdown-menu .da-dropdown-item:hover,
+.da-select-toggle + .dropdown-menu.da-dropdown-menu .da-dropdown-item.active {
   @apply bg-[#b3c34c]/35 text-[#2b3a04] font-semibold translate-x-1 !important;
 }
 
@@ -58,18 +58,18 @@
    TAILWIND UTILITY ABSTRACTIONS FOR NAVBAR
    ========================================== */
 
-.ba-nav-capsule {
+.da-nav-capsule {
   @apply sticky top-4 z-40 mx-4 md:mx-6 lg:mx-8 mb-8 rounded-[40px] bg-slate-800/40 backdrop-blur-xl backdrop-saturate-150 border border-white/20 shadow-[0_8px_32px_0_rgba(31,38,135,0.3)] transition-all duration-300;
 }
 
-.ba-nav-btn {
+.da-nav-btn {
   @apply flex items-center gap-2 px-4 py-2 text-white font-medium rounded-[20px] outline-none transition-all duration-300 hover:bg-white/15;
 }
 
-.ba-nav-dropdown-container {
+.da-nav-dropdown-container {
   @apply absolute mt-[16px] p-2 z-50 rounded-[24px] bg-slate-800/50 backdrop-blur-2xl backdrop-saturate-150 border border-white/25 shadow-[0_10px_40px_rgba(0,0,0,0.6)];
 }
 
-.ba-nav-dropdown-item {
+.da-nav-dropdown-item {
   @apply flex items-center gap-3 px-[18px] py-[10px] my-1 text-[0.95rem] font-medium text-white bg-transparent rounded-[20px] no-underline transition-all duration-300 hover:bg-white/20 hover:backdrop-blur-md hover:translate-x-1 hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_4px_12px_rgba(0,0,0,0.15)];
 }

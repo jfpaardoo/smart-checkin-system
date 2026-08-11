@@ -27,12 +27,12 @@ export default function GlassDropdown({
         tag="button"
         type="button"
         disabled={disabled}
-        className="ba-select-toggle d-flex align-items-center justify-content-between w-100 h-100"
+        className="da-select-toggle d-flex align-items-center justify-content-between w-100 h-100"
       >
         <span className="text-truncate">{displayLabel}</span>
         <span className="dropdown-caret-icon ms-2">▼</span>
       </DropdownToggle>
-      <DropdownMenu className="ba-dropdown-menu ba-light-dropdown w-100" style={{ maxHeight: '300px', overflowY: 'auto', padding: 0 }}>
+      <DropdownMenu className="da-dropdown-menu da-light-dropdown w-100" style={{ maxHeight: '300px', overflowY: 'auto', padding: 0 }}>
         {searchable && (
           <div className="p-2 border-bottom" style={{ position: 'sticky', top: 0, backgroundColor: 'var(--bg-glass, #ffffff)', zIndex: 2 }}>
             <input 
@@ -52,7 +52,7 @@ export default function GlassDropdown({
               <DropdownItem
                 key={opt.value}
                 disabled={opt.disabled}
-                className={`ba-dropdown-item d-flex align-items-center justify-content-between ${String(value) === String(opt.value) ? 'active' : ''}`}
+                className={`da-dropdown-item d-flex align-items-center justify-content-between ${String(value) === String(opt.value) ? 'active' : ''}`}
                 onClick={() => {
                   setSearchTerm("");
                   onChange(opt.value);

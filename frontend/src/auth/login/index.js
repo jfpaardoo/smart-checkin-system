@@ -28,7 +28,7 @@ export default function Login() {
 
   const localizedInputs = loginFormInputs.map(input => {
     if (input.name === 'username') {
-      return { ...input, tag: t('login.username', t('users.username', 'Usuario')) };
+      return { ...input, tag: t('login.usernameOrEmail', 'Usuario o Correo Electrónico') };
     }
     if (input.name === 'password') {
       return { ...input, tag: t('login.password', t('users.password', 'Contraseña')) };

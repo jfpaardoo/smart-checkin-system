@@ -103,7 +103,7 @@ public class PdfReportGenerator {
             Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
             Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
 
-            Paragraph title = new Paragraph("Reporte Ejecutivo de Recursos Humanos (BA Glass)", titleFont);
+            Paragraph title = new Paragraph("Reporte Ejecutivo de Recursos Humanos", titleFont);
             title.setAlignment(Element.ALIGN_CENTER);
             title.setSpacingAfter(30);
             document.add(title);

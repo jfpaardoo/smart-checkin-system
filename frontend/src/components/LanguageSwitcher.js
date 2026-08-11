@@ -53,7 +53,7 @@ export default function LanguageSwitcher({ isMobile = false, isOpen = false, onT
       <button
         type="button"
         onClick={handleToggle}
-        className="ba-nav-btn flex items-center gap-2 focus:outline-none"
+        className="da-nav-btn flex items-center gap-2 focus:outline-none"
       >
         <FaGlobe className="text-white/80" />
         <span className="uppercase font-semibold text-[0.85rem]">{current.code}</span>
@@ -70,7 +70,7 @@ export default function LanguageSwitcher({ isMobile = false, isOpen = false, onT
       {/* Menú emergente exclusivo para escritorio */}
       {!isMobile && (
         <div
-          className={`ba-nav-dropdown-container right-0 min-w-[180px] w-max transition-all duration-300 origin-top-right z-[100] ${
+          className={`da-nav-dropdown-container right-0 min-w-[180px] w-max transition-all duration-300 origin-top-right z-[100] ${
             isOpen
               ? 'opacity-100 scale-100 translate-y-0 visible'
               : 'opacity-0 scale-95 -translate-y-4 invisible pointer-events-none'
@@ -90,7 +90,7 @@ export default function LanguageSwitcher({ isMobile = false, isOpen = false, onT
                     key={code}
                     type="button"
                     onClick={() => handleChange(code)}
-                    className={`ba-nav-dropdown-item w-full flex items-center justify-between text-left whitespace-nowrap ${
+                    className={`da-nav-dropdown-item w-full flex items-center justify-between text-left whitespace-nowrap ${
                       isSelected ? 'bg-white/10 font-bold' : ''
                     }`}
                   >

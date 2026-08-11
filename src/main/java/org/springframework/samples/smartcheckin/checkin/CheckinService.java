@@ -3,18 +3,22 @@ package org.springframework.samples.smartcheckin.checkin;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.samples.smartcheckin.user.User;
+import org.springframework.samples.smartcheckin.statistics.events.CheckinEvent;
 
 @Service
 @SuppressWarnings("null")
 public class CheckinService {
 
     private final CheckinRepository checkInRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public CheckinService(CheckinRepository checkInRepository) {
+    public CheckinService(CheckinRepository checkInRepository, ApplicationEventPublisher eventPublisher) {
         this.checkInRepository = checkInRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -24,7 +28,11 @@ public class CheckinService {
         checkIn.setCheckInType(checkInType);
         checkIn.setUser(user);
         
-        return checkInRepository.save(checkIn);
+        Checkin savedCheckin = checkInRepository.save(checkIn);
+        
+        eventPublisher.publishEvent(new CheckinEvent(this));
+        
+        return savedCheckin;
     }
 
     @Transactional

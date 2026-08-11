@@ -14,7 +14,7 @@
     "cloudSettings": "Ajustes de Nube"
   },
   "home": {
-    "welcome": "Bienvenido a BA Distribution Academy",
+    "welcome": "Bienvenido a Distribution Academy",
     "subtitle": "Sistema de Gestión de Formación en la Distribución",
     "loggedIn": "Has iniciado sesión. Accede a tu panel para ver tu información y fichar.",
     "goToDashboard": "Ir al Panel",
@@ -62,7 +62,9 @@
     "username": "Usuario",
     "password": "Contraseña",
     "badCredentials": "Usuario o contraseña incorrectos",
-    "accountLocked": "La cuenta está bloqueada por demasiados intentos. Inténtalo más tarde."
+    "accountLocked": "La cuenta está bloqueada por demasiados intentos. Inténtalo más tarde.",
+    "usernameOrEmail": "Usuario o Correo Electrónico",
+    "2faInfo": "Introduce el código de tu aplicación de autenticación (2FA)."
   },
   "users": {
     "title": "Gestión de Usuarios",
@@ -100,7 +102,17 @@
     "userEntity": "Usuario",
     "registrationRequest": "Solicitud de registro",
     "approvedSuccess": "Empleado aprobado y activado con éxito.",
-    "approveError": "Error al aprobar empleado."
+    "approveError": "Error al aprobar empleado.",
+    "name": "Empleado",
+    "noActiveUsers": "No se encontraron usuarios activos",
+    "noPendingUsers": "No hay solicitudes de registro pendientes",
+    "statusWorking": "Trabajando",
+    "statusResting": "Descansando",
+    "statusPending": "Pendiente de Aprobación",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "email": "Correo Electrónico",
+    "searchPlaceholder": "Buscar por nombre, código..."
   },
   "formations": {
     "title": "Gestión de Formaciones",
@@ -139,7 +151,14 @@
     "signature": "Firma Digital",
     "document": "Documento de Formación (Opcional)",
     "documentExists": "Ya existe un documento vinculado.",
-    "viewCurrentDocument": "Ver documento actual"
+    "viewCurrentDocument": "Ver documento actual",
+    "attachments": "Documentos Adjuntos",
+    "existingFiles": "Archivos actuales",
+    "removeFile": "Eliminar archivo",
+    "dragDropFiles": "Arrastra archivos aquí o haz clic para subir",
+    "acceptedFormats": "Formatos aceptados: PDF, Word, Excel, PowerPoint, Imágenes",
+    "filesSelected": "archivo(s) seleccionado(s)",
+    "searchPlaceholderShort": "Buscar formación..."
   },
   "formationDetails": {
     "title": "Detalles de la Formación",
@@ -180,7 +199,11 @@
     "userRemoveError": "Error al eliminar usuario.",
     "userRemoveConfirm": "¿Seguro que deseas eliminar este asistente?",
     "documentation": "Documentación",
-    "viewDocumentation": "Ver Documentación"
+    "viewDocumentation": "Ver Documentación",
+    "previewNotAvailable": "Previsualización no disponible",
+    "cspMessage": "Por políticas de seguridad de Microsoft OneDrive, este documento no puede incrustarse directamente aquí.",
+    "cloudDocDescription": "Este documento está almacenado de forma segura en la nube. Haz clic en el botón inferior para abrirlo.",
+    "downloadPdfError": "Error al descargar el PDF."
   },
   "qr": {
     "title": "QR de Formación",
@@ -255,7 +278,22 @@
     "checkoutRecorded": "Salida registrada",
     "qrDetected": "Código QR detectado.",
     "codeMustBe6Digits": "El código debe tener 6 dígitos.",
-    "provideSignature": "Por favor proporcione su firma."
+    "provideSignature": "Por favor proporcione su firma.",
+    "enterCodeManually": "Ingresar Código Manualmente",
+    "enter6DigitCode": "Introduce el código de 6 dígitos de la formación.",
+    "cancel": "Cancelar",
+    "validate": "Validar Código",
+    "signStepTitle": "Por favor, firme abajo para finalizar",
+    "processing": "Procesando registro...",
+    "qrSubtitle": "Enfoca el código QR de la formación con tu cámara",
+    "startingCamera": "Iniciando cámara...",
+    "cantScan": "¿No puedes escanear? Ingresar código manualmente",
+    "manualCheckin": "Check-in Manual",
+    "manualSubtitle": "Introduce el código que te proporcionó el administrador",
+    "successTitle": "¡Proceso Completado!",
+    "formationLabel": "Formación",
+    "dateLabel": "Fecha",
+    "close": "Cerrar"
   },
   "common": {
     "save": "Guardar",
@@ -279,7 +317,13 @@
     "sessionExpired": "Sesión expirada. Por favor vuelva a iniciar sesión.",
     "genericError": "Ha ocurrido un error en la solicitud",
     "networkError": "Error de conexión con el servidor",
-    "saving": "Guardando..."
+    "saving": "Guardando...",
+    "details": "Detalles",
+    "openSecure": "Abrir / Ver Documento en la Nube",
+    "search": "Buscar...",
+    "camera": "Cámara",
+    "unknownError": "Ocurrió un error desconocido.",
+    "duplicateConflict": "Error de conflicto: El registro ya existe."
   },
   "lang": {
     "es": "Español",
@@ -295,7 +339,7 @@
     "title": "Panel de Analíticas",
     "exportCsv": "Exportar CSV",
     "exportExcel": "Exportar Excel",
-    "totalCheckins": "Total de Check-ins (Últimos 30 Días)",
+    "totalCheckins": "Asistencias a Formaciones (Últimos 30 Días)",
     "formationAttendance": "Asistencia a Formaciones",
     "attendance": "Asistencia",
     "absence": "Ausencia",
@@ -309,6 +353,9 @@
     "formationExports": "Formaciones y Firmas",
     "formationsCsv": "Formaciones y Firmas (CSV)",
     "formationsExcel": "Formaciones y Firmas (Excel)",
+    "employeeExports": "Analíticas de Empleados",
+    "employeesCsv": "Analíticas de Empleados (CSV)",
+    "employeesExcel": "Analíticas de Empleados (Excel)",
     "searchEmployee": "Buscar empleado por nombre o código...",
     "totalEmployees": "Total Empleados",
     "formationsCount": "Formaciones (Asistidas / Asignadas)",
@@ -328,7 +375,10 @@
     "signed": "Firmado",
     "inProgress": "En Curso",
     "pending": "Pendiente",
-    "noFormationsUser": "Sin formaciones asignadas a este empleado."
+    "noFormationsUser": "Sin formaciones asignadas a este empleado.",
+    "noEmployees": "No se encontraron empleados.",
+    "workCheckins": "Check-ins",
+    "workTime": "T. Trabajo"
   },
   "profile": {
     "myProfileTitle": "Mi Perfil",
@@ -373,7 +423,23 @@
     "incorrectCode": "Código incorrecto.",
     "disable2FAPrompt": "Introduce el código 2FA para confirmar desactivación:",
     "twoFactorDisableSuccess": "2FA desactivado correctamente.",
-    "twoFactorDisableError": "Error al desactivar 2FA."
+    "twoFactorDisableError": "Error al desactivar 2FA.",
+    "preferencesUpdated": "Preferencias actualizadas",
+    "preferencesUpdateError": "Error al actualizar preferencias",
+    "exportDataTitle": "Exportar Mis Datos (GDPR)",
+    "exportDataBtn": "Solicitar Exportación",
+    "deleteAccountTitle": "Eliminar Cuenta",
+    "deleteAccountBtn": "Eliminar Mi Cuenta",
+    "emailSentCode": "Te hemos enviado un correo con el código de confirmación.",
+    "exportSuccess": "Tus datos se han exportado correctamente.",
+    "exportError": "No se pudieron exportar tus datos.",
+    "deleteTypeConfirmError": "Debes escribir ELIMINAR para confirmar.",
+    "deleteSuccess": "Tu cuenta ha sido eliminada.",
+    "deleteError": "Error al eliminar la cuenta.",
+    "deleteConfirmTitle": "Eliminar Cuenta Permanentemente",
+    "areYouSure": "¿Estás completamente seguro?",
+    "deleteWarningText": "Esta acción eliminará permanentemente todos tus datos.",
+    "deleteConfirmBtn": "Eliminar Cuenta"
   },
   "register": {
     "title": "Solicitud de Registro",
@@ -392,7 +458,10 @@
     "receivedDesc": "Tu solicitud ha sido registrada correctamente. Un administrador la revisará y activará tu perfil para que puedas iniciar sesión.",
     "goToLogin": "Volver al Inicio de Sesión",
     "alreadyHaveAccount": "¿Ya tienes cuenta activa?",
-    "loginHere": "Iniciar Sesión"
+    "loginHere": "Iniciar Sesión",
+    "genericError": "Error al procesar la solicitud de registro.",
+    "successMessage": "Solicitud de registro enviada con éxito. El administrador activará tu cuenta.",
+    "email": "Correo Electrónico"
   },
   "audit": {
     "title": "Registro de Auditoría",
@@ -438,7 +507,8 @@
       "dbBackup": "Se inició copia de seguridad de la base de datos",
       "userSavedNoName": "Usuario guardado/actualizado",
       "formationSavedNoName": "Formación guardada/actualizada"
-    }
+    },
+    "exportPDF": "Exportar a PDF"
   },
   "cloudSettings": {
     "saveSuccess": "Ajustes de nube guardados correctamente",
@@ -459,5 +529,17 @@
     "refreshTokenLabel": "Refresh Token (Larga duración)",
     "refreshTokenHelp": "Este token se usará para obtener Access Tokens automáticamente de la Graph API sin intervención del usuario.",
     "saveBtn": "Guardar Ajustes"
-  }
+  },
+  "formations/csv": "formaciones_firmas.csv",
+  "formations/excel": "formaciones_firmas.xlsx",
+  "formationId": "formationId",
+  "users/csv": "usuarios.csv",
+  "users/excel": "usuarios.xlsx",
+  "notifications": {
+    "title": "Notificaciones",
+    "empty": "Sin notificaciones",
+    "clearAll": "Limpiar todo"
+  },
+  "web-vitals": "web-vitals",
+  "genericError": "Error al cargar formaciones"
 }

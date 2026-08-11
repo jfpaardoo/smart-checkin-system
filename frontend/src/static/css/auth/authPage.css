@@ -1,5 +1,5 @@
 /* ==========================================
-   SHIFTSYNC DESIGN SYSTEM - AUTHENTICATION PAGES
+   Distribution Academy DESIGN SYSTEM - AUTHENTICATION PAGES
    ========================================== */
 
 .auth-page-container {
@@ -10,18 +10,18 @@
   @apply w-full max-w-[480px] min-w-[320px] p-[40px_35px];
   
   /* Liquid Glass Integration */
-  background: var(--ba-glass-bg);
-  backdrop-filter: blur(var(--ba-glass-blur));
-  -webkit-backdrop-filter: blur(var(--ba-glass-blur));
+  background: var(--da-glass-bg);
+  backdrop-filter: blur(var(--da-glass-blur));
+  -webkit-backdrop-filter: blur(var(--da-glass-blur));
   border-radius: 2rem;
-  border: 1px solid var(--ba-glass-border);
-  box-shadow: var(--ba-glass-shadow);
-  color: var(--ba-text-primary);
+  border: 1px solid var(--da-glass-border);
+  box-shadow: var(--da-glass-shadow);
+  color: var(--da-text-primary);
 }
 
 .auth-page-container h1 {
   @apply text-center text-[2.5rem] font-extrabold mb-6 tracking-tight;
-  color: var(--ba-white);
+  color: var(--da-white);
   text-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 

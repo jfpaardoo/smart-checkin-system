@@ -13,6 +13,8 @@ public interface StatisticsRepository extends CrudRepository<PlatformStatistic, 
 
     Optional<PlatformStatistic> findByDate(LocalDate date);
 
+    List<PlatformStatistic> findByDateBetweenOrderByDateAsc(LocalDate startDate, LocalDate endDate);
+
     @Query("SELECT p FROM PlatformStatistic p ORDER BY p.date DESC LIMIT 30")
     List<PlatformStatistic> findLast30Days();
 
