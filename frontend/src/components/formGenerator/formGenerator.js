@@ -122,11 +122,15 @@ const FormGenerator = forwardRef((rawProps, ref) => {
   }, [submitForm]);
 
   useEffect(() => {
-    document.addEventListener("keyup", (e) => {
+    const handler = (e) => {
       if (e.key === "Enter" && props.listenEnterKey) {
         handleSubmit(e);
       }
-    });
+    };
+    document.addEventListener("keyup", handler);
+    return () => {
+      document.removeEventListener("keyup", handler);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

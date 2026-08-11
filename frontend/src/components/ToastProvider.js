@@ -59,8 +59,13 @@ function ToastItem({ toast, onRemove }) {
       setExiting(true);
       setTimeout(() => onRemove(toast.id), 450);
     }, DURATION);
-    return () => clearTimeout(timerRef.current);
-  }, [toast.id, toast.persistent, onRemove]);
+    
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [toast.persistent, toast.id, onRemove]);
 
   const handleClose = () => {
     clearTimeout(timerRef.current);

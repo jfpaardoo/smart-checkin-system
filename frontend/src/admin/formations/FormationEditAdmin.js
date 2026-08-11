@@ -7,7 +7,7 @@ import tokenService from "../../services/token.service";
 import "../../App.css";
 import "../../static/css/admin/adminPage.css";
 import getIdFromUrl from "../../util/getIdFromUrl";
-import moment from "moment";
+import dayjs from "dayjs";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
 import { getCleanFileInfo } from "../../utils/fileUtils";
@@ -31,7 +31,7 @@ export default function FormationEditAdmin() {
   } = useFormationEdit(id, jwt, toast, t);
 
   const formattedDate = formation.formationDate 
-    ? moment(formation.formationDate).format('YYYY-MM-DDTHH:mm') 
+    ? dayjs(formation.formationDate).format('YYYY-MM-DDTHH:mm') 
     : '';
 
   if (id !== "new" && loading) {

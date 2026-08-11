@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import api from '../../services/api';
 import { Table, Badge } from 'reactstrap';
 import { FaShieldAlt, FaSearch, FaDownload } from 'react-icons/fa';
 import tokenService from '../../services/token.service';
 import { TableGhostLoader } from '../../components/GhostLoader';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../components/ToastProvider';
 import { useWebSocket } from '../../context/WebSocketProvider';
 
+dayjs.extend(utc);
 export default function AuditDashboard() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,9 +19,22 @@ export default function AuditDashboard() {
   const toast = useToast();
   const { stompClient, isConnected } = useWebSocket();
 
+  const fetchLogs = useCallback(() => {
+    api.get('/api/v1/audit')
+      .then(response => {
+        setLogs(response.data);
+      })
+      .catch(error => {
+        console.error("Error fetching audit logs", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
   useEffect(() => {
     fetchLogs();
-  }, []);
+  }, [fetchLogs]);
 
   useEffect(() => {
     let auditSub = null;
@@ -33,25 +49,9 @@ export default function AuditDashboard() {
         auditSub.unsubscribe();
       }
     };
-  }, [isConnected, stompClient, toast]);
+  }, [isConnected, stompClient, fetchLogs, toast]);
 
-  const fetchLogs = async () => {
-    try {
-      const response = await fetch('/api/v1/audit', {
-        headers: {
-          Authorization: `Bearer ${tokenService.getLocalAccessToken()}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setLogs(data);
-      }
-    } catch (error) {
-      console.error("Error fetching audit logs", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   const getActionColor = (action) => {
     if (action.includes('SECURITY_ANOMALY')) return 'danger';
@@ -233,7 +233,7 @@ export default function AuditDashboard() {
                   {filteredLogs.map(log => (
                     <tr key={log.id} className={log.action === 'SECURITY_ANOMALY' ? 'table-danger border-danger' : ''}>
                       <td className={`small fw-medium ${log.action === 'SECURITY_ANOMALY' ? 'text-danger fw-bold' : 'text-muted'}`}>
-                        {moment.utc(log.timestamp).local().format('DD/MM/YYYY HH:mm:ss')}
+                        {dayjs.utc(log.timestamp).local().format('DD/MM/YYYY HH:mm:ss')}
                       </td>
                       <td>
                         <Badge color={getActionColor(log.action)} pill className="px-3 py-2 fw-semibold text-wrap" style={{ wordBreak: 'break-all', minWidth: '100px' }}>
@@ -264,7 +264,7 @@ export default function AuditDashboard() {
                     <div className="flex justify-between items-start gap-3">
                       <div>
                         <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
-                          {moment.utc(log.timestamp).local().format('DD/MM/YYYY HH:mm:ss')}
+                          {dayjs.utc(log.timestamp).local().format('DD/MM/YYYY HH:mm:ss')}
                         </span>
                         <h3 className="font-bold text-slate-800 m-0 text-base mt-0.5">{log.username || 'Sistema'}</h3>
                       </div>

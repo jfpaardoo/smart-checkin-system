@@ -1,4 +1,9 @@
-import moment from 'moment';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+dayjs.extend(utc);
+dayjs.extend(relativeTime);
 
 /**
  * Formats duration given in total minutes to a localized human-readable string (e.g., '2h 15min' or '45 min').
@@ -29,7 +34,7 @@ export function formatDuration(minutes) {
  */
 export function formatDateTime(dateInput, formatPattern = 'DD/MM/YYYY HH:mm') {
   if (!dateInput) return '-';
-  return moment.utc(dateInput).local().format(formatPattern);
+  return dayjs.utc(dateInput).local().format(formatPattern);
 }
 
 /**
@@ -40,5 +45,5 @@ export function formatDateTime(dateInput, formatPattern = 'DD/MM/YYYY HH:mm') {
  */
 export function formatFromNow(dateInput) {
   if (!dateInput) return '-';
-  return moment(dateInput).fromNow();
+  return dayjs(dateInput).fromNow();
 }

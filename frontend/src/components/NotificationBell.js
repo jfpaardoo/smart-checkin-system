@@ -62,7 +62,7 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
     };
   }, []);
 
-  const subscribeToPush = useCallback(async () => {
+  const initPushService = useCallback(async () => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
 
     try {
@@ -113,9 +113,9 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
 
   useEffect(() => {
     if (jwt) {
-      subscribeToPush();
+      initPushService();
     }
-  }, [jwt, subscribeToPush]);
+  }, [jwt, initPushService]);
 
   const markAllRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import api from '../../services/api';
 import GlassDropdown from '../../components/GlassDropdown';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -61,37 +62,24 @@ export default function AnalyticsDashboard() {
     if (!jwt) return;
     let isMounted = true;
 
-    const loadAllAnalyticsData = async () => {
-      try {
-        let statsUrl = '/api/v1/analytics';
-        if (startDate && endDate) {
-          statsUrl += `?startDate=${startDate}&endDate=${endDate}`;
-        }
-        
-        const [statsRes, usersRes, formationsRes] = await Promise.all([
-          fetch(statsUrl, { headers: { 'Authorization': `Bearer ${jwt}` } }),
-          fetch('/api/v1/analytics/users', { headers: { 'Authorization': `Bearer ${jwt}` } }),
-          fetch('/api/v1/analytics/formations', { headers: { 'Authorization': `Bearer ${jwt}` } })
-        ]);
-
-        if (isMounted && statsRes.ok) {
-          const statsData = await statsRes.json();
-          setStatistics(Array.isArray(statsData) ? statsData : []);
-        }
-        if (isMounted && usersRes.ok) {
-          const usersData = await usersRes.json();
-          setUserAnalyticsList(Array.isArray(usersData) ? usersData : []);
-        }
-        if (isMounted && formationsRes.ok) {
-          const formationsData = await formationsRes.json();
-          setFormationAnalyticsList(Array.isArray(formationsData) ? formationsData : []);
-        }
-      } catch (error) {
-        console.error("Failed to load analytics concurrently", error);
+    let statsUrl = '/api/v1/analytics';
+    if (startDate && endDate) {
+      statsUrl += `?startDate=${startDate}&endDate=${endDate}`;
+    }
+    
+    Promise.all([
+      api.get(statsUrl),
+      api.get('/api/v1/analytics/users'),
+      api.get('/api/v1/analytics/formations')
+    ]).then(([statsRes, usersRes, formationsRes]) => {
+      if (isMounted) {
+        setStatistics(Array.isArray(statsRes.data) ? statsRes.data : []);
+        setUserAnalyticsList(Array.isArray(usersRes.data) ? usersRes.data : []);
+        setFormationAnalyticsList(Array.isArray(formationsRes.data) ? formationsRes.data : []);
       }
-    };
-
-    loadAllAnalyticsData();
+    }).catch(error => {
+      console.error("Failed to load analytics concurrently", error);
+    });
 
     return () => {
       isMounted = false;
