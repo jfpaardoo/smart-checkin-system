@@ -1,5 +1,5 @@
 /* ==========================================
-   SHIFTSYNC DESIGN SYSTEM - QR SCANNER & GENERATOR
+   Distribution Academy DESIGN SYSTEM - QR SCANNER & GENERATOR
    ========================================== */
 
 /* QR Reader Responsive Glass & Border Constraints */
@@ -43,7 +43,7 @@
 }
 
 /* QR Generator Component Styles */
-.ba-card-qr {
+.da-card-qr {
   max-width: 960px;
   flex: initial;
   align-self: center;
@@ -64,7 +64,7 @@
 
 .qr-title {
   font-weight: 600;
-  color: var(--ba-dark);
+  color: var(--da-dark);
   font-size: 2.1rem;
   letter-spacing: -0.5px;
   margin-bottom: 0.5rem;
@@ -81,7 +81,7 @@
   font-size: 2.8rem;
   font-weight: 800;
   letter-spacing: 10px;
-  color: var(--ba-dark);
+  color: var(--da-dark);
   background: #f4f4f4;
   padding: 10px 30px;
   border-radius: 18px;
@@ -99,7 +99,7 @@
 }
 
 .qr-progress-fill {
-  background: linear-gradient(90deg, var(--ba-primary, #cce364), var(--ba-primary-glow, rgba(204,227,100,0.6)));
+  background: linear-gradient(90deg, var(--da-primary, #cce364), var(--da-primary-glow, rgba(204,227,100,0.6)));
   transition: width 100ms linear, background 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 0 10px rgba(204, 227, 100, 0.6);
   height: 100%;

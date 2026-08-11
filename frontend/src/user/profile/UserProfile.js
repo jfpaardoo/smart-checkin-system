@@ -91,15 +91,15 @@ export default function UserProfile() {
   };
 
   return (
-    <div className="ba-container">
+    <div className="da-container">
       <div className="mx-auto w-full max-w-[1000px]">
         <ProfileHeader userData={userData} formations={formations} t={t} />
 
         <div className="px-1 px-md-3">
-          <Nav pills className="ba-nav-pills border-0 mb-4 justify-content-center flex-column flex-md-row gap-3">
+          <Nav pills className="da-nav-pills border-0 mb-4 justify-content-center flex-column flex-md-row gap-3">
             <NavItem className="w-full md:w-auto">
               <NavLink 
-                className={`px-4 py-2 d-flex flex-column align-items-center justify-content-center text-center w-full md:min-w-[240px] transition-all ba-glass-panel ${activeTab === "1" ? "active" : ""}`} 
+                className={`px-4 py-2 d-flex flex-column align-items-center justify-content-center text-center w-full md:min-w-[240px] transition-all da-glass-panel ${activeTab === "1" ? "active" : ""}`} 
                 onClick={() => toggleTab("1")} 
                 style={{ cursor: "pointer" }}
               >
@@ -109,7 +109,7 @@ export default function UserProfile() {
             </NavItem>
             <NavItem className="w-full md:w-auto">
               <NavLink 
-                className={`px-4 py-2 d-flex flex-column align-items-center justify-content-center text-center w-full md:min-w-[240px] transition-all ba-glass-panel ${activeTab === "2" ? "active" : ""}`} 
+                className={`px-4 py-2 d-flex flex-column align-items-center justify-content-center text-center w-full md:min-w-[240px] transition-all da-glass-panel ${activeTab === "2" ? "active" : ""}`} 
                 onClick={() => toggleTab("2")} 
                 style={{ cursor: "pointer" }}
               >
@@ -119,7 +119,7 @@ export default function UserProfile() {
             </NavItem>
             <NavItem className="w-full md:w-auto">
               <NavLink 
-                className={`px-4 py-2 d-flex flex-column align-items-center justify-content-center text-center w-full md:min-w-[240px] transition-all ba-glass-panel ${activeTab === "3" ? "active" : ""}`} 
+                className={`px-4 py-2 d-flex flex-column align-items-center justify-content-center text-center w-full md:min-w-[240px] transition-all da-glass-panel ${activeTab === "3" ? "active" : ""}`} 
                 onClick={() => toggleTab("3")} 
                 style={{ cursor: "pointer" }}
               >
@@ -131,13 +131,13 @@ export default function UserProfile() {
         </div>
 
         <TabContent activeTab={activeTab} className="p-0 border-0 bg-transparent">
-          <TabPane tabId="1" className="ba-fade-in">
+          <TabPane tabId="1" className="da-fade-in">
             <PersonalDataTab loadingUser={loadingUser} userData={userData} setUserData={setUserData} t={t} />
           </TabPane>
-          <TabPane tabId="2" className="ba-fade-in">
+          <TabPane tabId="2" className="da-fade-in">
             <FormationsTab loadingFormations={loadingFormations} formations={formations} t={t} />
           </TabPane>
-          <TabPane tabId="3" className="ba-fade-in">
+          <TabPane tabId="3" className="da-fade-in">
             <PasswordSecurityTab 
               {...passwordProps} 
               userData={userData} 

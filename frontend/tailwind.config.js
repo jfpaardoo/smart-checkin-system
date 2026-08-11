@@ -6,12 +6,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'ba-primary': '#b3c34c',
-        'ba-primary-hover': '#9eb038',
-        'ba-dark': '#1e293b',
-        'ba-dark-hover': '#0f172a',
-        'ba-glass-dark': 'rgba(43, 51, 64, 0.784)',
-        'ba-glass-light': 'rgba(255, 255, 255, 0.92)',
+        'da-primary': '#b3c34c',
+        'da-primary-hover': '#9eb038',
+        'da-dark': '#1e293b',
+        'da-dark-hover': '#0f172a',
+        'da-glass-dark': 'rgba(43, 51, 64, 0.784)',
+        'da-glass-light': 'rgba(255, 255, 255, 0.92)',
       },
       fontFamily: {
         sans: ['Outfit', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],

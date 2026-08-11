@@ -12,7 +12,7 @@ export default function PrivacyDataTab({
   return (
     <div className="space-y-6">
       {/* Tarjeta 1: Exportación GDPR */}
-      <div className="ba-glass-panel p-6 rounded-2xl border border-white/40 bg-white/30 backdrop-blur-md shadow-sm">
+      <div className="da-glass-panel p-6 rounded-2xl border border-white/40 bg-white/30 backdrop-blur-md shadow-sm">
         {/* Cabecera con Icono al lado del Título */}
         <div className="flex items-center gap-2.5 mb-2">
           <FaDownload className="text-[#82a328] text-lg flex-shrink-0" />
@@ -30,7 +30,7 @@ export default function PrivacyDataTab({
 
         <button
           type="button"
-          className="ba-btn-primary flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all"
+          className="da-btn-primary flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all"
           disabled={isExporting}
           onClick={handleExportData}
         >
@@ -44,7 +44,7 @@ export default function PrivacyDataTab({
       </div>
 
       {/* Tarjeta 2: Eliminación de Cuenta */}
-      <div className="ba-glass-panel p-6 rounded-2xl border border-white/40 bg-white/30 backdrop-blur-md shadow-sm">
+      <div className="da-glass-panel p-6 rounded-2xl border border-white/40 bg-white/30 backdrop-blur-md shadow-sm">
         {/* Cabecera con Icono al lado del Título */}
         <div className="flex items-center gap-2.5 mb-2">
           <FaTrashAlt className="text-red-600 text-lg flex-shrink-0" />
@@ -62,7 +62,7 @@ export default function PrivacyDataTab({
 
         <button
           type="button"
-          className="ba-btn-danger flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all"
+          className="da-btn-danger flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all"
           disabled={isDeleting}
           onClick={handleDeleteAccount}
         >

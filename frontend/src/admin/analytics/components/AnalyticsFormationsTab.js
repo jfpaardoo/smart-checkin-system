@@ -54,7 +54,7 @@ export default function AnalyticsFormationsTab({ formations }) {
       
       {/* 1. VISTA ESCRITORIO */}
       <div className="hidden lg:block overflow-x-auto">
-        <Table responsive hover aria-label="formations analytics" className="ba-table align-middle" style={{ tableLayout: 'fixed', minWidth: '800px', width: '100%' }}>
+        <Table responsive hover aria-label="formations analytics" className="da-table align-middle" style={{ tableLayout: 'fixed', minWidth: '800px', width: '100%' }}>
           <thead>
             <tr>
               <th style={{ width: '25%', paddingLeft: '1rem' }}>{t('analytics.formationName', 'Nombre')}</th>

@@ -82,7 +82,7 @@ const SignatureStep = forwardRef(({ onSubmit, onCancel, submitLabel }, ref) => {
         {onCancel && (
           <button 
             type="button" 
-            className="ba-btn ba-btn-secondary py-3 px-4" 
+            className="da-btn da-btn-secondary py-3 px-4" 
             onClick={onCancel}
           >
             {t('checkin.cancel', 'Cancelar')}
@@ -90,7 +90,7 @@ const SignatureStep = forwardRef(({ onSubmit, onCancel, submitLabel }, ref) => {
         )}
         <button 
           type="button" 
-          className="ba-btn ba-btn-primary py-3 px-4" 
+          className="da-btn da-btn-primary py-3 px-4" 
           onClick={handleSubmit}
         >
           {submitLabel || t('dashboard.confirmCheckout', 'Confirmar')}

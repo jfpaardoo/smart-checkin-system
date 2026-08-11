@@ -1,6 +1,6 @@
-# Decisiones de Diseño y Arquitectura (BA Distribution Academy / ShiftSync)
+# Decisiones de Diseño y Arquitectura (Distribution Academy / Distribution Academy)
 
-Este documento es un registro vivo (*Architecture Decision Record* o ADR) de las decisiones arquitectónicas, tecnológicas y de diseño tomadas durante el desarrollo de la aplicación de fichaje, control de asistencia y formación de empleados (**ShiftSync** para BA Glass). Su propósito es garantizar la trazabilidad del sistema frente a futuras consultas técnicas, auditorías de seguridad y procesos de escalabilidad.
+Este documento es un registro vivo (*Architecture Decision Record* o ADR) de las decisiones arquitectónicas, tecnológicas y de diseño tomadas durante el desarrollo de la aplicación de fichaje, control de asistencia y formación de empleados (**Distribution Academy** para la empresa). Su propósito es garantizar la trazabilidad del sistema frente a futuras consultas técnicas, auditorías de seguridad y procesos de escalabilidad.
 
 ---
 

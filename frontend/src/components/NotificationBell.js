@@ -154,7 +154,7 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
       {/* Solo renderiza el flotante desplegable en escritorio usando la prop isOpen del padre */}
       {!isMobile && (
         <div 
-          className={`absolute right-0 top-full mt-3 w-[300px] sm:w-[320px] ba-nav-dropdown-container transition-all duration-300 origin-top-right z-[100] ${isOpen ? 'opacity-100 scale-100 translate-y-0 visible' : 'opacity-0 scale-95 -translate-y-4 invisible pointer-events-none'}`}
+          className={`absolute right-0 top-full mt-3 w-[300px] sm:w-[320px] da-nav-dropdown-container transition-all duration-300 origin-top-right z-[100] ${isOpen ? 'opacity-100 scale-100 translate-y-0 visible' : 'opacity-0 scale-95 -translate-y-4 invisible pointer-events-none'}`}
         >
           <div className="py-2" role="menu">
             <div className="flex justify-between items-center px-4 py-2 border-b border-white/10 mb-2">

@@ -55,7 +55,7 @@ export default function PersonalDataTab({ loadingUser, userData, setUserData, t 
       <div className="row g-3 mb-5">
         
         <div className="col-12 col-md-6">
-          <div className="p-2 px-md-3 ba-glass-panel d-flex align-items-center gap-2 h-100">
+          <div className="p-2 px-md-3 da-glass-panel d-flex align-items-center gap-2 h-100">
             <div className="p-2 rounded-circle bg-light text-[#8a9e29] flex-shrink-0">
               <FaUser size={18} />
             </div>
@@ -67,7 +67,7 @@ export default function PersonalDataTab({ loadingUser, userData, setUserData, t 
         </div>
 
         <div className="col-12 col-md-6">
-          <div className="p-2 px-md-3 ba-glass-panel d-flex align-items-center gap-2 h-100">
+          <div className="p-2 px-md-3 da-glass-panel d-flex align-items-center gap-2 h-100">
             <div className="p-2 rounded-circle bg-light text-[#8a9e29] flex-shrink-0">
               <FaEnvelope size={18} />
             </div>
@@ -79,7 +79,7 @@ export default function PersonalDataTab({ loadingUser, userData, setUserData, t 
         </div>
 
         <div className="col-12 col-md-6">
-          <div className="p-2 px-md-3 ba-glass-panel d-flex align-items-center gap-2 h-100">
+          <div className="p-2 px-md-3 da-glass-panel d-flex align-items-center gap-2 h-100">
             <div className="p-2 rounded-circle bg-light text-[#8a9e29] flex-shrink-0">
               <FaUser size={18} />
             </div>
@@ -91,7 +91,7 @@ export default function PersonalDataTab({ loadingUser, userData, setUserData, t 
         </div>
         
         <div className="col-12 col-md-6">
-          <div className="p-2 px-md-3 ba-glass-panel d-flex align-items-center gap-2 h-100">
+          <div className="p-2 px-md-3 da-glass-panel d-flex align-items-center gap-2 h-100">
             <div className="p-2 rounded-circle bg-light text-[#8a9e29] flex-shrink-0">
               <FaUser size={18} />
             </div>
@@ -103,7 +103,7 @@ export default function PersonalDataTab({ loadingUser, userData, setUserData, t 
         </div>
 
         <div className="col-12 col-md-6">
-          <div className="p-2 px-md-3 ba-glass-panel d-flex align-items-center gap-2 h-100">
+          <div className="p-2 px-md-3 da-glass-panel d-flex align-items-center gap-2 h-100">
             <div className="p-2 rounded-circle bg-light text-[#8a9e29] flex-shrink-0">
               <FaIdBadge size={18} />
             </div>
@@ -115,7 +115,7 @@ export default function PersonalDataTab({ loadingUser, userData, setUserData, t 
         </div>
 
         <div className="col-12 col-md-6">
-          <div className="p-2 px-md-3 ba-glass-panel d-flex align-items-center gap-2 h-100">
+          <div className="p-2 px-md-3 da-glass-panel d-flex align-items-center gap-2 h-100">
             <div className="p-2 rounded-circle bg-light text-[#8a9e29] flex-shrink-0">
               <FaShieldAlt size={18} />
             </div>
@@ -135,7 +135,7 @@ export default function PersonalDataTab({ loadingUser, userData, setUserData, t 
       
       <div className="row g-3">
         <div className="col-12 col-md-6">
-          <div className="p-3 ba-glass-panel d-flex items-center justify-content-between h-100">
+          <div className="p-3 da-glass-panel d-flex items-center justify-content-between h-100">
             <div>
               <div className="fw-bold text-dark d-flex align-items-center gap-2 mb-1">
                 <FaEnvelope className="text-[#8a9e29]" /> Notificaciones por Correo
@@ -153,7 +153,7 @@ export default function PersonalDataTab({ loadingUser, userData, setUserData, t 
         </div>
 
         <div className="col-12 col-md-6">
-          <div className="p-3 ba-glass-panel d-flex items-center justify-content-between h-100">
+          <div className="p-3 da-glass-panel d-flex items-center justify-content-between h-100">
             <div>
               <div className="fw-bold text-dark d-flex align-items-center gap-2 mb-1">
                 <FaMobileAlt className="text-[#8a9e29]" /> Notificaciones Push

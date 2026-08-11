@@ -4,7 +4,7 @@
 
 **Curso académico:** 2025/2026
 
-**Nombre del proyecto:** BA Distribution Academy — Smart Check-in System
+**Nombre del proyecto:** Distribution Academy — Smart Check-in System
 
 **Repositorio:** https://github.com/jfpaardoo/smart-checkin-system
 
@@ -16,7 +16,7 @@
 
 ## 1.1 Descripción general
 
-BA Distribution Academy es una plataforma integral para la gestión del control de asistencia y la administración de formaciones corporativas desarrollada para BA Glass.
+Distribution Academy es una plataforma integral para la gestión del control de asistencia y la administración de formaciones corporativas desarrollada para la empresa.
 
 El sistema sustituye los procesos manuales de registro de presencia por una solución completamente digital, segura y auditable que permite registrar tanto la asistencia diaria de los empleados como su participación en acciones formativas internas.
 
@@ -140,7 +140,7 @@ Es responsable de la configuración global de la plataforma y de la supervisión
 
 ## 3.2 Empleado
 
-Representa al personal de BA Glass que utiliza la plataforma durante su actividad diaria.
+Representa al personal de la empresa que utiliza la plataforma durante su actividad diaria.
 
 Es el usuario que realiza el proceso de fichaje y participa en las formaciones.
 
@@ -1677,7 +1677,7 @@ El sistema será aceptado cuando se cumplan los siguientes criterios.
 
 # 13. Conclusiones
 
-El análisis funcional realizado sobre el repositorio permite concluir que **BA Distribution Academy – Smart Check-in System** constituye una plataforma integral para la gestión del control horario y de las acciones formativas corporativas.
+El análisis funcional realizado sobre el repositorio permite concluir que **Distribution Academy – Smart Check-in System** constituye una plataforma integral para la gestión del control horario y de las acciones formativas corporativas.
 
 El sistema implementa una arquitectura moderna basada en una clara separación entre presentación, lógica de negocio y persistencia, incorporando mecanismos avanzados de seguridad como autenticación mediante JWT, doble factor basado en TOTP, auditoría de operaciones, control de acceso por roles y protección frente a accesos no autorizados.
 

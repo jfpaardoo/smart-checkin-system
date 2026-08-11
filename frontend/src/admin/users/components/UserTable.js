@@ -27,7 +27,7 @@ export default function UserTable({ users, loading, activeTab, onApprove, onReje
     <div className="w-full">
       {/* 1. VISTA ESCRITORIO (Se oculta antes, en pantallas menores a 1024px - 'lg') */}
       <div className="hidden lg:block overflow-x-auto">
-        <Table responsive hover aria-label="users" className="ba-table align-middle" style={{ tableLayout: 'fixed', minWidth: '800px', width: '100%' }}>
+        <Table responsive hover aria-label="users" className="da-table align-middle" style={{ tableLayout: 'fixed', minWidth: '800px', width: '100%' }}>
           <thead>
             <tr>
               <th style={{ width: '9%', paddingLeft: '1rem' }}>{t('users.personalCode', 'Código')}</th>
@@ -48,22 +48,22 @@ export default function UserTable({ users, loading, activeTab, onApprove, onReje
                 <td style={{ wordBreak: 'break-word' }}>{user.lastName}</td>
                 <td className="text-center">
                   {activeTab === 'approved' ? (
-                    <span className={`ba-badge ${user.isWorking ? 'ba-badge-active' : 'ba-badge-inactive'}`} style={{ whiteSpace: 'normal', display: 'inline-block' }}>
+                    <span className={`da-badge ${user.isWorking ? 'da-badge-active' : 'da-badge-inactive'}`} style={{ whiteSpace: 'normal', display: 'inline-block' }}>
                       {user.isWorking ? t('users.statusWorking', 'Trabajando') : t('users.statusResting', 'Descansando')}
                     </span>
                   ) : (
-                    <span className="ba-badge ba-badge-warning">{t('users.statusPending', 'Pendiente de Aprobación')}</span>
+                    <span className="da-badge da-badge-warning">{t('users.statusPending', 'Pendiente de Aprobación')}</span>
                   )}
                 </td>
                 <td className="text-center">
-                  <span className="ba-badge bg-light text-dark border">{user.authority.authority}</span>
+                  <span className="da-badge bg-light text-dark border">{user.authority.authority}</span>
                 </td>
                 <td>
                   {activeTab === 'approved' ? (
-                    <div className="ba-table-actions">
+                    <div className="da-table-actions">
                       <Button
                         size="sm"
-                        className="ba-btn-blue w-100 fw-bold shadow-sm"
+                        className="da-btn-blue w-100 fw-bold shadow-sm"
                         style={{ borderRadius: '20px' }}
                         tag={Link}
                         to={"/users/" + user.id}
@@ -72,7 +72,7 @@ export default function UserTable({ users, loading, activeTab, onApprove, onReje
                       </Button>
                       <Button
                         size="sm"
-                        className="ba-btn-danger w-100 fw-bold shadow-sm"
+                        className="da-btn-danger w-100 fw-bold shadow-sm"
                         style={{ borderRadius: '20px' }}
                         onClick={() => onDelete(user.id)}
                       >
@@ -80,10 +80,10 @@ export default function UserTable({ users, loading, activeTab, onApprove, onReje
                       </Button>
                     </div>
                   ) : (
-                    <div className="ba-table-actions">
+                    <div className="da-table-actions">
                       <Button
                         size="sm"
-                        className="ba-btn-primary w-100 d-flex align-items-center justify-content-center gap-1 fw-bold shadow-sm"
+                        className="da-btn-primary w-100 d-flex align-items-center justify-content-center gap-1 fw-bold shadow-sm"
                         style={{ borderRadius: '20px' }}
                         onClick={() => onApprove(user.id)}
                       >
@@ -92,7 +92,7 @@ export default function UserTable({ users, loading, activeTab, onApprove, onReje
                       </Button>
                       <Button
                         size="sm"
-                        className="ba-btn-danger w-100 d-flex align-items-center justify-content-center gap-1 fw-bold shadow-sm"
+                        className="da-btn-danger w-100 d-flex align-items-center justify-content-center gap-1 fw-bold shadow-sm"
                         style={{ borderRadius: '20px' }}
                         onClick={() => onReject(user.id)}
                       >
@@ -119,27 +119,27 @@ export default function UserTable({ users, loading, activeTab, onApprove, onReje
                 <p className="text-xs text-slate-500 m-0 mt-0.5">@{user.username}</p>
               </div>
               <div>
-                <span className="ba-badge bg-light text-dark border text-xs">{user.authority.authority}</span>
+                <span className="da-badge bg-light text-dark border text-xs">{user.authority.authority}</span>
               </div>
             </div>
 
             <div className="flex items-center justify-between border-t border-slate-200/50 pt-3">
               <span className="text-xs text-slate-500">Estado:</span>
               {activeTab === 'approved' ? (
-                <span className={`ba-badge ${user.isWorking ? 'ba-badge-active' : 'ba-badge-inactive'}`}>
+                <span className={`da-badge ${user.isWorking ? 'da-badge-active' : 'da-badge-inactive'}`}>
                   {user.isWorking ? t('users.statusWorking', 'Trabajando') : t('users.statusResting', 'Descansando')}
                 </span>
               ) : (
-                <span className="ba-badge ba-badge-warning">{t('users.statusPending', 'Pendiente de Aprobación')}</span>
+                <span className="da-badge da-badge-warning">{t('users.statusPending', 'Pendiente de Aprobación')}</span>
               )}
             </div>
 
             <div className="flex flex-row gap-2 items-center justify-between border-t border-slate-200/50 pt-3">
               {activeTab === 'approved' ? (
-                <div className="ba-table-actions w-full flex gap-2">
+                <div className="da-table-actions w-full flex gap-2">
                   <Button
                     size="sm"
-                    className="ba-btn-blue flex-1 fw-bold shadow-sm"
+                    className="da-btn-blue flex-1 fw-bold shadow-sm"
                     style={{ borderRadius: '20px' }}
                     tag={Link}
                     to={"/users/" + user.id}
@@ -148,7 +148,7 @@ export default function UserTable({ users, loading, activeTab, onApprove, onReje
                   </Button>
                   <Button
                     size="sm"
-                    className="ba-btn-danger flex-1 fw-bold shadow-sm"
+                    className="da-btn-danger flex-1 fw-bold shadow-sm"
                     style={{ borderRadius: '20px' }}
                     onClick={() => onDelete(user.id)}
                   >
@@ -156,10 +156,10 @@ export default function UserTable({ users, loading, activeTab, onApprove, onReje
                   </Button>
                 </div>
               ) : (
-                <div className="ba-table-actions w-full flex gap-2">
+                <div className="da-table-actions w-full flex gap-2">
                   <Button
                     size="sm"
-                    className="ba-btn-primary flex-1 d-flex align-items-center justify-content-center gap-1 fw-bold shadow-sm"
+                    className="da-btn-primary flex-1 d-flex align-items-center justify-content-center gap-1 fw-bold shadow-sm"
                     style={{ borderRadius: '20px' }}
                     onClick={() => onApprove(user.id)}
                   >
@@ -168,7 +168,7 @@ export default function UserTable({ users, loading, activeTab, onApprove, onReje
                   </Button>
                   <Button
                     size="sm"
-                    className="ba-btn-danger flex-1 d-flex align-items-center justify-content-center gap-1 fw-bold shadow-sm"
+                    className="da-btn-danger flex-1 d-flex align-items-center justify-content-center gap-1 fw-bold shadow-sm"
                     style={{ borderRadius: '20px' }}
                     onClick={() => onReject(user.id)}
                   >

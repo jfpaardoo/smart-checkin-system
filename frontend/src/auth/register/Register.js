@@ -95,9 +95,9 @@ export default function Register() {
   };
 
   return (
-    <div className="ba-container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
+    <div className="da-container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
       
-      <div className="ba-card" style={{ maxWidth: '1080px', margin: '2rem auto', padding: '50px' }}>
+      <div className="da-card" style={{ maxWidth: '1080px', margin: '2rem auto', padding: '50px' }}>
         
         {submittedSuccess ? (
           /* Pantalla de Éxito Centrada y Limpia */

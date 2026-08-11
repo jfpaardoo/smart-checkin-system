@@ -1,6 +1,6 @@
 # Plan de Pruebas
 
-**Nombre del proyecto:** BA Distribution Academy — Smart Check-in System
+**Nombre del proyecto:** Distribution Academy — Smart Check-in System
 
 **Repositorio:** https://github.com/jfpaardoo/smart-checkin-system
 
@@ -17,7 +17,7 @@
 
 ## 1. Introducción
 
-Este documento describe el plan de pruebas para el proyecto **BA Distribution Academy — Smart Check-in System**. El sistema es una plataforma de control de asistencia para **BA Glass**, empresa fabricante de envases de vidrio con presencia en 7 países y más de 4.500 empleados, y da soporte a tres capacidades núcleo:
+Este documento describe el plan de pruebas para el proyecto **Distribution Academy — Smart Check-in System**. El sistema es una plataforma de control de asistencia para **la organización**, diseñada para dar soporte a operaciones a gran escala con miles de empleados, y da soporte a tres capacidades núcleo:
 
 - **Fichaje seguro mediante QR dinámico (TOTP):** códigos de un solo uso que expiran cada 15-30 segundos, generados y validados en el backend, para evitar suplantaciones en los cambios de turno de planta.
 - **Gestión de formaciones:** alta de jornadas formativas, registro de asistencia (por escaneo de QR + código personal) y checkout con firma digital capturada en un `<canvas>` HTML5.
@@ -76,7 +76,7 @@ Siguiendo la arquitectura en capas del proyecto (`controller` → `service` → 
 **Pruebas Unitarias de Interfaz de Usuario (Frontend):**
 - **Objetivo:** verificar que los componentes React renderizan correctamente y responden a interacciones del usuario (clics, formularios) de forma aislada.
 - **Implementación:** **Jest** (vía `react-scripts test`) + **React Testing Library** (`render`, `screen`, `userEvent`), con un `test-utils.jsx` propio que envuelve el `render` por defecto (proveedores de contexto, i18n, etc.) y utilidades como `testRenderList`. El mocking de red de estas pruebas se apoya en **MSW** (`src/mocks/handlers.js` y `src/mocks/server.js`), y los assets estáticos (imágenes, CSS) se sustituyen mediante `__mocks__/fileMock.js` y `__mocks__/styleMock.js` configurados en `jest.moduleNameMapper` del `package.json`.
-- **Ejemplo real:** `AppNavbar.test.js` (2 casos) comprueba que los enlaces públicos (`Docs`, `BA Distribution Academy`) y el enlace de `Login` se renderizan correctamente cuando no hay sesión iniciada.
+- **Ejemplo real:** `AppNavbar.test.js` (2 casos) comprueba que los enlaces públicos (`Docs`, `Distribution Academy`) y el enlace de `Login` se renderizan correctamente cuando no hay sesión iniciada.
 - **Ejemplo real:** `UserListAdmin.test.js` (3 casos) comprueba el renderizado de la tabla de usuarios, la correcta cardinalidad de botones de edición/borrado por fila, y el flujo de borrado de usuario (incluyendo el mockeo de `window.confirm` y la aparición de una alerta de confirmación accesible).
 
 #### 3.1.2 Pruebas de Integración
@@ -91,7 +91,7 @@ Además, el repositorio incluye pruebas de integración con contexto completo:
 
 #### 3.1.3 Pruebas No Funcionales
 
-- **Pruebas de Concurrencia:** `ConcurrentCheckinConcurrencyTests.java` simula fichajes simultáneos de múltiples hilos sobre el mismo usuario/turno para detectar condiciones de carrera y garantizar la integridad de los datos de asistencia, un riesgo real dado el volumen de +4.500 empleados fichando en ventanas de tiempo muy estrechas en los cambios de turno.
+- **Pruebas de Concurrencia:** `ConcurrentCheckinConcurrencyTests.java` simula fichajes simultáneos de múltiples hilos sobre el mismo usuario/turno para detectar condiciones de carrera y garantizar la integridad de los datos de asistencia, un riesgo real dado el volumen de miles de empleados fichando en ventanas de tiempo muy estrechas en los cambios de turno.
 - **Pruebas Metamórficas:** `MetamorphicCheckinServiceTests.java` comprueba invariantes de negocio (p. ej. que desplazar uniformemente las horas de entrada y salida de un fichaje no altera la duración total calculada del turno), una técnica útil cuando no existe un oráculo exacto para validar el resultado pero sí propiedades que deben conservarse.
 
 #### 3.1.4 Pruebas End-to-End (Frontend E2E con Playwright)
@@ -318,4 +318,4 @@ A partir del desglose de fases funcionales documentado en `docs/task_breakdown.m
 
 ## 7. Conclusión
 
-Este plan de pruebas establece la estructura, el inventario real y los criterios necesarios para garantizar la calidad de **BA Distribution Academy — Smart Check-in System**. El análisis directo del repositorio confirma una arquitectura de validación multinivel y consistente con las buenas prácticas de la asignatura: aislamiento de dependencias mediante Mockito en el backend, pruebas de integración de la capa web con `MockMvc`, pruebas de contexto completo (`@SpringBootTest`) para los escenarios que lo requieren (concurrencia, tareas programadas), y una suite End-to-End con Playwright que valida los flujos críticos desde la perspectiva real del usuario en el navegador, incluyendo la interacción con elementos avanzados como la firma digital sobre `<canvas>`. Con **333 casos de prueba** distribuidos entre backend, frontend unitario y E2E, y con infraestructura ya preparada para *mutation testing* (Pitest) y trazabilidad automatizada (Allure), el equipo dispone de una base sólida sobre la que seguir ampliando la cobertura a medida que evolucione el sistema. Es responsabilidad del equipo de desarrollo mantener este plan actualizado, completar la anotación Allure (`@Epic`/`@Feature`/`@Story`) para automatizar por completo la trazabilidad del apartado 5.1, y ejecutar los comandos de cobertura descritos en el apartado 5.5 antes de cada entrega para documentar los porcentajes reales alcanzados.
+Este plan de pruebas establece la estructura, el inventario real y los criterios necesarios para garantizar la calidad de **Distribution Academy — Smart Check-in System**. El análisis directo del repositorio confirma una arquitectura de validación multinivel y consistente con las buenas prácticas de la asignatura: aislamiento de dependencias mediante Mockito en el backend, pruebas de integración de la capa web con `MockMvc`, pruebas de contexto completo (`@SpringBootTest`) para los escenarios que lo requieren (concurrencia, tareas programadas), y una suite End-to-End con Playwright que valida los flujos críticos desde la perspectiva real del usuario en el navegador, incluyendo la interacción con elementos avanzados como la firma digital sobre `<canvas>`. Con **333 casos de prueba** distribuidos entre backend, frontend unitario y E2E, y con infraestructura ya preparada para *mutation testing* (Pitest) y trazabilidad automatizada (Allure), el equipo dispone de una base sólida sobre la que seguir ampliando la cobertura a medida que evolucione el sistema. Es responsabilidad del equipo de desarrollo mantener este plan actualizado, completar la anotación Allure (`@Epic`/`@Feature`/`@Story`) para automatizar por completo la trazabilidad del apartado 5.1, y ejecutar los comandos de cobertura descritos en el apartado 5.5 antes de cada entrega para documentar los porcentajes reales alcanzados.

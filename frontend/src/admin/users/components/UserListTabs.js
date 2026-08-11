@@ -8,10 +8,10 @@ export default function UserListTabs({ activeTab, setActiveTab, activeCount, pen
   const { t } = useTranslation();
 
   return (
-    <Nav tabs className="ba-admin-tabs-nav">
+    <Nav tabs className="da-admin-tabs-nav">
       <NavItem>
         <NavLink
-          className={`ba-tab-pill ${activeTab === 'approved' ? 'ba-tab-pill-active' : ''}`}
+          className={`da-tab-pill ${activeTab === 'approved' ? 'da-tab-pill-active' : ''}`}
           onClick={() => setActiveTab('approved')}
           style={{ cursor: 'pointer' }}
         >
@@ -21,7 +21,7 @@ export default function UserListTabs({ activeTab, setActiveTab, activeCount, pen
       </NavItem>
       <NavItem>
         <NavLink
-          className={`ba-tab-pill ${activeTab === 'pending' ? 'ba-tab-pill-pending' : ''}`}
+          className={`da-tab-pill ${activeTab === 'pending' ? 'da-tab-pill-pending' : ''}`}
           onClick={() => setActiveTab('pending')}
           style={{ cursor: 'pointer' }}
         >

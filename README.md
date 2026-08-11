@@ -1,8 +1,8 @@
-# BA Distribution Academy - Sistema Integrado de Fichaje y Formaciones para BA Glass
+# Distribution Academy - Sistema Integrado de Fichaje y Formaciones para la empresa
 
-Sistema de control de asistencia, fichajes diarios mediante códigos QR dinámicos temporales y gestión de formaciones con panel de analítica para administradores, diseñado específicamente para las necesidades operativas de **BA Distribution Academy** (BA Glass).
+Sistema de control de asistencia, fichajes diarios mediante códigos QR dinámicos temporales y gestión de formaciones con panel de analítica para administradores, diseñado específicamente para las necesidades operativas de **Distribution Academy**.
 
-BA Glass es una empresa líder en la producción de envases de vidrio para alimentación y bebidas, con más de 110 años de historia. Con presencia en 7 países y 13 plantas de producción donde se fabrican más de 12 billones de envases al año, **BA Distribution Academy** está pensado para escalar y gestionar eficientemente a sus más de 4,500 empleados, garantizando un fichaje seguro y rápido en sus instalaciones.
+**Distribution Academy** está pensado para escalar y gestionar eficientemente a los empleados de la organización, garantizando un fichaje seguro y rápido en sus instalaciones.
 
 ## Características Principales
 
@@ -12,7 +12,7 @@ BA Glass es una empresa líder en la producción de envases de vidrio para alime
 * **Panel de Administración Completo:**
   * CRUD completo de usuarios (Formato identificador: `XXXX_nombre_apellidos`).
   * Visualización de métricas y gráficos de porcentaje de asistencia globales y por planta.
-  * Exportación de informes en formatos CSV y XLS (Excel) para su integración con sistemas de RRHH o ERP existentes en BA Glass.
+  * Exportación de informes en formatos CSV y XLS (Excel) para su integración con sistemas de RRHH o ERP existentes en la empresa.
   * Interfaz de generación del QR diario para el supervisor de turno.
 
 ## Estructura del Proyecto

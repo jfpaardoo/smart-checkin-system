@@ -80,14 +80,14 @@ export default function UserDashboard() {
   };
 
   return (
-    <div className="ba-container">
-      <div className="ba-card" style={{ maxWidth: '800px', margin: '2rem auto' }}>
+    <div className="da-container">
+      <div className="da-card" style={{ maxWidth: '800px', margin: '2rem auto' }}>
         <h2 className="mb-6 text-center font-extrabold text-slate-800 text-3xl drop-shadow-sm">
           {t('dashboard.hello')}, <span className="text-primary">{user?.username}</span>
         </h2>
         
         <div className="flex justify-center mb-10 w-full">
-          <Link to="/checkin" className="ba-btn-primary px-8 py-4 text-lg font-bold rounded-full w-full md:w-auto text-center shadow-lg hover:shadow-xl transition-all duration-400 ease-out hover:-translate-y-1">
+          <Link to="/checkin" className="da-btn-primary px-8 py-4 text-lg font-bold rounded-full w-full md:w-auto text-center shadow-lg hover:shadow-xl transition-all duration-400 ease-out hover:-translate-y-1">
             {t('dashboard.scannerButton')}
           </Link>
         </div>

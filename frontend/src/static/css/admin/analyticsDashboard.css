@@ -1,5 +1,5 @@
 /* ==========================================
-   BA DISTRIBUTION ACADEMY - ANALYTICS STYLES
+   DISTRIBUTION ACADEMY - ANALYTICS STYLES
    ========================================== */
 
 .analytics-kpi-row {
@@ -36,21 +36,21 @@
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
-    background: rgba(179, 195, 76, 0.25); /* var(--ba-primary) */
-    color: var(--ba-dark);
+    background: rgba(179, 195, 76, 0.25); /* var(--da-primary) */
+    color: var(--da-dark);
     border: 1px solid rgba(179, 195, 76, 0.6);
     flex-shrink: 0;
 }
 
 .analytics-kpi-icon.blue {
     background: rgba(64, 150, 255, 0.2); /* Soft blue from background */
-    color: var(--ba-dark);
+    color: var(--da-dark);
     border: 1px solid rgba(64, 150, 255, 0.4);
 }
 
 .analytics-kpi-icon.green {
     background: rgba(30, 41, 59, 0.15); /* Slate Dark */
-    color: var(--ba-dark);
+    color: var(--da-dark);
     border: 1px solid rgba(30, 41, 59, 0.3);
 }
 
@@ -114,7 +114,7 @@
     position: relative;
 }
 
-/* Recharts Customizations for ShiftSync Palette */
+/* Recharts Customizations for Distribution Academy Palette */
 .recharts-default-tooltip {
     background: rgba(255, 255, 255, 0.9) !important;
     backdrop-filter: blur(16px) !important;

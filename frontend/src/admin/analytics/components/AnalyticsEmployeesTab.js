@@ -35,7 +35,7 @@ export default function AnalyticsEmployeesTab({ userAnalyticsList, onSearch, onO
         <>
           {/* 1. VISTA ESCRITORIO */}
           <div className="hidden lg:block overflow-x-auto pb-4">
-            <Table responsive className="ba-table align-middle" style={{ minWidth: '950px', width: '100%', tableLayout: 'fixed', fontSize: '0.9rem' }}>
+            <Table responsive className="da-table align-middle" style={{ minWidth: '950px', width: '100%', tableLayout: 'fixed', fontSize: '0.9rem' }}>
               <thead>
                   <tr>
                       <th style={{ width: '8%', paddingLeft: '1rem' }}>{t('users.personalCode', 'Código')}</th>
@@ -56,7 +56,7 @@ export default function AnalyticsEmployeesTab({ userAnalyticsList, onSearch, onO
                               <small className="text-slate-400">@{user.username}</small>
                           </td>
                           <td className="text-center">
-                              <span className="ba-badge ba-badge-active" style={{ whiteSpace: 'normal', display: 'inline-block' }}>{user.authority}</span>
+                              <span className="da-badge da-badge-active" style={{ whiteSpace: 'normal', display: 'inline-block' }}>{user.authority}</span>
                           </td>
                           <td className="text-center">
                               {user.formationsAttended} / {user.formationsAssigned}
@@ -75,7 +75,7 @@ export default function AnalyticsEmployeesTab({ userAnalyticsList, onSearch, onO
                           <td className="text-center" style={{ paddingRight: '1.5rem' }}>
                               <Button 
                                   size="sm" 
-                                  className="ba-btn-blue fw-bold shadow-sm !rounded-full px-4 py-1.5 inline-flex items-center justify-center mx-auto text-xs"
+                                  className="da-btn-blue fw-bold shadow-sm !rounded-full px-4 py-1.5 inline-flex items-center justify-center mx-auto text-xs"
                                   onClick={() => onOpenUserDetail(user.userId)}
                                   title={t('analytics.viewDetails', 'View Details')}
                               >
@@ -99,7 +99,7 @@ export default function AnalyticsEmployeesTab({ userAnalyticsList, onSearch, onO
                     <p className="text-xs text-slate-400 m-0">@{user.username}</p>
                   </div>
                   <div>
-                    <span className="ba-badge ba-badge-active text-xs">{user.authority}</span>
+                    <span className="da-badge da-badge-active text-xs">{user.authority}</span>
                   </div>
                 </div>
 
@@ -112,7 +112,7 @@ export default function AnalyticsEmployeesTab({ userAnalyticsList, onSearch, onO
                 <div className="border-t border-slate-200/50 pt-3 flex justify-end">
                   <Button 
                       size="sm" 
-                      className="ba-btn-blue fw-bold shadow-sm !rounded-full px-5 py-2 inline-flex items-center justify-center gap-2 text-xs w-full sm:w-auto"
+                      className="da-btn-blue fw-bold shadow-sm !rounded-full px-5 py-2 inline-flex items-center justify-center gap-2 text-xs w-full sm:w-auto"
                       onClick={() => onOpenUserDetail(user.userId)}
                   >
                       <FontAwesomeIcon icon={faEye} />

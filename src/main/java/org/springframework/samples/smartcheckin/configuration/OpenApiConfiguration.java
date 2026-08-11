@@ -11,10 +11,10 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 @Configuration
 @OpenAPIDefinition(
   info =@Info(
-    title = "BA Distribution Academy APIs",
+    title = "Distribution Academy APIs",
     version = "v1.0",
     contact = @Contact(
-      name = "BA Distribution Academy Team", email = "info@baglass.com", url = "https://www.baglass.com"
+      name = "Distribution Academy Team", email = "info@example.com", url = "https://www.example.com"
     ),
     license = @License(
       name = "Apache 2.0", url = "https://www.apache.org/licenses/LICENSE-2.0"

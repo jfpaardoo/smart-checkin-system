@@ -53,7 +53,7 @@ export default function FormationsTab({ loadingFormations, formations, t }) {
       {/* Summary Analytics Cards */}
       <Row className="g-3 mb-4">
         <Col xs={12} md={4}>
-          <div className="p-3 ba-glass-panel d-flex align-items-center gap-3">
+          <div className="p-3 da-glass-panel d-flex align-items-center gap-3">
             <div className="p-3 rounded-circle bg-light text-primary flex-shrink-0">
               <FaGraduationCap size={24} />
             </div>
@@ -64,7 +64,7 @@ export default function FormationsTab({ loadingFormations, formations, t }) {
           </div>
         </Col>
         <Col xs={12} md={4}>
-          <div className="p-3 ba-glass-panel d-flex align-items-center gap-3">
+          <div className="p-3 da-glass-panel d-flex align-items-center gap-3">
             <div className="p-3 rounded-circle bg-light text-success flex-shrink-0">
               <FaAward size={24} />
             </div>
@@ -75,7 +75,7 @@ export default function FormationsTab({ loadingFormations, formations, t }) {
           </div>
         </Col>
         <Col xs={12} md={4}>
-          <div className="p-3 ba-glass-panel d-flex align-items-center gap-3">
+          <div className="p-3 da-glass-panel d-flex align-items-center gap-3">
             <div className="p-3 rounded-circle bg-light text-warning flex-shrink-0">
               <FaClock size={24} />
             </div>
@@ -100,7 +100,7 @@ export default function FormationsTab({ loadingFormations, formations, t }) {
         <>
           {/* 1. VISTA ESCRITORIO (Tabla clásica) */}
           <div className="hidden lg:block w-100 overflow-x-auto rounded-3 shadow-sm" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'thin' }}>
-            <Table responsive borderless align="middle" className="ba-table mb-0" style={{ minWidth: '650px' }}>
+            <Table responsive borderless align="middle" className="da-table mb-0" style={{ minWidth: '650px' }}>
               <thead>
                 <tr className="text-uppercase text-muted small" style={{ letterSpacing: '0.05em' }}>
                   <th className="bg-transparent pb-3">{t('formations.name', 'Nombre')}</th>
@@ -122,7 +122,7 @@ export default function FormationsTab({ loadingFormations, formations, t }) {
                       <td className="small text-secondary">{formatDate(att.checkInDate)}</td>
                       <td className="small text-secondary">{formatDate(att.checkOutDate)}</td>
                       <td>
-                        <span className="ba-badge ba-badge-inactive fw-bold px-3 py-1 text-dark" style={{ color: '#1e293b' }}>
+                        <span className="da-badge da-badge-inactive fw-bold px-3 py-1 text-dark" style={{ color: '#1e293b' }}>
                           {calculateDuration(att.checkInDate, att.checkOutDate)}
                         </span>
                       </td>
@@ -139,7 +139,7 @@ export default function FormationsTab({ loadingFormations, formations, t }) {
                       </td>
                       <td className="text-end">
                         {isSigned && (
-                          <Button size="sm" outline color="secondary" className="ba-action-btn-sm d-inline-flex align-items-center gap-1" onClick={() => handleDownloadCertificate(att.id)} title={t('profile.downloadCertificate', 'Descargar Certificado PDF')}>
+                          <Button size="sm" outline color="secondary" className="da-action-btn-sm d-inline-flex align-items-center gap-1" onClick={() => handleDownloadCertificate(att.id)} title={t('profile.downloadCertificate', 'Descargar Certificado PDF')}>
                             <FaFilePdf className="text-danger" /> PDF
                           </Button>
                         )}

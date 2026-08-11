@@ -67,13 +67,13 @@ export default function CloudSettingsAdmin() {
   if (loading) return <CardGhostLoader />;
 
   return (
-    <div className="ba-container">
-      <div className="ba-card p-4 p-md-5 mx-auto" style={{ maxWidth: '800px', marginTop: '2rem' }}>
+    <div className="da-container">
+      <div className="da-card p-4 p-md-5 mx-auto" style={{ maxWidth: '800px', marginTop: '2rem' }}>
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mb-4 text-center text-md-start">
           <h2 className="mb-0 text-dark fw-bold">
-            <FaCloudUploadAlt className="me-2" style={{ color: 'var(--ba-primary)' }} /> {t('cloudSettings.title', 'Ajustes de Nube')}
+            <FaCloudUploadAlt className="me-2" style={{ color: 'var(--da-primary)' }} /> {t('cloudSettings.title', 'Ajustes de Nube')}
           </h2>
-          <Button className="ba-btn-primary d-flex align-items-center justify-content-center gap-2" onClick={handleBackup} disabled={backingUp}>
+          <Button className="da-btn-primary d-flex align-items-center justify-content-center gap-2" onClick={handleBackup} disabled={backingUp}>
             <FaDatabase /> {backingUp ? t('cloudSettings.backingUp', 'Respaldando...') : t('cloudSettings.forceBackupBtn', 'Forzar Backup DB')}
           </Button>
         </div>
@@ -162,7 +162,7 @@ export default function CloudSettingsAdmin() {
           </Row>
 
           <div className="d-flex justify-content-end mt-4">
-            <Button type="submit" className="ba-btn-primary d-flex align-items-center gap-2 px-4 py-2">
+            <Button type="submit" className="da-btn-primary d-flex align-items-center gap-2 px-4 py-2">
               <FaSave /> {t('cloudSettings.saveBtn', 'Guardar Ajustes')}
             </Button>
           </div>

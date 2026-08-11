@@ -54,11 +54,11 @@ export default function GlassSearchBar({
     };
 
     return (
-        <div className={`ba-search-bar-wrapper ${className}`} style={style}>
-            <FontAwesomeIcon icon={faSearch} className="ba-search-bar-icon" />
+        <div className={`da-search-bar-wrapper ${className}`} style={style}>
+            <FontAwesomeIcon icon={faSearch} className="da-search-bar-icon" />
             <Input
                 type="text"
-                className="ba-glass-search-input"
+                className="da-glass-search-input"
                 placeholder={placeholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -66,7 +66,7 @@ export default function GlassSearchBar({
             {searchTerm && (
                 <button 
                     type="button" 
-                    className="ba-search-clear-btn" 
+                    className="da-search-clear-btn" 
                     onClick={handleClear}
                     title="Clear search"
                 >

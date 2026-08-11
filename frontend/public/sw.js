@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-/* Service Worker for BA Distribution Academy PWA - v5 */
+/* Service Worker for Distribution Academy PWA - v5 */
 
 self.addEventListener('push', function(event) {
   if (!event.data) return;  
@@ -21,7 +21,7 @@ self.addEventListener('push', function(event) {
     icon: data.icon || '/favicon.png?v=5',
     badge: '/favicon.png?v=5',
     vibrate: [200, 100, 200],
-    tag: 'ba-notification-' + Date.now(),
+    tag: 'da-notification-' + Date.now(),
     data: {
       url: data.url || '/'
     }

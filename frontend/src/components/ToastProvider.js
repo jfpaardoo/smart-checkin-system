@@ -78,7 +78,7 @@ function ToastItem({ toast, onRemove }) {
       className={`
         pointer-events-auto relative overflow-hidden 
         w-full sm:w-auto sm:max-w-md md:max-w-lg mx-auto
-        ba-nav-capsule px-6 py-3 my-2 shadow-[0_12px_35px_0_rgba(31,38,135,0.25)]
+        da-nav-capsule px-6 py-3 my-2 shadow-[0_12px_35px_0_rgba(31,38,135,0.25)]
       `}
       style={{
         animation: !exiting 
@@ -137,7 +137,7 @@ function ToastItem({ toast, onRemove }) {
           <div
             className={`h-full ${cfg.progressBg}`}
             style={{
-              animation: `ba-toast-progress-shrink ${DURATION}ms linear forwards`,
+              animation: `da-toast-progress-shrink ${DURATION}ms linear forwards`,
               transformOrigin: "left",
             }}
           />

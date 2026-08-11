@@ -26,7 +26,7 @@ export default function FormationTable({ formations, loading }) {
     <div className="w-full">
       {/* 1. VISTA ESCRITORIO */}
       <div className="hidden md:block overflow-x-auto">
-        <Table responsive aria-label="formations" className="ba-table" style={{ minWidth: '800px' }}>
+        <Table responsive aria-label="formations" className="da-table" style={{ minWidth: '800px' }}>
           <thead>
             <tr>
               <th>{t('formations.name')}</th>
@@ -67,7 +67,7 @@ export default function FormationTable({ formations, loading }) {
                   <td className="text-center">
                     <Button
                       size="sm"
-                      className="ba-btn-primary btn-icon-expand"
+                      className="da-btn-primary btn-icon-expand"
                       aria-label={"details-" + formation.id}
                       tag={Link}
                       to={"/formations/" + formation.id + "/details"}
@@ -101,7 +101,7 @@ export default function FormationTable({ formations, loading }) {
                 </div>
                 <Button
                   size="sm"
-                  className="ba-btn-primary"
+                  className="da-btn-primary"
                   style={{ width: '44px', height: '44px', borderRadius: '12px', padding: 0 }}
                   aria-label={"details-" + formation.id}
                   tag={Link}

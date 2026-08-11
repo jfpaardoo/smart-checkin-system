@@ -1,6 +1,6 @@
 # Notificaciones Push (PWA) y Arquitectura VAPID
 
-Este documento detalla la implementación técnica, la arquitectura de seguridad y los flujos de comunicación utilizados para el envío de notificaciones nativas a través del protocolo Web Push (PWA) en ShiftSync.
+Este documento detalla la implementación técnica, la arquitectura de seguridad y los flujos de comunicación utilizados para el envío de notificaciones nativas a través del protocolo Web Push (PWA) en Distribution Academy.
 
 ---
 
@@ -28,7 +28,7 @@ Gracias a VAPID, no necesitamos registrarnos en Google Firebase ni configurar ce
 
 ---
 
-## 3. Flujo de Implementación en ShiftSync
+## 3. Flujo de Implementación en Distribution Academy
 
 ```mermaid
 sequenceDiagram
@@ -81,6 +81,6 @@ Para el entorno de producción y desarrollo, las claves VAPID se configuran en e
 ```properties
 app.vapid.public.key=BDfU...
 app.vapid.private.key=X-1r...
-app.vapid.subject=mailto:admin@baglass.com
+app.vapid.subject=mailto:admin@example.com
 ```
 - *`app.vapid.subject`*: Obligatorio por el estándar VAPID. Es un punto de contacto (mail o URL) para que Google o Mozilla puedan contactar a los desarrolladores en caso de que su aplicación empiece a emitir volúmenes abusivos o defectuosos de notificaciones push.

@@ -183,7 +183,7 @@ class UserRestController {
                 }
             }
         } else {
-            String qrUri = String.format("otpauth://totp/SmartCheckin:%s?secret=%s&issuer=BAGlass", user.getUsername(), secret);
+            String qrUri = String.format("otpauth://totp/SmartCheckin:%s?secret=%s&issuer=DistributionAcademy", user.getUsername(), secret);
             response.put("qrUri", qrUri);
         }
         

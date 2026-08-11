@@ -71,7 +71,7 @@ export default function UserAnalyticsDetailModal({ isOpen, toggle, userAnalytics
                 </h6>
 
                 {userAnalytics.formationDetails && userAnalytics.formationDetails.length > 0 ? (
-                    <Table responsive className="ba-table stacked-mobile align-middle" style={{ minWidth: '100%' }}>
+                    <Table responsive className="da-table stacked-mobile align-middle" style={{ minWidth: '100%' }}>
                         <thead>
                             <tr>
                                 <th>{t('analytics.formationName', 'Formation')}</th>
@@ -90,7 +90,7 @@ export default function UserAnalyticsDetailModal({ isOpen, toggle, userAnalytics
                                     <td data-label={t('analytics.checkIn', 'Check-in')}>{f.checkInDate ? moment(f.checkInDate).format('HH:mm') : '-'}</td>
                                     <td data-label={t('analytics.checkOut', 'Check-out')}>{f.checkOutDate ? moment(f.checkOutDate).format('HH:mm') : '-'}</td>
                                     <td data-label={t('analytics.duration', 'Time Spent')}>
-                                        <Badge color="info" className="ba-badge text-dark fw-bold">
+                                        <Badge color="info" className="da-badge text-dark fw-bold">
                                             {formatDuration(f.durationMinutes)}
                                         </Badge>
                                     </td>
@@ -107,7 +107,7 @@ export default function UserAnalyticsDetailModal({ isOpen, toggle, userAnalytics
             </ModalBody>
 
             <ModalFooter className="border-0 pt-0">
-                <Button className="ba-btn-secondary" onClick={toggle}>
+                <Button className="da-btn-secondary" onClick={toggle}>
                     <FontAwesomeIcon icon={faTimes} className="me-1" /> {t('common.close', 'Close')}
                 </Button>
             </ModalFooter>

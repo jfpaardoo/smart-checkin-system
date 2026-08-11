@@ -146,12 +146,12 @@ export default function AnalyticsDashboard() {
   };
 
   return (
-    <div className="ba-container">
-      <div className="ba-card">
+    <div className="da-container">
+      <div className="da-card">
         {/* Header with Navigation Tabs & Export Menu */}
-        <div className="ba-card-header ba-admin-header border-0">
+        <div className="da-card-header da-admin-header border-0">
           <h2>
-            <FontAwesomeIcon icon={faChartLine} style={{ color: 'var(--ba-primary)' }} className="me-2" />
+            <FontAwesomeIcon icon={faChartLine} style={{ color: 'var(--da-primary)' }} className="me-2" />
             {t('analytics.title', 'Analytics & HR Control')}
           </h2>
         </div>
@@ -166,7 +166,7 @@ export default function AnalyticsDashboard() {
                   value: 'overview', 
                   label: (
                     <span className="fw-bold" style={{ color: '#2c3e50' }}>
-                      <FontAwesomeIcon icon={faChartLine} className="me-2" style={{ color: 'var(--ba-primary)' }} />
+                      <FontAwesomeIcon icon={faChartLine} className="me-2" style={{ color: 'var(--da-primary)' }} />
                       {t('analytics.overviewTab', 'Platform Overview')}
                     </span>
                   )
@@ -175,7 +175,7 @@ export default function AnalyticsDashboard() {
                   value: 'employees', 
                   label: (
                     <span className="fw-bold" style={{ color: '#2c3e50' }}>
-                      <FontAwesomeIcon icon={faUsers} className="me-2" style={{ color: 'var(--ba-primary)' }} />
+                      <FontAwesomeIcon icon={faUsers} className="me-2" style={{ color: 'var(--da-primary)' }} />
                       {t('analytics.employeesTab', 'Employee Control')}
                     </span>
                   )
@@ -184,7 +184,7 @@ export default function AnalyticsDashboard() {
                   value: 'formations', 
                   label: (
                     <span className="fw-bold" style={{ color: '#2c3e50' }}>
-                      <FontAwesomeIcon icon={faGraduationCap} className="me-2" style={{ color: 'var(--ba-primary)' }} />
+                      <FontAwesomeIcon icon={faGraduationCap} className="me-2" style={{ color: 'var(--da-primary)' }} />
                       {t('analytics.formationsTab', 'Rendimiento Formaciones')}
                     </span>
                   )

@@ -50,7 +50,7 @@ public class CertificateGeneratorService {
             document.add(title);
 
             // Subtitle
-            Paragraph subtitle = new Paragraph("BA Distribution Academy", subtitleFont);
+            Paragraph subtitle = new Paragraph("Distribution Academy", subtitleFont);
             subtitle.setAlignment(Element.ALIGN_CENTER);
             subtitle.setSpacingAfter(40);
             document.add(subtitle);

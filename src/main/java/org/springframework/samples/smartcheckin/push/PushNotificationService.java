@@ -62,7 +62,7 @@ public class PushNotificationService {
 
     public void sendNotification(PushSubscriptionEntity sub, String title, String body) {
         try {
-            String payload = String.format("{\"title\":\"%s\",\"body\":\"%s\",\"icon\":\"/ba-logo.png\"}", 
+            String payload = String.format("{\"title\":\"%s\",\"body\":\"%s\",\"icon\":\"/logo.png\"}", 
                 escapeJson(title), escapeJson(body));
 
             Notification notification = new Notification(

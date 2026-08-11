@@ -1,16 +1,16 @@
 /* ==========================================
-   SHIFTSYNC DESIGN SYSTEM - RESPONSIVE BREAKPOINTS
+   Distribution Academy DESIGN SYSTEM - RESPONSIVE BREAKPOINTS
    ========================================== */
 
 @media (max-width: 768px) {
-  .ba-navbar {
+  .da-navbar {
     margin: 10px 10px !important;
     padding: 10px 18px !important;
     border-radius: 28px !important;
     flex-wrap: wrap;
   }
 
-  .ba-navbar-brand {
+  .da-navbar-brand {
     font-size: 1.15rem;
   }
 
@@ -25,7 +25,7 @@
     height: 50px;
   }
 
-  .ba-navbar .navbar-toggler {
+  .da-navbar .navbar-toggler {
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
     border-radius: 12px !important;
     padding: 4px 8px !important;
@@ -34,16 +34,16 @@
     box-shadow: none !important;
   }
 
-  .ba-navbar .navbar-toggler-icon {
+  .da-navbar .navbar-toggler-icon {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.95%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
   }
 
-  .ba-navbar .navbar-collapse {
+  .da-navbar .navbar-collapse {
     transition: all 0.3s ease-in-out;
   }
 
-  .ba-navbar .navbar-collapse.show,
-  .ba-navbar .navbar-collapse.collapsing {
+  .da-navbar .navbar-collapse.show,
+  .da-navbar .navbar-collapse.collapsing {
     flex-basis: 100%;
     width: 100%;
     margin-top: 10px;
@@ -58,7 +58,7 @@
     gap: 8px !important;
   }
 
-  .ba-navbar .navbar-collapse .navbar-nav {
+  .da-navbar .navbar-collapse .navbar-nav {
     display: flex !important;
     flex-direction: column !important;
     flex-grow: 0 !important;
@@ -69,7 +69,7 @@
   }
 
   /* Inline dropdowns in mobile navbar */
-  .ba-navbar .dropdown-menu.ba-dropdown-menu {
+  .da-navbar .dropdown-menu.da-dropdown-menu {
     position: static !important;
     transform: none !important;
     float: none !important;
@@ -87,12 +87,12 @@
     pointer-events: auto !important;
   }
 
-  .ba-navbar .dropdown-menu.ba-dropdown-menu.show {
+  .da-navbar .dropdown-menu.da-dropdown-menu.show {
     display: block !important;
   }
 
   /* Notification Bell specific rules for mobile outside collapse */
-  .d-md-none .dropdown-menu.ba-dropdown-menu {
+  .d-md-none .dropdown-menu.da-dropdown-menu {
     position: absolute !important;
     right: -15px !important;
     left: auto !important;
@@ -125,8 +125,8 @@
     display: none !important;
   }
 
-  .ba-navbar .nav-link,
-  .ba-navbar .dropdown-toggle {
+  .da-navbar .nav-link,
+  .da-navbar .dropdown-toggle {
     display: block;
     width: 100%;
     text-align: left;
@@ -134,12 +134,12 @@
     border-radius: 12px !important;
   }
 
-  .ba-container {
+  .da-container {
     padding: 10px 12px 20px 12px;
     min-height: auto;
   }
 
-  .ba-card {
+  .da-card {
     padding: 24px 16px !important;
     border-radius: 24px !important;
     margin-bottom: 15px;
@@ -149,18 +149,18 @@
     -webkit-backdrop-filter: blur(15px) saturate(180%) !important;
   }
 
-  .ba-card-header {
+  .da-card-header {
     flex-direction: column !important;
     align-items: center !important;
     gap: 12px !important;
     text-align: center !important;
   }
 
-  .ba-card-header h2, .ba-card-header h3 {
+  .da-card-header h2, .da-card-header h3 {
     font-size: 1.3rem;
   }
 
-  .ba-card-header .form-group {
+  .da-card-header .form-group {
     width: 100% !important;
     min-width: 0 !important;
     max-width: 100% !important;
@@ -189,27 +189,27 @@
     height: 42px !important;
   }
 
-  .ba-card .nav.tabs,
-  .ba-card .nav-tabs,
-  .ba-card .nav-pills {
+  .da-card .nav.tabs,
+  .da-card .nav-tabs,
+  .da-card .nav-pills {
     flex-direction: column !important;
     width: 100% !important;
     gap: 12px !important;
   }
 
-  .ba-card .nav-pills .nav-item,
-  .ba-card .nav-pills .nav-link {
+  .da-card .nav-pills .nav-item,
+  .da-card .nav-pills .nav-link {
     width: 100% !important;
     justify-content: center !important;
   }
 
-  .ba-tab-pill {
+  .da-tab-pill {
     width: 100% !important;
     justify-content: center !important;
   }
 
 
-  .ba-dropdown-menu.show {
+  .da-dropdown-menu.show {
     position: static !important;
     transform: none !important;
     width: 100% !important;
@@ -225,7 +225,7 @@
     box-shadow: 0 10px 25px rgba(0,0,0,0.05) !important;
   }
 
-  .ba-dropdown-menu .dropdown-item {
+  .da-dropdown-menu .dropdown-item {
     text-align: left !important;
     justify-content: flex-start !important;
     display: flex !important;
@@ -242,30 +242,30 @@
     max-width: 100% !important;
   }
 
-  .table.ba-table {
+  .table.da-table {
     border-spacing: 0 4px !important;
   }
 
-  .table.ba-table tbody td, .table.ba-table thead th {
+  .table.da-table tbody td, .table.da-table thead th {
     padding: 12px 10px !important;
     font-size: 0.85rem;
     white-space: nowrap;
   }
 
-  .table.ba-table tbody td:first-child, .table.ba-table thead th:first-child {
+  .table.da-table tbody td:first-child, .table.da-table thead th:first-child {
     padding-left: 20px !important;
   }
   
-  .table.ba-table tbody td:last-child, .table.ba-table thead th:last-child {
+  .table.da-table tbody td:last-child, .table.da-table thead th:last-child {
     padding-right: 20px !important;
   }
 
-  .table.ba-table tbody tr td:first-child {
+  .table.da-table tbody tr td:first-child {
     border-top-left-radius: 16px !important;
     border-bottom-left-radius: 16px !important;
   }
 
-  .table.ba-table tbody tr td:last-child {
+  .table.da-table tbody tr td:last-child {
     border-top-right-radius: 16px !important;
     border-bottom-right-radius: 16px !important;
   }
@@ -288,8 +288,8 @@
     flex-direction: column;
     margin-bottom: 1rem;
     background: rgba(255, 255, 255, 0.45) !important;
-    backdrop-filter: var(--ba-glass-blur-med);
-    -webkit-backdrop-filter: var(--ba-glass-blur-med);
+    backdrop-filter: var(--da-glass-blur-med);
+    -webkit-backdrop-filter: var(--da-glass-blur-med);
     border-radius: 20px !important;
     box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9), 0 4px 12px rgba(0, 0, 0, 0.02) !important;
     overflow: hidden;
@@ -330,14 +330,14 @@
     word-break: break-all;
   }
 
-  .ba-toast-container {
+  .da-toast-container {
     top: 80px;
     right: 12px;
     left: 12px;
     width: auto;
   }
 
-  .ba-toast {
+  .da-toast {
     width: 100%;
   }
 }
