@@ -37,7 +37,7 @@ test.describe('Flujo de Activación de 2FA y Verificación TOTP (2FA Setup E2E)'
     });
 
     // Interceptar API de configuración 2FA
-    await page.route('**/api/v1/users/2fa/setup', async (route) => {
+    await page.route('**/api/v1/users/2fa/setup**', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',

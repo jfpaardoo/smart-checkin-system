@@ -19,6 +19,7 @@ test.describe('Flujo de Autorregistro de Usuario (User Self-Registration E2E)', 
     await expect(page.getByRole('heading', { name: /Solicitud de Registro|Registration Request/i })).toBeVisible();
 
     // Fill form fields
+    await page.fill('input#email', 'carlos@example.com');
     await page.fill('input#firstName', 'Carlos');
     await page.fill('input#lastName', 'Gómez');
     await page.fill('input#username', 'cgomez');
@@ -36,6 +37,7 @@ test.describe('Flujo de Autorregistro de Usuario (User Self-Registration E2E)', 
   test('Debe validar que las contraseñas coincidan', async ({ page }) => {
     await page.goto('/register');
 
+    await page.fill('input#email', 'carlos@example.com');
     await page.fill('input#firstName', 'Carlos');
     await page.fill('input#lastName', 'Gómez');
     await page.fill('input#username', 'cgomez');

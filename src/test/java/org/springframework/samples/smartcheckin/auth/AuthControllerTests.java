@@ -30,6 +30,8 @@ import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsServiceImpl;
 import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
+import org.springframework.samples.smartcheckin.notifications.EmailNotificationSender;
+import org.springframework.samples.smartcheckin.notifications.PushNotificationSender;
 import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.samples.smartcheckin.user.AuthoritiesService;
@@ -96,6 +98,12 @@ class AuthControllerTests {
 
 	@MockitoBean
 	private JavaMailSender javaMailSender;
+
+	@MockitoBean
+	private EmailNotificationSender emailNotificationSender;
+
+	@MockitoBean
+	private PushNotificationSender pushNotificationSender;
 
 	@Autowired
 	@SuppressWarnings("java:S6813")

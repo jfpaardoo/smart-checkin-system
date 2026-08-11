@@ -1,6 +1,5 @@
 package org.springframework.samples.smartcheckin.formation;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -10,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.samples.smartcheckin.notification.NotificationContext;
 import org.springframework.samples.smartcheckin.storage.SignatureStorageService;
-import org.springframework.samples.smartcheckin.settings.OneDriveService;
+import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter;
 import org.springframework.samples.smartcheckin.statistics.events.FormationAttendanceEvent;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
@@ -18,14 +17,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.jpatterns.gof.SingletonPattern;
+
 @Service
+@SingletonPattern.Singleton
 @SuppressWarnings("null")
 public class FormationService {
 
     private final FormationRepository formationRepository;
     private final FormationAttendanceRepository attendanceRepository;
     private final UserService userService;
-    private final OneDriveService oneDriveService;
+    private final CloudStorageAdapter cloudStorageAdapter;
     private final NotificationContext notificationContext;
     private final SignatureStorageService signatureStorageService;
     private final ApplicationEventPublisher eventPublisher;
@@ -34,14 +36,14 @@ public class FormationService {
     public FormationService(FormationRepository formationRepository, 
                             FormationAttendanceRepository attendanceRepository, 
                             UserService userService,
-                            OneDriveService oneDriveService,
+                            CloudStorageAdapter cloudStorageAdapter,
                             NotificationContext notificationContext,
                             SignatureStorageService signatureStorageService,
                             ApplicationEventPublisher eventPublisher) {
         this.formationRepository = formationRepository;
         this.attendanceRepository = attendanceRepository;
         this.userService = userService;
-        this.oneDriveService = oneDriveService;
+        this.cloudStorageAdapter = cloudStorageAdapter;
         this.notificationContext = notificationContext;
         this.signatureStorageService = signatureStorageService;
         this.eventPublisher = eventPublisher;
@@ -55,9 +57,9 @@ public class FormationService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Formation saveFormation(Formation formation, MultipartFile file) throws IOException {
+    public Formation saveFormation(Formation formation, MultipartFile file) throws Exception {
         if (file != null && !file.isEmpty()) {
-            String fileUrl = oneDriveService.uploadFile(file, "formations");
+            String fileUrl = cloudStorageAdapter.uploadFile(file, "formations");
             formation.getDocumentUrls().add(fileUrl);
         }
         return formationRepository.save(formation);
@@ -174,7 +176,7 @@ public class FormationService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Formation updateFormation(Formation formationDetails, Integer id, MultipartFile file) throws IOException {
+    public Formation updateFormation(Formation formationDetails, Integer id, MultipartFile file) throws Exception {
         Formation toUpdate = formationRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
 
@@ -189,7 +191,7 @@ public class FormationService {
 
             for (String oldUrl : new java.util.ArrayList<>(toUpdate.getDocumentUrls())) {
                 try {
-                    oneDriveService.deleteFile(oldUrl);
+                    cloudStorageAdapter.deleteFile(oldUrl);
                 } catch (Exception e) {
                     // Ignorar errores al borrar en OneDrive
                 }
@@ -197,7 +199,7 @@ public class FormationService {
 
             toUpdate.getDocumentUrls().clear();
 
-            String newFileUrl = oneDriveService.uploadFile(file, "formations");
+            String newFileUrl = cloudStorageAdapter.uploadFile(file, "formations");
             toUpdate.getDocumentUrls().add(newFileUrl);
         }
 
@@ -258,7 +260,7 @@ public class FormationService {
         if (formation.getDocumentUrls() != null) {
             for (String docUrl : formation.getDocumentUrls()) {
                 try {
-                    oneDriveService.deleteFile(docUrl);
+                    cloudStorageAdapter.deleteFile(docUrl);
                 } catch (Exception e) {
                     // Registro defensivo para no bloquear el borrado local de base de datos
                 }

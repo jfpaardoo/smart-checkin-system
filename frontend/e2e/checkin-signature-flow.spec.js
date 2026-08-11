@@ -4,7 +4,7 @@ test.describe('Flujo de Fichaje Manual y Firma Digital en Salida (Check-in & Sig
 
   test('Debe permitir fichar mediante código TOTP de 6 dígitos y requerir firma digital para la salida', async ({ page }) => {
     // Mock Checkin API - Return 202 Needs Signature for Checkout
-    await page.route('/api/v1/checkins/qr-fichaje', async (route) => {
+    await page.route('**/api/v1/checkins/qr-fichaje', async (route) => {
       const requestData = JSON.parse(route.request().postData());
 
       if (requestData.signature) {
@@ -52,7 +52,7 @@ test.describe('Flujo de Fichaje Manual y Firma Digital en Salida (Check-in & Sig
     await page.click('button:has-text("Validar Código"), button:has-text("Validate Code"), button:has-text("Confirmar Fichaje")');
 
     // Verify digital signature canvas is required
-    await expect(page.locator('text=/Por favor, firme abajo para finalizar|Signature Required/i')).toBeVisible();
+    await expect(page.locator('text=/Por favor, firme abajo para finalizar|Signature Required|Please sign below to finish/i')).toBeVisible();
 
     // Draw signature on canvas
     const canvas = page.locator('canvas.sigCanvas');

@@ -28,7 +28,7 @@ instance.interceptors.response.use(
     async (err) => {
         const originalConfig = err.config;
 
-        if (originalConfig.url !== "/auth/signin" && err.response) {
+        if (originalConfig && originalConfig.url !== "/auth/signin" && err.response) {
             // Access Token was expired
             if (err.response.status === 401 && !originalConfig._retry) {
                 originalConfig._retry = true;
@@ -43,12 +43,14 @@ instance.interceptors.response.use(
 
                     return instance(originalConfig);
                 } catch (_error) {
-                    return Promise.reject(_error);
+                    TokenService.removeUser();
+                    window.location.href = '/login';
+                    throw _error;
                 }
             }
         }
 
-        return Promise.reject(err);
+        throw err;
     }
 );
 

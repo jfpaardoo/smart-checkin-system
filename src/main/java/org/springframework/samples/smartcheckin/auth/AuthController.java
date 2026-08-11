@@ -44,8 +44,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.samples.smartcheckin.notifications.EmailNotificationSender;
+import org.springframework.samples.smartcheckin.notifications.PushNotificationSender;
+import org.springframework.samples.smartcheckin.notifications.TwoFactorNotification;
+import org.springframework.samples.smartcheckin.notifications.AuthNotification;
+import org.springframework.samples.smartcheckin.notifications.Notification;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -63,14 +66,15 @@ public class AuthController {
     private final AnomalyDetectionService anomalyDetectionService;
     private final HttpServletRequest request;
     private final org.springframework.samples.smartcheckin.configuration.jwt.JwtBlacklistService jwtBlacklistService;
-    private final JavaMailSender javaMailSender;
+    private final EmailNotificationSender emailNotificationSender;
+    private final PushNotificationSender pushNotificationSender;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager, UserService userService, 
             AuthoritiesService authoritiesService, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, 
             SimpMessagingTemplate messagingTemplate, TotpService totpService, UserDetailsServiceImpl userDetailsServiceImpl,
             AnomalyDetectionService anomalyDetectionService, HttpServletRequest request,
-            JwtBlacklistService jwtBlacklistService, JavaMailSender javaMailSender) {
+            JwtBlacklistService jwtBlacklistService, EmailNotificationSender emailNotificationSender, PushNotificationSender pushNotificationSender) {
         this.userService = userService;
         this.authoritiesService = authoritiesService;
         this.jwtUtils = jwtUtils;
@@ -82,7 +86,8 @@ public class AuthController {
         this.anomalyDetectionService = anomalyDetectionService;
         this.request = request;
         this.jwtBlacklistService = jwtBlacklistService;
-        this.javaMailSender = javaMailSender;
+        this.emailNotificationSender = emailNotificationSender;
+        this.pushNotificationSender = pushNotificationSender;
     }
 
     @PostMapping("/logout")
@@ -140,6 +145,12 @@ public class AuthController {
             if (user != null && user.getFailedLoginAttempts() != null && user.getFailedLoginAttempts() > 0) {
                 user.setFailedLoginAttempts(0);
                 userService.saveUser(user);
+            }
+
+            // Enviar notificación Push de éxito de inicio de sesión
+            if (user != null) {
+                Notification authNotif = new AuthNotification(pushNotificationSender, "IP: " + request.getRemoteAddr());
+                authNotif.notify(user.getUsername());
             }
 
             return ResponseEntity.ok().body(new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), roles));
@@ -255,11 +266,8 @@ public class AuthController {
             String code = totpService.generateCode(user.getTwoFactorSecret());
             if (code != null) {
                 try {
-                    SimpleMailMessage mailMessage = new SimpleMailMessage();
-                    mailMessage.setTo(user.getEmail());
-                    mailMessage.setSubject("Código de Verificación 2FA");
-                    mailMessage.setText("Tu código de verificación de 2 factores es: " + code);
-                    javaMailSender.send(mailMessage);
+                    Notification twoFactorNotif = new TwoFactorNotification(emailNotificationSender, code);
+                    twoFactorNotif.notify(user.getEmail());
                 } catch (Exception e) {
                     // Si falla, el usuario no recibirá el correo
                 }

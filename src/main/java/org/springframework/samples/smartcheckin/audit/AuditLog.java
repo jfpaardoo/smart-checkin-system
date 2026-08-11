@@ -11,8 +11,15 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.EqualsAndHashCode;
 
+import org.jpatterns.gof.BuilderPattern;
+import lombok.Builder;
+import lombok.AllArgsConstructor;
+
 @Getter
 @Setter
+@BuilderPattern.Builder
+@Builder
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "audit_logs")

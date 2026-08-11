@@ -142,4 +142,16 @@ class LocalFileSystemServiceTests {
         assertNotNull(result);
         assertEquals(0, result.length);
     }
+
+    @Test
+    void testLoadSignaturePathTraversal() {
+        SecurityException ex = assertThrows(SecurityException.class, () -> service.loadSignature("../../../etc/passwd"));
+        assertTrue(ex.getMessage().contains("outside current directory"));
+    }
+
+    @Test
+    void testDeleteSignaturePathTraversal() {
+        SecurityException ex = assertThrows(SecurityException.class, () -> service.deleteSignature("../../../etc/passwd"));
+        assertTrue(ex.getMessage().contains("outside current directory"));
+    }
 }

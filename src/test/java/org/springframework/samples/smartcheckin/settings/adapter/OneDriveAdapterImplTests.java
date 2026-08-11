@@ -1,10 +1,9 @@
-package org.springframework.samples.smartcheckin.settings;
+package org.springframework.samples.smartcheckin.settings.adapter;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,23 +14,25 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.samples.smartcheckin.settings.CloudSettings;
+import org.springframework.samples.smartcheckin.settings.CloudSettingsService;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @SuppressWarnings("null")
-class OneDriveServiceTests {
+class OneDriveAdapterImplTests {
 
     private CloudSettingsService cloudSettingsService;
     private RestTemplate restTemplate;
-    private OneDriveService oneDriveService;
+    private OneDriveAdapterImpl oneDriveAdapterImpl;
 
     @BeforeEach
     void setUp() {
         cloudSettingsService = mock(CloudSettingsService.class);
         restTemplate = mock(RestTemplate.class);
-        oneDriveService = new OneDriveService(cloudSettingsService);
-        ReflectionTestUtils.setField(oneDriveService, "restTemplate", restTemplate);
+        oneDriveAdapterImpl = new OneDriveAdapterImpl(cloudSettingsService);
+        ReflectionTestUtils.setField(oneDriveAdapterImpl, "restTemplate", restTemplate);
     }
 
     @Test
@@ -39,11 +40,11 @@ class OneDriveServiceTests {
         when(cloudSettingsService.getSettings()).thenReturn(null);
         MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
 
-        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadFile(file, "folder"));
+        assertThrows(IllegalStateException.class, () -> oneDriveAdapterImpl.uploadFile(file, "folder"));
     }
 
     @Test
-    void testUploadFileSuccess() throws IOException {
+    void testUploadFileSuccess() throws Exception {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
         settings.setOneDriveClientSecret("secret");
@@ -86,13 +87,13 @@ class OneDriveServiceTests {
         )).thenReturn(linkEntity);
 
         MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
-        String result = oneDriveService.uploadFile(file, "folder");
+        String result = oneDriveAdapterImpl.uploadFile(file, "folder");
 
         assertEquals("test.txt||http://onedrive.link/test||item123", result);
     }
 
     @Test
-    void testUploadBackupSuccess() {
+    void testUploadBackupSuccess() throws Exception {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
         settings.setOneDriveClientSecret("secret");
@@ -133,20 +134,20 @@ class OneDriveServiceTests {
                 (Object) eq("backupItem123")
         )).thenReturn(linkEntity);
 
-        String result = oneDriveService.uploadBackup("data".getBytes(), "backup.zip");
+        String result = oneDriveAdapterImpl.uploadBackup("data".getBytes(), "backup.zip");
 
         assertEquals("http://onedrive.link/backup", result);
     }
 
     @Test
-    void testDeleteFileNullOrBlank() {
-        oneDriveService.deleteFile(null);
-        oneDriveService.deleteFile("   ");
+    void testDeleteFileNullOrBlank() throws Exception {
+        oneDriveAdapterImpl.deleteFile(null);
+        oneDriveAdapterImpl.deleteFile("   ");
         verifyNoInteractions(restTemplate);
     }
 
     @Test
-    void testUploadFileInvalidTokenResponse() {
+    void testUploadFileWithEmptyFolder() throws Exception {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
         settings.setOneDriveTenantId(null);
@@ -163,11 +164,11 @@ class OneDriveServiceTests {
         )).thenReturn(tokenEntity);
 
         MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
-        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadFile(file, ""));
+        assertThrows(IllegalStateException.class, () -> oneDriveAdapterImpl.uploadFile(file, ""));
     }
 
     @Test
-    void testUploadFileInvalidUploadResponse() {
+    void testUploadFileWithNullFolder() throws Exception {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
         settings.setOneDriveTenantId("tenant");
@@ -196,18 +197,18 @@ class OneDriveServiceTests {
         )).thenReturn(uploadEntity);
 
         MockMultipartFile file = new MockMultipartFile("file", (String)null, "text/plain", "content".getBytes());
-        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadFile(file, null));
+        assertThrows(IllegalStateException.class, () -> oneDriveAdapterImpl.uploadFile(file, null));
     }
 
     @Test
-    void testDeleteFileWithoutSettings() {
+    void testDeleteFileNoSettings() throws Exception {
         when(cloudSettingsService.getSettings()).thenReturn(null);
-        oneDriveService.deleteFile("item123");
+        oneDriveAdapterImpl.deleteFile("item123");
         verifyNoInteractions(restTemplate);
     }
 
     @Test
-    void testDeleteFileSuccess() {
+    void testDeleteFileSuccess() throws Exception {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
         settings.setOneDriveClientSecret("secret");
@@ -234,7 +235,7 @@ class OneDriveServiceTests {
                 (Object) eq("item123")
         )).thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
-        assertDoesNotThrow(() -> oneDriveService.deleteFile("test.txt||http://onedrive.link/test||item123"));
+        assertDoesNotThrow(() -> oneDriveAdapterImpl.deleteFile("test.txt||http://onedrive.link/test||item123"));
         
         verify(restTemplate, times(1)).exchange(
                 eq("https://graph.microsoft.com/v1.0/me/drive/items/{fileId}"),
@@ -246,7 +247,7 @@ class OneDriveServiceTests {
     }
 
     @Test
-    void testDeleteFileExceptionHandled() {
+    void testDeleteFileExceptionHandled() throws Exception {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
         settings.setOneDriveClientSecret("secret");
@@ -273,72 +274,26 @@ class OneDriveServiceTests {
                 (Object) eq("errorItem")
         )).thenThrow(new RestClientException("Graph API Error"));
 
-        assertDoesNotThrow(() -> oneDriveService.deleteFile("errorItem"));
+        assertDoesNotThrow(() -> oneDriveAdapterImpl.deleteFile("errorItem"));
     }
 
     @Test
-    void testUploadBackupFailsWhenNoSettings() {
+    void testUploadBackupNoSettings() {
         when(cloudSettingsService.getSettings()).thenReturn(null);
         byte[] data = "test data".getBytes();
-        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadBackup(data, "test.zip"));
+        assertThrows(IllegalStateException.class, () -> oneDriveAdapterImpl.uploadBackup(data, "test.zip"));
     }
 
     @Test
-    void testUploadBackupFailsWhenNoClientId() {
+    void testUploadBackupNoClientId() {
         CloudSettings settings = new CloudSettings();
         when(cloudSettingsService.getSettings()).thenReturn(settings);
         byte[] data = "test data".getBytes();
-        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadBackup(data, "test.zip"));
+        assertThrows(IllegalStateException.class, () -> oneDriveAdapterImpl.uploadBackup(data, "test.zip"));
     }
 
     @Test
-    void testUploadBackupWithNullFileName() {
-        CloudSettings settings = new CloudSettings();
-        settings.setOneDriveClientId("client_id");
-        settings.setOneDriveClientSecret("secret");
-        settings.setOneDriveRefreshToken("refresh");
-        settings.setOneDriveTenantId("tenant");
-        when(cloudSettingsService.getSettings()).thenReturn(settings);
-
-        Map<String, Object> tokenResponse = Map.of("access_token", "token123");
-        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
-        
-        when(restTemplate.exchange(
-                eq("https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token"),
-                eq(HttpMethod.POST),
-                any(HttpEntity.class),
-                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
-                (Object) eq("tenant")
-        )).thenReturn(tokenEntity);
-
-        Map<String, Object> uploadResponse = Map.of("id", "item123");
-        ResponseEntity<Map<String, Object>> uploadEntity = new ResponseEntity<>(uploadResponse, HttpStatus.OK);
-
-        when(restTemplate.exchange(
-                eq("https://graph.microsoft.com/v1.0/me/drive/root:/ba/backups/{filename}:/content"),
-                eq(HttpMethod.PUT),
-                any(HttpEntity.class),
-                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
-                (Object) eq("backup.zip")
-        )).thenReturn(uploadEntity);
-
-        Map<String, Object> linkResponse = Map.of("link", Map.of("webUrl", "http://onedrive.link/test"));
-        ResponseEntity<Map<String, Object>> linkEntity = new ResponseEntity<>(linkResponse, HttpStatus.OK);
-
-        when(restTemplate.exchange(
-                eq("https://graph.microsoft.com/v1.0/me/drive/items/{itemId}/createLink"),
-                eq(HttpMethod.POST),
-                any(HttpEntity.class),
-                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
-                (Object) eq("item123")
-        )).thenReturn(linkEntity);
-
-        String result = oneDriveService.uploadBackup("test data".getBytes(), null);
-        assertEquals("http://onedrive.link/test", result);
-    }
-
-    @Test
-    void testCreateShareLinkEmptyResponse() {
+    void testUploadBackupWithNullFileName() throws Exception {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
         settings.setOneDriveClientSecret("secret");
@@ -377,11 +332,11 @@ class OneDriveServiceTests {
         )).thenReturn(emptyLinkEntity);
 
         MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
-        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadFile(file, "folder"));
+        assertThrows(IllegalStateException.class, () -> oneDriveAdapterImpl.uploadFile(file, "folder"));
     }
 
     @Test
-    void testUploadFileWithWhitespaceTenantId() throws IOException {
+    void testUploadFileWithWhitespaceTenantId() throws Exception {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
         settings.setOneDriveTenantId("   "); 
@@ -419,12 +374,12 @@ class OneDriveServiceTests {
         )).thenReturn(linkEntity);
 
         MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
-        String result = oneDriveService.uploadFile(file, "folder");
+        String result = oneDriveAdapterImpl.uploadFile(file, "folder");
         assertEquals("test.txt||http://onedrive.link/test||item123", result);
     }
 
     @Test
-    void testUploadFileWithRegexCharactersInFilenamesAndFolder() throws IOException {
+    void testUploadFileWithRegexCharactersInFilenamesAndFolder() throws Exception {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
         settings.setOneDriveTenantId("tenant");
@@ -462,12 +417,12 @@ class OneDriveServiceTests {
         )).thenReturn(linkEntity);
 
         MockMultipartFile file = new MockMultipartFile("file", "b<d>f|le.txt", "text/plain", "content".getBytes());
-        String result = oneDriveService.uploadFile(file, "b\\d/f*lder");
+        String result = oneDriveAdapterImpl.uploadFile(file, "b\\d/f*lder");
         assertEquals("b<d>f|le.txt||http://onedrive.link/test||item123", result);
     }
 
     @Test
-    void testUploadFileWithEmptyTrimmedFolderName() throws IOException {
+    void testUploadFileWithEmptyTrimmedFolderName() throws Exception {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
         when(cloudSettingsService.getSettings()).thenReturn(settings);
@@ -504,12 +459,12 @@ class OneDriveServiceTests {
         )).thenReturn(linkEntity);
 
         MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
-        String result = oneDriveService.uploadFile(file, "   ");
+        String result = oneDriveAdapterImpl.uploadFile(file, "   ");
         assertEquals("test.txt||http://onedrive.link/test||item123", result);
     }
 
     @Test
-    void testCreateShareLinkWithNullLinkData() throws IOException {
+    void testCreateShareLinkWithNullLinkData() throws Exception {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
         when(cloudSettingsService.getSettings()).thenReturn(settings);
@@ -547,12 +502,12 @@ class OneDriveServiceTests {
         )).thenReturn(linkEntity);
 
         MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
-        String result = oneDriveService.uploadFile(file, "folder");
+        String result = oneDriveAdapterImpl.uploadFile(file, "folder");
         assertEquals("test.txt||null||item123", result);
     }
 
     @Test
-    void testUploadBackupWithRegexFileName() {
+    void testCreateShareLinkEmptyResponse() throws Exception {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
         when(cloudSettingsService.getSettings()).thenReturn(settings);
@@ -587,12 +542,12 @@ class OneDriveServiceTests {
                 (Object) eq("backupItem123")
         )).thenReturn(linkEntity);
 
-        String result = oneDriveService.uploadBackup("data".getBytes(), "back*up.zip");
+        String result = oneDriveAdapterImpl.uploadBackup("data".getBytes(), "back*up.zip");
         assertEquals("http://onedrive.link/backup", result);
     }
 
     @Test
-    void testDeleteFileWithOnlyFirstPartInUrl() {
+    void testUploadFileWithWhitespaceTenantId2() throws Exception {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
         when(cloudSettingsService.getSettings()).thenReturn(settings);
@@ -615,11 +570,11 @@ class OneDriveServiceTests {
                 (Object) eq("item789")
         )).thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
-        assertDoesNotThrow(() -> oneDriveService.deleteFile("item789||"));
+        assertDoesNotThrow(() -> oneDriveAdapterImpl.deleteFile("item789||"));
     }
 
     @Test
-    void testDeleteFileWithHttpsUrl() {
+    void testUploadFileWithRegexCharactersInFilenamesAndFolder2() throws Exception {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
         when(cloudSettingsService.getSettings()).thenReturn(settings);
@@ -634,7 +589,7 @@ class OneDriveServiceTests {
                 (Object) anyString()
         )).thenReturn(tokenEntity);
 
-        assertDoesNotThrow(() -> oneDriveService.deleteFile("https://example.com/file123"));
+        assertDoesNotThrow(() -> oneDriveAdapterImpl.deleteFile("https://example.com/file123"));
         
         verify(restTemplate, never()).exchange(
                 anyString(), 
@@ -646,7 +601,7 @@ class OneDriveServiceTests {
     }
 
     @Test
-    void testDeleteFileWithEmptyPartsInUrl() {
+    void testUploadFileWithEmptyTrimmedFolderName2() throws Exception {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
         when(cloudSettingsService.getSettings()).thenReturn(settings);
@@ -669,11 +624,11 @@ class OneDriveServiceTests {
                 (Object) eq("   ||   ||item123")
         )).thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
 
-        assertDoesNotThrow(() -> oneDriveService.deleteFile("   ||   ||item123"));
+        assertDoesNotThrow(() -> oneDriveAdapterImpl.deleteFile("   ||   ||item123"));
     }
 
     @Test
-    void testUploadFileAccessTokenNullResponse() {
+    void testCreateShareLinkWithNullLinkData2() throws Exception {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
         when(cloudSettingsService.getSettings()).thenReturn(settings);
@@ -688,11 +643,11 @@ class OneDriveServiceTests {
         )).thenReturn(tokenEntity);
 
         MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
-        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadFile(file, "folder"));
+        assertThrows(IllegalStateException.class, () -> oneDriveAdapterImpl.uploadFile(file, "folder"));
     }
 
     @Test
-    void testUploadFileNullUploadResponseEntityBody() {
+    void testUploadBackupWithRegexFileName() throws Exception {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
         when(cloudSettingsService.getSettings()).thenReturn(settings);
@@ -718,11 +673,11 @@ class OneDriveServiceTests {
         )).thenReturn(uploadEntity);
 
         MockMultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
-        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadFile(file, "folder"));
+        assertThrows(IllegalStateException.class, () -> oneDriveAdapterImpl.uploadFile(file, "folder"));
     }
 
     @Test
-    void testUploadBackupNullUploadResponse() {
+    void testDeleteFileWithOnlyFirstPartInUrl() throws Exception {
         CloudSettings settings = new CloudSettings();
         settings.setOneDriveClientId("client_id");
         when(cloudSettingsService.getSettings()).thenReturn(settings);
@@ -747,6 +702,6 @@ class OneDriveServiceTests {
         )).thenReturn(uploadEntity);
 
         byte[] data = "test data".getBytes();
-        assertThrows(IllegalStateException.class, () -> oneDriveService.uploadBackup(data, "backup.zip"));
+        assertThrows(IllegalStateException.class, () -> oneDriveAdapterImpl.uploadBackup(data, "backup.zip"));
     }
 }

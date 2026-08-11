@@ -11,16 +11,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.http.ResponseEntity;
-import org.springframework.samples.smartcheckin.auth.payload.response.JwtResponse;
-import org.aspectj.lang.Signature;
-import java.util.List;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-@SuppressWarnings({"null", "unused"})
-class AuditAspectTests {
+import java.lang.annotation.Annotation;
 
-    private static final String DUMMY_STRING = "String";
+@SuppressWarnings("null")
+class AuditAspectTests {
 
     private AuditLogRepository auditLogRepository;
     private AuditAspect aspect;
@@ -45,296 +42,72 @@ class AuditAspectTests {
         SecurityContextHolder.clearContext();
     }
 
+    private Auditable createAuditable(String action, String details) {
+        return new Auditable() {
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return Auditable.class;
+            }
+
+            @Override
+            public String action() {
+                return action;
+            }
+
+            @Override
+            public String details() {
+                return details;
+            }
+        };
+    }
+
     @Test
-    void testLogUserCreate() {
+    void testLogAuditableActionSuccess() {
         JoinPoint joinPoint = mock(JoinPoint.class);
-        class DummyUser {
+        Auditable auditable = createAuditable("TEST_ACTION", "Test Details");
+        ResponseEntity<Object> responseEntity = ResponseEntity.ok().build();
+        
+        aspect.logAuditableAction(joinPoint, auditable, responseEntity);
+        
+        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
+    }
+
+    @Test
+    void testLogAuditableActionFailureResponse() {
+        JoinPoint joinPoint = mock(JoinPoint.class);
+        Auditable auditable = createAuditable("TEST_ACTION", "Test Details");
+        ResponseEntity<Object> responseEntity = ResponseEntity.badRequest().build();
+        
+        aspect.logAuditableAction(joinPoint, auditable, responseEntity);
+        
+        verify(auditLogRepository, never()).save(any(AuditLog.class));
+    }
+
+    @Test
+    void testLogAuditableActionWithBodyUsername() {
+        JoinPoint joinPoint = mock(JoinPoint.class);
+        Auditable auditable = createAuditable("TEST_ACTION", "Test Details");
+        
+        class DummyBody {
+            @SuppressWarnings("unused")
             public String getUsername() { return "john_doe"; }
         }
-        ResponseEntity<Object> responseEntity = ResponseEntity.ok(new DummyUser());
-        aspect.logUserCreate(joinPoint, responseEntity);
+        
+        ResponseEntity<Object> responseEntity = ResponseEntity.ok(new DummyBody());
+        
+        aspect.logAuditableAction(joinPoint, auditable, responseEntity);
+        
         verify(auditLogRepository, times(1)).save(any(AuditLog.class));
     }
 
     @Test
-    void testLogUserUpdate() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        class DummyUser {
-            public String getUsername() { return "john_doe"; }
-        }
-        ResponseEntity<Object> responseEntity = ResponseEntity.ok(new DummyUser());
-        aspect.logUserUpdate(joinPoint, responseEntity);
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogUserProfileUpdate() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        ResponseEntity<Object> responseEntity = ResponseEntity.ok().build();
-        aspect.logUserProfileUpdate(joinPoint, responseEntity);
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogUserApprove() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        when(joinPoint.getArgs()).thenReturn(new Object[]{"123"});
-        ResponseEntity<Object> responseEntity = ResponseEntity.ok().build();
-        aspect.logUserApprove(joinPoint, responseEntity);
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogFormationSave() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        class DummyFormation {
-            public String getName() { return "Math Course"; }
-        }
-
-        aspect.logFormationSave(joinPoint, new DummyFormation());
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogFormationDelete() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        when(joinPoint.getArgs()).thenReturn(new Object[]{"123"});
-
-        aspect.logFormationDelete(joinPoint);
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogFormationAttendance() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        when(joinPoint.getArgs()).thenReturn(new Object[]{"123"});
-        aspect.logFormationAttendance(joinPoint, new Object());
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    static class DummyCheckin {
-        private final String type;
-        public DummyCheckin(String type) { this.type = type; }
-        public String getType() { return type; }
-    }
-
-    @org.junit.jupiter.params.ParameterizedTest
-    @org.junit.jupiter.params.provider.ValueSource(strings = {"ENTRADA", "SALIDA", "DESCANSO"})
-    @org.junit.jupiter.params.provider.NullSource
-    void testLogPerformCheckInParameterized(String checkinType) {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logPerformCheckIn(joinPoint, new DummyCheckin(checkinType));
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogAuditNullAuth() {
+    void testLogAuditableActionNullAuth() {
         SecurityContextHolder.clearContext();
         JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logPerformCheckIn(joinPoint, new DummyCheckin("ENTRADA"));
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogFormationSaveNullResult() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logFormationSave(joinPoint, null);
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogFormationSaveException() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logFormationSave(joinPoint, new Object());
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogFormationDeleteNoArgs() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        when(joinPoint.getArgs()).thenReturn(new Object[]{});
-        aspect.logFormationDelete(joinPoint);
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogLoginSuccess() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        JwtResponse jwtResponse = new JwtResponse("token", 1L, "user", List.of());
-        jwtResponse.setRequiresTwoFactor(false);
-        ResponseEntity<Object> responseEntity = ResponseEntity.ok(jwtResponse);
-        aspect.logLoginSuccess(joinPoint, responseEntity);
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogLoginSuccessRequires2FA() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        JwtResponse jwtResponse = new JwtResponse();
-        jwtResponse.setRequiresTwoFactor(true);
-        ResponseEntity<Object> responseEntity = ResponseEntity.ok(jwtResponse);
-        aspect.logLoginSuccess(joinPoint, responseEntity);
-        verify(auditLogRepository, never()).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogTwoFactorLoginSuccess() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logTwoFactorLoginSuccess(joinPoint, ResponseEntity.ok().build());
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogPasswordChange() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logPasswordChange(joinPoint, ResponseEntity.ok().build());
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogTwoFactorEnable() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logTwoFactorEnable(joinPoint, ResponseEntity.ok().build());
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogTwoFactorDisable() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logTwoFactorDisable(joinPoint, ResponseEntity.ok().build());
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogTwoFactorSetup() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logTwoFactorSetup(joinPoint, ResponseEntity.ok().build());
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogTwoFactorCodeEmail() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logTwoFactorCodeEmail(joinPoint, ResponseEntity.ok().build());
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogUserDelete() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        when(joinPoint.getArgs()).thenReturn(new Object[]{"999"});
-        aspect.logUserDelete(joinPoint);
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogDataExport() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        Signature signature = mock(Signature.class);
-        when(signature.getName()).thenReturn("exportUsersCsv");
-        when(joinPoint.getSignature()).thenReturn(signature);
-        aspect.logDataExport(joinPoint, ResponseEntity.ok().build());
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogDatabaseBackup() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logDatabaseBackup(joinPoint);
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogAuditAuthNotNullButNameNull() {
-        SecurityContext securityContext = mock(SecurityContext.class);
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getName()).thenReturn(null); // Fuerza rama nombre nulo
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
+        Auditable auditable = createAuditable("TEST_ACTION", "Test Details");
         
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logPerformCheckIn(joinPoint, new DummyCheckin("ENTRADA"));
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogLoginSuccessNotResponseEntity() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logLoginSuccess(joinPoint, "Not a response entity");
-        verify(auditLogRepository, never()).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogLoginSuccessNot2xx() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        ResponseEntity<Object> responseEntity = ResponseEntity.status(400).build();
-        aspect.logLoginSuccess(joinPoint, responseEntity);
-        verify(auditLogRepository, never()).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogLoginSuccessBodyNotJwtResponse() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        ResponseEntity<String> responseEntity = ResponseEntity.ok("Just a string");
-        aspect.logLoginSuccess(joinPoint, responseEntity);
-        verify(auditLogRepository, never()).save(any(AuditLog.class));
-    }
-    
-    @Test
-    void testLogLoginSuccessRequiresTwoFactorNull() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        JwtResponse jwtResponse = mock(JwtResponse.class);
-        when(jwtResponse.getRequiresTwoFactor()).thenReturn(null); // Fuerza rama flag nulo
-        ResponseEntity<Object> responseEntity = ResponseEntity.ok(jwtResponse);
-        aspect.logLoginSuccess(joinPoint, responseEntity);
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogTwoFactorLoginSuccessNotResponseEntityOrNot2xx() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logTwoFactorLoginSuccess(joinPoint, DUMMY_STRING);
-        aspect.logTwoFactorLoginSuccess(joinPoint, ResponseEntity.badRequest().build());
-        verify(auditLogRepository, never()).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogPasswordChangeNotResponseEntityOrNot2xx() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logPasswordChange(joinPoint, DUMMY_STRING);
-        aspect.logPasswordChange(joinPoint, ResponseEntity.badRequest().build());
-        verify(auditLogRepository, never()).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogTwoFactorEnableNotResponseEntityOrNot2xx() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logTwoFactorEnable(joinPoint, DUMMY_STRING);
-        aspect.logTwoFactorEnable(joinPoint, ResponseEntity.badRequest().build());
-        verify(auditLogRepository, never()).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogTwoFactorDisableNotResponseEntityOrNot2xx() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logTwoFactorDisable(joinPoint, DUMMY_STRING);
-        aspect.logTwoFactorDisable(joinPoint, ResponseEntity.badRequest().build());
-        verify(auditLogRepository, never()).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogDataExportNotResponseEntityOrNot2xx() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        aspect.logDataExport(joinPoint, DUMMY_STRING);
-        aspect.logDataExport(joinPoint, ResponseEntity.badRequest().build());
-        verify(auditLogRepository, never()).save(any(AuditLog.class));
-    }
-
-    @Test
-    void testLogUserDeleteNoArgs() {
-        JoinPoint joinPoint = mock(JoinPoint.class);
-        when(joinPoint.getArgs()).thenReturn(new Object[]{}); // Fuerza rama args vacíos
-        aspect.logUserDelete(joinPoint);
+        aspect.logAuditableAction(joinPoint, auditable, "Some Result");
+        
         verify(auditLogRepository, times(1)).save(any(AuditLog.class));
     }
 }

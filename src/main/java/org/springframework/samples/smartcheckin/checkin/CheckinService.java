@@ -8,8 +8,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.statistics.events.CheckinEvent;
+import org.springframework.samples.smartcheckin.audit.Auditable;
+
+import org.jpatterns.gof.SingletonPattern;
+import org.jpatterns.gof.ObserverPattern;
 
 @Service
+@SingletonPattern.Singleton
+@ObserverPattern.Subject
 @SuppressWarnings("null")
 public class CheckinService {
 
@@ -22,11 +28,13 @@ public class CheckinService {
     }
 
     @Transactional
+    @Auditable(action = "CHECKIN_SUCCESS", details = "User checked in/out")
     public Checkin performCheckIn(User user, CheckinType checkInType) {
-        Checkin checkIn = new Checkin();
-        checkIn.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
-        checkIn.setCheckInType(checkInType);
-        checkIn.setUser(user);
+        Checkin checkIn = Checkin.builder()
+            .checkInDate(LocalDateTime.now(ZoneId.systemDefault()))
+            .checkInType(checkInType)
+            .user(user)
+            .build();
         
         Checkin savedCheckin = checkInRepository.save(checkIn);
         

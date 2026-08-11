@@ -13,7 +13,10 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
+import org.jpatterns.gof.SingletonPattern;
+
 @Service
+@SingletonPattern.Singleton
 public class TotpService {
 
     @Value("${smartcheckin.app.totpSecret:DEFAULT_SECRET}")
