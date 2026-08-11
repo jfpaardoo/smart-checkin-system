@@ -19,6 +19,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@org.jpatterns.gof.BuilderPattern.Builder
+@lombok.Builder
+@lombok.AllArgsConstructor
+@lombok.NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "checkins")

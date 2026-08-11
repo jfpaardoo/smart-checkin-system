@@ -50,7 +50,7 @@ public class SecurityConfiguration {
                 .headers(headers -> headers
                     .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
                     .xssProtection(HeadersConfigurer.XXssConfig::disable)
-                    .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'"))
+                    .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self' https: data: blob:; script-src 'self' https:; style-src 'self' https: 'unsafe-inline'; object-src 'none'"))
                 )
                 .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(unauthorizedHandler))
 
@@ -60,8 +60,7 @@ public class SecurityConfiguration {
 
                         // 2. Recursos estáticos, consolas, Service Worker y rutas del frontend/errores
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                        .requestMatchers(PathRequest.toH2Console()).permitAll()
-                        .requestMatchers("/h2-console/**", "/", "/oups", "/index.html", "/manifest.json", "/favicon.ico", "/*.png", "/static/**", "/locales/**", "/error", "/login", "/sw.js").permitAll()
+                        .requestMatchers("/", "/oups", "/index.html", "/manifest.json", "/favicon.ico", "/*.png", "/static/**", "/locales/**", "/error", "/login", "/sw.js").permitAll()
 
                         // 3. Swagger / OpenAPI (solo ADMIN)
                         .requestMatchers(
@@ -73,8 +72,6 @@ public class SecurityConfiguration {
 
                         // 4. Endpoints públicos
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/ws/**").permitAll()
-                        .requestMatchers("/api/v1/checkins/qr-fichaje").permitAll()
 
                         // 5. Perfil personal del usuario y configuración de 2FA
                         .requestMatchers(
@@ -93,6 +90,8 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/v1/exports/**").hasAuthority(ADMIN)
                         .requestMatchers("/api/v1/audit/**").hasAuthority(ADMIN)
                         .requestMatchers("/api/v1/cloud-settings/**").hasAuthority(ADMIN)
+                        .requestMatchers(PathRequest.toH2Console()).hasAuthority(ADMIN)
+                        .requestMatchers("/h2-console/**").hasAuthority(ADMIN)
 
                         // 7. Formaciones (POST, PUT, DELETE restringidos a ADMIN)
                         .requestMatchers(HttpMethod.POST, FORMATIONS_BASE).hasAuthority(ADMIN)

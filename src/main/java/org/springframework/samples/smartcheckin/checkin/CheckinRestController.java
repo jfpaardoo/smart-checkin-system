@@ -72,13 +72,8 @@ public class CheckinRestController {
         // FLUJO 1: EL CÓDIGO ES DE UNA FORMACIÓN
         // ==========================================
         if (targetFormation != null) {
-            // Verificación de distancia GPS también para fichajes de formación
-            if (isLocationInvalid(request)) {
-                double distance = calculateDistance(request.getUserLat(), request.getUserLng(), 
-                                                    request.getAdminLat(), request.getAdminLng());
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of(MESSAGE_KEY, "Demasiado lejos del punto de control. Distancia: " + Math.round(distance) + "m (Max: 50m)"));
-            }
+            ResponseEntity<Object> locationError = validateLocation(request);
+            if (locationError != null) return locationError;
 
             try {
                 // Lo registramos en la formación
@@ -111,12 +106,8 @@ public class CheckinRestController {
         }
 
         // Si es el global, verificamos distancia si fuera necesario
-        if (isLocationInvalid(request)) {
-            double distance = calculateDistance(request.getUserLat(), request.getUserLng(), 
-                                                request.getAdminLat(), request.getAdminLng());
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of(MESSAGE_KEY, "Demasiado lejos del punto de control. Distancia: " + Math.round(distance) + "m (Max: 50m)"));
-        }
+        ResponseEntity<Object> locationError = validateLocation(request);
+        if (locationError != null) return locationError;
 
         // Calculamos si entra o sale
         CheckinType type = (Boolean.TRUE.equals(user.getIsWorking())) ? CheckinType.SALIDA : CheckinType.ENTRADA;
@@ -160,7 +151,7 @@ public class CheckinRestController {
     private boolean isLocationInvalid(QrCheckinRequest request) {
         if (request.getUserLat() == null || request.getUserLng() == null || 
             request.getAdminLat() == null || request.getAdminLng() == null) {
-            return false;
+            return true; // Bloquear si faltan coordenadas
         }
         double distance = calculateDistance(request.getUserLat(), request.getUserLng(), 
                                             request.getAdminLat(), request.getAdminLng());
@@ -169,6 +160,20 @@ public class CheckinRestController {
 
     private boolean isSignatureMissing(QrCheckinRequest request) {
         return request.getSignature() == null || request.getSignature().isEmpty();
+    }
+
+    private ResponseEntity<Object> validateLocation(QrCheckinRequest request) {
+        if (isLocationInvalid(request)) {
+            if (request.getUserLat() == null || request.getUserLng() == null) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of(MESSAGE_KEY, "Se requiere ubicación GPS activa para fichar."));
+            }
+            double distance = calculateDistance(request.getUserLat(), request.getUserLng(), 
+                                                request.getAdminLat(), request.getAdminLng());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of(MESSAGE_KEY, "Demasiado lejos del punto de control. Distancia: " + Math.round(distance) + "m (Max: 50m)"));
+        }
+        return null;
     }
 
     private Checkin processCheckinRecord(User user, CheckinType type, String signature) {

@@ -12,7 +12,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.samples.smartcheckin.settings.OneDriveService;
+import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter;
 import org.springframework.samples.smartcheckin.notification.NotificationContext;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
@@ -25,7 +25,7 @@ class FormationServiceTests {
     private FormationRepository formationRepository;
     private FormationAttendanceRepository attendanceRepository;
     private UserService userService;
-    private OneDriveService oneDriveService;
+    private CloudStorageAdapter cloudStorageAdapter;
     private SignatureStorageService signatureStorageService;
     private FormationService formationService;
 
@@ -39,12 +39,12 @@ class FormationServiceTests {
         formationRepository = mock(FormationRepository.class);
         attendanceRepository = mock(FormationAttendanceRepository.class);
         userService = mock(UserService.class);
-        oneDriveService = mock(OneDriveService.class);
+        cloudStorageAdapter = mock(CloudStorageAdapter.class);
         NotificationContext notificationContext = mock(NotificationContext.class);
         signatureStorageService = mock(SignatureStorageService.class);
         ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
         
-        formationService = new FormationService(formationRepository, attendanceRepository, userService, oneDriveService, notificationContext, signatureStorageService, eventPublisher);
+        formationService = new FormationService(formationRepository, attendanceRepository, userService, cloudStorageAdapter, notificationContext, signatureStorageService, eventPublisher);
     }
 
     @Test
@@ -284,13 +284,13 @@ class FormationServiceTests {
         org.springframework.web.multipart.MultipartFile mockFile = 
             new MockMultipartFile("file", "test.pdf", APP_PDF, new byte[]{1, 2, 3});
             
-        when(oneDriveService.uploadFile(mockFile, FORMATIONS_DIR)).thenReturn("https://onedrive.live.com/test.pdf");
+        when(cloudStorageAdapter.uploadFile(mockFile, FORMATIONS_DIR)).thenReturn("https://onedrive.live.com/test.pdf");
         when(formationRepository.save(any(Formation.class))).thenReturn(formation);
 
         Formation res = formationService.saveFormation(formation, mockFile);
         assertNotNull(res);
         assertTrue(res.getDocumentUrls().contains("https://onedrive.live.com/test.pdf"));
-        verify(oneDriveService, times(1)).uploadFile(mockFile, FORMATIONS_DIR);
+        verify(cloudStorageAdapter, times(1)).uploadFile(mockFile, FORMATIONS_DIR);
     }
 
     @Test
@@ -307,15 +307,15 @@ class FormationServiceTests {
             new MockMultipartFile("file", NEW_PDF, APP_PDF, new byte[]{4, 5, 6});
 
         when(formationRepository.findById(1)).thenReturn(Optional.of(existing));
-        when(oneDriveService.uploadFile(mockFile, FORMATIONS_DIR)).thenReturn(NEW_ONEDRIVE_URL);
+        when(cloudStorageAdapter.uploadFile(mockFile, FORMATIONS_DIR)).thenReturn(NEW_ONEDRIVE_URL);
         when(formationRepository.save(any(Formation.class))).thenReturn(existing);
 
         Formation res = formationService.updateFormation(updatedDetails, 1, mockFile);
         
         assertNotNull(res);
         assertEquals("New", res.getName());
-        verify(oneDriveService, times(1)).deleteFile("https://onedrive.live.com/old.pdf");
-        verify(oneDriveService, times(1)).uploadFile(mockFile, FORMATIONS_DIR);
+        verify(cloudStorageAdapter, times(1)).deleteFile("https://onedrive.live.com/old.pdf");
+        verify(cloudStorageAdapter, times(1)).uploadFile(mockFile, FORMATIONS_DIR);
         assertTrue(res.getDocumentUrls().contains(NEW_ONEDRIVE_URL));
     }
 
@@ -334,7 +334,7 @@ class FormationServiceTests {
         Formation res = formationService.updateFormation(updatedDetails, 1, null);
         assertNotNull(res);
         assertEquals("Updated Name", res.getName());
-        verify(oneDriveService, never()).uploadFile(any(), any());
+        verify(cloudStorageAdapter, never()).uploadFile(any(), any());
     }
 
     @Test
@@ -355,7 +355,7 @@ class FormationServiceTests {
     }
 
     @Test
-    void testDeleteFormationWithDocumentsInOneDrive() {
+    void testDeleteFormationWithDocumentsInOneDrive() throws Exception {
         Formation formation = new Formation();
         formation.setId(1);
         formation.setAttendances(new ArrayList<>());
@@ -365,19 +365,19 @@ class FormationServiceTests {
 
         formationService.deleteFormation(1);
         
-        verify(oneDriveService, times(1)).deleteFile("https://onedrive.live.com/doc1.pdf");
+        verify(cloudStorageAdapter, times(1)).deleteFile("https://onedrive.live.com/doc1.pdf");
         verify(formationRepository, times(1)).delete(formation);
     }
 
     @Test
-    void testDeleteFormationOneDriveExceptionHandled() {
+    void testDeleteFormationOneDriveExceptionHandled() throws Exception {
         Formation formation = new Formation();
         formation.setId(1);
         formation.setAttendances(new ArrayList<>());
         formation.getDocumentUrls().add("https://onedrive.live.com/error.pdf");
 
         when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
-        doThrow(new RuntimeException("Cloud error")).when(oneDriveService).deleteFile(anyString());
+        doThrow(new RuntimeException("Cloud error")).when(cloudStorageAdapter).deleteFile(anyString());
 
         assertDoesNotThrow(() -> formationService.deleteFormation(1));
         verify(formationRepository, times(1)).delete(formation);
@@ -397,14 +397,14 @@ class FormationServiceTests {
             new MockMultipartFile("file", NEW_PDF, APP_PDF, new byte[]{4, 5, 6});
 
         when(formationRepository.findById(1)).thenReturn(Optional.of(existing));
-        when(oneDriveService.uploadFile(mockFile, FORMATIONS_DIR)).thenReturn(NEW_ONEDRIVE_URL);
+        when(cloudStorageAdapter.uploadFile(mockFile, FORMATIONS_DIR)).thenReturn(NEW_ONEDRIVE_URL);
         when(formationRepository.save(any(Formation.class))).thenReturn(existing);
         
         // Forzamos que el borrado del archivo antiguo en OneDrive falle para entrar en el catch defensivo
-        doThrow(new RuntimeException("Cloud delete error")).when(oneDriveService).deleteFile(anyString());
+        doThrow(new RuntimeException("Cloud delete error")).when(cloudStorageAdapter).deleteFile(anyString());
 
         assertDoesNotThrow(() -> formationService.updateFormation(updatedDetails, 1, mockFile));
-        verify(oneDriveService, times(1)).uploadFile(mockFile, FORMATIONS_DIR);
+        verify(cloudStorageAdapter, times(1)).uploadFile(mockFile, FORMATIONS_DIR);
     }
 
     @Test
@@ -428,7 +428,7 @@ class FormationServiceTests {
 
         // Instanciamos temporalmente con el mock de push fallido
         FormationService customService = new FormationService(
-            formationRepository, attendanceRepository, userService, oneDriveService, notificationContextMock, signatureStorageService, eventPublisher
+            formationRepository, attendanceRepository, userService, cloudStorageAdapter, notificationContextMock, signatureStorageService, eventPublisher
         );
 
         assertDoesNotThrow(() -> customService.addAttendee(1, 10));
@@ -465,13 +465,13 @@ class FormationServiceTests {
             new MockMultipartFile("file", NEW_PDF, APP_PDF, new byte[]{4, 5, 6});
 
         when(formationRepository.findById(1)).thenReturn(Optional.of(existing));
-        when(oneDriveService.uploadFile(mockFile, FORMATIONS_DIR)).thenReturn(NEW_ONEDRIVE_URL);
+        when(cloudStorageAdapter.uploadFile(mockFile, FORMATIONS_DIR)).thenReturn(NEW_ONEDRIVE_URL);
         when(formationRepository.save(any(Formation.class))).thenReturn(existing);
 
         Formation res = formationService.updateFormation(updatedDetails, 1, mockFile);
         
         assertNotNull(res);
         assertEquals("New", res.getName());
-        verify(oneDriveService, times(1)).uploadFile(mockFile, FORMATIONS_DIR);
+        verify(cloudStorageAdapter, times(1)).uploadFile(mockFile, FORMATIONS_DIR);
     }
 }

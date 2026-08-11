@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.samples.smartcheckin.audit.Auditable;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
@@ -107,6 +108,7 @@ class UserRestController {
     }
 
     @PutMapping("/me")
+    @Auditable(action = "USER_UPDATE_PREFS", details = "User updated their profile preferences")
     public ResponseEntity<User> updateMyProfile(@RequestBody NotificationPreferencesRequest userUpdates) {
         User currentUser = userService.findCurrentUser();
         
@@ -140,6 +142,7 @@ class UserRestController {
     }
 
     @PutMapping("me/password")
+    @Auditable(action = "PASSWORD_CHANGE", details = "User changed their password")
     public ResponseEntity<MessageResponse> changePassword(@RequestBody @Valid ChangePasswordRequest request) {
         User currentUser = userService.findCurrentUser();
         if (request.getCurrentPassword() == null || !passwordEncoder.matches(request.getCurrentPassword(), currentUser.getPassword())) {
@@ -157,6 +160,7 @@ class UserRestController {
     }
 
     @PostMapping("2fa/setup")
+    @Auditable(action = "2FA_SETUP_INIT", details = "User initiated 2FA setup")
     public ResponseEntity<Map<String, String>> setupTwoFactor(@RequestParam(required = false, defaultValue = "APP") String type, Principal principal) {
         User user = userService.findUser(principal.getName());
         byte[] buffer = new byte[10];
@@ -191,6 +195,7 @@ class UserRestController {
     }
 
     @PostMapping("2fa/enable")
+    @Auditable(action = "2FA_ENABLE", details = "User enabled Two-Factor Authentication")
     public ResponseEntity<MessageResponse> enableTwoFactor(@RequestBody @Valid TwoFactorVerifyRequest request, Principal principal) {
         User user = userService.findUser(principal.getName());
         if (user.getTwoFactorSecret() != null && totpService.validateCode(user.getTwoFactorSecret(), request.getCode())) {
@@ -207,6 +212,7 @@ class UserRestController {
     }
 
     @PostMapping("2fa/disable")
+    @Auditable(action = "2FA_DISABLE", details = "User disabled Two-Factor Authentication")
     public ResponseEntity<MessageResponse> disableTwoFactor(@RequestBody @Valid TwoFactorVerifyRequest request, Principal principal) {
         User user = userService.findUser(principal.getName());
         if (user.getTwoFactorSecret() != null && totpService.validateCode(user.getTwoFactorSecret(), request.getCode())) {
@@ -230,6 +236,7 @@ class UserRestController {
     }
 
     @PutMapping("{userId}/approve")
+    @Auditable(action = "USER_APPROVE", details = "Admin approved user")
     public ResponseEntity<MessageResponse> approveUser(@PathVariable("userId") Integer id) {
         User target = userService.findUser(id);
         RestPreconditions.checkNotNull(target, "User", "ID", id);
@@ -242,6 +249,7 @@ class UserRestController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @SuppressWarnings("squid:S4684")
+    @Auditable(action = "USER_CREATE", details = "Admin created user")
     public ResponseEntity<User> create(@RequestBody @Valid User user) {
         if (user.getPassword() != null) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -255,6 +263,7 @@ class UserRestController {
     @PutMapping(value = "{userId}")
     @ResponseStatus(HttpStatus.OK)
     @SuppressWarnings("squid:S4684")
+    @Auditable(action = "USER_UPDATE", details = "Admin updated user")
     public ResponseEntity<User> update(@PathVariable("userId") Integer id, @RequestBody @Valid User user) {
         RestPreconditions.checkNotNull(userService.findUser(id), "User", "ID", id);
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
