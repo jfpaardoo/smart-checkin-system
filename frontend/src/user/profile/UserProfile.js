@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Nav, NavItem, NavLink, TabContent, TabPane, Modal, ModalHeader, ModalBody, ModalFooter, Spinner } from "reactstrap";
 import { FaUser, FaGraduationCap, FaShieldAlt, FaTrash } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
@@ -20,6 +20,7 @@ export default function UserProfile() {
 
   const [activeTab, setActiveTab] = useState("1");
   const [isDeleting, setIsDeleting] = useState(false);
+  const isDeletingRef = useRef(false);
   const [isExporting, setIsExporting] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
@@ -60,10 +61,13 @@ export default function UserProfile() {
   const handleDeleteAccount = () => { setDeleteModalOpen(true); };
 
   const confirmDeleteAccount = async () => {
+    if (isDeletingRef.current) return;
     if (deleteConfirmationText !== "ELIMINAR") {
       toast.error(t("profile.deleteTypeConfirmError", "Debes escribir ELIMINAR para confirmar."));
       return;
     }
+    
+    isDeletingRef.current = true;
     setIsDeleting(true);
     try {
       const res = await fetch("/api/v1/users/me", {
@@ -84,6 +88,7 @@ export default function UserProfile() {
       console.error(err);
       toast.error(t("profile.connectionError", "Error de conexión."));
     } finally {
+      isDeletingRef.current = false;
       setIsDeleting(false);
       setDeleteModalOpen(false);
       setDeleteConfirmationText("");
@@ -165,6 +170,7 @@ export default function UserProfile() {
           <input
             className="w-full mt-4 px-4 py-2.5 text-center text-gray-800 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-0 focus:border-red-500 hover:border-gray-400 transition-colors shadow-none placeholder:text-gray-400"
             placeholder="ELIMINAR"
+            aria-label={t("profile.deleteConfirmationAria", "Escribe ELIMINAR para confirmar")}
             value={deleteConfirmationText}
             onChange={(e) => setDeleteConfirmationText(e.target.value)}
           />

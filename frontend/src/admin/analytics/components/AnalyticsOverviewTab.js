@@ -1,11 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCheck, faGraduationCap, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie } from 'recharts';
+
+const COLORS = ['#b3c34c', '#1e293b'];
+const dateFormatter = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
 
 export default function AnalyticsOverviewTab({ statistics }) {
   const { t } = useTranslation();
+  const [Recharts, setRecharts] = useState(null);
+
+  useEffect(() => {
+    import('recharts')
+      .then(module => {
+        setRecharts(module);
+      })
+      .catch(err => {
+        console.error('Failed to load recharts', err);
+      });
+  }, []);
 
   const latestTotalCheckins = statistics.length > 0 ? statistics[0].totalCheckins : 0;
   const latestAttendanceRate = statistics.length > 0 && statistics[0].formationAttendanceRate !== undefined 
@@ -13,7 +26,6 @@ export default function AnalyticsOverviewTab({ statistics }) {
       : 0;
   const daysTracked = statistics.length;
 
-  const COLORS = ['#b3c34c', '#1e293b'];
 
   const pieData = statistics.length > 0 ? [
       { name: t('analytics.attendance', 'Attendance'), value: latestAttendanceRate, fill: COLORS[0] },
@@ -64,33 +76,41 @@ export default function AnalyticsOverviewTab({ statistics }) {
                       <span>{t('analytics.totalCheckins', 'Asistencias Totales (Últimos 30 Días)')}</span>
                   </div>
                   <div className="chart-container-wrapper">
-                      <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={chronologicalStatistics} margin={{ top: 15, right: 25, left: -15, bottom: 5 }}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 0, 0, 0.06)" />
-                              <XAxis 
-                                  dataKey="date" 
-                                  stroke="#64748b" 
-                                  fontSize={12} 
-                                  tickLine={false} 
-                                  tickFormatter={(val) => {
-                                      if (!val) return '';
-                                      const d = new Date(val);
-                                      return Number.isNaN(d.valueOf()) ? val : new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(d);
-                                  }}
-                              />
-                              <YAxis stroke="#64748b" fontSize={12} tickLine={false} />
-                              <RechartsTooltip />
-                              <Line 
-                                  type="monotone" 
-                                  name={t('analytics.totalCheckins', 'Asistencias')} 
-                                  dataKey="totalCheckins" 
-                                  stroke="#2563eb" 
-                                  strokeWidth={3} 
-                                  dot={{ r: 4, fill: '#2563eb' }}
-                                  activeDot={{ r: 7 }} 
-                              />
-                          </LineChart>
-                      </ResponsiveContainer>
+                      {Recharts ? (
+                          <Recharts.ResponsiveContainer width="100%" height="100%">
+                              <Recharts.LineChart data={chronologicalStatistics} margin={{ top: 15, right: 25, left: -15, bottom: 5 }}>
+                                  <Recharts.CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 0, 0, 0.06)" />
+                                  <Recharts.XAxis 
+                                      dataKey="date" 
+                                      stroke="#64748b" 
+                                      fontSize={12} 
+                                      tickLine={false} 
+                                      tickFormatter={(val) => {
+                                          if (!val) return '';
+                                          const d = new Date(val);
+                                          return Number.isNaN(d.valueOf()) ? val : dateFormatter.format(d);
+                                      }}
+                                  />
+                                  <Recharts.YAxis stroke="#64748b" fontSize={12} tickLine={false} />
+                                  <Recharts.Tooltip />
+                                  <Recharts.Line 
+                                      type="monotone" 
+                                      name={t('analytics.totalCheckins', 'Asistencias')} 
+                                      dataKey="totalCheckins" 
+                                      stroke="#2563eb" 
+                                      strokeWidth={3} 
+                                      dot={{ r: 4, fill: '#2563eb' }}
+                                      activeDot={{ r: 7 }} 
+                                  />
+                              </Recharts.LineChart>
+                          </Recharts.ResponsiveContainer>
+                      ) : (
+                          <div className="d-flex justify-content-center align-items-center h-100">
+                              <output className="spinner-border text-primary">
+                                  <span className="visually-hidden">Loading...</span>
+                              </output>
+                          </div>
+                      )}
                   </div>
               </div>
           </div>
@@ -101,20 +121,28 @@ export default function AnalyticsOverviewTab({ statistics }) {
                       <span>{t('analytics.formationAttendance', 'Formation Attendance')}</span>
                   </div>
                   <div className="chart-container-wrapper d-flex flex-column align-items-center justify-content-center">
-                      <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                              <Pie
-                                  data={pieData}
-                                  cx="50%"
-                                  cy="45%"
-                                  innerRadius={55}
-                                  outerRadius={85}
-                                  paddingAngle={4}
-                                  dataKey="value"
-                              />
-                              <RechartsTooltip />
-                          </PieChart>
-                      </ResponsiveContainer>
+                      {Recharts ? (
+                          <Recharts.ResponsiveContainer width="100%" height="100%">
+                              <Recharts.PieChart>
+                                  <Recharts.Pie
+                                      data={pieData}
+                                      cx="50%"
+                                      cy="45%"
+                                      innerRadius={55}
+                                      outerRadius={85}
+                                      paddingAngle={4}
+                                      dataKey="value"
+                                  />
+                                  <Recharts.Tooltip />
+                              </Recharts.PieChart>
+                          </Recharts.ResponsiveContainer>
+                      ) : (
+                          <div className="d-flex justify-content-center align-items-center h-100">
+                              <output className="spinner-border text-primary">
+                                  <span className="visually-hidden">Loading...</span>
+                              </output>
+                          </div>
+                      )}
                       
                       <div className="d-flex justify-content-center gap-3 mt-2">
                           <div className="d-flex align-items-center gap-1" style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>

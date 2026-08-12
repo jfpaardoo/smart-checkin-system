@@ -6,14 +6,14 @@ import { faClock, faEye } from '@fortawesome/free-solid-svg-icons';
 import GlassSearchBar from '../../../components/GlassSearchBar';
 import { formatDuration } from '../../../util/dateTimeUtil';
 
+const getAttendanceColorClass = (percentage) => {
+  if (percentage >= 75) return 'text-emerald-600 font-bold';
+  if (percentage >= 50) return 'text-amber-600 font-bold';
+  return 'text-rose-500 font-bold';
+};
+
 export default function AnalyticsEmployeesTab({ userAnalyticsList, onSearch, onOpenUserDetail }) {
   const { t } = useTranslation();
-
-  const getAttendanceColorClass = (percentage) => {
-    if (percentage >= 75) return 'text-emerald-600 font-bold';
-    if (percentage >= 50) return 'text-amber-600 font-bold';
-    return 'text-rose-500 font-bold';
-  };
 
   return (
     <div className="mt-3 w-full">

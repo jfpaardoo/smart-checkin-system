@@ -147,7 +147,7 @@ export default function UserListAdmin() {
                 
                 {/* Botón Excel con efecto Liquid Glass acentuado */}
                 <Button 
-                  className="da-btn-secondary btn-icon-expand btn-expand-lg bg-slate-500/30 hover:bg-slate-500/50 text-slate-800 border border-white/60 backdrop-blur-xl shadow-[0_8px_20px_0_rgba(31,38,135,0.07)] transition-all duration-300 hover:-translate-y-0.5" 
+                  className="da-btn-secondary btn-icon-expand btn-expand-lg bg-slate-500/30 hover:bg-slate-500/50 text-slate-800 border border-white/60 backdrop-blur-xl shadow-[0_8px_20px_0_rgba(31,38,135,0.07)] transition duration-300 hover:-translate-y-0.5" 
                   onClick={() => handleDownloadExport('users/excel', 'usuarios.xlsx')}
                 >
                     <FontAwesomeIcon icon={faFileExcel} className="text-slate-700" />

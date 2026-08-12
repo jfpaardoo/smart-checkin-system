@@ -127,7 +127,7 @@ export default function FormationEditAdmin() {
                     style={{ zIndex: 2, cursor: 'pointer', left: 0, top: 0 }}
                     accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.webp"
                   />
-                  <div className="upload-dropzone p-4 text-center rounded border-dashed" style={{ backgroundColor: 'rgba(255,255,255,0.6)', border: '2px dashed var(--da-primary)', transition: 'all 0.3s ease' }}>
+                  <div className="upload-dropzone p-4 text-center rounded border-dashed" style={{ backgroundColor: 'rgba(255,255,255,0.6)', border: '2px dashed var(--da-primary)', transition: 'background-color 0.3s ease, border-color 0.3s ease' }}>
                     <FontAwesomeIcon icon={faUpload} size="2x" className="mb-2 text-primary" style={{ opacity: 0.7 }} />
                     <h6 className="fw-bold mb-1" style={{ color: '#2c3e50' }}>{t('formations.dragDropFiles', 'Arrastra archivos aquí o haz clic para subir')}</h6>
                     <p className="text-muted small mb-0">{t('formations.acceptedFormats', 'Formatos aceptados: PDF, Word, Excel, PowerPoint, Imágenes')}</p>

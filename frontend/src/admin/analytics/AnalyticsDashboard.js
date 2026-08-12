@@ -186,11 +186,11 @@ export default function AnalyticsDashboard() {
                 <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
                   <div className="flex items-center gap-2 w-full sm:w-auto">
                     <FontAwesomeIcon icon={faCalendarAlt} className="text-muted hidden sm:block" />
-                    <input type="date" className="form-control form-control-sm w-full sm:w-auto" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                    <input type="date" className="form-control form-control-sm w-full sm:w-auto" value={startDate} onChange={(e) => setStartDate(e.target.value)} aria-label="Start date" />
                   </div>
                   <span className="text-muted hidden sm:block"> - </span>
                   <div className="w-full sm:w-auto">
-                    <input type="date" className="form-control form-control-sm w-full sm:w-auto" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                    <input type="date" className="form-control form-control-sm w-full sm:w-auto" value={endDate} onChange={(e) => setEndDate(e.target.value)} aria-label="End date" />
                   </div>
                 </div>
             )}

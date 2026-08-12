@@ -35,6 +35,7 @@ export function DocumentPreviewModal({ isOpen, toggle, document }) {
                 style={{ border: 'none' }}
                 title={document.name}
                 allowFullScreen
+                sandbox="allow-scripts allow-popups"
               ></iframe>
             </div>
           ) : (

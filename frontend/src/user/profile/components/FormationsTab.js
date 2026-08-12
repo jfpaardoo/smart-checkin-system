@@ -5,6 +5,31 @@ import { TableGhostLoader } from "../../../components/GhostLoader";
 import tokenService from "../../../services/token.service";
 import { calculateDuration, formatDate } from "../../../utils/dateUtils";
 
+const handleDownloadCertificate = async (attendanceId) => {
+  try {
+    const response = await fetch(`/api/v1/certificates/attendance/${attendanceId}`, {
+      headers: {
+        Authorization: `Bearer ${tokenService.getLocalAccessToken()}`
+      }
+    });
+    if (response.ok) {
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `certificate_${attendanceId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    } else {
+      console.error("Error fetching certificate PDF");
+    }
+  } catch (error) {
+    console.error("Error downloading PDF", error);
+  }
+};
+
 export default function FormationsTab({ loadingFormations, formations, t }) {
   if (loadingFormations) {
     return <TableGhostLoader rows={4} columns={6} />;
@@ -22,31 +47,6 @@ export default function FormationsTab({ loadingFormations, formations, t }) {
   const formattedHours = totalMinutes >= 60 
     ? `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m` 
     : `${totalMinutes} min`;
-
-  const handleDownloadCertificate = async (attendanceId) => {
-    try {
-      const response = await fetch(`/api/v1/certificates/attendance/${attendanceId}`, {
-        headers: {
-          Authorization: `Bearer ${tokenService.getLocalAccessToken()}`
-        }
-      });
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `certificate_${attendanceId}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        a.remove();
-      } else {
-        console.error("Error fetching certificate PDF");
-      }
-    } catch (error) {
-      console.error("Error downloading PDF", error);
-    }
-  };
 
   return (
     <div className="p-1 p-md-3">

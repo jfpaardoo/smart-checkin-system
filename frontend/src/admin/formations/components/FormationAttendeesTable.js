@@ -8,6 +8,19 @@ import utc from "dayjs/plugin/utc";
 import GlassDropdown from "../../../components/GlassDropdown";
 
 dayjs.extend(utc);
+
+// Estilo común para que los 3 botones tengan el mismo ancho y alineación
+const actionButtonStyle = { 
+  width: '100px', // Ancho fijo para los 3 botones
+  height: '34px', // Altura fija
+  padding: '0', 
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '6px',
+  whiteSpace: 'nowrap'
+};
+
 export default function FormationAttendeesTable({
   formation,
   allUsers,
@@ -25,8 +38,8 @@ export default function FormationAttendeesTable({
     return <span className="badge-glass-secondary text-xs">{t('formationDetails.statusPending')}</span>;
   };
 
-  const attendeeIds = formation.attendances ? formation.attendances.map(a => a.user.id) : [];
-  const availableUsers = allUsers.filter(u => !attendeeIds.includes(u.id));
+  const attendeeIds = new Set(formation.attendances ? formation.attendances.map(a => a.user.id) : []);
+  const availableUsers = allUsers.filter(u => !attendeeIds.has(u.id));
 
   const [selectedUserId, setSelectedUserId] = React.useState("");
 
@@ -38,21 +51,6 @@ export default function FormationAttendeesTable({
   };
 
   const attendees = formation.attendances || [];
-
-  // Estilo común para que los 3 botones tengan el mismo ancho y alineación
-  const actionButtonStyle = { 
-    width: '100px', // Ancho fijo para los 3 botones
-    height: '34px', // Altura fija
-    padding: '0', 
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px',
-    fontSize: '12px',
-    fontWeight: '700',
-    borderRadius: '17px', // Borde totalmente redondeado
-    flexShrink: 0 
-  };
 
   return (
     <>

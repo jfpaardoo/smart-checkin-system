@@ -1,45 +1,37 @@
-import jwt_decode from "jwt-decode";
-
 class TokenService {
+    inMemoryToken = null;
+
     getLocalAccessToken() {
+        return this.inMemoryToken;
+    }
+
+    updateLocalAccessToken(token) {
+        this.inMemoryToken = token;
+    }
+
+    getUser() {
         try {
-            const jwtStr = localStorage.getItem("jwt");
-            if (!jwtStr) return null;
-            return JSON.parse(jwtStr);
+            const userStr = window.localStorage.getItem("user");
+            if (!userStr) return null;
+            return JSON.parse(userStr);
         } catch {
             return null;
         }
     }
 
-    updateLocalAccessToken(token) {
-        window.localStorage.setItem("jwt", JSON.stringify(token));
-    }
-
-    getUser() {
-        const jwt = this.getLocalAccessToken();
-        if (!jwt) return null;
-        try {
-            const decoded = jwt_decode(jwt);
-            return {
-                username: decoded.sub,
-                roles: decoded.authorities || [],
-                authority: { authority: (decoded.authorities && decoded.authorities.length > 0) ? decoded.authorities[0] : null }
-            };
-        } catch (e) {
-            console.error("Failed to decode JWT:", e);
-            return null;
-        }
-    }
-
-    // Deprecated, we no longer store raw user objects in local storage for security reasons.
     setUser(user) {
-        // No-op. The user identity is securely derived from the JWT payload now.
-        // We leave this as a no-op to prevent breaking existing components that call it.
+        const displayUser = {
+            username: user.username,
+            roles: user.roles,
+            authority: { authority: (user.roles && user.roles.length > 0) ? user.roles[0] : null }
+        };
+        window.localStorage.setItem("user", JSON.stringify(displayUser));
     }
 
     removeUser() {
-        window.localStorage.removeItem("user"); // Clean up old legacy items
-        window.localStorage.removeItem("jwt");
+        window.localStorage.removeItem("user");
+        window.localStorage.removeItem("jwt"); // Clean up old tokens
+        this.inMemoryToken = null;
     }
 }
 const tokenService = new TokenService();

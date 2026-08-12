@@ -25,11 +25,19 @@ const PrivateRoute = ({ children }) => {
                 'Content-Type': 'application/json'
             },
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error('Invalid token');
+                return response.json();
+            })
             .then(result => {
                 if (cancelled) return;
-                setMessage("Your token has expired. Please, sign in again.");
                 setIsValid(result);
+                setIsLoading(false);
+            })
+            .catch((err) => {
+                if (cancelled) return;
+                setIsValid(false);
+                setMessage(err.message);
                 setIsLoading(false);
             });
 

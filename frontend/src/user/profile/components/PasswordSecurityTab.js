@@ -8,12 +8,7 @@ export default function PasswordSecurityTab({
   setPasswordForm,
   handlePasswordChangeSubmit,
   submittingPassword,
-  showCurrentPassword,
-  setShowCurrentPassword,
-  showNewPassword,
-  setShowNewPassword,
-  showConfirmPassword,
-  setShowConfirmPassword,
+
   userData,
   setUserData,
   t,
@@ -27,9 +22,7 @@ export default function PasswordSecurityTab({
     <div className="w-full">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 items-stretch">
         {/* Card: 2FA Configuration */}
-        <div>
-          <TwoFactorSettings userData={userData} setUserData={setUserData} t={t} toast={toast} />
-        </div>
+        <div><TwoFactorSettings userData={userData} setUserData={setUserData} t={t} toast={toast} /></div>
 
         {/* Card: Password Change */}
         <div>
@@ -38,12 +31,6 @@ export default function PasswordSecurityTab({
             setPasswordForm={setPasswordForm}
             handlePasswordChangeSubmit={handlePasswordChangeSubmit}
             submittingPassword={submittingPassword}
-            showCurrentPassword={showCurrentPassword}
-            setShowCurrentPassword={setShowCurrentPassword}
-            showNewPassword={showNewPassword}
-            setShowNewPassword={setShowNewPassword}
-            showConfirmPassword={showConfirmPassword}
-            setShowConfirmPassword={setShowConfirmPassword}
             t={t}
           />
         </div>

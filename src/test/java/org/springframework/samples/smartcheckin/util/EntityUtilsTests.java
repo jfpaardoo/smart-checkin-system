@@ -46,9 +46,9 @@ class EntityUtilsTests {
         List<OtherDummyEntity> list = List.of(entity1);
 
         // Forzamos la discrepancia de tipos de forma segura silenciando la advertencia del compilador
-        assertThrows(ObjectRetrievalFailureException.class, () -> {
-            EntityUtils.getById((List<DummyEntity>) (List<?>) list, DummyEntity.class, 1);
-        });
+        assertThrows(ObjectRetrievalFailureException.class, () -> 
+            EntityUtils.getById((List<DummyEntity>) (List<?>) list, DummyEntity.class, 1)
+        );
     }
 
     @Test

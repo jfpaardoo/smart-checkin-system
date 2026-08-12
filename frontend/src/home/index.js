@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import useSWR from 'swr';
 import { Link } from 'react-router-dom';
 import { Button } from 'reactstrap';
 import { FaQrcode, FaChartBar, FaUsers, FaGraduationCap, FaUser, FaSignInAlt, FaShieldAlt, FaUserPlus } from 'react-icons/fa';
@@ -12,23 +12,16 @@ export default function Home() {
   const jwt = tokenService.getLocalAccessToken();
   const user = tokenService.getUser();
 
-  const [userData, setUserData] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(!!jwt);
+  const fetcher = (url) => fetch(url, {
+    headers: { Authorization: `Bearer ${jwt}` },
+  }).then((r) => r.ok ? r.json() : null);
 
-  useEffect(() => {
-    if (jwt) {
-      setLoadingUser(true);
-      fetch("/api/v1/users/me", {
-        headers: { Authorization: `Bearer ${jwt}` },
-      })
-        .then((r) => r.ok ? r.json() : null)
-        .then((data) => {
-          if (data) setUserData(data);
-        })
-        .catch(() => {})
-        .finally(() => setLoadingUser(false));
-    }
-  }, [jwt]);
+  const { data: userData, isLoading: isSWRloading } = useSWR(
+    jwt ? "/api/v1/users/me" : null,
+    fetcher
+  );
+
+  const loadingUser = jwt ? isSWRloading : false;
 
   const isAdmin = user?.authority?.authority === 'ADMIN' || user?.roles?.includes('ADMIN');
 

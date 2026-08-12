@@ -7,9 +7,6 @@ export function usePasswordSecurity(jwt, t, toast) {
     newPassword: "",
     confirmPassword: "",
   });
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submittingPassword, setSubmittingPassword] = useState(false);
 
   const handlePasswordChangeSubmit = (e) => {
@@ -63,12 +60,6 @@ export function usePasswordSecurity(jwt, t, toast) {
   return {
     passwordForm,
     setPasswordForm,
-    showCurrentPassword,
-    setShowCurrentPassword,
-    showNewPassword,
-    setShowNewPassword,
-    showConfirmPassword,
-    setShowConfirmPassword,
     submittingPassword,
     handlePasswordChangeSubmit,
   };

@@ -26,7 +26,10 @@ export default function UserDashboard() {
     fetch("/api/v1/users/me/formations", {
       headers: { Authorization: `Bearer ${jwt}` },
     })
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to fetch");
+        return r.json();
+      })
       .then((data) => setAttendances(data))
       .catch((e) => console.error("Error updating user formations via WS", e));
   };
@@ -87,7 +90,7 @@ export default function UserDashboard() {
         </h2>
         
         <div className="flex justify-center mb-10 w-full">
-          <Link to="/checkin" className="da-btn-primary px-8 py-4 text-lg font-bold rounded-full w-full md:w-auto text-center shadow-lg hover:shadow-xl transition-all duration-400 ease-out hover:-translate-y-1">
+          <Link to="/checkin" className="da-btn-primary px-8 py-4 text-lg font-bold rounded-full w-full md:w-auto text-center shadow-lg hover:shadow-xl transition duration-400 ease-out hover:-translate-y-1">
             {t('dashboard.scannerButton')}
           </Link>
         </div>

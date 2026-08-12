@@ -10,9 +10,12 @@ import GlassDropdown from '../GlassDropdown';
 
 const validateValue = (value, validators = []) => {
     if (!validators) return [];
-    return validators
-        .filter(v => v && !v.validate(value))
-        .map(v => v.message);
+    return validators.reduce((acc, v) => {
+        if (v && !v.validate(value)) {
+            acc.push(v.message);
+        }
+        return acc;
+    }, []);
 };
 
 const RenderErrors = ({ errors, prefix }) => {
@@ -179,13 +182,6 @@ const FormInput = forwardRef(({ tag = "default", name = "default", type = "text"
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [minInputValue, maxInputValue, inputField]);
-
-    useEffect(() => {
-        if(type === "select" && defaultValue){
-            setSelectedValue(defaultValue);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     const commonProps = { inputErrors, name, numberOfColumns, tag, disabled, inputField, defaultValue, isRequired };
 

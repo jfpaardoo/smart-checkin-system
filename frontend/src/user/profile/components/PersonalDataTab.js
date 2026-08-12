@@ -145,6 +145,7 @@ export default function PersonalDataTab({ loadingUser, userData, setUserData, t 
             <button type="button"
               onClick={() => handleToggleNotification('emailNotificationsEnabled')}
               disabled={updating}
+              aria-label="Toggle email notifications"
               className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${userData?.emailNotificationsEnabled ? 'bg-[#b3c34c]' : 'bg-slate-300'}`}
             >
               <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${userData?.emailNotificationsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -163,6 +164,7 @@ export default function PersonalDataTab({ loadingUser, userData, setUserData, t 
             <button type="button"
               onClick={() => handleToggleNotification('pushNotificationsEnabled')}
               disabled={updating}
+              aria-label="Toggle push notifications"
               className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${userData?.pushNotificationsEnabled ? 'bg-[#b3c34c]' : 'bg-slate-300'}`}
             >
               <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${userData?.pushNotificationsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />

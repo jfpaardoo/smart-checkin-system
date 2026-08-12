@@ -54,23 +54,21 @@ function ToastItem({ toast, onRemove }) {
   const cfg = TOAST_CONFIG[toast.type] || TOAST_CONFIG.info;
 
   useEffect(() => {
-    if (toast.persistent) return;
-    timerRef.current = setTimeout(() => {
-      setExiting(true);
-      setTimeout(() => onRemove(toast.id), 450);
-    }, DURATION);
-    
+    let t1;
+    if (!toast.persistent) {
+      t1 = setTimeout(() => {
+        setExiting(true);
+      }, DURATION);
+      timerRef.current = t1;
+    }
     return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
+      clearTimeout(t1);
     };
-  }, [toast.persistent, toast.id, onRemove]);
+  }, [toast.id, toast.persistent, onRemove]);
 
   const handleClose = () => {
-    clearTimeout(timerRef.current);
+    if (timerRef.current) clearTimeout(timerRef.current);
     setExiting(true);
-    setTimeout(() => onRemove(toast.id), 450);
   };
 
   const handleConfirm = () => {
@@ -91,6 +89,11 @@ function ToastItem({ toast, onRemove }) {
           : "baToastFluidOut 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards",
         transformOrigin: "top center",
       }}
+      onAnimationEnd={(e) => {
+        if (exiting && e.target === e.currentTarget) {
+          onRemove(toast.id);
+        }
+      }}
     >
       <div className="flex items-center justify-between gap-5">
         <div className="flex items-center gap-3 overflow-hidden">
@@ -107,7 +110,7 @@ function ToastItem({ toast, onRemove }) {
             className="
               flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center
               bg-white/10 hover:bg-white/20 text-white/70 hover:text-white
-              transition-all duration-200 cursor-pointer border-0 p-0
+              transition duration-200 cursor-pointer border-0 p-0
             "
             aria-label="Cerrar"
           >
@@ -123,14 +126,14 @@ function ToastItem({ toast, onRemove }) {
           <button
             type="button"
             onClick={handleConfirm}
-            className="px-4 py-1 rounded-full text-xs font-semibold text-slate-900 bg-[#b3c34c] hover:bg-[#a2b144] transition-all cursor-pointer border-0"
+            className="px-4 py-1 rounded-full text-xs font-semibold text-slate-900 bg-[#b3c34c] hover:bg-[#a2b144] transition cursor-pointer border-0"
           >
             {t('common.yes', 'Sí')}
           </button>
           <button
             type="button"
             onClick={handleClose}
-            className="px-4 py-1 rounded-full text-xs font-semibold text-white/80 hover:text-white bg-white/10 hover:bg-white/20 border border-white/15 transition-all cursor-pointer"
+            className="px-4 py-1 rounded-full text-xs font-semibold text-white/80 hover:text-white bg-white/10 hover:bg-white/20 border border-white/15 transition cursor-pointer"
           >
             {t('common.no', 'No')}
           </button>

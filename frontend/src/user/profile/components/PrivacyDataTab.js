@@ -2,6 +2,17 @@ import React from "react";
 import { FaDownload, FaTrashAlt } from "react-icons/fa";
 import { Spinner } from "reactstrap";
 
+const ActionButton = ({ variant, isLoading, icon: Icon, children, ...props }) => (
+  <button
+    type="button"
+    className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition ${variant === 'danger' ? 'da-btn-danger' : 'da-btn-primary'}`}
+    {...props}
+  >
+    {isLoading ? <Spinner size="sm" /> : <Icon className="text-sm" />}
+    <span>{children}</span>
+  </button>
+);
+
 export default function PrivacyDataTab({
   t,
   handleDeleteAccount,
@@ -28,19 +39,15 @@ export default function PrivacyDataTab({
           )}
         </p>
 
-        <button
-          type="button"
-          className="da-btn-primary flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all"
+        <ActionButton
+          variant="primary"
           disabled={isExporting}
           onClick={handleExportData}
+          isLoading={isExporting}
+          icon={FaDownload}
         >
-          {isExporting ? (
-            <Spinner size="sm" />
-          ) : (
-            <FaDownload className="text-sm" />
-          )}
-          <span>{t("profile.exportDataBtn", "Solicitar Exportación")}</span>
-        </button>
+          {t("profile.exportDataBtn", "Solicitar Exportación")}
+        </ActionButton>
       </div>
 
       {/* Tarjeta 2: Eliminación de Cuenta */}
@@ -60,19 +67,15 @@ export default function PrivacyDataTab({
           )}
         </p>
 
-        <button
-          type="button"
-          className="da-btn-danger flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all"
+        <ActionButton
+          variant="danger"
           disabled={isDeleting}
           onClick={handleDeleteAccount}
+          isLoading={isDeleting}
+          icon={FaTrashAlt}
         >
-          {isDeleting ? (
-            <Spinner size="sm" />
-          ) : (
-            <FaTrashAlt className="text-sm" />
-          )}
-          <span>{t("profile.deleteAccountBtn", "Eliminar Mi Cuenta")}</span>
-        </button>
+          {t("profile.deleteAccountBtn", "Eliminar Mi Cuenta")}
+        </ActionButton>
       </div>
     </div>
   );

@@ -55,7 +55,7 @@ export default function FormationListAdmin() {
 
   useSubscription('/topic/formations', reloadFormations);
 
-  const sortedFormations = [...formations].sort(
+  const sortedFormations = formations.slice().sort(
     (a, b) => new Date(b.formationDate) - new Date(a.formationDate)
   );
 

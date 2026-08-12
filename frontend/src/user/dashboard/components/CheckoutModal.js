@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Modal, ModalHeader, ModalBody } from 'reactstrap';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -17,13 +17,7 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
 
   const [step, setStep] = useState(initialStep); // 'details' | 'scan' | 'sign'
   const [isManualCheckout, setIsManualCheckout] = useState(false);
-  const [validatedToken, setValidatedToken] = useState('');
-
-  useEffect(() => {
-    setStep(initialStep);
-    setIsManualCheckout(false);
-    setValidatedToken('');
-  }, [initialStep, isOpen]);
+  const validatedTokenRef = useRef('');
 
   const {
     cameras,
@@ -36,11 +30,11 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
     try {
       const parsed = JSON.parse(decodedText);
       if (parsed?.token) {
-        setValidatedToken(parsed.token);
+        validatedTokenRef.current = parsed.token;
       }
     } catch (e) {
       console.debug("QR text is not JSON, using raw string:", e);
-      setValidatedToken(decodedText);
+      validatedTokenRef.current = decodedText;
     }
     setStep('sign');
     toast.success(t('dashboard.qrValidated'));
@@ -50,9 +44,9 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
     const el = document.getElementById('checkout-qr-reader');
     if (el) el.innerHTML = '';
     stopScannerSafely();
-    setStep('details');
+    setStep(initialStep);
     setIsManualCheckout(false);
-    setValidatedToken('');
+    validatedTokenRef.current = '';
     resetScannerState();
     onClose();
   };
@@ -165,7 +159,7 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
         ) : (
           <ManualCheckinForm
             onSubmit={(code) => {
-              setValidatedToken(code);
+              validatedTokenRef.current = code;
               setStep('sign');
               toast.success(t('dashboard.codeAccepted'));
             }}
@@ -188,7 +182,7 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
         {step === 'sign' && (
           <SignatureStep
             onSubmit={(signatureBase64) => {
-              onSubmitCheckout(signatureBase64, validatedToken);
+              onSubmitCheckout(signatureBase64, validatedTokenRef.current);
               handleClose();
             }}
             submitLabel={t('dashboard.confirmCheckout')}

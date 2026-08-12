@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import api from '../../../services/api';
 import useFetchState from '../../../util/useFetchState';
 import tokenService from '../../../services/token.service';
 import { useSubscription } from '../../../hooks/useSubscription';
@@ -30,13 +31,10 @@ export function useFormationDetails(id) {
   const [isAddingUser, setIsAddingUser] = useState(false);
 
   const reloadFormation = useCallback(() => {
-    fetch(`/api/v1/formations/${id}`, {
-      headers: { Authorization: `Bearer ${jwt}` },
-    })
-      .then((r) => r.json())
-      .then((data) => setFormation(data))
+    api.get(`/api/v1/formations/${id}`)
+      .then((response) => setFormation(response.data))
       .catch((e) => console.error("Error refreshing formation", e));
-  }, [id, jwt, setFormation]);
+  }, [id, setFormation]);
 
   useSubscription(`/topic/formations/${id}`, reloadFormation);
   useSubscription('/topic/formations', reloadFormation);

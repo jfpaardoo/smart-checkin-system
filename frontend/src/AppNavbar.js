@@ -184,6 +184,7 @@ export default function AppNavbar() {
                         )}
                         <button type="button"
                             onClick={(e) => toggleMenu('menu', e)}
+                            aria-label={t('nav.toggleMenu', 'Toggle navigation')}
                             className="mobile-menu-btn p-2 rounded-[20px] text-white hover:bg-white/20 focus:outline-none transition-colors"
                         >
                             {!isNavMobileOpen ? <FaBars className="h-6 w-6" /> : <FaTimes className="h-6 w-6" />}
@@ -222,7 +223,7 @@ export default function AppNavbar() {
                                 <div className="text-[10px] font-extrabold text-white/40 mb-3 uppercase tracking-widest">{username}</div>
                                 <div className="space-y-1">
                                     <Link to="/profile" className="da-nav-dropdown-item" onClick={closeAll}><FaIdCard className="text-white/60"/> Mi Perfil</Link>
-                                    <Link to="/logout" className="flex items-center gap-3 px-[18px] py-[12px] my-1 text-[1rem] font-bold text-red-400 rounded-2xl hover:bg-white/10 transition-all" onClick={closeAll}><FaSignOutAlt className="text-red-400"/> Salir</Link>
+                                    <Link to="/logout" className="flex items-center gap-3 px-[18px] py-[12px] my-1 text-[1rem] font-bold text-red-400 rounded-2xl hover:bg-white/10 transition-colors" onClick={closeAll}><FaSignOutAlt className="text-red-400"/> Salir</Link>
                                 </div>
                             </div>
                         )}

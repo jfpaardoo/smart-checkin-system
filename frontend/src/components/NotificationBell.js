@@ -92,6 +92,7 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') return;
 
+        // eslint-disable-next-line
         subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(publicKey)
@@ -140,7 +141,7 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
     <div className="relative notif-dropdown-container inline-flex items-center">
       <button 
         type="button" 
-        className="relative flex items-center justify-center w-10 h-10 text-white hover:bg-white/10 rounded-full transition-all focus:outline-none"
+        className="relative flex items-center justify-center w-10 h-10 text-white hover:bg-white/10 rounded-full transition focus:outline-none"
         onClick={handleToggle}
       >
         <FaBell size={18} />

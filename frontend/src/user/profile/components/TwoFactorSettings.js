@@ -102,9 +102,9 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
     }
   };
 
-  const glassButtonClass = "w-full mt-2 py-3.5 rounded-full font-bold text-slate-900 bg-[#b3c34c]/60 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(179,195,76,0.35)] hover:bg-[#b3c34c]/80 hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.55)] transition-all duration-300 active:scale-95 flex justify-center items-center gap-2";
-  const glassButtonDangerClass = "w-full py-3 rounded-2xl font-bold text-white bg-red-500/80 backdrop-blur-md border border-red-400/50 shadow-[0_8px_25px_0_rgba(239,68,68,0.35)] hover:bg-red-600/90 hover:shadow-[0_8px_30px_0_rgba(239,68,68,0.55)] transition-all duration-300 active:scale-95 flex justify-center items-center gap-2";
-  const glassButtonSecondaryClass = "w-full py-3 rounded-2xl font-bold text-slate-700 bg-slate-200/60 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(148,163,184,0.25)] hover:bg-slate-300/80 hover:shadow-[0_8px_30px_0_rgba(148,163,184,0.45)] transition-all duration-300 active:scale-95 flex justify-center items-center gap-2";
+  const glassButtonClass = "w-full mt-2 py-3.5 rounded-full font-bold text-slate-900 bg-[#b3c34c]/60 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(179,195,76,0.35)] hover:bg-[#b3c34c]/80 hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.55)] transition duration-300 active:scale-95 flex justify-center items-center gap-2";
+  const glassButtonDangerClass = "w-full py-3 rounded-2xl font-bold text-white bg-red-500/80 backdrop-blur-md border border-red-400/50 shadow-[0_8px_25px_0_rgba(239,68,68,0.35)] hover:bg-red-600/90 hover:shadow-[0_8px_30px_0_rgba(239,68,68,0.55)] transition duration-300 active:scale-95 flex justify-center items-center gap-2";
+  const glassButtonSecondaryClass = "w-full py-3 rounded-2xl font-bold text-slate-700 bg-slate-200/60 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(148,163,184,0.25)] hover:bg-slate-300/80 hover:shadow-[0_8px_30px_0_rgba(148,163,184,0.45)] transition duration-300 active:scale-95 flex justify-center items-center gap-2";
 
   const renderActiveState = () => (
     <div className="flex flex-col gap-4">
@@ -135,7 +135,7 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
               maxLength={6}
               value={disableCode}
               onChange={(e) => setDisableCode(e.target.value.replace(/\D/g, ''))}
-              className="w-full text-center text-2xl tracking-[0.4rem] py-3 rounded-xl border border-white/50 bg-white/60 focus:border-red-400 focus:bg-white/90 focus:ring-4 focus:ring-red-400/20 outline-none transition-all font-mono text-slate-800 shadow-inner"
+              className="w-full text-center text-2xl tracking-[0.4rem] py-3 rounded-xl border border-white/50 bg-white/60 focus:border-red-400 focus:bg-white/90 focus:ring-4 focus:ring-red-400/20 outline-none transition font-mono text-slate-800 shadow-inner"
             />
           </div>
           <div className="flex gap-3">
@@ -228,7 +228,7 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
             value={verificationCode}
             onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ""))}
             required
-            className="w-full text-center text-3xl tracking-[0.5rem] py-4 rounded-2xl border border-white/50 bg-white/60 focus:border-[#b3c34c] focus:bg-white/90 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition-all font-mono text-slate-800 shadow-inner"
+            className="w-full text-center text-3xl tracking-[0.5rem] py-4 rounded-2xl border border-white/50 bg-white/60 focus:border-[#b3c34c] focus:bg-white/90 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition font-mono text-slate-800 shadow-inner"
           />
         </div>
         <div className="flex gap-3 justify-center">

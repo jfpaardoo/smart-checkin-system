@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -21,7 +21,7 @@ export default function ScannerCheckin() {
 
   const [loading, setLoading] = useState(false);
   const [needsSignature, setNeedsSignature] = useState(false);
-  const [pendingToken, setPendingToken] = useState('');
+  const pendingTokenRef = useRef('');
 
   const [successModal, setSuccessModal] = useState(false);
   const [formationDetails, setFormationDetails] = useState(null);
@@ -43,7 +43,7 @@ export default function ScannerCheckin() {
   const resetScanner = () => {
     resetScannerState();
     setNeedsSignature(false);
-    setPendingToken('');
+    pendingTokenRef.current = '';
     setIsManualInput(false);
   };
 
@@ -95,7 +95,7 @@ export default function ScannerCheckin() {
       if (response.status === 202) {
         const data = await response.json();
         if (data.needsSignature) {
-          setPendingToken(payload.token);
+          pendingTokenRef.current = payload.token;
           setNeedsSignature(true);
           toast.info(t('checkin.signatureRequiredInfo', 'Se requiere su firma para registrar la salida.'));
           setLoading(false);
@@ -223,7 +223,7 @@ export default function ScannerCheckin() {
 
         {needsSignature && (
           <SignatureStep 
-            onSubmit={(signatureBase64) => handleCheckinExecution(pendingToken, signatureBase64)}
+            onSubmit={(signatureBase64) => handleCheckinExecution(pendingTokenRef.current, signatureBase64)}
             onCancel={resetScanner}
             submitLabel={t('checkin.confirmSignature', 'Confirmar Firma y Registrar Salida')}
           />
