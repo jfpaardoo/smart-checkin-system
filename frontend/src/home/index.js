@@ -7,12 +7,12 @@ import tokenService from '../services/token.service';
 import { CardGhostLoader } from '../components/GhostLoader';
 import '../App.css';
 
+const fetcher = (url) => fetch(url, { credentials: 'include' }).then((r) => r.ok ? r.json() : null);
+
 export default function Home() {
   const { t } = useTranslation();
   const jwt = tokenService.getUser();
   const user = tokenService.getUser();
-
-  const fetcher = (url) => fetch(url, { credentials: 'include',  }).then((r) => r.ok ? r.json() : null);
 
   const { data: userData, isLoading: isSWRloading } = useSWR(
     jwt ? "/api/v1/users/me" : null,

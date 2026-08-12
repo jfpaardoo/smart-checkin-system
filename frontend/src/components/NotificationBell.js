@@ -64,44 +64,60 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
 
   const userId = user?.id;
 
-  const initPushService = useCallback(async () => {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-    if (!userId) return;
-
-    try {
-      const registration = await navigator.serviceWorker.register('/sw.js');
-      await navigator.serviceWorker.ready;
-
-      const response = await fetch('/api/v1/push/vapid-key', { credentials: 'include',  });
-      if (!response.ok) return;
-      const { publicKey } = await response.json();
-
-      let subscription = await registration.pushManager.getSubscription();
-      if (!subscription) {
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') return;
-
-        subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(publicKey)
-        });
-      }
-
-      await fetch('/api/v1/push/subscribe', { credentials: 'include', method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          },
-        body: JSON.stringify(subscription.toJSON()) });
-    } catch (err) {
-      console.warn('Push subscription failed:', err);
-    }
-  }, [userId]);
-
   useEffect(() => {
-    if (userId) {
-      initPushService();
-    }
-  }, [userId, initPushService]);
+    if (!userId) return;
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+    let isMounted = true;
+    let activeSubscription = null;
+
+    const initPushService = async () => {
+      try {
+        const registration = await navigator.serviceWorker.register('/sw.js');
+        await navigator.serviceWorker.ready;
+        if (!isMounted) return;
+
+        const response = await fetch('/api/v1/push/vapid-key', { credentials: 'include' });
+        if (!response.ok || !isMounted) return;
+        const { publicKey } = await response.json();
+
+        let subscription = await registration.pushManager.getSubscription();
+        if (!subscription && isMounted) {
+          const permission = await Notification.requestPermission();
+          if (permission !== 'granted' || !isMounted) return;
+
+          subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(publicKey)
+          });
+        }
+
+        activeSubscription = subscription;
+
+        if (subscription && isMounted) {
+          await fetch('/api/v1/push/subscribe', {
+            credentials: 'include',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(subscription.toJSON())
+          });
+        }
+      } catch (err) {
+        console.warn('Push subscription failed:', err);
+      }
+    };
+
+    initPushService();
+
+    return () => {
+      isMounted = false;
+      if (activeSubscription) {
+        activeSubscription.unsubscribe().catch(() => {});
+      }
+    };
+  }, [userId]);
 
   const markAllRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
