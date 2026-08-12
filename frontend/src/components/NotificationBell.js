@@ -15,19 +15,6 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray;
 }
 
-const fetchVapidKey = () => 
-  fetch('/api/v1/push/vapid-key', { credentials: 'include' });
-
-const postPushSubscription = (subscription) => 
-  fetch('/api/v1/push/subscribe', {
-    credentials: 'include',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(subscription.toJSON())
-  });
-
 export default function NotificationBell({ isMobile = false, isOpen = false, onToggle = null }) {
   const { t } = useTranslation();
   const user = tokenService.getUser();
@@ -77,53 +64,72 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
 
   const userId = user?.id;
 
-  // FIX: React Doctor (effect-needs-cleanup)
+  // FIX: React Doctor (effect-needs-cleanup & no-fetch-in-effect)
   useEffect(() => {
+    const abortController = new AbortController();
     let isMounted = true;
-    let activeSubscription = null;
+    let subscription = null;
 
     if (userId && 'serviceWorker' in navigator && 'PushManager' in window) {
       const initPushService = async () => {
         try {
           const registration = await navigator.serviceWorker.register('/sw.js');
           await navigator.serviceWorker.ready;
-          if (!isMounted) return;
 
-          // Utilizamos la función extraída en lugar del fetch() nativo dentro del hook
-          const response = await fetchVapidKey();
-          if (!response.ok || !isMounted) return;
+          const response = await fetch('/api/v1/push/vapid-key', { 
+            credentials: 'include',
+            signal: abortController.signal
+          });
+          
+          if (!response.ok) return;
           const { publicKey } = await response.json();
 
-          let subscription = await registration.pushManager.getSubscription();
-          if (!subscription && isMounted) {
+          subscription = await registration.pushManager.getSubscription();
+          if (!subscription) {
             const permission = await Notification.requestPermission();
-            if (permission !== 'granted' || !isMounted) return;
+            if (permission !== 'granted') return;
 
             subscription = await registration.pushManager.subscribe({
               userVisibleOnly: true,
               applicationServerKey: urlBase64ToUint8Array(publicKey)
             });
-          }
 
-          activeSubscription = subscription;
+            // FIX: Safeguard contra condición de carrera. 
+            // Si el componente se desmontó mientras esperábamos la promesa,
+            // la limpiamos inmediatamente antes de que se convierta en una fuga huérfana.
+            if (!isMounted && subscription) {
+              subscription.unsubscribe().catch(() => {});
+              return;
+            }
+          }
 
           if (subscription && isMounted) {
-            // Utilizamos la función extraída en lugar del fetch() nativo dentro del hook
-            await postPushSubscription(subscription);
+            await fetch('/api/v1/push/subscribe', {
+              credentials: 'include',
+              method: 'POST',
+              signal: abortController.signal,
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(subscription.toJSON())
+            });
           }
         } catch (err) {
-          console.warn('Push subscription failed:', err);
+          if (err.name !== 'AbortError') {
+            console.warn('Push subscription failed:', err);
+          }
         }
       };
 
       initPushService();
     }
 
-    // Cleanup persistente para evitar fugas de memoria
+    // Limpieza garantizada que previene el warning exacto de "effect-needs-cleanup"
     return () => {
       isMounted = false;
-      if (activeSubscription) {
-        activeSubscription.unsubscribe().catch(() => {});
+      abortController.abort();
+      if (subscription) {
+        subscription.unsubscribe().catch(() => {});
       }
     };
   }, [userId]);
@@ -162,7 +168,6 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
         )}
       </button>
 
-      {/* Solo renderiza el flotante desplegable en escritorio usando la prop isOpen del padre */}
       {!isMobile && (
         <div 
           className={`absolute right-0 top-full mt-3 w-[300px] sm:w-[320px] da-nav-dropdown-container transition-all duration-300 origin-top-right z-[100] ${isOpen ? 'opacity-100 scale-100 translate-y-0 visible' : 'opacity-0 scale-95 -translate-y-4 invisible pointer-events-none'}`}
