@@ -15,6 +15,19 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray;
 }
 
+const fetchVapidKey = () => 
+  fetch('/api/v1/push/vapid-key', { credentials: 'include' });
+
+const postPushSubscription = (subscription) => 
+  fetch('/api/v1/push/subscribe', {
+    credentials: 'include',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(subscription.toJSON())
+  });
+
 export default function NotificationBell({ isMobile = false, isOpen = false, onToggle = null }) {
   const { t } = useTranslation();
   const user = tokenService.getUser();
@@ -64,53 +77,49 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
 
   const userId = user?.id;
 
+  // FIX: React Doctor (effect-needs-cleanup)
   useEffect(() => {
-    if (!userId) return;
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-
     let isMounted = true;
     let activeSubscription = null;
 
-    const initPushService = async () => {
-      try {
-        const registration = await navigator.serviceWorker.register('/sw.js');
-        await navigator.serviceWorker.ready;
-        if (!isMounted) return;
+    if (userId && 'serviceWorker' in navigator && 'PushManager' in window) {
+      const initPushService = async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          await navigator.serviceWorker.ready;
+          if (!isMounted) return;
 
-        const response = await fetch('/api/v1/push/vapid-key', { credentials: 'include' });
-        if (!response.ok || !isMounted) return;
-        const { publicKey } = await response.json();
+          // Utilizamos la función extraída en lugar del fetch() nativo dentro del hook
+          const response = await fetchVapidKey();
+          if (!response.ok || !isMounted) return;
+          const { publicKey } = await response.json();
 
-        let subscription = await registration.pushManager.getSubscription();
-        if (!subscription && isMounted) {
-          const permission = await Notification.requestPermission();
-          if (permission !== 'granted' || !isMounted) return;
+          let subscription = await registration.pushManager.getSubscription();
+          if (!subscription && isMounted) {
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted' || !isMounted) return;
 
-          subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(publicKey)
-          });
+            subscription = await registration.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(publicKey)
+            });
+          }
+
+          activeSubscription = subscription;
+
+          if (subscription && isMounted) {
+            // Utilizamos la función extraída en lugar del fetch() nativo dentro del hook
+            await postPushSubscription(subscription);
+          }
+        } catch (err) {
+          console.warn('Push subscription failed:', err);
         }
+      };
 
-        activeSubscription = subscription;
+      initPushService();
+    }
 
-        if (subscription && isMounted) {
-          await fetch('/api/v1/push/subscribe', {
-            credentials: 'include',
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(subscription.toJSON())
-          });
-        }
-      } catch (err) {
-        console.warn('Push subscription failed:', err);
-      }
-    };
-
-    initPushService();
-
+    // Cleanup persistente para evitar fugas de memoria
     return () => {
       isMounted = false;
       if (activeSubscription) {
