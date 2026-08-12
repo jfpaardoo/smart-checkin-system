@@ -2,9 +2,7 @@ import useSWR from "swr";
 import SwaggerUI from "swagger-ui-react";
 import "swagger-ui-react/swagger-ui.css"
 
-const fetcher = (url) => fetch(url, {
-    headers: { "Content-Type": "application/json" }
-}).then((res) => {
+const fetcher = (url) => fetch(url, { credentials: 'include', headers: { "Content-Type": "application/json" } }).then((res) => {
     if (!res.ok) throw new Error("Failed to fetch docs");
     return res.json();
 });

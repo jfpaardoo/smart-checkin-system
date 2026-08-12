@@ -1,14 +1,4 @@
 class TokenService {
-    inMemoryToken = null;
-
-    getLocalAccessToken() {
-        return this.inMemoryToken;
-    }
-
-    updateLocalAccessToken(token) {
-        this.inMemoryToken = token;
-    }
-
     getUser() {
         try {
             const userStr = window.localStorage.getItem("user");
@@ -31,7 +21,6 @@ class TokenService {
     removeUser() {
         window.localStorage.removeItem("user");
         window.localStorage.removeItem("jwt"); // Clean up old tokens
-        this.inMemoryToken = null;
     }
 }
 const tokenService = new TokenService();

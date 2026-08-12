@@ -106,6 +106,8 @@ public class FormationService {
                 } catch (Exception e) {
                     // Non-critical
                 }
+            } else {
+                throw new IllegalArgumentException("Ya estás registrado en esta formación.");
             }
         }
         user.setIsWorking(true);

@@ -2,10 +2,9 @@ import React, { useState } from "react";
 import { FaShieldAlt } from "react-icons/fa";
 import GlassDropdown from "../../../components/GlassDropdown";
 import { QRCodeSVG } from "qrcode.react";
-import tokenService from "../../../services/token.service";
+import api from "../../../services/api";
 
 export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
-  const jwt = tokenService.getLocalAccessToken();
 
   const [setupData, setSetupData] = useState(null);
   const [verificationCode, setVerificationCode] = useState("");
@@ -18,21 +17,15 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
   const handleStartSetup = async () => {
     setLoading2FA(true);
     try {
-      const res = await fetch(`/api/v1/users/2fa/setup?type=${selectedType}`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${jwt}` }
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setSetupData({ ...data, type: selectedType });
-        if (selectedType === 'EMAIL') {
-          toast.info(t('profile.emailSentCode', "Te hemos enviado un correo con el código de confirmación."));
-        }
-      } else {
-        toast.error(data.message || t('profile.twoFactorSetupError', 'Error al iniciar configuración 2FA.'));
+      const res = await api.post(`/users/2fa/setup?type=${selectedType}`);
+      const data = res.data;
+      setSetupData({ ...data, type: selectedType });
+      if (selectedType === 'EMAIL') {
+        toast.info(t('profile.emailSentCode', "Te hemos enviado un correo con el código de confirmación."));
       }
     } catch (err) {
-      toast.error(err.message || t('profile.connectionError', 'Error de conexión.'));
+      const msg = err.response?.data?.message || t('profile.twoFactorSetupError', 'Error al iniciar configuración 2FA.');
+      toast.error(msg);
     } finally {
       setLoading2FA(false);
     }
@@ -44,28 +37,16 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
       toast.error(t('profile.codeMustBe6Digits', 'El código debe tener 6 dígitos.'));
       return;
     }
-
     setLoading2FA(true);
     try {
-      const res = await fetch("/api/v1/users/2fa/enable", {
-        method: "POST",
-        headers: { 
-          Authorization: `Bearer ${jwt}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ code: verificationCode, type: setupData.type })
-      });
-      if (res.ok) {
-        setUserData({ ...userData, twoFactorEnabled: true, twoFactorType: setupData.type });
-        setSetupData(null);
-        setVerificationCode("");
-        toast.success(t('profile.twoFactorEnableSuccess', '¡Autenticación de Doble Factor activada con éxito!'));
-      } else {
-        const data = await res.json();
-        toast.error(data.message || t('profile.incorrectCode', 'Código incorrecto.'));
-      }
+      await api.post("/users/2fa/enable", { code: verificationCode, type: setupData.type });
+      setUserData({ ...userData, twoFactorEnabled: true, twoFactorType: setupData.type });
+      setSetupData(null);
+      setVerificationCode("");
+      toast.success(t('profile.twoFactorEnableSuccess', '¡Autenticación de Doble Factor activada con éxito!'));
     } catch (err) {
-      toast.error(err.message || t('profile.connectionError', 'Error de conexión.'));
+      const msg = err.response?.data?.message || t('profile.incorrectCode', 'Código incorrecto.');
+      toast.error(msg);
     } finally {
       setLoading2FA(false);
     }
@@ -78,25 +59,14 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
     }
     setLoading2FA(true);
     try {
-      const res = await fetch("/api/v1/users/2fa/disable", {
-        method: "POST",
-        headers: { 
-          Authorization: `Bearer ${jwt}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ code: disableCode })
-      });
-      if (res.ok) {
-        setUserData({ ...userData, twoFactorEnabled: false, twoFactorType: null });
-        setShowDisablePrompt(false);
-        setDisableCode("");
-        toast.success(t('profile.twoFactorDisableSuccess', '2FA desactivado correctamente.'));
-      } else {
-        const data = await res.json();
-        toast.error(data.message || t('profile.incorrectCode', 'Código incorrecto.'));
-      }
+      await api.post("/users/2fa/disable", { code: disableCode });
+      setUserData({ ...userData, twoFactorEnabled: false, twoFactorType: null });
+      setShowDisablePrompt(false);
+      setDisableCode("");
+      toast.success(t('profile.twoFactorDisableSuccess', '2FA desactivado correctamente.'));
     } catch (err) {
-      toast.error(err.message || t('profile.connectionError', 'Error de conexión.'));
+      const msg = err.response?.data?.message || t('profile.incorrectCode', 'Código incorrecto.');
+      toast.error(msg);
     } finally {
       setLoading2FA(false);
     }

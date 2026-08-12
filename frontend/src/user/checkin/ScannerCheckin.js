@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faQrcode, faKeyboard, faCamera, faCalendarCheck, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '../../components/ToastProvider';
-import tokenService from '../../services/token.service';
 import GlassDropdown from '../../components/GlassDropdown';
 import { useQrScanner } from '../../hooks/useQrScanner';
 import ManualCheckinForm from './components/ManualCheckinForm';
@@ -17,7 +16,6 @@ export default function ScannerCheckin() {
   const { t } = useTranslation();
   const toast = useToast();
   const navigate = useNavigate();
-  const jwt = tokenService.getLocalAccessToken();
 
   const [loading, setLoading] = useState(false);
   const [needsSignature, setNeedsSignature] = useState(false);
@@ -82,15 +80,12 @@ export default function ScannerCheckin() {
         }
       }
 
-      const response = await fetch('/api/v1/checkins/qr-fichaje', {
-        method: 'POST',
+      const response = await fetch('/api/v1/checkins/qr-fichaje', { credentials: 'include', method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Authorization': `Bearer ${jwt}`
-        },
-        body: JSON.stringify(payload)
-      });
+          },
+        body: JSON.stringify(payload) });
 
       if (response.status === 202) {
         const data = await response.json();

@@ -17,7 +17,7 @@ function urlBase64ToUint8Array(base64String) {
 
 export default function NotificationBell({ isMobile = false, isOpen = false, onToggle = null }) {
   const { t } = useTranslation();
-  const jwt = tokenService.getLocalAccessToken();
+  const user = tokenService.getUser();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -62,28 +62,17 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
     };
   }, []);
 
+  const userId = user?.id;
+
   const initPushService = useCallback(async () => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    if (!userId) return;
 
     try {
       const registration = await navigator.serviceWorker.register('/sw.js');
       await navigator.serviceWorker.ready;
 
-      if (!jwt) return;
-      try {
-        const decoded = JSON.parse(atob(jwt.split('.')[1]));
-        if (decoded.exp * 1000 < Date.now()) {
-          console.log("JWT expired, skipping push subscription");
-          return;
-        }
-      } catch (e) {
-        console.warn("Invalid JWT format, skipping push subscription", e);
-        return; // invalid jwt
-      }
-
-      const response = await fetch('/api/v1/push/vapid-key', {
-        headers: { Authorization: `Bearer ${jwt}` }
-      });
+      const response = await fetch('/api/v1/push/vapid-key', { credentials: 'include',  });
       if (!response.ok) return;
       const { publicKey } = await response.json();
 
@@ -92,31 +81,27 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') return;
 
-        // eslint-disable-next-line
         subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(publicKey)
         });
       }
 
-      await fetch('/api/v1/push/subscribe', {
-        method: 'POST',
+      await fetch('/api/v1/push/subscribe', { credentials: 'include', method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${jwt}`
-        },
-        body: JSON.stringify(subscription.toJSON())
-      });
+          },
+        body: JSON.stringify(subscription.toJSON()) });
     } catch (err) {
       console.warn('Push subscription failed:', err);
     }
-  }, [jwt]);
+  }, [userId]);
 
   useEffect(() => {
-    if (jwt) {
+    if (userId) {
       initPushService();
     }
-  }, [jwt, initPushService]);
+  }, [userId, initPushService]);
 
   const markAllRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));

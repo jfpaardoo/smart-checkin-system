@@ -4,7 +4,7 @@ test.describe('Flujo de Fichaje Manual y Firma Digital en Salida (Check-in & Sig
 
   test('Debe permitir fichar mediante código TOTP de 6 dígitos y requerir firma digital para la salida', async ({ page }) => {
     // Mock Checkin API - Return 202 Needs Signature for Checkout
-    await page.route('**/api/v1/checkins/qr-fichaje', async (route) => {
+    await page.route('**/api/v1/checkins/qr-fichaje**', async (route) => {
       const requestData = JSON.parse(route.request().postData());
 
       if (requestData.signature) {
@@ -26,7 +26,7 @@ test.describe('Flujo de Fichaje Manual y Firma Digital en Salida (Check-in & Sig
     });
 
     // Mock PrivateRoute token validation
-    await page.route('/api/v1/auth/validate*', async (route) => {
+    await page.route('**/api/v1/auth/validate**', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -34,10 +34,11 @@ test.describe('Flujo de Fichaje Manual y Firma Digital en Salida (Check-in & Sig
       });
     });
 
-    // Mock token in localStorage (valid base64 JWT payload with EMPLOYEE role)
+    // Mock token and User in localStorage (valid base64 JWT payload with EMPLOYEE role)
     const validEmployeeJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyIiwiYXV0aG9yaXRpZXMiOlsiRU1QTE9ZRUUiXX0.mock";
     await page.addInitScript((token) => {
       window.localStorage.setItem('jwt', JSON.stringify(token));
+      window.localStorage.setItem('user', JSON.stringify({ username: 'user', roles: ['EMPLOYEE'], authority: { authority: 'EMPLOYEE' } }));
     }, validEmployeeJwt);
 
     await page.goto('/checkin');

@@ -4,16 +4,15 @@ import { Button } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faGraduationCap } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
-import tokenService from "../../services/token.service";
 import "../../App.css";
 import "../../static/css/admin/adminPage.css";
 import GlassSearchBar from "../../components/GlassSearchBar";
 import { useSubscription } from "../../hooks/useSubscription";
+import api from "../../services/api";
 import FormationTable from "./components/FormationTable";
 
 export default function FormationListAdmin() {
   const { t } = useTranslation();
-  const jwt = tokenService.getLocalAccessToken();
   const [formations, setFormations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -21,29 +20,15 @@ export default function FormationListAdmin() {
   const fetchFormations = useCallback(async (query = '') => {
     setLoading(true);
     try {
-      let url = `/api/v1/formations`;
-      if (query) {
-        url = `/api/v1/formations?search=${encodeURIComponent(query)}`;
-      }
-
-      const response = await fetch(url, {
-        headers: { Authorization: `Bearer ${jwt}` },
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setFormations(data);
-        } else {
-          setFormations([]);
-        }
-      }
+      const params = query ? `?search=${encodeURIComponent(query)}` : '';
+      const res = await api.get(`/formations${params}`);
+      setFormations(Array.isArray(res.data) ? res.data : []);
     } catch (e) {
       console.error("Error fetching formations list", e);
     } finally {
       setLoading(false);
     }
-  }, [jwt]);
+  }, []);
 
   useEffect(() => {
     fetchFormations(searchQuery);

@@ -13,6 +13,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import jakarta.servlet.http.HttpServletRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Aspect
 @Component
@@ -22,6 +24,7 @@ public class AuditAspect {
     private final AuditLogRepository auditLogRepository;
     private final HttpServletRequest request;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     public AuditAspect(AuditLogRepository auditLogRepository, HttpServletRequest request, SimpMessagingTemplate messagingTemplate) {
@@ -60,9 +63,19 @@ public class AuditAspect {
         }
 
         String action = auditable.action();
-        String details = auditable.details().isEmpty() ? "Action performed: " + action : auditable.details();
+        ObjectNode detailsJson = objectMapper.createObjectNode();
 
-        // Attempt to dynamically extract details if the result is an object with getUsername or getName
+        if (!auditable.details().isEmpty()) {
+            detailsJson.put("message", auditable.details());
+        }
+
+        extractDynamicDetails(result, detailsJson);
+
+        String details = detailsJson.isEmpty() ? "" : detailsJson.toString();
+        logAudit(action, details);
+    }
+
+    private void extractDynamicDetails(Object result, ObjectNode detailsJson) {
         Object body = result;
         if (result instanceof ResponseEntity<?> responseEntity) {
             body = responseEntity.getBody();
@@ -72,19 +85,30 @@ public class AuditAspect {
             try {
                 Method getUsernameMethod = body.getClass().getMethod("getUsername");
                 String username = (String) getUsernameMethod.invoke(body);
-                details += " - Target Username: " + username;
+                if (username != null) {
+                    detailsJson.put("user", username);
+                }
             } catch (Exception e) {
                 // Ignore
             }
             try {
                 Method getNameMethod = body.getClass().getMethod("getName");
                 String name = (String) getNameMethod.invoke(body);
-                details += " - Target Name: " + name;
+                if (name != null) {
+                    detailsJson.put("form", name);
+                }
+            } catch (Exception e) {
+                // Ignore
+            }
+            try {
+                Method getIdMethod = body.getClass().getMethod("getId");
+                Object id = getIdMethod.invoke(body);
+                if (id != null) {
+                    detailsJson.put("id", id.toString());
+                }
             } catch (Exception e) {
                 // Ignore
             }
         }
-
-        logAudit(action, details);
     }
 }

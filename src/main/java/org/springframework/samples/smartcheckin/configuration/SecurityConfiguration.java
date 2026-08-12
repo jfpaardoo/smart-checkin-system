@@ -71,7 +71,7 @@ public class SecurityConfiguration {
                         .hasAuthority(ADMIN)
 
                         // 4. Endpoints públicos
-                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/auth/**", "/ws/**").permitAll()
 
                         // 5. Perfil personal del usuario y configuración de 2FA
                         .requestMatchers(

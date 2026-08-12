@@ -4,13 +4,15 @@ import Login from '../auth/login';
 import { CardGhostLoader } from '../components/GhostLoader';
 
 const PrivateRoute = ({ children }) => {
-    const jwt = tokenService.getLocalAccessToken();
+    const user = tokenService.getUser();
     const [isLoading, setIsLoading] = useState(true);
     const [isValid, setIsValid] = useState(null);
     const [message, setMessage] = useState(null);
 
+    const username = user?.username;
+
     useEffect(() => {
-        if (!jwt) {
+        if (!username) {
             setIsLoading(false);
             setIsValid(false);
             return;
@@ -18,13 +20,11 @@ const PrivateRoute = ({ children }) => {
 
         let cancelled = false;
 
-        fetch(`/api/v1/auth/validate?token=${jwt}`, {
-            method: 'GET',
+        fetch(`/api/v1/auth/validate`, { credentials: 'include', method: 'GET',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
-            },
-        })
+            }, })
             .then(response => {
                 if (!response.ok) throw new Error('Invalid token');
                 return response.json();
@@ -44,9 +44,9 @@ const PrivateRoute = ({ children }) => {
         return () => {
             cancelled = true;
         };
-    }, [jwt]);
+    }, [username]);
 
-    if (!jwt) {
+    if (!user) {
         return <Login message={message} navigation={false} />;
     }
 

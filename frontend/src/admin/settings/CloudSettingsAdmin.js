@@ -5,12 +5,13 @@ import tokenService from "../../services/token.service";
 import useFetchState from "../../util/useFetchState";
 import { useToast } from "../../components/ToastProvider";
 import { CardGhostLoader } from "../../components/GhostLoader";
+import api from "../../services/api";
 import "../../static/css/admin/adminPage.css";
 import { FaCloudUploadAlt, FaSave, FaDatabase } from "react-icons/fa";
 
 export default function CloudSettingsAdmin() {
   const { t } = useTranslation();
-  const jwt = tokenService.getLocalAccessToken();
+  const jwt = tokenService.getUser();
   const toast = useToast();
   const [settings, setSettings, loading] = useFetchState(
     { provider: "ONEDRIVE", oneDriveClientId: "", oneDriveClientSecret: "", oneDriveTenantId: "", oneDriveRefreshToken: "" },
@@ -27,40 +28,19 @@ export default function CloudSettingsAdmin() {
 
   function handleSubmit(event) {
     event.preventDefault();
-    fetch("/api/v1/cloud-settings", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(settings),
-    })
-      .then((res) => {
-        if (res.ok) {
-          toast.success(t('cloudSettings.saveSuccess', 'Ajustes de nube guardados correctamente'));
-        } else {
-          toast.error(t('cloudSettings.saveError', 'Error al guardar ajustes'));
-        }
-      })
-      .catch(() => toast.error(t('cloudSettings.connectionError', 'Error de conexión')));
+    api.post("/cloud-settings", settings)
+      .then(() => toast.success(t('cloudSettings.saveSuccess', 'Ajustes de nube guardados correctamente')))
+      .catch(() => toast.error(t('cloudSettings.saveError', 'Error al guardar ajustes')));
   }
 
   function handleBackup() {
     setBackingUp(true);
-    fetch("/api/v1/cloud-settings/backup", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-      },
-    })
-      .then((res) => {
-        if (res.ok) {
-          toast.success(t('cloudSettings.backupSuccess', 'Copia de seguridad realizada y subida a la nube'));
-        } else {
-          res.text().then(text => toast.error(text || t('cloudSettings.backupError', 'Error al realizar el backup')));
-        }
+    api.post("/cloud-settings/backup")
+      .then(() => toast.success(t('cloudSettings.backupSuccess', 'Copia de seguridad realizada y subida a la nube')))
+      .catch((err) => {
+        const msg = err.response?.data?.message || t('cloudSettings.backupError', 'Error al realizar el backup');
+        toast.error(msg);
       })
-      .catch(() => toast.error(t('cloudSettings.connectionError', 'Error de conexión')))
       .finally(() => setBackingUp(false));
   }
 

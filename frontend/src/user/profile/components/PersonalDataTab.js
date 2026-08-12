@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { FaUser, FaEnvelope, FaBell, FaMobileAlt, FaIdBadge, FaShieldAlt } from "react-icons/fa";
 import { CardGhostLoader } from "../../../components/GhostLoader";
-import tokenService from "../../../services/token.service";
 import { useToast } from "../../../components/ToastProvider";
+import api from "../../../services/api";
 
 export default function PersonalDataTab({ loadingUser, userData, setUserData, t }) {
-  const jwt = tokenService.getLocalAccessToken();
+
   const toast = useToast();
   const [updating, setUpdating] = useState(false);
 
@@ -21,25 +21,12 @@ export default function PersonalDataTab({ loadingUser, userData, setUserData, t 
     const updatedUser = { ...userData, [field]: newValue };
 
     try {
-      const res = await fetch(`/api/v1/users/me`, {
-        method: "PUT",
-        headers: { 
-          Authorization: `Bearer ${jwt}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(updatedUser)
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setUserData(data);
-        toast.success(t('profile.preferencesUpdated', 'Preferencias actualizadas'));
-      } else {
-        toast.error(t('profile.preferencesUpdateError', 'Error al actualizar preferencias'));
-      }
+      const res = await api.put("/users/me", updatedUser);
+      setUserData(res.data);
+      toast.success(t('profile.preferencesUpdated', 'Preferencias actualizadas'));
     } catch (err) {
-      console.error("Error al actualizar preferencias:", err);
-      toast.error(t('profile.connectionError', 'Error de conexión'));
+      const msg = err.response?.data?.message || t('profile.preferencesUpdateError', 'Error al actualizar preferencias');
+      toast.error(msg);
     } finally {
       setUpdating(false);
     }

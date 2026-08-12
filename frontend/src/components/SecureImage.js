@@ -20,7 +20,12 @@ const SecureImage = ({ src, alt, style, className }) => {
         let isMounted = true;
         setLoading(true);
 
-        api.get(src, { responseType: 'blob' })
+        let cleanSrc = src;
+        if (cleanSrc.startsWith('/api/v1')) {
+            cleanSrc = cleanSrc.substring(7);
+        }
+
+        api.get(cleanSrc, { responseType: 'blob' })
             .then(response => {
                 if (isMounted) {
                     if (response.data) {

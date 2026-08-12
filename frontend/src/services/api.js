@@ -2,24 +2,12 @@ import axios from "axios";
 import TokenService from "./token.service";
 
 const instance = axios.create({
-    baseURL: "http://localhost:8080/api/v1",
+    baseURL: "/api/v1",
+    withCredentials: true,
     headers: {
         "Content-Type": "application/json",
     },
 });
-
-instance.interceptors.request.use(
-    (config) => {
-        const token = TokenService.getLocalAccessToken();
-        if (token) {
-            config.headers["Authorization"] = 'Bearer ' + token;  // for Spring Boot back-end
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
-    }
-);
 
 instance.interceptors.response.use(
     (res) => {
@@ -32,21 +20,9 @@ instance.interceptors.response.use(
             // Access Token was expired
             if (err.response.status === 401 && !originalConfig._retry) {
                 originalConfig._retry = true;
-
-                try {
-                    const rs = await instance.post("/auth/refreshtoken", {
-                        refreshToken: TokenService.getLocalRefreshToken(),
-                    });
-
-                    const { accessToken } = rs.data;
-                    TokenService.updateLocalAccessToken(accessToken);
-
-                    return instance(originalConfig);
-                } catch (_error) {
-                    TokenService.removeUser();
-                    window.location.href = '/login';
-                    throw _error;
-                }
+                
+                TokenService.removeUser();
+                window.location.href = '/login';
             }
         }
 

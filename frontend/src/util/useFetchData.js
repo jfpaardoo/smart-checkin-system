@@ -19,7 +19,8 @@ export default function useFetchData(url, _jwt) {
     useEffect(() => {
         if (url) {
             let ignore = false;
-            api.get(url)
+            const finalUrl = url.startsWith('/api/v1') ? url.replace('/api/v1', '') : url;
+            api.get(finalUrl)
                 .then(response => {
                     if (!ignore) {
                         setData(response.data);

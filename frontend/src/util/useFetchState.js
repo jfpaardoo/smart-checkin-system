@@ -36,7 +36,8 @@ export default function useFetchState(initial, url, _jwt, setMessage, setVisible
             if (!id || id !== "new") {
                 let ignore = false;
                 setLoading(true);
-                api.get(url)
+                const finalUrl = url.startsWith('/api/v1') ? url.replace('/api/v1', '') : url;
+                api.get(finalUrl)
                     .then(response => {
                         if (!ignore) {
                             if (response.data.message) {

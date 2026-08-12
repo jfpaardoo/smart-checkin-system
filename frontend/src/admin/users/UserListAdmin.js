@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "reactstrap";
 import { useTranslation } from "react-i18next";
-import tokenService from "../../services/token.service";
 import deleteFromList from "../../util/deleteFromList";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUsers, faFileCsv, faFileExcel, faPlus } from '@fortawesome/free-solid-svg-icons';
@@ -10,13 +9,14 @@ import GlassSearchBar from "../../components/GlassSearchBar";
 import { useToast } from "../../components/ToastProvider";
 import downloadExportFile from "../../util/downloadExportFile";
 import { useSubscription } from "../../hooks/useSubscription";
+import api from "../../services/api";
 import UserTable from "./components/UserTable";
 import UserListTabs from "./components/UserListTabs";
 
 export default function UserListAdmin() {
   const { t } = useTranslation();
   const toast = useToast();
-  const jwt = tokenService.getLocalAccessToken();
+
   const [users, setUsers] = useState([]);
   const [pendingUsers, setPendingUsers] = useState([]);
   const [activeTab, setActiveTab] = useState('approved');
@@ -26,37 +26,24 @@ export default function UserListAdmin() {
   const fetchUsers = useCallback(async (query = '') => {
     setLoading(true);
     try {
-      let url = `/api/v1/users`;
-      if (query) {
-        url = `/api/v1/users?search=${encodeURIComponent(query)}`;
-      }
-      const response = await fetch(url, {
-        headers: { Authorization: `Bearer ${jwt}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(Array.isArray(data) ? data : []);
-      }
+      const params = query ? `?search=${encodeURIComponent(query)}` : '';
+      const res = await api.get(`/users${params}`);
+      setUsers(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
       console.error("Failed to fetch users", error);
     } finally {
       setLoading(false);
     }
-  }, [jwt]);
+  }, []);
 
   const fetchPendingUsers = useCallback(async () => {
     try {
-      const response = await fetch('/api/v1/users/pending', {
-        headers: { Authorization: `Bearer ${jwt}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setPendingUsers(Array.isArray(data) ? data : []);
-      }
+      const res = await api.get('/users/pending');
+      setPendingUsers(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
       console.error("Failed to fetch pending users", error);
     }
-  }, [jwt]);
+  }, []);
 
   useEffect(() => {
     fetchUsers(searchQuery);
@@ -72,19 +59,13 @@ export default function UserListAdmin() {
 
   const handleApprove = async (id) => {
     try {
-      const response = await fetch(`/api/v1/users/${id}/approve`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${jwt}` }
-      });
-      if (response.ok) {
-        toast.success(t('users.approvedSuccess', 'Empleado aprobado y activado con éxito.'));
-        fetchPendingUsers();
-        fetchUsers(searchQuery);
-      } else {
-        toast.error(t('users.approveError', 'Error al aprobar empleado.'));
-      }
+      await api.put(`/users/${id}/approve`);
+      toast.success(t('users.approvedSuccess', 'Empleado aprobado y activado con éxito.'));
+      fetchPendingUsers();
+      fetchUsers(searchQuery);
     } catch (err) {
-      toast.error(err.message);
+      const msg = err.response?.data?.message || t('users.approveError', 'Error al aprobar empleado.');
+      toast.error(msg);
     }
   };
 

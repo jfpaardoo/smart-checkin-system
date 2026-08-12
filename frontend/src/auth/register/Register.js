@@ -55,8 +55,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/v1/auth/signup', {
-        method: 'POST',
+      const response = await fetch('/api/v1/auth/signup', { credentials: 'include', method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: form.username.trim(),
@@ -64,8 +63,7 @@ export default function Register() {
           firstName: form.firstName.trim(),
           lastName: form.lastName.trim(),
           email: form.email.trim(),
-          personalCode: form.personalCode.trim()
-        })
+          personalCode: form.personalCode.trim() })
       });
 
       const data = await response.json();

@@ -52,7 +52,7 @@ export const useUserEdit = (id, jwt, toast, t) => {
     setIsSaving(true);
 
     api.request({
-      url: "/api/v1/users" + (user.id ? "/" + user.id : ""),
+      url: "/users" + (user.id ? "/" + user.id : ""),
       method: user.id ? "PUT" : "POST",
       data: user,
       headers: {

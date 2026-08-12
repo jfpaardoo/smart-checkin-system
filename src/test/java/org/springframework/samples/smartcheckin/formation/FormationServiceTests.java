@@ -270,9 +270,8 @@ class FormationServiceTests {
         when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
         when(attendanceRepository.findByFormationAndUser(formation, user)).thenReturn(Optional.of(att));
 
-        Formation res = formationService.registerAttendance(1, user);
-        assertNotNull(res);
-        assertEquals(date, att.getCheckInDate());
+        // Now that a user is already checked-in, a second attempt should throw
+        assertThrows(IllegalArgumentException.class, () -> formationService.registerAttendance(1, user));
     }
 
 	@Test

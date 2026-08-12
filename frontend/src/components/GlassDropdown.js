@@ -36,6 +36,8 @@ export default function GlassDropdown({
         {searchable && (
           <div className="p-2 border-bottom" style={{ position: 'sticky', top: 0, backgroundColor: 'var(--bg-glass, #ffffff)', zIndex: 2 }}>
             <input 
+              id="dropdownSearchInput"
+              name="dropdownSearchInput"
               type="text" 
               className="form-control form-control-sm"
               placeholder={t('common.search', 'Buscar...')}

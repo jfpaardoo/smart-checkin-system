@@ -11,7 +11,8 @@ import api from '../services/api';
  */
 export async function downloadExportFile(endpoint, defaultFilename, toast, t) {
   try {
-    const url = endpoint.startsWith('/') ? endpoint : `/api/v1/exports/${endpoint}`;
+    const cleanEndpoint = endpoint.replace(/^\/api\/v1\/exports\//, '').replace(/^\/exports\//, '');
+    const url = `/exports/${cleanEndpoint}`;
     
     // Request blob using axios
     const response = await api.get(url, {

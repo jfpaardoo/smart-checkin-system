@@ -7,6 +7,8 @@ import java.util.List;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.smartcheckin.audit.AnomalyDetectionService;
 import org.springframework.samples.smartcheckin.auth.payload.request.LoginRequest;
@@ -29,7 +31,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -92,11 +93,13 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<MessageResponse> logoutUser() {
-        String headerAuth = request.getHeader("Authorization");
-        if (org.springframework.util.StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            String jwt = headerAuth.substring(7, headerAuth.length());
+        String jwt = jwtUtils.getJwtFromCookies(request);
+        if (jwt != null) {
             jwtBlacklistService.blacklistToken(jwt);
-            return ResponseEntity.ok(new MessageResponse("Log out successful!"));
+            ResponseCookie cleanCookie = jwtUtils.getCleanJwtCookie();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, cleanCookie.toString())
+                    .body(new MessageResponse("Log out successful!"));
         }
         return ResponseEntity.badRequest().body(new MessageResponse("Error: No JWT token found in request."));
     }
@@ -136,7 +139,7 @@ public class AuthController {
             }
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            String jwt = jwtUtils.generateJwtToken(authentication);
+            ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(authentication);
 
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
             List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority())
@@ -153,7 +156,9 @@ public class AuthController {
                 authNotif.notify(user.getUsername());
             }
 
-            return ResponseEntity.ok().body(new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), roles));
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                    .body(new JwtResponse(jwtCookie.getValue(), userDetails.getId(), userDetails.getUsername(), roles));
         }catch(BadCredentialsException exception){
             String ipAddress = request.getRemoteAddr();
             handleFailedLogin(user, loginRequest.getUsername(), ipAddress);
@@ -181,7 +186,7 @@ public class AuthController {
                 userDetails, null, userDetails.getAuthorities());
         
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(authentication);
 
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(auth -> auth.getAuthority())
@@ -192,7 +197,9 @@ public class AuthController {
             userService.saveUser(user);
         }
 
-        return ResponseEntity.ok().body(new JwtResponse(jwt, user.getId().longValue(), user.getUsername(), roles));
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .body(new JwtResponse(jwtCookie.getValue(), user.getId().longValue(), user.getUsername(), roles));
     }
 
     @PostMapping("/signup")
@@ -276,8 +283,9 @@ public class AuthController {
     }
 
     @GetMapping("/validate")
-    public ResponseEntity<Boolean> validateToken(@RequestParam String token) {
-        Boolean isValid = jwtUtils.validateJwtToken(token);
+    public ResponseEntity<Boolean> validateToken(HttpServletRequest request) {
+        String token = jwtUtils.getJwtFromCookies(request);
+        Boolean isValid = (token != null && jwtUtils.validateJwtToken(token));
         return ResponseEntity.ok(isValid);
     }
 

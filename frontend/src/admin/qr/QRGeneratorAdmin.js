@@ -7,11 +7,12 @@ import { useLocation } from 'react-router-dom';
 import tokenService from '../../services/token.service';
 import { QRGhostLoader } from '../../components/GhostLoader';
 import useFetchState from '../../util/useFetchState';
+import api from '../../services/api';
 import GlassDropdown from '../../components/GlassDropdown';
 
 const QRGeneratorAdmin = () => {
     const { t } = useTranslation();
-    const jwt = tokenService.getLocalAccessToken();
+    const jwt = tokenService.getUser();
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const initialFormationId = queryParams.get('formationId') ? Number.parseInt(queryParams.get('formationId'), 10) : null;
@@ -27,28 +28,40 @@ const QRGeneratorAdmin = () => {
 
     const [formations] = useFetchState([], `/api/v1/formations`, jwt, null, null);
 
+    const [adminCoords, setAdminCoords] = useState(null);
+
+    useEffect(() => {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                setAdminCoords({
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                });
+            }, (error) => {
+                console.warn("Geolocation not available or permission denied", error);
+            }, { enableHighAccuracy: true });
+        }
+    }, []);
+
     const fetchCurrentToken = useCallback(async () => {
         try {
-            const url = selectedFormationId 
-                ? `/api/v1/totp/current?formationId=${selectedFormationId}`
-                : '/api/v1/totp/current';
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${jwt}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setTotpToken(data.token);
+            let url = selectedFormationId
+                ? `/totp/current?formationId=${selectedFormationId}`
+                : '/totp/current';
+
+            if (adminCoords) {
+                const sep = url.includes('?') ? '&' : '?';
+                url += `${sep}lat=${adminCoords.lat}&lng=${adminCoords.lng}`;
             }
+
+            const res = await api.get(url);
+            setTotpToken(res.data.token);
         } catch (error) {
             console.error("Error fetching TOTP token:", error);
         } finally {
             setLoading(false);
         }
-    }, [jwt, selectedFormationId]);
+    }, [selectedFormationId, adminCoords]);
 
     // Recarga el token si cambias de formación o si el WebSocket da un toque (cada 20s)
     useEffect(() => {
@@ -71,20 +84,7 @@ const QRGeneratorAdmin = () => {
         setWsTick(prev => prev + 1);
     });
 
-    const [adminCoords, setAdminCoords] = useState(null);
 
-    useEffect(() => {
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition((position) => {
-                setAdminCoords({
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                });
-            }, (error) => {
-                console.warn("Geolocation not available or permission denied", error);
-            }, { enableHighAccuracy: true });
-        }
-    }, []);
 
     const buildQrPayload = () => {
         const payload = { 

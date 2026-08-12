@@ -47,7 +47,16 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
           label: d.label || `${t('common.camera', 'Cámara')} ${d.id}`
         }));
         setCameras(camOptions);
-        setSelectedCameraId(devices[0].id);
+        
+        const backCamera = devices.find(d => 
+          d.label.toLowerCase().includes('back') || 
+          d.label.toLowerCase().includes('rear') || 
+          d.label.toLowerCase().includes('trasera') ||
+          d.label.toLowerCase().includes('environment') ||
+          d.label.toLowerCase().includes('externa')
+        );
+        
+        setSelectedCameraId(backCamera ? backCamera.id : devices[0].id);
       }
     }).catch(err => {
       console.error('Error fetching cameras', err);

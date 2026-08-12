@@ -56,11 +56,12 @@ export const useFormationEdit = (id, jwt, toast, t) => {
     });
 
     api.request({
-      url: "/api/v1/formations" + (formation.id ? "/" + formation.id : ""),
+      url: "/formations" + (formation.id ? "/" + formation.id : ""),
       method: formation.id ? "PUT" : "POST",
       data: formData,
       headers: {
         Accept: "application/json",
+        "Content-Type": "multipart/form-data",
       }
     })
       .then((response) => {

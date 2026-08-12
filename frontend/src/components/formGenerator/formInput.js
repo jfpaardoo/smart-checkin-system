@@ -102,13 +102,19 @@ const DateInput = ({ inputErrors, name, numberOfColumns, tag, disabled, inputFie
     </div>
 );
 
-const DefaultInput = ({ type, inputErrors, name, numberOfColumns, tag, disabled, inputField, defaultValue, isRequired }) => (
-    <div className={`class-form-group ${inputErrors.length>0 ? "class-error-form" : ""}`} id={`${name}_form`} style={numberOfColumns>1 ? {width: `${100/numberOfColumns-3}%`} : {}}>	
-        <input className="class-form-input" disabled={disabled} type={type} id={`${name}`} name={`${name}`} placeholder=" " defaultValue={defaultValue || ""} required={isRequired} ref={inputField}/>
-        <label htmlFor={`${name}`} className="class-form-label">{tag}:</label>
-        <RenderErrors errors={inputErrors} prefix="err-def" />
-    </div>
-);
+const DefaultInput = ({ type, inputErrors, name, numberOfColumns, tag, disabled, inputField, defaultValue, isRequired }) => {
+    let autoCompleteValue;
+    if (type === "password") autoCompleteValue = "current-password";
+    else if (name === "username") autoCompleteValue = "username";
+
+    return (
+        <div className={`class-form-group ${inputErrors.length>0 ? "class-error-form" : ""}`} id={`${name}_form`} style={numberOfColumns>1 ? {width: `${100/numberOfColumns-3}%`} : {}}>	
+            <input className="class-form-input" disabled={disabled} type={type} id={`${name}`} name={`${name}`} placeholder=" " defaultValue={defaultValue || ""} required={isRequired} autoComplete={autoCompleteValue} ref={inputField}/>
+            <label htmlFor={`${name}`} className="class-form-label">{tag}:</label>
+            <RenderErrors errors={inputErrors} prefix="err-def" />
+        </div>
+    );
+};
 
 const FormInput = forwardRef(({ tag = "default", name = "default", type = "text", defaultValue = "", values = [], isRequired = false, numberOfColumns = 1, validators = [], minValue = 0, maxValue = 100, onChange = null, disabled = false }, ref) => {
 
@@ -157,6 +163,7 @@ const FormInput = forwardRef(({ tag = "default", name = "default", type = "text"
     useEffect(() => {
         if(type !== "interval" && type !== "files" && inputField.current){
             const handleChange = () => {
+                if (!inputField.current) return;
                 const errors = validateValue(inputField.current.value, validators);
                 setInputErrors(errors);
                 if(onChange) {

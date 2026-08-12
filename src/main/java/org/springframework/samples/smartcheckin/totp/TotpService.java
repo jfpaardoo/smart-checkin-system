@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
+import java.util.concurrent.ConcurrentHashMap;
 import org.jpatterns.gof.SingletonPattern;
 
 @Service
@@ -25,6 +26,9 @@ public class TotpService {
     private final TimeProvider timeProvider = new SystemTimeProvider();
     private final CodeGenerator codeGenerator = new DefaultCodeGenerator();
     private final CodeVerifier verifier;
+    
+    // Key: formationId (or "GLOBAL"), Value: [lat, lng]
+    private final ConcurrentHashMap<String, double[]> adminLocationCache = new ConcurrentHashMap<>();
 
     public TotpService() {
         DefaultCodeVerifier v = new DefaultCodeVerifier(codeGenerator, timeProvider);
@@ -92,5 +96,16 @@ public class TotpService {
         } catch (Exception e) {
             throw new RuntimeException("Error generating TOTP token for secret", e);
         }
+    }
+
+    public void cacheAdminLocation(Object formationId, Double lat, Double lng) {
+        if (lat == null || lng == null) return;
+        String key = (formationId != null) ? String.valueOf(formationId).trim() : "GLOBAL";
+        adminLocationCache.put(key, new double[]{lat, lng});
+    }
+
+    public double[] getCachedAdminLocation(Object formationId) {
+        String key = (formationId != null) ? String.valueOf(formationId).trim() : "GLOBAL";
+        return adminLocationCache.get(key);
     }
 }

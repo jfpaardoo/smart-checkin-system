@@ -11,7 +11,7 @@ import { useUserEdit } from "./hooks/useUserEdit";
 
 export default function UserEditAdmin() {
   const { t } = useTranslation();
-  const jwt = tokenService.getLocalAccessToken();
+  const jwt = tokenService.getUser();
   const id = getIdFromUrl(2);
   const toast = useToast();
 

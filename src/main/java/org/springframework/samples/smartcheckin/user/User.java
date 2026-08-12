@@ -72,12 +72,12 @@ public class User extends BaseEntity implements OrganizationalUnit {
     private String lastName;
 
     @NotNull
-    @Column(name = "is_working", columnDefinition = "boolean default false")
+    @Column(name = "is_working")
     @lombok.Builder.Default
     private Boolean isWorking = false;
 
     @NotNull
-    @Column(name = "is_approved", columnDefinition = "boolean default true")
+    @Column(name = "is_approved")
     @lombok.Builder.Default
     private Boolean isApproved = true;
 
@@ -92,7 +92,7 @@ public class User extends BaseEntity implements OrganizationalUnit {
     @lombok.Builder.Default
     private Boolean twoFactorEnabled = false;
 
-    @Column(name = "two_factor_type", columnDefinition = "varchar(10) default 'APP'")
+    @Column(name = "two_factor_type", length = 10)
     @lombok.Builder.Default
     private String twoFactorType = "APP"; // Can be 'APP', 'EMAIL'
 
@@ -101,16 +101,16 @@ public class User extends BaseEntity implements OrganizationalUnit {
     private String twoFactorSecret;
 
     @NotNull
-    @Column(name = "email_notifications_enabled", columnDefinition = "boolean default true")
+    @Column(name = "email_notifications_enabled")
     @lombok.Builder.Default
     private Boolean emailNotificationsEnabled = true;
 
     @NotNull
-    @Column(name = "push_notifications_enabled", columnDefinition = "boolean default true")
+    @Column(name = "push_notifications_enabled")
     @lombok.Builder.Default
     private Boolean pushNotificationsEnabled = true;
 
-    @Column(name = "privacy_policy_accepted", columnDefinition = "boolean default false")
+    @Column(name = "privacy_policy_accepted")
     @lombok.Builder.Default
     private Boolean privacyPolicyAccepted = false;
 

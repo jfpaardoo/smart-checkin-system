@@ -26,6 +26,7 @@ import org.springframework.samples.smartcheckin.storage.SignatureStorageService;
 import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
+import org.springframework.samples.smartcheckin.notification.NotificationContext;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -62,6 +63,9 @@ class CheckinRestControllerTests {
 
 	@MockitoBean
 	private SignatureStorageService signatureStorageService;
+
+	@MockitoBean
+	private NotificationContext notificationContext;
 
 	@Autowired
 	private ObjectMapper objectMapper;

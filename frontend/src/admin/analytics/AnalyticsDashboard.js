@@ -26,51 +26,39 @@ export default function AnalyticsDashboard() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const { t } = useTranslation();
-  
-  const jwt = tokenService.getLocalAccessToken();
 
   const fetchUserAnalytics = useCallback(async (search = '') => {
     try {
-      const queryParam = search ? `?search=${encodeURIComponent(search)}` : '';
-      const req = await fetch(`/api/v1/analytics/users${queryParam}`, {
-        headers: { 'Authorization': `Bearer ${jwt}` }
-      });
-      if (req.ok) {
-        const data = await req.json();
-        setUserAnalyticsList(Array.isArray(data) ? data : []);
-      }
+      const params = search ? `?search=${encodeURIComponent(search)}` : '';
+      const res = await api.get(`/analytics/users${params}`);
+      setUserAnalyticsList(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
       console.error("Failed to fetch user analytics", error);
     }
-  }, [jwt]);
+  }, []);
 
   const fetchFormationAnalytics = useCallback(async () => {
     try {
-      const req = await fetch('/api/v1/analytics/formations', {
-        headers: { 'Authorization': `Bearer ${jwt}` }
-      });
-      if (req.ok) {
-        const data = await req.json();
-        setFormationAnalyticsList(Array.isArray(data) ? data : []);
-      }
+      const res = await api.get('/analytics/formations');
+      setFormationAnalyticsList(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
       console.error("Failed to fetch formation analytics", error);
     }
-  }, [jwt]);
+  }, []);
 
   useEffect(() => {
-    if (!jwt) return;
+    if (!tokenService.getUser()) return;
     let isMounted = true;
 
-    let statsUrl = '/api/v1/analytics';
+    let statsUrl = '/analytics';
     if (startDate && endDate) {
       statsUrl += `?startDate=${startDate}&endDate=${endDate}`;
     }
     
     Promise.all([
       api.get(statsUrl),
-      api.get('/api/v1/analytics/users'),
-      api.get('/api/v1/analytics/formations')
+      api.get('/analytics/users'),
+      api.get('/analytics/formations')
     ]).then(([statsRes, usersRes, formationsRes]) => {
       if (isMounted) {
         setStatistics(Array.isArray(statsRes.data) ? statsRes.data : []);
@@ -84,7 +72,7 @@ export default function AnalyticsDashboard() {
     return () => {
       isMounted = false;
     };
-  }, [jwt, startDate, endDate]);
+  }, [startDate, endDate]);
 
   // WebSocket Subscription for Real-Time Updates
   useSubscription('/topic/statistics', useCallback((message) => {
@@ -120,14 +108,9 @@ export default function AnalyticsDashboard() {
 
   const handleOpenUserDetail = async (userId) => {
     try {
-      const req = await fetch(`/api/v1/analytics/users/${userId}`, {
-        headers: { 'Authorization': `Bearer ${jwt}` }
-      });
-      if (req.ok) {
-        const data = await req.json();
-        setSelectedUserAnalytics(data);
-        setModalOpen(true);
-      }
+      const res = await api.get(`/analytics/users/${userId}`);
+      setSelectedUserAnalytics(res.data);
+      setModalOpen(true);
     } catch (error) {
       console.error("Failed to fetch user detail", error);
     }
@@ -186,11 +169,11 @@ export default function AnalyticsDashboard() {
                 <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
                   <div className="flex items-center gap-2 w-full sm:w-auto">
                     <FontAwesomeIcon icon={faCalendarAlt} className="text-muted hidden sm:block" />
-                    <input type="date" className="form-control form-control-sm w-full sm:w-auto" value={startDate} onChange={(e) => setStartDate(e.target.value)} aria-label="Start date" />
+                    <input type="date" id="startDate" name="startDate" className="form-control form-control-sm w-full sm:w-auto" value={startDate} onChange={(e) => setStartDate(e.target.value)} aria-label="Start date" />
                   </div>
                   <span className="text-muted hidden sm:block"> - </span>
                   <div className="w-full sm:w-auto">
-                    <input type="date" className="form-control form-control-sm w-full sm:w-auto" value={endDate} onChange={(e) => setEndDate(e.target.value)} aria-label="End date" />
+                    <input type="date" id="endDate" name="endDate" className="form-control form-control-sm w-full sm:w-auto" value={endDate} onChange={(e) => setEndDate(e.target.value)} aria-label="End date" />
                   </div>
                 </div>
             )}

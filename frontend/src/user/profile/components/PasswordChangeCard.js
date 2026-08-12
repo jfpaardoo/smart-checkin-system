@@ -1,5 +1,6 @@
 import React from "react";
 import { FaLock, FaKey, FaEye, FaEyeSlash } from "react-icons/fa";
+import tokenService from "../../../services/token.service";
 
 export default function PasswordChangeCard({
   passwordForm,
@@ -11,6 +12,7 @@ export default function PasswordChangeCard({
   const [showCurrentPassword, setShowCurrentPassword] = React.useState(false);
   const [showNewPassword, setShowNewPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+  const currentUser = tokenService.getUser();
   const glassInputClass = "w-full px-4 pt-6 pb-2 rounded-2xl border border-white/50 bg-white/60 focus:border-[#b3c34c] focus:bg-white/90 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition-colors transition-shadow font-medium text-slate-800 shadow-inner peer";
   const glassLabelClass = "absolute text-sm text-slate-500 transition-transform duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 font-semibold pointer-events-none";
   const glassButtonClass = "w-full mt-4 py-3.5 rounded-full font-bold text-slate-900 bg-[#b3c34c]/60 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(179,195,76,0.35)] hover:bg-[#b3c34c]/80 hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.55)] transition duration-300 active:scale-95 flex justify-center items-center gap-2";
@@ -24,6 +26,15 @@ export default function PasswordChangeCard({
         </h5>
         
         <form onSubmit={handlePasswordChangeSubmit} className="flex flex-col gap-5">
+          {/* Campo username oculto: requerido para accesibilidad y gestores de contraseñas */}
+          <input
+            type="text"
+            name="username"
+            autoComplete="username"
+            value={currentUser?.username || ""}
+            readOnly
+            style={{ display: 'none' }}
+          />
           {/* Contraseña Actual */}
           <div className="relative group">
             <input
@@ -31,6 +42,7 @@ export default function PasswordChangeCard({
               type={showCurrentPassword ? "text" : "password"}
               id="currentPassword"
               name="currentPassword"
+              autoComplete="current-password"
               placeholder=" "
               value={passwordForm.currentPassword}
               onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
@@ -56,6 +68,7 @@ export default function PasswordChangeCard({
               type={showNewPassword ? "text" : "password"}
               id="newPassword"
               name="newPassword"
+              autoComplete="new-password"
               placeholder=" "
               value={passwordForm.newPassword}
               onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
@@ -82,6 +95,7 @@ export default function PasswordChangeCard({
               type={showConfirmPassword ? "text" : "password"}
               id="confirmPassword"
               name="confirmPassword"
+              autoComplete="new-password"
               placeholder=" "
               value={passwordForm.confirmPassword}
               onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}

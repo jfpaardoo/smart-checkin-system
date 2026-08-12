@@ -177,8 +177,8 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
         String accessToken = getAccessToken(settings);
         String safeFileName = fileName != null ? fileName.replaceAll(SAFE_CHARS_REGEX, "_") : "signature.png";
         
-        // Clean pathContext and construct URL
-        String safePathContext = pathContext != null ? pathContext.replaceAll(SAFE_CHARS_REGEX, "_").trim() : "checkins";
+        // Clean pathContext and construct URL, allowing slashes to maintain subfolder structure
+        String safePathContext = pathContext != null ? pathContext.replaceAll("[\\\\:*?\"<>|~#%&{}]", "_").trim() : "checkins";
         String uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/ba/{pathContext}/signatures/{filename}:/content";
 
         HttpHeaders headers = new HttpHeaders();

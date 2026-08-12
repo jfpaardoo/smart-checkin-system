@@ -23,6 +23,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.samples.smartcheckin.formation.FormationService;
 import org.springframework.samples.smartcheckin.formation.Formation;
+import org.springframework.samples.smartcheckin.notification.NotificationContext;
 
 @RestController
 @RequestMapping("/api/v1/checkins")
@@ -35,16 +36,18 @@ public class CheckinRestController {
     private final FormationService formationService;
     private final SimpMessagingTemplate messagingTemplate;
     private final SignatureStorageService signatureStorageService;
+    private final NotificationContext notificationContext;
     private static final String MESSAGE_KEY = "message";
 
     @Autowired
-    public CheckinRestController(CheckinService checkInService, UserService userService, TotpService totpService, FormationService formationService, SimpMessagingTemplate messagingTemplate, SignatureStorageService signatureStorageService) {
+    public CheckinRestController(CheckinService checkInService, UserService userService, TotpService totpService, FormationService formationService, SimpMessagingTemplate messagingTemplate, SignatureStorageService signatureStorageService, NotificationContext notificationContext) {
         this.checkInService = checkInService;
         this.userService = userService;
         this.totpService = totpService;
         this.formationService = formationService;
         this.messagingTemplate = messagingTemplate;
         this.signatureStorageService = signatureStorageService;
+        this.notificationContext = notificationContext;
     }
 
     @GetMapping("/my-history")
@@ -68,6 +71,9 @@ public class CheckinRestController {
         User user = userService.findCurrentUser();
         Formation targetFormation = resolveFormation(request);
 
+        // Inject cached admin location if missing (Manual Check-in scenario)
+        injectAdminLocationIfMissing(request, targetFormation);
+
         // ==========================================
         // FLUJO 1: EL CÓDIGO ES DE UNA FORMACIÓN
         // ==========================================
@@ -78,6 +84,7 @@ public class CheckinRestController {
             try {
                 // Lo registramos en la formación
                 formationService.registerAttendance(targetFormation.getId(), user);
+                // La notificación (push + email) la envía FormationService internamente
                 messagingTemplate.convertAndSend("/topic/formations", "UPDATED");
                 
                 Map<String, Object> responseBody = new HashMap<>();
@@ -120,10 +127,32 @@ public class CheckinRestController {
 
         Checkin saved = processCheckinRecord(user, type, request.getSignature());
 
+        // Notificación push + email tras fichaje global
+        try {
+            String notifTitle = type == CheckinType.ENTRADA ? "Entrada registrada" : "Salida registrada";
+            String notifBody  = type == CheckinType.ENTRADA
+                ? "Has registrado tu entrada correctamente."
+                : "Has registrado tu salida correctamente.";
+            notificationContext.sendNotification(user, notifTitle, notifBody);
+        } catch (Exception e) {
+            // Non-critical: no bloquear el fichaje si la notificación falla
+        }
+
         Map<String, Object> responseBody = new HashMap<>();
         responseBody.put("checkin", saved);
 
         return new ResponseEntity<>(responseBody, HttpStatus.CREATED);
+    }
+
+    private void injectAdminLocationIfMissing(QrCheckinRequest request, Formation targetFormation) {
+        if (request.getAdminLat() == null || request.getAdminLng() == null) {
+            Object cacheKey = (targetFormation != null) ? targetFormation.getId() : null;
+            double[] cachedLoc = totpService.getCachedAdminLocation(cacheKey);
+            if (cachedLoc != null) {
+                request.setAdminLat(cachedLoc[0]);
+                request.setAdminLng(cachedLoc[1]);
+            }
+        }
     }
 
     private Formation resolveFormation(QrCheckinRequest request) {
@@ -167,6 +196,10 @@ public class CheckinRestController {
             if (request.getUserLat() == null || request.getUserLng() == null) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Map.of(MESSAGE_KEY, "Se requiere ubicación GPS activa para fichar."));
+            }
+            if (request.getAdminLat() == null || request.getAdminLng() == null) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of(MESSAGE_KEY, "El código no contiene ubicación válida del administrador para validar la distancia."));
             }
             double distance = calculateDistance(request.getUserLat(), request.getUserLng(), 
                                                 request.getAdminLat(), request.getAdminLng());

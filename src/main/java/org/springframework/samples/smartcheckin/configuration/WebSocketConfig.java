@@ -6,7 +6,6 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.Message;
@@ -15,35 +14,12 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.util.StringUtils;
-
-import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
-import org.springframework.samples.smartcheckin.configuration.services.UserDetailsServiceImpl;
-import org.springframework.samples.smartcheckin.configuration.jwt.JwtBlacklistService;
-
-import java.util.List;
+import org.springframework.lang.Nullable;
 
 @Configuration
 @EnableWebSocketMessageBroker
 @SuppressWarnings("null")
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-
-    private final JwtUtils jwtUtils;
-    private final UserDetailsServiceImpl userDetailsService;
-    private final JwtBlacklistService jwtBlacklistService;
-
-    @Autowired
-    public WebSocketConfig(
-            JwtUtils jwtUtils,
-            UserDetailsServiceImpl userDetailsService,
-            JwtBlacklistService jwtBlacklistService) {
-        this.jwtUtils = jwtUtils;
-        this.userDetailsService = userDetailsService;
-        this.jwtBlacklistService = jwtBlacklistService;
-    }
-
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.enableSimpleBroker("/topic");
@@ -71,7 +47,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(new ChannelInterceptor() {
             @Override
+            @Nullable
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
+               if (message == null) return null;
                StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
                 if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
                     authenticateStompConnection(accessor);
@@ -82,29 +60,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     }
 
     private void authenticateStompConnection(StompHeaderAccessor accessor) {
-        List<String> authorization = accessor.getNativeHeader("Authorization");
-        if (authorization == null || authorization.isEmpty()) {
-            throw new AccessDeniedException("Missing JWT Token");
+        if (accessor.getUser() == null) {
+            throw new AccessDeniedException("User not authenticated during WebSocket handshake");
         }
-        
-        String bearerToken = authorization.get(0);
-        if (!StringUtils.hasText(bearerToken) || !bearerToken.startsWith("Bearer ")) {
-            throw new AccessDeniedException("Invalid JWT Token format");
-        }
-        
-        String jwt = bearerToken.substring(7);
-        if (!jwtUtils.validateJwtToken(jwt)) {
-            throw new AccessDeniedException("Invalid JWT Token");
-        }
-        
-        if (jwtBlacklistService.isBlacklisted(jwt)) {
-            throw new AccessDeniedException("Token has been invalidated");
-        }
-        
-        String username = jwtUtils.getUserNameFromJwtToken(jwt);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities());
-        accessor.setUser(authentication);
     }
 }

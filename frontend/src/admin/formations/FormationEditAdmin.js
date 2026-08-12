@@ -15,7 +15,7 @@ import { useFormationEdit } from "./hooks/useFormationEdit";
 
 export default function FormationEditAdmin() {
   const { t } = useTranslation();
-  const jwt = tokenService.getLocalAccessToken();
+  const jwt = tokenService.getUser();
   const id = getIdFromUrl(2);
   const toast = useToast();
 
