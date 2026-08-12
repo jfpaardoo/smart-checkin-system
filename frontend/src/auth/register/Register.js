@@ -19,8 +19,6 @@ export default function Register() {
     personalCode: ''
   });
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
 
@@ -105,10 +103,6 @@ export default function Register() {
             form={form}
             handleChange={handleChange}
             handleSubmit={handleSubmit}
-            showPassword={showPassword}
-            setShowPassword={setShowPassword}
-            showConfirmPassword={showConfirmPassword}
-            setShowConfirmPassword={setShowConfirmPassword}
             loading={loading}
             t={t}
           />

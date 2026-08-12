@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FaEye, FaEyeSlash, FaUserPlus } from 'react-icons/fa';
 import { Spinner } from 'reactstrap';
 import { Link } from 'react-router-dom';
 
-export default function RegisterForm({ form, handleChange, handleSubmit, showPassword, setShowPassword, showConfirmPassword, setShowConfirmPassword, loading, t }) {
+export default function RegisterForm({ form, handleChange, handleSubmit, loading, t }) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   return (
     <div>
       <div className="text-center mb-6">
