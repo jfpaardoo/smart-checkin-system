@@ -28,10 +28,10 @@ public class CloudSettingsRestController {
     private final CloudSettingsService cloudSettingsService;
     private final DatabaseBackupService databaseBackupService;
 
-    @Value("${azure.client.id}")
+    @Value("${azure.client.id:test-client-id}")
     private String azureClientId;
 
-    @Value("${azure.client.secret}")
+    @Value("${azure.client.secret:test-client-secret}")
     private String azureClientSecret;
 
     @Value("${app.backend.url:http://localhost:8080}")
