@@ -120,7 +120,6 @@ class AuthControllerTests {
 	private static final String SIGNIN_URL = BASE_URL + "/signin";
 	private static final String SIGNUP_URL = BASE_URL + "/signup";
 	private static final String LOGOUT_URL = BASE_URL + "/logout";
-	private static final String JSON_PATH_TOKEN = "$.token";
 	private static final String VALID_TOTP_CODE = "123456";
 	private static final String MOCK_JWT_LITERAL = "MOCK_JWT";
 	private static final String NEW_USER_2 = "newUser2";
@@ -144,18 +143,19 @@ class AuthControllerTests {
 	}
 
 	@Test
-	void shouldAuthenticateUser() throws Exception {
-		Authentication auth = mock(Authentication.class);
+    void shouldAuthenticateUser() throws Exception {
+        Authentication auth = mock(Authentication.class);
 
-		when(this.jwtUtils.generateJwtCookie(any(Authentication.class))).thenReturn(jwtCookie);
-		when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
-		doReturn(userDetails).when(auth).getPrincipal();
+        when(this.jwtUtils.generateJwtCookie(any(Authentication.class))).thenReturn(jwtCookie);
+        when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
+        doReturn(userDetails).when(auth).getPrincipal();
 
-		mockMvc.perform(post(SIGNIN_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(loginRequest))).andExpect(status().isOk())
-				.andExpect(jsonPath("$.username").value(loginRequest.getUsername()))
-				.andExpect(jsonPath("$.id").value(userDetails.getId())).andExpect(jsonPath(JSON_PATH_TOKEN).value(token));
-	}
+        mockMvc.perform(post(SIGNIN_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest))).andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value(loginRequest.getUsername()))
+                .andExpect(jsonPath("$.id").value(userDetails.getId()))
+                .andExpect(cookie().exists("jwt"));
+    }
 
 	@Test
 	void shouldNotAuthenticateUnapprovedUser() throws Exception {
@@ -229,9 +229,9 @@ class AuthControllerTests {
 		when(jwtUtils.generateJwtCookie(any(Authentication.class))).thenReturn(ResponseCookie.from("jwt", MOCK_JWT_LITERAL).path("/api").maxAge(24 * 60 * 60).httpOnly(true).build());
 
 		mockMvc.perform(post(BASE_URL + VERIFY_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(req)))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath(JSON_PATH_TOKEN).value(MOCK_JWT_LITERAL));
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(cookie().exists("jwt"));
 	}
 
 	@Test
@@ -462,7 +462,7 @@ class AuthControllerTests {
         mockMvc.perform(post(BASE_URL + VERIFY_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath(JSON_PATH_TOKEN).value(MOCK_JWT_LITERAL));
+                .andExpect(cookie().exists("jwt"));
 
         verify(userService, times(1)).saveUser(user);
         assertEquals(0, user.getFailedLoginAttempts());

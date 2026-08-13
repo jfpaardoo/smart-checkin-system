@@ -74,13 +74,25 @@ public class JwtUtils {
 	}
 
 	public ResponseCookie generateJwtCookie(Authentication authentication) {
-		String jwt = generateJwtToken(authentication);
-		return ResponseCookie.from("jwt", jwt).path("/").maxAge(jwtExpirationMs / 1000).httpOnly(true).build();
-	}
+        String jwt = generateJwtToken(authentication);
+        return ResponseCookie.from("jwt", jwt)
+                .path("/")
+                .maxAge(jwtExpirationMs / 1000)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .build();
+    }
 
-	public ResponseCookie getCleanJwtCookie() {
-		return ResponseCookie.from("jwt", "").path("/").maxAge(0).httpOnly(true).build();
-	}
+    public ResponseCookie getCleanJwtCookie() {
+        return ResponseCookie.from("jwt", "")
+                .path("/")
+                .maxAge(0)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .build();
+    }
 
 	public String getJwtFromCookies(HttpServletRequest request) {
 		Cookie cookie = WebUtils.getCookie(request, "jwt");

@@ -1,37 +1,66 @@
-import React, { useState } from "react";
-import { Button, Form, FormGroup, Label, Input, Row, Col } from "reactstrap";
+import React, { useEffect, useState, useRef } from "react";
+import { Button } from "reactstrap";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
 import tokenService from "../../services/token.service";
 import useFetchState from "../../util/useFetchState";
 import { useToast } from "../../components/ToastProvider";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import api from "../../services/api";
 import "../../static/css/admin/adminPage.css";
-import { FaCloudUploadAlt, FaSave, FaDatabase } from "react-icons/fa";
+import { FaCloudUploadAlt, FaDatabase, FaCheckCircle, FaExclamationTriangle, FaUnlink, FaWindows } from "react-icons/fa";
 
 export default function CloudSettingsAdmin() {
   const { t } = useTranslation();
   const jwt = tokenService.getUser();
   const toast = useToast();
+  const location = useLocation();
+  const hasShownToast = useRef(false);
+  
   const [settings, setSettings, loading] = useFetchState(
-    { provider: "ONEDRIVE", oneDriveClientId: "", oneDriveClientSecret: "", oneDriveTenantId: "", oneDriveRefreshToken: "" },
+    { provider: "ONEDRIVE", oneDriveRefreshToken: "" },
     "/api/v1/cloud-settings",
     jwt
   );
   
   const [backingUp, setBackingUp] = useState(false);
 
-  function handleChange(event) {
-    const { name, value } = event.target;
-    setSettings({ ...settings, [name]: value });
-  }
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const onedriveStatus = queryParams.get('onedrive');
 
-  function handleSubmit(event) {
-    event.preventDefault();
-    api.post("/cloud-settings", settings)
-      .then(() => toast.success(t('cloudSettings.saveSuccess', 'Ajustes de nube guardados correctamente')))
-      .catch(() => toast.error(t('cloudSettings.saveError', 'Error al guardar ajustes')));
-  }
+    if (onedriveStatus && !hasShownToast.current) {
+      hasShownToast.current = true; // Marcamos como mostrado
+
+      if (onedriveStatus === 'connected') {
+        toast.success(t('cloudSettings.connectSuccess', '¡OneDrive conectado con éxito!'));
+      } else if (onedriveStatus === 'error') {
+        toast.error(t('cloudSettings.connectError', 'Hubo un problema al conectar con Microsoft.'));
+      }
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, [location, toast, t]);
+
+  const handleConnectOneDrive = async () => {
+    try {
+      const response = await api.get('/cloud-settings/oauth/authorize-url');
+      window.location.href = response.data.url;
+    } catch (error) {
+      console.error("Error connecting to OneDrive OAuth:", error);
+      toast.error(t('cloudSettings.oauthInitError', 'Error al iniciar la conexión con OneDrive.'));
+    }
+  };
+
+  const handleDisconnect = async () => {
+    try {
+      await api.delete('/cloud-settings/disconnect');
+      setSettings({ ...settings, oneDriveRefreshToken: "" });
+      toast.success(t('cloudSettings.disconnectSuccess', 'Cuenta de OneDrive desconectada correctamente.'));
+    } catch (error) {
+      console.error("Error disconnecting OneDrive:", error);
+      toast.error(t('cloudSettings.disconnectError', 'Error al desconectar la cuenta.'));
+    }
+  };
 
   function handleBackup() {
     setBackingUp(true);
@@ -46,108 +75,80 @@ export default function CloudSettingsAdmin() {
 
   if (loading) return <CardGhostLoader />;
 
+  const isConnected = !!settings.oneDriveRefreshToken;
+
   return (
     <div className="da-container">
       <div className="da-card p-4 p-md-5 mx-auto" style={{ maxWidth: '800px', marginTop: '2rem' }}>
+        
+        {/* Cabecera y botón de Backup */}
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mb-4 text-center text-md-start">
           <h2 className="mb-0 text-dark fw-bold">
             <FaCloudUploadAlt className="me-2" style={{ color: 'var(--da-primary)' }} /> {t('cloudSettings.title', 'Ajustes de Nube')}
           </h2>
-          <Button className="da-btn-primary d-flex align-items-center justify-content-center gap-2" onClick={handleBackup} disabled={backingUp}>
+          <Button 
+            className="da-btn-primary d-flex align-items-center justify-content-center gap-2" 
+            onClick={handleBackup} 
+            disabled={backingUp || !isConnected}
+          >
             <FaDatabase /> {backingUp ? t('cloudSettings.backingUp', 'Respaldando...') : t('cloudSettings.forceBackupBtn', 'Forzar Backup DB')}
           </Button>
         </div>
 
-        <p className="text-muted mb-4 text-center text-md-start">
-          {t('cloudSettings.description', 'Configura aquí las credenciales para conectar la plataforma con la API de OneDrive (Microsoft Graph). Estas credenciales se utilizarán para subir los documentos de las formaciones y los backups de la base de datos.')}
+        {/* Descripción */}
+        <p className="text-muted mb-4 text-center text-md-start border-bottom pb-4">
+          {t('cloudSettings.description', 'Conecta Distribution Academy con Microsoft OneDrive para almacenar la documentación de las formaciones y copias de seguridad de forma automática.')}
         </p>
 
-        <Form onSubmit={handleSubmit}>
-          <Row>
-            <Col md={12}>
-              <FormGroup>
-                <Label for="provider">{t('cloudSettings.providerLabel', 'Proveedor de Nube Activo')}</Label>
-                <Input
-                  type="text"
-                  name="provider"
-                  id="provider"
-                  value="Microsoft OneDrive"
-                  disabled
-                />
-              </FormGroup>
-            </Col>
-          </Row>
-
-          <h5 className="mt-4 mb-3 fw-bold text-dark border-bottom pb-2">{t('cloudSettings.azureCredentials', 'Credenciales de Microsoft Entra (Azure)')}</h5>
-          
-          <Row>
-            <Col md={6}>
-              <FormGroup>
-                <Label for="oneDriveTenantId">{t('cloudSettings.tenantIdLabel', 'Tenant ID')}</Label>
-                <Input
-                  type="text"
-                  name="oneDriveTenantId"
-                  id="oneDriveTenantId"
-                  value={settings.oneDriveTenantId || ""}
-                  onChange={handleChange}
-                  placeholder="ej. 8a7c2b3d-..."
-                />
-              </FormGroup>
-            </Col>
-            <Col md={6}>
-              <FormGroup>
-                <Label for="oneDriveClientId">{t('cloudSettings.clientIdLabel', 'Client ID (App ID)')}</Label>
-                <Input
-                  type="text"
-                  name="oneDriveClientId"
-                  id="oneDriveClientId"
-                  value={settings.oneDriveClientId || ""}
-                  onChange={handleChange}
-                  placeholder="ej. 1f2b3c4d-..."
-                />
-              </FormGroup>
-            </Col>
-          </Row>
-          <Row>
-            <Col md={12}>
-              <FormGroup>
-                <Label for="oneDriveClientSecret">{t('cloudSettings.clientSecretLabel', 'Client Secret')}</Label>
-                <Input
-                  type="password"
-                  name="oneDriveClientSecret"
-                  id="oneDriveClientSecret"
-                  autoComplete="current-password"
-                  value={settings.oneDriveClientSecret || ""}
-                  onChange={handleChange}
-                />
-              </FormGroup>
-            </Col>
-          </Row>
-          <Row>
-            <Col md={12}>
-              <FormGroup>
-                <Label for="oneDriveRefreshToken">{t('cloudSettings.refreshTokenLabel', 'Refresh Token (Larga duración)')}</Label>
-                <Input
-                  type="textarea"
-                  rows="3"
-                  name="oneDriveRefreshToken"
-                  id="oneDriveRefreshToken"
-                  value={settings.oneDriveRefreshToken || ""}
-                  onChange={handleChange}
-                />
-                <small className="text-muted">
-                  {t('cloudSettings.refreshTokenHelp', 'Este token se usará para obtener Access Tokens automáticamente de la Graph API sin intervención del usuario.')}
-                </small>
-              </FormGroup>
-            </Col>
-          </Row>
-
-          <div className="d-flex justify-content-end mt-4">
-            <Button type="submit" className="da-btn-primary d-flex align-items-center gap-2 px-4 py-2">
-              <FaSave /> {t('cloudSettings.saveBtn', 'Guardar Ajustes')}
-            </Button>
+        {/* Zona de Estado y Conexión (Glassmorphism & Cápsula) */}
+        <div className="text-center my-4 py-4">
+          <div 
+            className="d-inline-flex align-items-center gap-2 px-4 py-2 mb-4 rounded-pill shadow-sm"
+            style={{
+              background: isConnected ? 'rgba(40, 167, 69, 0.1)' : 'rgba(255, 193, 7, 0.15)',
+              backdropFilter: 'blur(10px)',
+              border: isConnected ? '1px solid rgba(40, 167, 69, 0.3)' : '1px solid rgba(255, 193, 7, 0.4)',
+              color: isConnected ? '#155724' : '#856404',
+              fontSize: '0.95rem',
+              fontWeight: '600'
+            }}
+          >
+            {isConnected ? (
+              <>
+                <FaCheckCircle className="text-success" />
+                <span>{t('cloudSettings.statusConnected', 'OneDrive Conectado')}</span>
+              </>
+            ) : (
+              <>
+                <FaExclamationTriangle className="text-warning" />
+                <span>{t('cloudSettings.statusDisconnected', 'OneDrive No Conectado')}</span>
+              </>
+            )}
           </div>
-        </Form>
+
+          <div>
+            {isConnected ? (
+              <Button 
+                onClick={handleDisconnect}
+                className="btn btn-outline-danger px-4 py-2 rounded-pill fw-bold shadow-sm d-inline-flex align-items-center gap-2"
+                style={{ fontSize: '1rem', transition: 'all 0.2s ease' }}
+              >
+                <FaUnlink />
+                {t('cloudSettings.disconnectBtn', 'Desconectar cuenta de OneDrive')}
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleConnectOneDrive}
+                className="da-btn-primary px-5 py-3 rounded-pill fw-bold shadow-sm d-inline-flex align-items-center gap-2"
+                style={{ fontSize: '1.05rem' }}
+              >
+                <FaWindows />
+                {t('cloudSettings.connectBtn', 'Conectar con Microsoft OneDrive')}
+              </Button>
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );

@@ -27,14 +27,14 @@ class ExportFactoryTests {
 
     @ParameterizedTest
     @ValueSource(strings = {"csv", "CSV", "Csv"})
-    void getStrategy_csvFormats_returnsCsvStrategy(String format) {
+    void testGetStrategyCsvFormatsReturnsCsvStrategy(String format) {
         DataExportStrategy s = factory.getStrategy(format);
         assertSame(csvStrategy, s);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"excel", "EXCEL", "Excel"})
-    void getStrategy_excelFormats_returnsExcelStrategy(String format) {
+    void testGetStrategyExcelFormatsReturnsExcelStrategy(String format) {
         DataExportStrategy s = factory.getStrategy(format);
         assertSame(excelStrategy, s);
     }

@@ -157,8 +157,8 @@ public class AuthController {
             }
 
             return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                    .body(new JwtResponse(jwtCookie.getValue(), userDetails.getId(), userDetails.getUsername(), roles));
+                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .body(new JwtResponse(null, userDetails.getId(), userDetails.getUsername(), roles));
         }catch(BadCredentialsException exception){
             String ipAddress = request.getRemoteAddr();
             handleFailedLogin(user, loginRequest.getUsername(), ipAddress);
@@ -199,7 +199,7 @@ public class AuthController {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                .body(new JwtResponse(jwtCookie.getValue(), user.getId().longValue(), user.getUsername(), roles));
+                .body(new JwtResponse(null, user.getId().longValue(), user.getUsername(), roles));
     }
 
     @PostMapping("/signup")

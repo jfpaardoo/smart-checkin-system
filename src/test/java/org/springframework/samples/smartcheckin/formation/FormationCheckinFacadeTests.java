@@ -52,7 +52,7 @@ class FormationCheckinFacadeTests {
     }
 
     @Test
-    void notifyFormationsUpdate_handlesNullAndExceptionGracefully() {
+    void testNotifyFormationsUpdateHandlesNullAndExceptionGracefully() {
         doThrow(new RuntimeException("Push error")).when(pushNotificationSender).send(anyString(), anyString(), anyString());
         assertDoesNotThrow(() -> facade.notifyFormationsUpdate(10));
         assertDoesNotThrow(() -> facade.notifyFormationsUpdate(null));
@@ -83,19 +83,18 @@ class FormationCheckinFacadeTests {
     }
 
     @Test
-    void createFormation_fileUploadException_continuesAndSaves() throws Exception {
+    void createFormation_fileUploadException_throwsException() throws Exception {
         FormationRequest req = new FormationRequest();
         req.setName("Java 101");
 
         MockMultipartFile file = new MockMultipartFile("files", "doc.pdf", "application/pdf", "content".getBytes());
         when(cloudStorageAdapter.uploadFile(any(), anyString())).thenThrow(new IOException("Upload failed"));
 
-        Formation saved = new Formation();
-        saved.setId(101);
-        when(formationService.saveFormation(any())).thenReturn(saved);
+        List<MultipartFile> files = List.of(file);
 
-        Formation result = facade.createFormation(req, List.of(file));
-        assertNotNull(result);
+        assertThrows(IllegalStateException.class, () -> facade.createFormation(req, files));
+
+        verify(formationService, never()).saveFormation(any());
     }
 
     @Test

@@ -380,15 +380,14 @@ class FormationRestControllerTests {
 
         when(formationService.findById(1)).thenReturn(Optional.of(formation));
         when(cloudStorageAdapter.uploadFile(any(), anyString())).thenThrow(new RuntimeException("Upload error"));
-        when(formationService.updateFormation(any(Formation.class), eq(1))).thenReturn(formation);
 
         MockHttpServletRequestBuilder builder = 
                 MockMvcRequestBuilders.multipart(BASE_URL + "/1")
                 .file(jsonPart).file(filePart).with(csrf());
         builder.with(request -> { request.setMethod("PUT"); return request; });
 
-        // It catches exception, logs it, and continues.
-        mockMvc.perform(builder).andExpect(status().isOk());
+        // Como la excepción ya no se traga, ahora la petición falla correctamente con código de error
+        mockMvc.perform(builder).andExpect(status().isBadRequest());
     }
     
     @Test
@@ -428,11 +427,10 @@ class FormationRestControllerTests {
                 FILES_PART, DOC_PDF, MediaType.APPLICATION_PDF_VALUE, "content".getBytes());
 
         when(cloudStorageAdapter.uploadFile(any(), anyString())).thenThrow(new RuntimeException("Upload error"));
-        when(formationService.saveFormation(any(Formation.class))).thenReturn(formation);
 
         mockMvc.perform(MockMvcRequestBuilders.multipart(BASE_URL)
                 .file(jsonPart).file(filePart).with(csrf()))
-                .andExpect(status().isOk());
+                .andExpect(status().isBadRequest());
     }
 
     @Test

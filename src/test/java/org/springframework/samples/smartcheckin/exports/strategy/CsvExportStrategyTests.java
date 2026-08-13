@@ -67,12 +67,12 @@ class CsvExportStrategyTests {
     // ─── Metadata ──────────────────────────────────────────────────────────────
 
     @Test
-    void getContentType_returnsCsvMimeType() {
+    void testGetContentTypeReturnsCsvMimeType() {
         assertEquals("text/csv", strategy.getContentType());
     }
 
     @Test
-    void getFileExtension_returnsCsv() {
+    void testGetFileExtensionReturnsCsv() {
         assertEquals("csv", strategy.getFileExtension());
     }
 
@@ -81,7 +81,7 @@ class CsvExportStrategyTests {
     // ══════════════════════════════════════════════════════════════════════════
 
     @Test
-    void exportUsers_emptyList_returnsOnlyHeader() throws IOException {
+    void testExportUsersEmptyListReturnsOnlyHeader() throws IOException {
         byte[] result = strategy.exportUsers(Collections.emptyList());
         String csv = new String(result, StandardCharsets.UTF_8);
         assertTrue(csv.startsWith("ID,Username,PersonalCode,FirstName,LastName,Role,CurrentlyInFormation,FormationsAssigned,FormationsAttended,AttendanceRate,TotalFormationMinutes\n"));
@@ -89,7 +89,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportUsers_allFieldsPresent_correctRow() throws IOException {
+    void testExportUsersAllFieldsPresentCorrectRow() throws IOException {
         UserAnalyticsDTO u = UserAnalyticsDTO.builder()
                 .userId(1).username("jdoe").personalCode("A001")
                 .firstName("John").lastName("Doe").authority("ADMIN")
@@ -101,7 +101,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportUsers_isWorkingFalse_showsNO() throws IOException {
+    void testExportUsersIsWorkingFalseShowsNO() throws IOException {
         UserAnalyticsDTO u = UserAnalyticsDTO.builder()
                 .userId(2).username("jsmith").personalCode("A002")
                 .firstName("Jane").lastName("Smith").authority("USER")
@@ -113,7 +113,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportUsers_isWorkingNull_showsNO() throws IOException {
+    void testExportUsersIsWorkingNullShowsNO() throws IOException {
         UserAnalyticsDTO u = UserAnalyticsDTO.builder()
                 .userId(3).isWorking(null).formationsAssigned(0).formationsAttended(0)
                 .attendancePercentage(0.0).totalFormationMinutes(0L).build();
@@ -123,7 +123,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportUsers_nullOptionalFields_defaultsApplied() throws IOException {
+    void testExportUsersNullOptionalFieldsDefaultsApplied() throws IOException {
         UserAnalyticsDTO u = UserAnalyticsDTO.builder()
                 .userId(4).username(null).personalCode(null).firstName(null).lastName(null)
                 .authority(null).isWorking(true).formationsAssigned(null)
@@ -136,7 +136,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportUsers_commasInName_replaced() throws IOException {
+    void testExportUsersCommasInNameReplaced() throws IOException {
         UserAnalyticsDTO u = UserAnalyticsDTO.builder()
                 .userId(5).username("user,name").firstName("First,Name").lastName("Last,Name")
                 .authority("USER").isWorking(false).formationsAssigned(0).formationsAttended(0)
@@ -154,14 +154,14 @@ class CsvExportStrategyTests {
     // ══════════════════════════════════════════════════════════════════════════
 
     @Test
-    void exportCheckins_emptyList_returnsHeader() throws IOException {
+    void testExportCheckinsEmptyListReturnsHeader() throws IOException {
         String csv = new String(strategy.exportCheckins(Collections.emptyList()), StandardCharsets.UTF_8);
         assertTrue(csv.startsWith("ID,User,PersonalCode,Direction,Timestamp"));
         assertEquals(1, csv.trim().split("\n").length);
     }
 
     @Test
-    void exportCheckins_allFieldsPresent_correctRow() throws IOException {
+    void testExportCheckinsAllFieldsPresentCorrectRow() throws IOException {
         User user = buildUser(10, "jdoe", "A001", "John", "Doe");
 
         Checkin checkin = new Checkin();
@@ -175,7 +175,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportCheckins_nullUser_showsNA() throws IOException {
+    void testExportCheckinsNullUserShowsNA() throws IOException {
         Checkin checkin = new Checkin();
         checkin.setId(1);
         checkin.setUser(null);
@@ -187,7 +187,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportCheckins_userWithNullUsernameAndPersonalCode_showsNA() throws IOException {
+    void testExportCheckinsUserWithNullUsernameAndPersonalCodeShowsNA() throws IOException {
         User user = buildUser(5, null, null, "Jane", "Doe");
 
         Checkin checkin = new Checkin();
@@ -201,7 +201,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportCheckins_nullId_showsZero() throws IOException {
+    void testExportCheckinsNullIdShowsZero() throws IOException {
         User user = buildUser(5, "user", "X001", "A", "B");
 
         Checkin checkin = new Checkin();
@@ -215,7 +215,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportCheckins_nullCheckInType_showsNA() throws IOException {
+    void testExportCheckinsNullCheckInTypeShowsNA() throws IOException {
         User user = buildUser(5, "user", "X001", "A", "B");
 
         Checkin checkin = new Checkin();
@@ -229,7 +229,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportCheckins_nullCheckInDate_showsNA() throws IOException {
+    void testExportCheckinsNullCheckInDateShowsNA() throws IOException {
         User user = buildUser(5, "user", "X001", "A", "B");
 
         Checkin checkin = new Checkin();
@@ -247,27 +247,27 @@ class CsvExportStrategyTests {
     // ══════════════════════════════════════════════════════════════════════════
 
     @Test
-    void exportFormations_emptyList_returnsHeader() throws IOException {
+    void testExportFormationsEmptyListReturnsHeader() throws IOException {
         String csv = new String(strategy.exportFormations(Collections.emptyList()), StandardCharsets.UTF_8);
         assertTrue(csv.startsWith("FormationID,FormationName,ScheduledDate"));
     }
 
     @Test
-    void exportFormations_nullAttendances_skipsRows() throws IOException {
+    void testExportFormationsNullAttendancesSkipsRows() throws IOException {
         Formation f = buildFormation(1, "Intro", LocalDateTime.now().plusDays(1), null);
         String csv = new String(strategy.exportFormations(List.of(f)), StandardCharsets.UTF_8);
         assertEquals(1, csv.trim().split("\n").length);
     }
 
     @Test
-    void exportFormations_emptyAttendances_skipsRows() throws IOException {
+    void testExportFormationsEmptyAttendancesSkipsRows() throws IOException {
         Formation f = buildFormation(1, "Intro", LocalDateTime.now().plusDays(1), new ArrayList<>());
         String csv = new String(strategy.exportFormations(List.of(f)), StandardCharsets.UTF_8);
         assertEquals(1, csv.trim().split("\n").length);
     }
 
     @Test
-    void exportFormations_withAttendanceAndSignature_includesHashAndYES() throws IOException {
+    void testExportFormationsWithAttendanceAndSignatureIncludesHashAndYES() throws IOException {
         LocalDateTime date = LocalDateTime.now().plusDays(3);
         User user = buildUser(1, "jdoe", "A001", "John", "Doe");
 
@@ -285,7 +285,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportFormations_withAttendanceWithoutSignature_showsNoAndHashNA() throws IOException {
+    void testExportFormationsWithAttendanceWithoutSignatureShowsNoAndHashNA() throws IOException {
         LocalDateTime date = LocalDateTime.now().plusDays(3);
         User user = buildUser(1, "jdoe", "A001", "John", "Doe");
 
@@ -301,7 +301,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportFormations_withBlankSignature_hashIsNA() throws IOException {
+    void testExportFormationsWithBlankSignatureHashIsNA() throws IOException {
         LocalDateTime date = LocalDateTime.now().plusDays(3);
         User user = buildUser(1, "jdoe", "A001", "John", "Doe");
 
@@ -314,7 +314,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportFormations_nullCheckInOrCheckOut_durationIsZero() throws IOException {
+    void testExportFormationsNullCheckInOrCheckOutDurationIsZero() throws IOException {
         LocalDateTime date = LocalDateTime.now().plusDays(3);
         User user = buildUser(1, "jdoe", "A001", "John", "Doe");
 
@@ -327,7 +327,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportFormations_nullUserOnAttendance_showsNA() throws IOException {
+    void testExportFormationsNullUserOnAttendanceShowsNA() throws IOException {
         LocalDateTime date = LocalDateTime.now().plusDays(3);
         Formation f = buildFormation(14, "Null User Test", date, new ArrayList<>());
         FormationAttendance att = buildAttendance(f, null,
@@ -340,7 +340,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportFormations_nullFormationIdAndName_showsDefaults() throws IOException {
+    void testExportFormationsNullFormationIdAndNameShowsDefaults() throws IOException {
         Formation f = new Formation();
         f.setId(null);
         f.setName(null);
@@ -355,7 +355,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportFormations_nameWithComma_replaced() throws IOException {
+    void testExportFormationsNameWithCommaReplaced() throws IOException {
         LocalDateTime date = LocalDateTime.now().plusDays(3);
         Formation f = buildFormation(20, "Safety, Training", date, new ArrayList<>());
         User user = buildUser(1, "jdoe", "A001", "John", "Doe");
@@ -369,7 +369,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportFormations_nullAttendanceFormationRef_hashNotCrash() throws IOException {
+    void testExportFormationsNullAttendanceFormationRefHashNotCrash() throws IOException {
         // att.getFormation() == null triggers the null branch in generateVerificationHash
         FormationAttendance att = new FormationAttendance();
         att.setFormation(null);
@@ -385,7 +385,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportFormations_userWithNullPersonalCode_doesNotThrow() throws IOException {
+    void testExportFormationsUserWithNullPersonalCodeDoesNotThrow() throws IOException {
         LocalDateTime date = LocalDateTime.now().plusDays(3);
         User user = buildUser(1, "jdoe", null, "John", "Doe");
         Formation f = buildFormation(60, "Test", date, new ArrayList<>());
@@ -404,14 +404,14 @@ class CsvExportStrategyTests {
     // ══════════════════════════════════════════════════════════════════════════
 
     @Test
-    void exportAuditLogs_emptyList_returnsHeader() throws IOException {
+    void testExportAuditLogsEmptyListReturnsHeader() throws IOException {
         String csv = new String(strategy.exportAuditLogs(Collections.emptyList()), StandardCharsets.UTF_8);
         assertTrue(csv.startsWith("Timestamp,Action,Details,IPAddress\n"));
         assertEquals(1, csv.trim().split("\n").length);
     }
 
     @Test
-    void exportAuditLogs_allFieldsPresent_correctRow() throws IOException {
+    void testExportAuditLogsAllFieldsPresentCorrectRow() throws IOException {
         AuditLog log = new AuditLog("LOGIN", "jdoe", "User logged in", "127.0.0.1");
 
         String csv = new String(strategy.exportAuditLogs(List.of(log)), StandardCharsets.UTF_8);
@@ -421,7 +421,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportAuditLogs_nullFields_defaultToEmpty() throws IOException {
+    void testExportAuditLogsNullFieldsDefaultToEmpty() throws IOException {
         AuditLog log = new AuditLog();
         log.setTimestamp(null);
         log.setAction(null);
@@ -434,7 +434,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportAuditLogs_commasInActionAndDetails_replaced() throws IOException {
+    void testExportAuditLogsCommasInActionAndDetailsReplaced() throws IOException {
         AuditLog log = new AuditLog("LOGIN,ATTEMPT", "jdoe", "Details, with comma", "192.168.0.1");
 
         String csv = new String(strategy.exportAuditLogs(List.of(log)), StandardCharsets.UTF_8);
@@ -443,7 +443,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportAuditLogs_timestampPresent_included() throws IOException {
+    void testExportAuditLogsTimestampPresentIncluded() throws IOException {
         AuditLog log = new AuditLog("LOGOUT", "jdoe", "User logged out", "10.0.0.1");
         assertNotNull(log.getTimestamp());
 
@@ -452,7 +452,7 @@ class CsvExportStrategyTests {
     }
 
     @Test
-    void exportAuditLogs_multipleRows_allPresent() throws IOException {
+    void testExportAuditLogsMultipleRowsAllPresent() throws IOException {
         AuditLog log1 = new AuditLog("LOGIN", "user1", "Login success", "1.1.1.1");
         AuditLog log2 = new AuditLog("LOGOUT", "user2", "Logout", "2.2.2.2");
 
