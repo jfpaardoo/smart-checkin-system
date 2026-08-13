@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useToast } from "../../components/ToastProvider";
 import FormGenerator from "../../components/formGenerator/formGenerator";
@@ -107,8 +107,8 @@ export default function Login() {
     }
   }
 
-  // Estilo Glassmorphism para los botones extraído en una variable para mantener el código limpio
-  const glassButtonClass = "w-full mt-2 py-3.5 rounded-full font-bold text-slate-900 bg-[#b3c34c]/60 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(179,195,76,0.35)] hover:bg-[#b3c34c]/80 hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.55)] transition-all duration-300 active:scale-95 flex justify-center items-center gap-2";
+  // Estilo Glassmorphism con altura estricta (h-[52px]) para igualar los botones que SÍ existen aquí
+  const glassButtonClass = "w-full mt-2 h-[52px] rounded-full font-bold text-slate-900 bg-[#b3c34c]/60 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(179,195,76,0.35)] hover:bg-[#b3c34c]/80 hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.55)] transition-all duration-300 active:scale-95 flex justify-center items-center gap-2 box-border";
 
   return (
     // Altura controlada al máximo posible dentro de la vista para evitar cortes raros si redimensionan
@@ -172,6 +172,18 @@ export default function Login() {
           </form>
         )}
       </div>
+
+      {/* FOOTER PÚBLICO LOGIN (TAILWIND) */}
+      <div className="mt-8 text-center text-sm text-slate-500 z-10">
+        &copy; {new Date().getFullYear()} Distribution Academy |{' '}
+        <Link 
+          to="/privacy-policy" 
+          className="font-bold text-slate-600 hover:text-[#b3c34c] transition-colors duration-300"
+        >
+          Política de Privacidad
+        </Link>
+      </div>
+
     </div>
   );
 }

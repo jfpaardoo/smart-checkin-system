@@ -1,5 +1,6 @@
 import React from "react";
-import { FaDownload, FaTrashAlt } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { FaDownload, FaTrashAlt, FaShieldAlt } from "react-icons/fa";
 import { Spinner } from "reactstrap";
 
 const ActionButton = ({ variant, isLoading, icon: Icon, children, ...props }) => (
@@ -77,6 +78,21 @@ export default function PrivacyDataTab({
           {t("profile.deleteAccountBtn", "Eliminar Mi Cuenta")}
         </ActionButton>
       </div>
+
+      {/* Enlace a Política de Privacidad */}
+      <div className="pt-6 border-t border-gray-300/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p className="text-gray-600 text-sm m-0 text-center sm:text-left">
+          {t("profile.privacyPolicyPrompt", "¿Tienes dudas sobre cómo gestionamos tus datos, firmas y fichajes?")}
+        </p>
+        <Link
+          to="/privacy-policy"
+          className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition border border-gray-300 text-gray-700 bg-white/40 hover:bg-white/70 shadow-sm whitespace-nowrap w-full sm:w-auto"
+        >
+          <FaShieldAlt className="text-[#82a328]" />
+          {t("profile.readPrivacyPolicy", "Leer Política de Privacidad")}
+        </Link>
+      </div>
+
     </div>
   );
 }

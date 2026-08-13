@@ -12,6 +12,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.springframework.http.ResponseCookie;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
 import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.security.core.Authentication;
@@ -19,6 +20,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import io.jsonwebtoken.Jwts;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 
 @SuppressWarnings("java:S6466")
 class JwtUtilsTests {
@@ -133,13 +136,13 @@ class JwtUtilsTests {
 		Authentication auth = mock(Authentication.class);
 		when(auth.getPrincipal()).thenReturn(userDetails);
 
-		org.springframework.http.ResponseCookie cookie = jwtUtils.generateJwtCookie(auth);
+		ResponseCookie cookie = jwtUtils.generateJwtCookie(auth);
 		assertNotNull(cookie);
 		assertEquals("jwt", cookie.getName());
 		assertNotNull(cookie.getValue());
 		assertEquals(86400, cookie.getMaxAge().getSeconds());
 
-		org.springframework.http.ResponseCookie cleanCookie = jwtUtils.getCleanJwtCookie();
+		ResponseCookie cleanCookie = jwtUtils.getCleanJwtCookie();
 		assertNotNull(cleanCookie);
 		assertEquals("jwt", cleanCookie.getName());
 		assertEquals("", cleanCookie.getValue());
@@ -148,13 +151,13 @@ class JwtUtilsTests {
 
 	@Test
 	void testGetJwtFromCookies() {
-		jakarta.servlet.http.HttpServletRequest reqWithCookie = mock(jakarta.servlet.http.HttpServletRequest.class);
-		jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("jwt", "sampleTokenValue");
-		when(reqWithCookie.getCookies()).thenReturn(new jakarta.servlet.http.Cookie[]{cookie});
+		HttpServletRequest reqWithCookie = mock(HttpServletRequest.class);
+		Cookie cookie = new Cookie("jwt", "sampleTokenValue");
+		when(reqWithCookie.getCookies()).thenReturn(new Cookie[]{cookie});
 
 		assertEquals("sampleTokenValue", jwtUtils.getJwtFromCookies(reqWithCookie));
 
-		jakarta.servlet.http.HttpServletRequest reqWithoutCookie = mock(jakarta.servlet.http.HttpServletRequest.class);
+		HttpServletRequest reqWithoutCookie = mock(HttpServletRequest.class);
 		when(reqWithoutCookie.getCookies()).thenReturn(null);
 
 		assertNull(jwtUtils.getJwtFromCookies(reqWithoutCookie));
