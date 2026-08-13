@@ -10,7 +10,6 @@ import org.springframework.samples.smartcheckin.formation.FormationRepository;
 import org.springframework.samples.smartcheckin.audit.AuditLogRepository;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -18,6 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter;
+import java.io.IOException;
 
 @Service
 public class DatabaseBackupService {
@@ -25,19 +26,19 @@ public class DatabaseBackupService {
     private final UserRepository userRepository;
     private final FormationRepository formationRepository;
     private final AuditLogRepository auditLogRepository;
-    private final OneDriveService oneDriveService;
+    private final CloudStorageAdapter cloudStorageAdapter;
     private final ObjectMapper objectMapper;
 
     @Autowired
     public DatabaseBackupService(UserRepository userRepository, 
                                FormationRepository formationRepository,
                                AuditLogRepository auditLogRepository,
-                               OneDriveService oneDriveService,
+                               CloudStorageAdapter cloudStorageAdapter,
                                ObjectMapper objectMapper) {
         this.userRepository = userRepository;
         this.formationRepository = formationRepository;
         this.auditLogRepository = auditLogRepository;
-        this.oneDriveService = oneDriveService;
+        this.cloudStorageAdapter = cloudStorageAdapter;
         this.objectMapper = objectMapper;
     }
 
@@ -60,6 +61,6 @@ public class DatabaseBackupService {
         String dateStr = LocalDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         String fileName = "smartcheckin_backup_" + dateStr + ".zip";
         
-        oneDriveService.uploadBackup(baos.toByteArray(), fileName);
+        cloudStorageAdapter.uploadBackup(baos.toByteArray(), fileName);
     }
 }

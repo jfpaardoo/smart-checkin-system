@@ -1,4 +1,4 @@
-package org.springframework.samples.smartcheckin.settings;
+package org.springframework.samples.smartcheckin.settings.adapter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
@@ -12,16 +12,21 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.samples.smartcheckin.settings.CloudSettings;
+import org.springframework.samples.smartcheckin.settings.CloudSettingsService;
 
-import java.io.IOException;
 import java.util.Map;
+import java.io.IOException;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.jpatterns.gof.AdapterPattern;
+
 @Service
+@AdapterPattern.Adapter
 @Slf4j
 @SuppressWarnings("null")
-public class OneDriveService {
+public class OneDriveAdapterImpl implements CloudStorageAdapter {
 
     private static final String SAFE_CHARS_REGEX = "[\\\\/:*?\"<>|~#%&{}]";
 
@@ -29,7 +34,7 @@ public class OneDriveService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Autowired
-    public OneDriveService(CloudSettingsService cloudSettingsService) {
+    public OneDriveAdapterImpl(CloudSettingsService cloudSettingsService) {
         this.cloudSettingsService = cloudSettingsService;
     }
 
@@ -65,6 +70,7 @@ public class OneDriveService {
         return (String) bodyRes.get("access_token");
     }
 
+    @Override
     public String uploadFile(MultipartFile file, String folderName) throws IOException {
         CloudSettings settings = cloudSettingsService.getSettings();
         if (settings == null || settings.getOneDriveClientId() == null) {
@@ -130,7 +136,8 @@ public class OneDriveService {
         return linkData != null ? (String) linkData.get("webUrl") : null;
     }
 
-    public String uploadBackup(byte[] data, String fileName) {
+    @Override
+    public String uploadBackup(byte[] data, String fileName) throws IOException {
         CloudSettings settings = cloudSettingsService.getSettings();
         if (settings == null || settings.getOneDriveClientId() == null) {
             throw new IllegalStateException("OneDrive credentials not configured");
@@ -161,7 +168,8 @@ public class OneDriveService {
         return createShareLink(itemId, accessToken);
     }
 
-    public String uploadSignature(byte[] data, String fileName, String pathContext) {
+    @Override
+    public String uploadSignature(byte[] data, String fileName, String pathContext) throws IOException {
         CloudSettings settings = cloudSettingsService.getSettings();
         if (settings == null || settings.getOneDriveClientId() == null) {
             throw new IllegalStateException("OneDrive credentials not configured");
@@ -170,8 +178,8 @@ public class OneDriveService {
         String accessToken = getAccessToken(settings);
         String safeFileName = fileName != null ? fileName.replaceAll(SAFE_CHARS_REGEX, "_") : "signature.png";
         
-        // Clean pathContext and construct URL
-        String safePathContext = pathContext != null ? pathContext.replaceAll(SAFE_CHARS_REGEX, "_").trim() : "checkins";
+        // Clean pathContext and construct URL, allowing slashes to maintain subfolder structure
+        String safePathContext = pathContext != null ? pathContext.replaceAll("[\\\\:*?\"<>|~#%&{}]", "_").trim() : "checkins";
         String uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/ba/{pathContext}/signatures/{filename}:/content";
 
         HttpHeaders headers = new HttpHeaders();
@@ -192,7 +200,8 @@ public class OneDriveService {
         return (String) bodyRes.get("id"); // Returns itemId for storage reference
     }
 
-    public byte[] downloadFile(String itemId) {
+    @Override
+    public byte[] downloadFile(String itemId) throws IOException {
         CloudSettings settings = cloudSettingsService.getSettings();
         if (settings == null || settings.getOneDriveClientId() == null) {
             throw new IllegalStateException("OneDrive credentials not configured");
@@ -216,7 +225,8 @@ public class OneDriveService {
         }
     }
 
-    public void deleteFile(String fileIdOrUrl) {
+    @Override
+    public void deleteFile(String fileIdOrUrl) throws IOException {
         if (fileIdOrUrl == null || fileIdOrUrl.trim().isEmpty()) {
             return;
         }

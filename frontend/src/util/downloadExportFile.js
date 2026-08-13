@@ -1,4 +1,4 @@
-import tokenService from '../services/token.service';
+import api from '../services/api';
 
 /**
  * Utility function to handle secure binary/file downloads (CSV, Excel, PDF)
@@ -10,17 +10,17 @@ import tokenService from '../services/token.service';
  * @param {function} t - Translation function
  */
 export async function downloadExportFile(endpoint, defaultFilename, toast, t) {
-  const jwt = tokenService.getLocalAccessToken();
   try {
-    const url = endpoint.startsWith('/') ? endpoint : `/api/v1/exports/${endpoint}`;
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-      },
+    const cleanEndpoint = endpoint.replace(/^\/api\/v1\/exports\//, '').replace(/^\/exports\//, '');
+    const url = `/exports/${cleanEndpoint}`;
+    
+    // Request blob using axios
+    const response = await api.get(url, {
+      responseType: 'blob'
     });
 
-    if (response.ok) {
-      const blob = await response.blob();
+    if (response.status === 200) {
+      const blob = new Blob([response.data]);
       const downloadUrl = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = downloadUrl;
@@ -29,16 +29,19 @@ export async function downloadExportFile(endpoint, defaultFilename, toast, t) {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(downloadUrl);
+      
       if (toast && t) {
         toast.success(t('common.exportSuccess', 'Informe descargado con éxito'));
       }
-    } else if (toast && t) {
-      toast.error(t('common.exportError', 'Error al generar la descarga del informe'));
     }
   } catch (error) {
     console.error('Failed to download export file:', error);
     if (toast && t) {
-      toast.error(t('common.networkError', 'Error de red o conexión al servidor'));
+      if (error.response && error.response.status !== 401) {
+          toast.error(t('common.exportError', 'Error al generar la descarga del informe'));
+      } else if (!error.response) {
+          toast.error(t('common.networkError', 'Error de red o conexión al servidor'));
+      }
     }
   }
 }

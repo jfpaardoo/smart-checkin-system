@@ -17,6 +17,14 @@ export default function GlassSearchBar({
     style = {} 
 }) {
     const [searchTerm, setSearchTerm] = useState(value);
+    const [prevValueProp, setPrevValueProp] = useState(value);
+
+    // Derive state if the external value prop changes
+    if (value !== prevValueProp) {
+        setPrevValueProp(value);
+        setSearchTerm(value);
+    }
+
     const onSearchRef = useRef(onSearch);
     const isFirstRender = useRef(true);
 
@@ -24,11 +32,6 @@ export default function GlassSearchBar({
     useEffect(() => {
         onSearchRef.current = onSearch;
     }, [onSearch]);
-
-    // Sync external value prop
-    useEffect(() => {
-        setSearchTerm(value);
-    }, [value]);
 
     // 350ms Debounce effect
     useEffect(() => {

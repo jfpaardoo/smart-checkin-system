@@ -9,6 +9,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.ResponseCookie;
+import org.springframework.web.util.WebUtils;
+
 import jakarta.annotation.PostConstruct;
 
 import org.slf4j.Logger;
@@ -29,7 +34,7 @@ import org.jpatterns.gof.SingletonPattern;
 
 @Component
 @SingletonPattern.Singleton
-@SuppressWarnings("java:S6466")
+@SuppressWarnings({ "java:S6466", "null" })
 public class JwtUtils {
 	private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
@@ -68,6 +73,25 @@ public class JwtUtils {
 				.signWith(rsaKeyPair.getPrivate()).compact();
 	}
 
+	public ResponseCookie generateJwtCookie(Authentication authentication) {
+		String jwt = generateJwtToken(authentication);
+		return ResponseCookie.from("jwt", jwt).path("/").maxAge(jwtExpirationMs / 1000).httpOnly(true).build();
+	}
+
+	public ResponseCookie getCleanJwtCookie() {
+		return ResponseCookie.from("jwt", "").path("/").maxAge(0).httpOnly(true).build();
+	}
+
+	public String getJwtFromCookies(HttpServletRequest request) {
+		Cookie cookie = WebUtils.getCookie(request, "jwt");
+		if (cookie != null) {
+			return cookie.getValue();
+		} else {
+			return null;
+		}
+	}
+
+
 	public String generateTokenFromUsername(String username, Authorities authority) {
 		Map<String, Object> claims = new HashMap<>();
 		claims.put("authorities", authority.getAuthority());
@@ -97,6 +121,8 @@ public class JwtUtils {
 			logger.error("JWT token is unsupported: {}", e.getMessage());
 		} catch (IllegalArgumentException e) {
 			logger.error("JWT claims string is empty: {}", e.getMessage());
+		} catch (Exception e) {
+			logger.error("Unexpected error validating JWT token: {}", e.getMessage());
 		}
 
 		return false;

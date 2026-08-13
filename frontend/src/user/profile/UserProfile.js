@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Nav, NavItem, NavLink, TabContent, TabPane, Modal, ModalHeader, ModalBody, ModalFooter, Spinner } from "reactstrap";
 import { FaUser, FaGraduationCap, FaShieldAlt, FaTrash } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
@@ -10,16 +10,18 @@ import FormationsTab from "./components/FormationsTab";
 import PasswordSecurityTab from "./components/PasswordSecurityTab";
 import { useUserProfileData } from "./hooks/useUserProfileData";
 import { usePasswordSecurity } from "./hooks/usePasswordSecurity";
+import api from "../../services/api";
 import "../../App.css";
 import "../../components/formGenerator/css/formGenerator.css";
 
 export default function UserProfile() {
   const { t } = useTranslation();
   const toast = useToast();
-  const jwt = tokenService.getLocalAccessToken();
+  const jwt = tokenService.getUser();
 
   const [activeTab, setActiveTab] = useState("1");
   const [isDeleting, setIsDeleting] = useState(false);
+  const isDeletingRef = useRef(false);
   const [isExporting, setIsExporting] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
@@ -32,26 +34,19 @@ export default function UserProfile() {
   const handleExportData = async () => {
     setIsExporting(true);
     try {
-      const res = await fetch("/api/v1/exports/me/export", {
-        headers: { Authorization: `Bearer ${jwt}` },
-      });
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "user_data_export.json";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
-        toast.success(t("profile.exportSuccess", "Tus datos se han exportado correctamente."));
-      } else {
-        toast.error(t("profile.exportError", "No se pudieron exportar tus datos."));
-      }
+      const res = await api.get("/exports/me/export", { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "user_data_export.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success(t("profile.exportSuccess", "Tus datos se han exportado correctamente."));
     } catch (err) {
-      console.error(err);
-      toast.error(t("profile.connectionError", "Error de conexión."));
+      console.error("Error exporting data:", err);
+      toast.error(t("profile.exportError", "No se pudieron exportar tus datos."));
     } finally {
       setIsExporting(false);
     }
@@ -60,30 +55,26 @@ export default function UserProfile() {
   const handleDeleteAccount = () => { setDeleteModalOpen(true); };
 
   const confirmDeleteAccount = async () => {
+    if (isDeletingRef.current) return;
     if (deleteConfirmationText !== "ELIMINAR") {
       toast.error(t("profile.deleteTypeConfirmError", "Debes escribir ELIMINAR para confirmar."));
       return;
     }
+    
+    isDeletingRef.current = true;
     setIsDeleting(true);
     try {
-      const res = await fetch("/api/v1/users/me", {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${jwt}` },
-      });
-      if (res.ok) {
-        toast.success(t("profile.deleteSuccess", "Tu cuenta ha sido eliminada."));
-        setTimeout(() => {
-          tokenService.removeUser();
-          window.location.href = "/";
-        }, 1200);
-      } else {
-        const body = await res.json();
-        toast.error(body.message || t("profile.deleteError", "Error al eliminar la cuenta."));
-      }
+      await api.delete("/users/me");
+      toast.success(t("profile.deleteSuccess", "Tu cuenta ha sido eliminada."));
+      setTimeout(() => {
+        tokenService.removeUser();
+        window.location.href = "/";
+      }, 1200);
     } catch (err) {
-      console.error(err);
-      toast.error(t("profile.connectionError", "Error de conexión."));
+      const msg = err.response?.data?.message || t("profile.deleteError", "Error al eliminar la cuenta.");
+      toast.error(msg);
     } finally {
+      isDeletingRef.current = false;
       setIsDeleting(false);
       setDeleteModalOpen(false);
       setDeleteConfirmationText("");
@@ -165,6 +156,7 @@ export default function UserProfile() {
           <input
             className="w-full mt-4 px-4 py-2.5 text-center text-gray-800 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-0 focus:border-red-500 hover:border-gray-400 transition-colors shadow-none placeholder:text-gray-400"
             placeholder="ELIMINAR"
+            aria-label={t("profile.deleteConfirmationAria", "Escribe ELIMINAR para confirmar")}
             value={deleteConfirmationText}
             onChange={(e) => setDeleteConfirmationText(e.target.value)}
           />

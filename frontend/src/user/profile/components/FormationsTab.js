@@ -2,8 +2,24 @@ import React from "react";
 import { Row, Col, Table, Badge, Button } from "reactstrap";
 import { FaGraduationCap, FaCheckCircle, FaExclamationTriangle, FaAward, FaClock, FaFilePdf } from "react-icons/fa";
 import { TableGhostLoader } from "../../../components/GhostLoader";
-import tokenService from "../../../services/token.service";
+import api from "../../../services/api";
 import { calculateDuration, formatDate } from "../../../utils/dateUtils";
+
+const handleDownloadCertificate = async (attendanceId) => {
+  try {
+    const res = await api.get(`/certificates/attendance/${attendanceId}`, { responseType: 'blob' });
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `certificate_${attendanceId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
+  } catch (error) {
+    console.error("Error downloading PDF", error);
+  }
+};
 
 export default function FormationsTab({ loadingFormations, formations, t }) {
   if (loadingFormations) {
@@ -22,31 +38,6 @@ export default function FormationsTab({ loadingFormations, formations, t }) {
   const formattedHours = totalMinutes >= 60 
     ? `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m` 
     : `${totalMinutes} min`;
-
-  const handleDownloadCertificate = async (attendanceId) => {
-    try {
-      const response = await fetch(`/api/v1/certificates/attendance/${attendanceId}`, {
-        headers: {
-          Authorization: `Bearer ${tokenService.getLocalAccessToken()}`
-        }
-      });
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `certificate_${attendanceId}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        a.remove();
-      } else {
-        console.error("Error fetching certificate PDF");
-      }
-    } catch (error) {
-      console.error("Error downloading PDF", error);
-    }
-  };
 
   return (
     <div className="p-1 p-md-3">
@@ -93,7 +84,7 @@ export default function FormationsTab({ loadingFormations, formations, t }) {
 
       {formations.length === 0 ? (
         <div className="text-center py-5 text-muted">
-          <FaGraduationCap size={48} className="mb-3 opacity-50" />
+          <FaGraduationCap size={48} className="d-block mx-auto mb-3 opacity-50" />
           <h6>{t('profile.noFormationsYet', 'No tienes ninguna formación registrada todavía.')}</h6>
         </div>
       ) : (

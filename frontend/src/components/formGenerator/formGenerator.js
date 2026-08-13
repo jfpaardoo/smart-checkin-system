@@ -26,7 +26,18 @@ const FormGenerator = forwardRef((rawProps, ref) => {
     ...rawProps
   };
 
-  const [formValues, setFormValues] = useState({});
+  const [formValues, setFormValues] = useState(() => {
+    let initialValues = {};
+    for (let input of props.inputs) {
+      if (input.type === "interval") {
+        initialValues[`min_${input.name}`] = input.min;
+        initialValues[`max_${input.name}`] = input.max;
+      } else {
+        initialValues[input.name] = input.defaultValue ? input.defaultValue : "";
+      }
+    }
+    return initialValues;
+  });
   const [submitForm, setSubmitForm] = useState(false);
 
   let formElement = useRef(null);
@@ -91,27 +102,10 @@ const FormGenerator = forwardRef((rawProps, ref) => {
   }
 
   useEffect(() => {
-    if (Object.keys(formValues).length === 0) {
-      let newFormValues = {};
-      for (let input of props.inputs) {
-        if (input.type === "interval") {
-          newFormValues[`min_${input.name}`] = input.min;
-          newFormValues[`max_${input.name}`] = input.max;
-        } else {
-          newFormValues[input.name] = input.defaultValue
-            ? input.defaultValue
-            : "";
-        }
-      }
-      setFormValues(newFormValues);
-    }
-
     if (props.scrollable) {
       formElement.current.style.overflow = "scroll";
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formValues, props.inputs]);
+  }, [props.scrollable]);
 
   useEffect(() => {
     if (submitForm) {
@@ -122,11 +116,15 @@ const FormGenerator = forwardRef((rawProps, ref) => {
   }, [submitForm]);
 
   useEffect(() => {
-    document.addEventListener("keyup", (e) => {
+    const handler = (e) => {
       if (e.key === "Enter" && props.listenEnterKey) {
         handleSubmit(e);
       }
-    });
+    };
+    document.addEventListener("keyup", handler);
+    return () => {
+      document.removeEventListener("keyup", handler);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

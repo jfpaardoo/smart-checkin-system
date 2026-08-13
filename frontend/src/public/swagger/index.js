@@ -1,21 +1,14 @@
-import { useState, useEffect } from "react";
+import useSWR from "swr";
 import SwaggerUI from "swagger-ui-react";
 import "swagger-ui-react/swagger-ui.css"
 
+const fetcher = (url) => fetch(url, { credentials: 'include', headers: { "Content-Type": "application/json" } }).then((res) => {
+    if (!res.ok) throw new Error("Failed to fetch docs");
+    return res.json();
+});
+
 export default function SwaggerDocs(){
-    const [docs,setDocs]=useState({});
-    useEffect(() =>{loadDocs();},[]);
-
-    async function loadDocs() {
-        const mydocs = await (await fetch(`/v3/api-docs`, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })).json();
-        setDocs(mydocs);
-    }
-
-    
+    const { data: docs } = useSWR("/v3/api-docs", fetcher);
     
     return (
         <SwaggerUI spec={docs} url="" />

@@ -92,4 +92,47 @@ class UserTests {
         assertEquals(user1, user2);
         assertEquals(user1.hashCode(), user2.hashCode());
     }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // getCurrentlyWorkingCount
+    // ══════════════════════════════════════════════════════════════════════════
+
+    @Test
+    void testGetCurrentlyWorkingCountReturnsOne() {
+        User user = new User();
+        user.setIsWorking(true);
+        assertEquals(1, user.getCurrentlyWorkingCount());
+    }
+
+    @Test
+    void testGetCurrentlyWorkingCountReturnsZeroWhenFalse() {
+        User user = new User();
+        user.setIsWorking(false);
+        assertEquals(0, user.getCurrentlyWorkingCount());
+    }
+
+    @Test
+    void testGetCurrentlyWorkingCountReturnsZeroWhenNull() {
+        User user = new User();
+        user.setIsWorking(null);
+        assertEquals(0, user.getCurrentlyWorkingCount());
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // getTotalEmployees / getName (OrganizationalUnit)
+    // ══════════════════════════════════════════════════════════════════════════
+
+    @Test
+    void testGetTotalEmployeesReturnsOne() {
+        User user = new User();
+        assertEquals(1, user.getTotalEmployees());
+    }
+
+    @Test
+    void testGetNameReturnsName() {
+        User user = new User();
+        user.setFirstName("Juan");
+        user.setLastName("Pardo");
+        assertEquals("Juan Pardo", user.getName());
+    }
 }

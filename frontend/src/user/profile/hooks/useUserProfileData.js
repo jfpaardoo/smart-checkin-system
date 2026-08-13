@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import api from "../../../services/api";
 
 export function useUserProfileData(jwt, t, toast) {
   const [loadingUser, setLoadingUser] = useState(true);
@@ -6,56 +7,49 @@ export function useUserProfileData(jwt, t, toast) {
   const [userData, setUserData] = useState(null);
   const [formations, setFormations] = useState([]);
 
+  // Estabilizar t y toast con refs para que no sean dependencias del useCallback
+  const tRef = useRef(t);
+  const toastRef = useRef(toast);
+  useEffect(() => { tRef.current = t; }, [t]);
+  useEffect(() => { toastRef.current = toast; }, [toast]);
+
   const fetchProfileData = useCallback(() => {
     setLoadingUser(true);
-    fetch("/api/v1/users/me", {
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        "Content-Type": "application/json",
-      },
-    })
+    api.get("/users/me")
       .then((res) => {
-        if (!res.ok) throw new Error(t('genericError', 'Error al cargar perfil'));
-        return res.json();
-      })
-      .then((data) => {
-        setUserData(data);
+        setUserData(res.data);
         setLoadingUser(false);
       })
       .catch((err) => {
-        toast.error(err.message);
+        const msg = err.response?.data?.message || tRef.current('genericError', 'Error al cargar perfil');
+        toastRef.current.error(msg);
         setLoadingUser(false);
       });
-  }, [jwt, t, toast]);
+  }, []); // Sin dependencias externas — siempre estable
 
   const fetchMyFormations = useCallback(() => {
     setLoadingFormations(true);
-    fetch("/api/v1/users/me/formations", {
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        "Content-Type": "application/json",
-      },
-    })
+    api.get("/users/me/formations")
       .then((res) => {
-        if (!res.ok) throw new Error(t('genericError', 'Error al cargar formaciones'));
-        return res.json();
-      })
-      .then((data) => {
-        setFormations(data || []);
+        setFormations(res.data || []);
         setLoadingFormations(false);
       })
       .catch((err) => {
-        toast.error(err.message);
+        const msg = err.response?.data?.message || tRef.current('genericError', 'Error al cargar formaciones');
+        toastRef.current.error(msg);
         setLoadingFormations(false);
       });
-  }, [jwt, t, toast]);
+  }, []); // Sin dependencias externas — siempre estable
+
+  // Usar jwt.username (string) como dep estable en vez del objeto entero
+  const usernameKey = jwt?.username ?? null;
 
   useEffect(() => {
-    if (jwt) {
+    if (usernameKey) {
       fetchProfileData();
       fetchMyFormations();
     }
-  }, [jwt, fetchProfileData, fetchMyFormations]);
+  }, [usernameKey, fetchProfileData, fetchMyFormations]);
 
   return { loadingUser, loadingFormations, userData, setUserData, formations, setFormations, fetchProfileData };
 }

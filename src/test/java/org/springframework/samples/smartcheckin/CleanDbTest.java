@@ -2,6 +2,7 @@ package org.springframework.samples.smartcheckin;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+@Disabled("Script de utilidad manual para reiniciar la BD PostgreSQL local. Desactivado en CI.")
 @ActiveProfiles("postgres")
 @SpringBootTest(properties = {
     "spring.sql.init.mode=never",

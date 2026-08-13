@@ -9,11 +9,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.samples.smartcheckin.audit.Auditable;
+
+import org.jpatterns.gof.SingletonPattern;
 
 @Service
+@SingletonPattern.Singleton
 @SuppressWarnings("null")
 public class UserService {
-
+	
 	private UserRepository userRepository;
 
 	@Autowired
@@ -101,6 +105,7 @@ public class UserService {
 	}
 
 	@Transactional
+	@Auditable(action = "USER_DELETE", details = "User deleted")
 	public void deleteUser(Integer id) {
 		User toDelete = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
 		this.userRepository.delete(toDelete);

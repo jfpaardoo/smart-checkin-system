@@ -1,7 +1,7 @@
 import React from "react";
 import "./App.css";
-import { Route, Routes } from "react-router-dom";
-import jwt_decode from "jwt-decode";
+import { Route, Routes, useLocation } from "react-router-dom";
+
 import { ErrorBoundary } from "react-error-boundary";
 import AppNavbar from "./AppNavbar";
 import Home from "./home";
@@ -35,15 +35,12 @@ function ErrorFallback({ error, resetErrorBoundary }) {
   )
 }
 
-function getRolesFromJWT(jwt) {
-  return jwt_decode(jwt).authorities;
-}
-
 function App() {
-  const jwt = tokenService.getLocalAccessToken();
+  useLocation();
+  const user = tokenService.getUser();
   let roles = []
-  if (jwt) {
-    roles = getRolesFromJWT(jwt);
+  if (user?.roles) {
+    roles = user.roles;
   }
 
   let adminRoutes = <></>;
@@ -68,7 +65,7 @@ function App() {
     }
   })
   
-  if (!jwt) {
+  if (!user) {
     publicRoutes = (
       <>
         <Route path="/login" element={<Login />} />

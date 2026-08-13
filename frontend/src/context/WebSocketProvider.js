@@ -9,23 +9,23 @@ export const WebSocketProvider = ({ children }) => {
     const [stompClient, setStompClient] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
     
-    // As in your example, we grab the JWT to trigger connection
-    const jwt = tokenService.getLocalAccessToken();
+    // Grab the user to trigger connection
+    const user = tokenService.getUser();
+    const username = user?.username;
 
     useEffect(() => {
         let client = null;
 
-        if (jwt) {
+        if (username) {
             const socketUrl = window.location.hostname === 'localhost'
-                ? 'http://localhost:8080/ws'
+                ? '/ws'
                 : 'https://smart-checkin-system.onrender.com/ws';
 
             client = new Client({
                 webSocketFactory: () => new SockJS(socketUrl, null, { transports: ['websocket', 'xhr-streaming', 'xhr-polling'] }),
                 connectHeaders: {
                     // Puedes enviar el token si quieres seguridad extra a nivel STOMP
-                    Authorization: `Bearer ${jwt}`
-                },
+                    },
                 debug: function (str) {
                     if (process.env.NODE_ENV === 'development' && window.DEBUG_STOMP) {
                         console.log('STOMP: ' + str);
@@ -55,7 +55,7 @@ export const WebSocketProvider = ({ children }) => {
                 client.deactivate();
             }
         };
-    }, [jwt]);
+    }, [username]);
 
     const contextValue = React.useMemo(() => ({ stompClient, isConnected }), [stompClient, isConnected]);
 

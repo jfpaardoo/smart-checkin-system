@@ -2,19 +2,21 @@ import { useState } from 'react';
 import useFetchState from '../../../util/useFetchState';
 import useFetchData from '../../../util/useFetchData';
 import { parseApiError } from '../../../util/apiUtils';
+import api from '../../../services/api';
+
+const emptyItem = {
+  id: null,
+  username: "",
+  password: "",
+  email: "",
+  personalCode: "",
+  firstName: "",
+  lastName: "",
+  isWorking: false,
+  authority: null,
+};
 
 export const useUserEdit = (id, jwt, toast, t) => {
-  const emptyItem = {
-    id: null,
-    username: "",
-    password: "",
-    email: "",
-    personalCode: "",
-    firstName: "",
-    lastName: "",
-    isWorking: false,
-    authority: null,
-  };
 
   const [user, setUser, loading] = useFetchState(
     emptyItem,
@@ -49,17 +51,16 @@ export const useUserEdit = (id, jwt, toast, t) => {
     event.preventDefault();
     setIsSaving(true);
 
-    fetch("/api/v1/users" + (user.id ? "/" + user.id : ""), {
+    api.request({
+      url: "/users" + (user.id ? "/" + user.id : ""),
       method: user.id ? "PUT" : "POST",
+      data: user,
       headers: {
-        Authorization: `Bearer ${jwt}`,
         Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(user),
+      }
     })
-      .then((response) => response.json())
-      .then((json) => {
+      .then((response) => {
+        const json = response.data;
         if (json.message) {
           toast.error(parseApiError(json.message, t, { 'authority': t('users.role') }));
           setIsSaving(false);

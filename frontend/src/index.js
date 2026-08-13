@@ -19,7 +19,7 @@ root.render(
   <React.StrictMode>
     <Suspense fallback={<CardGhostLoader />}>
       <WebSocketProvider>
-        <BrowserRouter>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <App />
         </BrowserRouter>
       </WebSocketProvider>

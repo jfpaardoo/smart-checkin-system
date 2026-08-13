@@ -107,7 +107,10 @@ public class LocalFileSystemService implements SignatureStorageService {
      */
     public byte[] loadSignature(String fileName) {
         try {
-            Path file = rootLocation.resolve(fileName);
+            Path file = rootLocation.resolve(fileName).normalize().toAbsolutePath();
+            if (!file.getParent().equals(this.rootLocation.toAbsolutePath())) {
+                throw new SecurityException("Cannot load file outside current directory.");
+            }
             if (Files.exists(file) && Files.isReadable(file)) {
                 return Files.readAllBytes(file);
             } else {
@@ -124,7 +127,10 @@ public class LocalFileSystemService implements SignatureStorageService {
      */
     public boolean deleteSignature(String fileName) {
         try {
-            Path file = rootLocation.resolve(fileName);
+            Path file = rootLocation.resolve(fileName).normalize().toAbsolutePath();
+            if (!file.getParent().equals(this.rootLocation.toAbsolutePath())) {
+                throw new SecurityException("Cannot delete file outside current directory.");
+            }
             return Files.deleteIfExists(file);
         } catch (IOException e) {
             logger.error("Error deleting signature file: {}", e.getMessage(), e);

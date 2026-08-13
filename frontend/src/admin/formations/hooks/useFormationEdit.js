@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import useFetchState from '../../../util/useFetchState';
 import { parseApiError } from '../../../util/apiUtils';
+import api from '../../../services/api';
+
+const emptyItem = {
+  id: null,
+  name: "",
+  description: "",
+  formationDate: "",
+  documentUrls: [],
+};
 
 export const useFormationEdit = (id, jwt, toast, t) => {
-  const emptyItem = {
-    id: null,
-    name: "",
-    description: "",
-    formationDate: "",
-    documentUrls: [],
-  };
-
   const [formation, setFormation, loading] = useFetchState(
     emptyItem,
     `/api/v1/formations/${id}`,
@@ -54,16 +55,17 @@ export const useFormationEdit = (id, jwt, toast, t) => {
       formData.append("files", file);
     });
 
-    fetch("/api/v1/formations" + (formation.id ? "/" + formation.id : ""), {
+    api.request({
+      url: "/formations" + (formation.id ? "/" + formation.id : ""),
       method: formation.id ? "PUT" : "POST",
+      data: formData,
       headers: {
-        Authorization: `Bearer ${jwt}`,
         Accept: "application/json",
-      },
-      body: formData,
+        "Content-Type": "multipart/form-data",
+      }
     })
-      .then((response) => response.json())
-      .then((json) => {
+      .then((response) => {
+        const json = response.data;
         if (json.message) {
           toast.error(parseApiError(json.message, t));
           setIsSaving(false);

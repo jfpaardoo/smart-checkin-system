@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { FaUsers, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen, FaChartLine, FaIdCard, FaUserPlus, FaSignInAlt, FaShieldAlt, FaCloudUploadAlt, FaBars, FaTimes, FaBell, FaCheck } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import tokenService from './services/token.service';
-import jwt_decode from "jwt-decode";
+
 import LanguageSwitcher from './components/LanguageSwitcher';
 import NotificationBell from './components/NotificationBell';
 
@@ -20,9 +20,10 @@ const LANGUAGES = [
 
 export default function AppNavbar() {
     const { t, i18n } = useTranslation();
-    const [roles, setRoles] = useState([]);
-    const [username, setUsername] = useState("");
-    const jwt = tokenService.getLocalAccessToken();
+    useLocation();
+    const user = tokenService.getUser();
+    const roles = user?.roles || [];
+    const username = user?.username || "";
 
     const [openMenu, setOpenMenu] = useState(null);
     const [mobileLangOpen, setMobileLangOpen] = useState(false);
@@ -58,18 +59,6 @@ export default function AppNavbar() {
         return () => document.removeEventListener('click', handleClickOutside);
     }, []);
 
-    useEffect(() => {
-        if (jwt) {
-            try {
-                const decoded = jwt_decode(jwt);
-                setRoles(decoded.authorities || []);
-                setUsername(decoded.sub || "");
-            } catch (e) {
-                console.error("Invalid token", e);
-            }
-        }
-    }, [jwt]);
-
     const isAdminOpen = openMenu === 'admin';
     const isUserOpen = openMenu === 'user';
     const isLangOpen = openMenu === 'lang';
@@ -104,7 +93,7 @@ export default function AppNavbar() {
         );
     }
 
-    if (!jwt) {
+    if (!user) {
         publicLinks = (
             <div className="flex flex-col md:flex-row gap-4 items-center">
                 <Link to="/register" className="flex items-center justify-center gap-2 text-white/80 hover:text-white no-underline font-medium transition-colors duration-300">
@@ -157,7 +146,7 @@ export default function AppNavbar() {
                     
                     <div className="hidden md:flex md:items-center md:space-x-3">
                         {publicLinks}
-                        {jwt && (
+                        {user && (
                           <div className="text-white list-none">
                             <NotificationBell 
                               isOpen={isNotifOpen} 
@@ -175,7 +164,7 @@ export default function AppNavbar() {
                     </div>
 
                     <div className="flex items-center md:hidden gap-1 sm:gap-2">
-                        {jwt && (
+                        {user && (
                           <NotificationBell 
                             isMobile={true} 
                             isOpen={isNotifOpen} 
@@ -184,6 +173,7 @@ export default function AppNavbar() {
                         )}
                         <button type="button"
                             onClick={(e) => toggleMenu('menu', e)}
+                            aria-label={t('nav.toggleMenu', 'Toggle navigation')}
                             className="mobile-menu-btn p-2 rounded-[20px] text-white hover:bg-white/20 focus:outline-none transition-colors"
                         >
                             {!isNavMobileOpen ? <FaBars className="h-6 w-6" /> : <FaTimes className="h-6 w-6" />}
@@ -211,18 +201,18 @@ export default function AppNavbar() {
                         </div>
                     )}
                     <div className="flex flex-col gap-2 py-2">
-                        {!jwt && (
+                        {!user && (
                             <div className="flex flex-col gap-2">
                                 <Link to="/register" className="da-nav-dropdown-item" onClick={closeAll}><FaUserPlus className="text-white/60"/> {t('nav.register', 'Solicitar Registro')}</Link>
                                 <Link to="/login" className="flex items-center gap-3 px-[18px] py-[10px] my-1 text-[0.95rem] bg-[#b3c34c] text-slate-900 rounded-[20px] font-semibold shadow-md" onClick={closeAll}><FaSignInAlt /> {t('nav.login', 'Iniciar Sesión')}</Link>
                             </div>
                         )}
-                        {jwt && (
+                        {user && (
                             <div className="border-t border-white/10 pt-4 mt-2">
                                 <div className="text-[10px] font-extrabold text-white/40 mb-3 uppercase tracking-widest">{username}</div>
                                 <div className="space-y-1">
                                     <Link to="/profile" className="da-nav-dropdown-item" onClick={closeAll}><FaIdCard className="text-white/60"/> Mi Perfil</Link>
-                                    <Link to="/logout" className="flex items-center gap-3 px-[18px] py-[12px] my-1 text-[1rem] font-bold text-red-400 rounded-2xl hover:bg-white/10 transition-all" onClick={closeAll}><FaSignOutAlt className="text-red-400"/> Salir</Link>
+                                    <Link to="/logout" className="flex items-center gap-3 px-[18px] py-[12px] my-1 text-[1rem] font-bold text-red-400 rounded-2xl hover:bg-white/10 transition-colors" onClick={closeAll}><FaSignOutAlt className="text-red-400"/> Salir</Link>
                                 </div>
                             </div>
                         )}

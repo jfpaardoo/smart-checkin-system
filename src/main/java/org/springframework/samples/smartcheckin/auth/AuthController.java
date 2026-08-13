@@ -7,6 +7,8 @@ import java.util.List;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.smartcheckin.audit.AnomalyDetectionService;
 import org.springframework.samples.smartcheckin.auth.payload.request.LoginRequest;
@@ -29,7 +31,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -44,8 +45,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.samples.smartcheckin.notifications.EmailNotificationSender;
+import org.springframework.samples.smartcheckin.notifications.PushNotificationSender;
+import org.springframework.samples.smartcheckin.notifications.TwoFactorNotification;
+import org.springframework.samples.smartcheckin.notifications.AuthNotification;
+import org.springframework.samples.smartcheckin.notifications.Notification;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -63,14 +67,15 @@ public class AuthController {
     private final AnomalyDetectionService anomalyDetectionService;
     private final HttpServletRequest request;
     private final org.springframework.samples.smartcheckin.configuration.jwt.JwtBlacklistService jwtBlacklistService;
-    private final JavaMailSender javaMailSender;
+    private final EmailNotificationSender emailNotificationSender;
+    private final PushNotificationSender pushNotificationSender;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager, UserService userService, 
             AuthoritiesService authoritiesService, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, 
             SimpMessagingTemplate messagingTemplate, TotpService totpService, UserDetailsServiceImpl userDetailsServiceImpl,
             AnomalyDetectionService anomalyDetectionService, HttpServletRequest request,
-            JwtBlacklistService jwtBlacklistService, JavaMailSender javaMailSender) {
+            JwtBlacklistService jwtBlacklistService, EmailNotificationSender emailNotificationSender, PushNotificationSender pushNotificationSender) {
         this.userService = userService;
         this.authoritiesService = authoritiesService;
         this.jwtUtils = jwtUtils;
@@ -82,16 +87,19 @@ public class AuthController {
         this.anomalyDetectionService = anomalyDetectionService;
         this.request = request;
         this.jwtBlacklistService = jwtBlacklistService;
-        this.javaMailSender = javaMailSender;
+        this.emailNotificationSender = emailNotificationSender;
+        this.pushNotificationSender = pushNotificationSender;
     }
 
     @PostMapping("/logout")
     public ResponseEntity<MessageResponse> logoutUser() {
-        String headerAuth = request.getHeader("Authorization");
-        if (org.springframework.util.StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            String jwt = headerAuth.substring(7, headerAuth.length());
+        String jwt = jwtUtils.getJwtFromCookies(request);
+        if (jwt != null) {
             jwtBlacklistService.blacklistToken(jwt);
-            return ResponseEntity.ok(new MessageResponse("Log out successful!"));
+            ResponseCookie cleanCookie = jwtUtils.getCleanJwtCookie();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, cleanCookie.toString())
+                    .body(new MessageResponse("Log out successful!"));
         }
         return ResponseEntity.badRequest().body(new MessageResponse("Error: No JWT token found in request."));
     }
@@ -131,7 +139,7 @@ public class AuthController {
             }
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            String jwt = jwtUtils.generateJwtToken(authentication);
+            ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(authentication);
 
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
             List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority())
@@ -142,7 +150,15 @@ public class AuthController {
                 userService.saveUser(user);
             }
 
-            return ResponseEntity.ok().body(new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), roles));
+            // Enviar notificación Push de éxito de inicio de sesión
+            if (user != null) {
+                Notification authNotif = new AuthNotification(pushNotificationSender, "IP: " + request.getRemoteAddr());
+                authNotif.notify(user.getUsername());
+            }
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                    .body(new JwtResponse(jwtCookie.getValue(), userDetails.getId(), userDetails.getUsername(), roles));
         }catch(BadCredentialsException exception){
             String ipAddress = request.getRemoteAddr();
             handleFailedLogin(user, loginRequest.getUsername(), ipAddress);
@@ -170,7 +186,7 @@ public class AuthController {
                 userDetails, null, userDetails.getAuthorities());
         
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(authentication);
 
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(auth -> auth.getAuthority())
@@ -181,7 +197,9 @@ public class AuthController {
             userService.saveUser(user);
         }
 
-        return ResponseEntity.ok().body(new JwtResponse(jwt, user.getId().longValue(), user.getUsername(), roles));
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .body(new JwtResponse(jwtCookie.getValue(), user.getId().longValue(), user.getUsername(), roles));
     }
 
     @PostMapping("/signup")
@@ -255,11 +273,8 @@ public class AuthController {
             String code = totpService.generateCode(user.getTwoFactorSecret());
             if (code != null) {
                 try {
-                    SimpleMailMessage mailMessage = new SimpleMailMessage();
-                    mailMessage.setTo(user.getEmail());
-                    mailMessage.setSubject("Código de Verificación 2FA");
-                    mailMessage.setText("Tu código de verificación de 2 factores es: " + code);
-                    javaMailSender.send(mailMessage);
+                    Notification twoFactorNotif = new TwoFactorNotification(emailNotificationSender, code);
+                    twoFactorNotif.notify(user.getEmail());
                 } catch (Exception e) {
                     // Si falla, el usuario no recibirá el correo
                 }
@@ -268,8 +283,9 @@ public class AuthController {
     }
 
     @GetMapping("/validate")
-    public ResponseEntity<Boolean> validateToken(@RequestParam String token) {
-        Boolean isValid = jwtUtils.validateJwtToken(token);
+    public ResponseEntity<Boolean> validateToken(HttpServletRequest request) {
+        String token = jwtUtils.getJwtFromCookies(request);
+        Boolean isValid = (token != null && jwtUtils.validateJwtToken(token));
         return ResponseEntity.ok(isValid);
     }
 

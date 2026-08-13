@@ -26,8 +26,12 @@ public class TotpRestController {
     }
 
     @GetMapping("/current")
-    public ResponseEntity<Map<String, String>> getCurrentToken(@RequestParam(required = false) Object formationId) {
+    public ResponseEntity<Map<String, String>> getCurrentToken(
+            @RequestParam(required = false) Object formationId,
+            @RequestParam(required = false) Double lat,
+            @RequestParam(required = false) Double lng) {
         String token = totpService.getCurrentToken(formationId);
+        totpService.cacheAdminLocation(formationId, lat, lng);
         Map<String, String> response = new HashMap<>();
         response.put("token", token);
         return ResponseEntity.ok(response);

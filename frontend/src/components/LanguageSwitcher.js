@@ -30,7 +30,8 @@ export default function LanguageSwitcher({ isMobile = false, isOpen = false, onT
 
   useEffect(() => {
     if (isOpen) {
-      setTimeout(checkScroll, 100);
+      const timer = setTimeout(checkScroll, 100);
+      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 

@@ -1,6 +1,5 @@
 package org.springframework.samples.smartcheckin.formation;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,43 +24,21 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.samples.smartcheckin.user.User;
-import org.springframework.samples.smartcheckin.user.UserService;
-
-import lombok.extern.slf4j.Slf4j;
-
 @RestController
 @RequestMapping("/api/v1/formations")
 @Tag(name = "Formations", description = "The Formations API. Contains all the operations that can be performed on a formation.")
 @SecurityRequirement(name = "bearerAuth")
-@Slf4j
 public class FormationRestController {
 
     private static final String MESSAGE_KEY = "message";
 
     private final FormationService formationService;
-    private final UserService userService;
-    private final SimpMessagingTemplate messagingTemplate;
-    private final org.springframework.samples.smartcheckin.settings.OneDriveService oneDriveService;
+    private final FormationCheckinFacade facade;
 
     @Autowired
-    public FormationRestController(FormationService formationService, UserService userService, SimpMessagingTemplate messagingTemplate, org.springframework.samples.smartcheckin.settings.OneDriveService oneDriveService) {
+    public FormationRestController(FormationService formationService, FormationCheckinFacade facade) {
         this.formationService = formationService;
-        this.userService = userService;
-        this.messagingTemplate = messagingTemplate;
-        this.oneDriveService = oneDriveService;
-    }
-
-    private void notifyFormationsUpdate(Integer formationId) {
-        try {
-            messagingTemplate.convertAndSend("/topic/formations", "UPDATED");
-            if (formationId != null) {
-                messagingTemplate.convertAndSend("/topic/formations/" + formationId, "UPDATED");
-            }
-        } catch (Exception e) {
-            // Ignore messaging error
-        }
+        this.facade = facade;
     }
 
     @GetMapping
@@ -89,57 +66,8 @@ public class FormationRestController {
     public ResponseEntity<Formation> createFormation(
             @RequestPart("formation") @Valid FormationRequest request,
             @RequestPart(value = "files", required = false) List<MultipartFile> files) {
-        
-        Formation formation = new Formation();
-        formation.setName(request.getName());
-        formation.setDescription(request.getDescription());
-        formation.setFormationDate(request.getFormationDate());
-        
-        if (files != null && !files.isEmpty()) {
-            for (MultipartFile file : files) {
-                if (file != null && !file.isEmpty()) {
-                    try {
-                        String link = oneDriveService.uploadFile(file, request.getName());
-                        formation.getDocumentUrls().add(link);
-                    } catch (Exception e) {
-                        log.error("Error uploading file: {}", e.getMessage(), e);
-                    }
-                }
-            }
-        }
-        
-        Formation saved = formationService.saveFormation(formation);
-        notifyFormationsUpdate(saved.getId());
+        Formation saved = facade.createFormation(request, files);
         return ResponseEntity.ok(saved);
-    }
-
-    private void syncDocumentsOnUpdate(Formation existing, FormationRequest request, List<MultipartFile> files) {
-        List<String> toKeep = request.getExistingDocumentUrls() != null ? request.getExistingDocumentUrls() : List.of();
-        
-        List<String> removedDocs = new ArrayList<>(existing.getDocumentUrls());
-        removedDocs.removeAll(toKeep);
-        for (String removedDoc : removedDocs) {
-            try {
-                oneDriveService.deleteFile(removedDoc);
-            } catch (Exception e) {
-                log.warn("Error deleting removed document from OneDrive: {}", e.getMessage());
-            }
-        }
-
-        existing.getDocumentUrls().retainAll(toKeep);
-        
-        if (files != null) {
-            for (MultipartFile file : files) {
-                if (file != null && !file.isEmpty()) {
-                    try {
-                        String link = oneDriveService.uploadFile(file, request.getName());
-                        existing.getDocumentUrls().add(link);
-                    } catch (Exception e) {
-                        log.error("Error uploading file: {}", e.getMessage(), e);
-                    }
-                }
-            }
-        }
     }
 
     @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
@@ -148,29 +76,15 @@ public class FormationRestController {
             @PathVariable Integer id,
             @RequestPart("formation") @Valid FormationRequest request,
             @RequestPart(value = "files", required = false) List<MultipartFile> files) {
-        
-        Formation existing = formationService.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Formation not found"));
-            
-        existing.setName(request.getName());
-        existing.setDescription(request.getDescription());
-        existing.setFormationDate(request.getFormationDate());
-        
-        syncDocumentsOnUpdate(existing, request, files);
-        
-        Formation saved = formationService.updateFormation(existing, id);
-        notifyFormationsUpdate(saved.getId());
+        Formation saved = facade.updateFormation(id, request, files);
         return ResponseEntity.ok(saved);
     }
 
     @PostMapping("/{id}/attend")
     public ResponseEntity<Object> registerAttendance(@PathVariable Integer id, @RequestBody(required = false) AttendRequest request) {
         try {
-            String code = (request != null && request.getPersonalCode() != null && !request.getPersonalCode().isBlank()) 
-                ? request.getPersonalCode() 
-                : userService.findCurrentUser().getPersonalCode();
-            Formation formation = formationService.registerAttendance(id, code);
-            notifyFormationsUpdate(id);
+            String code = request != null ? request.getPersonalCode() : null;
+            Formation formation = facade.registerAttendance(id, code);
             return ResponseEntity.ok(formation);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Failed to register: " + e.getMessage());
@@ -180,9 +94,7 @@ public class FormationRestController {
     @PostMapping("/{id}/checkout")
     public ResponseEntity<Object> checkoutAttendance(@PathVariable Integer id, @Valid @RequestBody FormationCheckoutRequest request) {
         try {
-            User currentUser = userService.findCurrentUser();
-            Formation formation = formationService.checkoutAttendance(id, currentUser.getPersonalCode(), request.getSignature());
-            notifyFormationsUpdate(id);
+            Formation formation = facade.checkoutAttendance(id, request.getSignature());
             return ResponseEntity.ok(formation);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Failed to checkout: " + e.getMessage());
@@ -194,8 +106,7 @@ public class FormationRestController {
     public ResponseEntity<String> addAttendee(@PathVariable Integer formationId, @RequestBody Map<String, Integer> payload) {
         try {
             Integer userId = payload.get("userId");
-            formationService.addAttendee(formationId, userId);
-            notifyFormationsUpdate(formationId);
+            facade.addAttendee(formationId, userId);
             return ResponseEntity.ok("Successfully added attendee");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to add attendee: " + e.getMessage());
@@ -206,8 +117,7 @@ public class FormationRestController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> removeAttendee(@PathVariable Integer formationId, @PathVariable Integer userId) {
         try {
-            formationService.removeAttendee(formationId, userId);
-            notifyFormationsUpdate(formationId);
+            facade.removeAttendee(formationId, userId);
             return ResponseEntity.ok("Successfully removed attendee");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to remove attendee: " + e.getMessage());
@@ -218,8 +128,7 @@ public class FormationRestController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Object> deleteFormation(@PathVariable Integer id) {
         try {
-            formationService.deleteFormation(id);
-            notifyFormationsUpdate(id);
+            facade.deleteFormation(id);
             return ResponseEntity.ok(Map.of(MESSAGE_KEY, "Formación eliminada correctamente"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of(MESSAGE_KEY, e.getMessage()));

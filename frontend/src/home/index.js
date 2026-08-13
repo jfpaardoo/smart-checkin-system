@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import useSWR from 'swr';
 import { Link } from 'react-router-dom';
 import { Button } from 'reactstrap';
 import { FaQrcode, FaChartBar, FaUsers, FaGraduationCap, FaUser, FaSignInAlt, FaShieldAlt, FaUserPlus } from 'react-icons/fa';
@@ -7,28 +7,19 @@ import tokenService from '../services/token.service';
 import { CardGhostLoader } from '../components/GhostLoader';
 import '../App.css';
 
+const fetcher = (url) => fetch(url, { credentials: 'include' }).then((r) => r.ok ? r.json() : null);
+
 export default function Home() {
   const { t } = useTranslation();
-  const jwt = tokenService.getLocalAccessToken();
+  const jwt = tokenService.getUser();
   const user = tokenService.getUser();
 
-  const [userData, setUserData] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(!!jwt);
+  const { data: userData, isLoading: isSWRloading } = useSWR(
+    jwt ? "/api/v1/users/me" : null,
+    fetcher
+  );
 
-  useEffect(() => {
-    if (jwt) {
-      setLoadingUser(true);
-      fetch("/api/v1/users/me", {
-        headers: { Authorization: `Bearer ${jwt}` },
-      })
-        .then((r) => r.ok ? r.json() : null)
-        .then((data) => {
-          if (data) setUserData(data);
-        })
-        .catch(() => {})
-        .finally(() => setLoadingUser(false));
-    }
-  }, [jwt]);
+  const loadingUser = jwt ? isSWRloading : false;
 
   const isAdmin = user?.authority?.authority === 'ADMIN' || user?.roles?.includes('ADMIN');
 

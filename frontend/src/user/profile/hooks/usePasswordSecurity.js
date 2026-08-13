@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import api from "../../../services/api";
 import tokenService from "../../../services/token.service";
 
 export function usePasswordSecurity(jwt, t, toast) {
@@ -7,47 +8,35 @@ export function usePasswordSecurity(jwt, t, toast) {
     newPassword: "",
     confirmPassword: "",
   });
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submittingPassword, setSubmittingPassword] = useState(false);
+
+  // Estabilizar t y toast con refs para no crear funciones nuevas en cada render
+  const tRef = useRef(t);
+  const toastRef = useRef(toast);
+  useEffect(() => { tRef.current = t; }, [t]);
+  useEffect(() => { toastRef.current = toast; }, [toast]);
 
   const handlePasswordChangeSubmit = (e) => {
     e.preventDefault();
     const { currentPassword, newPassword, confirmPassword } = passwordForm;
 
     if (!currentPassword) {
-      toast.error(t('profile.enterCurrentPassword', 'Introduce la contraseña actual'));
+      toastRef.current.error(tRef.current('profile.enterCurrentPassword', 'Introduce la contraseña actual'));
       return;
     }
     if (!newPassword || newPassword.length < 6) {
-      toast.error(t('profile.passwordMinLength', 'La nueva contraseña debe tener al menos 6 caracteres'));
+      toastRef.current.error(tRef.current('profile.passwordMinLength', 'La nueva contraseña debe tener al menos 6 caracteres'));
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error(t('profile.passwordsDoNotMatch', 'Las contraseñas no coinciden'));
+      toastRef.current.error(tRef.current('profile.passwordsDoNotMatch', 'Las contraseñas no coinciden'));
       return;
     }
 
     setSubmittingPassword(true);
-    fetch("/api/v1/users/me/password", {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        currentPassword,
-        newPassword,
-        confirmPassword,
-      }),
-    })
-      .then(async (res) => {
-        const body = await res.json();
-        if (!res.ok) {
-          throw new Error(body.message || t('profile.changePasswordError', 'Error al cambiar contraseña'));
-        }
-        toast.success(t('profile.passwordSuccessLogout', 'Contraseña actualizada con éxito. Por seguridad, debes iniciar sesión de nuevo.'));
+    api.put("/users/me/password", { currentPassword, newPassword, confirmPassword })
+      .then(() => {
+        toastRef.current.success(tRef.current('profile.passwordSuccessLogout', 'Contraseña actualizada. Por seguridad, debes iniciar sesión de nuevo.'));
         setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
         setTimeout(() => {
           tokenService.removeUser();
@@ -55,7 +44,8 @@ export function usePasswordSecurity(jwt, t, toast) {
         }, 1500);
       })
       .catch((err) => {
-        toast.error(err.message);
+        const msg = err.response?.data?.message || tRef.current('profile.changePasswordError', 'Error al cambiar contraseña');
+        toastRef.current.error(msg);
         setSubmittingPassword(false);
       });
   };
@@ -63,12 +53,6 @@ export function usePasswordSecurity(jwt, t, toast) {
   return {
     passwordForm,
     setPasswordForm,
-    showCurrentPassword,
-    setShowCurrentPassword,
-    showNewPassword,
-    setShowNewPassword,
-    showConfirmPassword,
-    setShowConfirmPassword,
     submittingPassword,
     handlePasswordChangeSubmit,
   };

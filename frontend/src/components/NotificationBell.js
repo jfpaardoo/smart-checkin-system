@@ -17,7 +17,7 @@ function urlBase64ToUint8Array(base64String) {
 
 export default function NotificationBell({ isMobile = false, isOpen = false, onToggle = null }) {
   const { t } = useTranslation();
-  const jwt = tokenService.getLocalAccessToken();
+  const user = tokenService.getUser();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -62,60 +62,77 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
     };
   }, []);
 
-  const subscribeToPush = useCallback(async () => {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  const userId = user?.id;
 
-    try {
-      const registration = await navigator.serviceWorker.register('/sw.js');
-      await navigator.serviceWorker.ready;
-
-      if (!jwt) return;
-      try {
-        const decoded = JSON.parse(atob(jwt.split('.')[1]));
-        if (decoded.exp * 1000 < Date.now()) {
-          console.log("JWT expired, skipping push subscription");
-          return;
-        }
-      } catch (e) {
-        console.warn("Invalid JWT format, skipping push subscription", e);
-        return; // invalid jwt
-      }
-
-      const response = await fetch('/api/v1/push/vapid-key', {
-        headers: { Authorization: `Bearer ${jwt}` }
-      });
-      if (!response.ok) return;
-      const { publicKey } = await response.json();
-
-      let subscription = await registration.pushManager.getSubscription();
-      if (!subscription) {
-        const permission = await Notification.requestPermission();
-        if (permission !== 'granted') return;
-
-        subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(publicKey)
-        });
-      }
-
-      await fetch('/api/v1/push/subscribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${jwt}`
-        },
-        body: JSON.stringify(subscription.toJSON())
-      });
-    } catch (err) {
-      console.warn('Push subscription failed:', err);
-    }
-  }, [jwt]);
-
+  // FIX: React Doctor (effect-needs-cleanup & no-fetch-in-effect)
   useEffect(() => {
-    if (jwt) {
-      subscribeToPush();
+    const abortController = new AbortController();
+    let isMounted = true;
+    let subscription = null;
+
+    if (userId && 'serviceWorker' in navigator && 'PushManager' in window) {
+      const initPushService = async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          await navigator.serviceWorker.ready;
+
+          const response = await fetch('/api/v1/push/vapid-key', { 
+            credentials: 'include',
+            signal: abortController.signal
+          });
+          
+          if (!response.ok) return;
+          const { publicKey } = await response.json();
+
+          subscription = await registration.pushManager.getSubscription();
+          if (!subscription) {
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') return;
+
+            subscription = await registration.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(publicKey)
+            });
+
+            // FIX: Safeguard contra condición de carrera. 
+            // Si el componente se desmontó mientras esperábamos la promesa,
+            // la limpiamos inmediatamente antes de que se convierta en una fuga huérfana.
+            if (!isMounted && subscription) {
+              subscription.unsubscribe().catch(() => {});
+              return;
+            }
+          }
+
+          if (subscription && isMounted) {
+            await fetch('/api/v1/push/subscribe', {
+              credentials: 'include',
+              method: 'POST',
+              signal: abortController.signal,
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(subscription.toJSON())
+            });
+          }
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            console.warn('Push subscription failed:', err);
+          }
+        }
+      };
+
+      initPushService();
     }
-  }, [jwt, subscribeToPush]);
+
+    // Limpieza garantizada que previene el warning exacto de "effect-needs-cleanup"
+    return () => {
+      isMounted = false;
+      abortController.abort();
+      if (subscription) {
+        subscription.unsubscribe().catch(() => {});
+      }
+    };
+  }, [userId]);
 
   const markAllRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
@@ -140,7 +157,7 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
     <div className="relative notif-dropdown-container inline-flex items-center">
       <button 
         type="button" 
-        className="relative flex items-center justify-center w-10 h-10 text-white hover:bg-white/10 rounded-full transition-all focus:outline-none"
+        className="relative flex items-center justify-center w-10 h-10 text-white hover:bg-white/10 rounded-full transition focus:outline-none"
         onClick={handleToggle}
       >
         <FaBell size={18} />
@@ -151,7 +168,6 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
         )}
       </button>
 
-      {/* Solo renderiza el flotante desplegable en escritorio usando la prop isOpen del padre */}
       {!isMobile && (
         <div 
           className={`absolute right-0 top-full mt-3 w-[300px] sm:w-[320px] da-nav-dropdown-container transition-all duration-300 origin-top-right z-[100] ${isOpen ? 'opacity-100 scale-100 translate-y-0 visible' : 'opacity-0 scale-95 -translate-y-4 invisible pointer-events-none'}`}

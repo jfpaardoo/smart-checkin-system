@@ -4,7 +4,7 @@ test.describe('Flujo de Proyección y Fichaje por QR en Tiempo Real (QR Proximit
 
   test('Debe proyectar el código QR dinámico TOTP y simular la llegada de fichaje', async ({ page }) => {
     // 1. Mock TOTP generation API
-    await page.route('/api/v1/totp/generate', async (route) => {
+    await page.route('**/api/v1/totp/generate**', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -13,7 +13,7 @@ test.describe('Flujo de Proyección y Fichaje por QR en Tiempo Real (QR Proximit
     });
 
     // Mock PrivateRoute token validation
-    await page.route('/api/v1/auth/validate*', async (route) => {
+    await page.route('**/api/v1/auth/validate**', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -22,7 +22,7 @@ test.describe('Flujo de Proyección y Fichaje por QR en Tiempo Real (QR Proximit
     });
 
     // Mock GET /api/v1/formations
-    await page.route('/api/v1/formations*', async (route) => {
+    await page.route('**/api/v1/formations**', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -30,10 +30,11 @@ test.describe('Flujo de Proyección y Fichaje por QR en Tiempo Real (QR Proximit
       });
     });
 
-    // Mock Admin JWT in localStorage
+    // Mock Admin JWT and User in localStorage
     const adminJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbjEiLCJhdXRob3JpdGllcyI6WyJBRE1JTiJdfQ.signature";
     await page.addInitScript((token) => {
       window.localStorage.setItem('jwt', JSON.stringify(token));
+      window.localStorage.setItem('user', JSON.stringify({ username: 'admin1', roles: ['ADMIN'], authority: { authority: 'ADMIN' } }));
     }, adminJwt);
 
     // Navigate to QR Generator page

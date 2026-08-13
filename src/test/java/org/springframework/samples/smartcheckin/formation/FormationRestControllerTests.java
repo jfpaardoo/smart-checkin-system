@@ -25,8 +25,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.samples.smartcheckin.notifications.PushNotificationSender;
 import org.springframework.samples.smartcheckin.configuration.SecurityConfiguration;
-import org.springframework.samples.smartcheckin.settings.OneDriveService;
+import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
@@ -39,9 +40,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.samples.smartcheckin.SmartcheckinApplication;
 import org.springframework.test.context.ContextConfiguration;
 
+import org.springframework.context.annotation.Import;
+
 @SuppressWarnings("null")
 @WebMvcTest(controllers = FormationRestController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebSecurityConfigurer.class), excludeAutoConfiguration = SecurityConfiguration.class)
 @ContextConfiguration(classes = SmartcheckinApplication.class)
+@Import(FormationCheckinFacade.class)
 class FormationRestControllerTests {
 
     private static final String BASE_URL = "/api/v1/formations";
@@ -68,7 +72,10 @@ class FormationRestControllerTests {
     private SimpMessagingTemplate messagingTemplate;
 
     @MockitoBean
-    private OneDriveService oneDriveService;
+    private PushNotificationSender pushNotificationSender;
+
+    @MockitoBean
+    private CloudStorageAdapter cloudStorageAdapter;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -171,7 +178,7 @@ class FormationRestControllerTests {
         MockMultipartFile filePart = new MockMultipartFile(
                 FILES_PART, DOC_PDF, MediaType.APPLICATION_PDF_VALUE, "content".getBytes());
 
-        when(oneDriveService.uploadFile(any(), anyString())).thenReturn("http://onedrive.link/doc.pdf");
+        when(cloudStorageAdapter.uploadFile(any(), anyString())).thenReturn("http://onedrive.link/doc.pdf");
         when(formationService.saveFormation(any(Formation.class))).thenReturn(formation);
 
         mockMvc.perform(MockMvcRequestBuilders.multipart(BASE_URL)
@@ -194,7 +201,7 @@ class FormationRestControllerTests {
                 FILES_PART, "doc2.pdf", MediaType.APPLICATION_PDF_VALUE, "content2".getBytes());
 
         when(formationService.findById(1)).thenReturn(Optional.of(formation));
-        when(oneDriveService.uploadFile(any(), anyString())).thenReturn("http://onedrive.link/doc2.pdf");
+        when(cloudStorageAdapter.uploadFile(any(), anyString())).thenReturn("http://onedrive.link/doc2.pdf");
         when(formationService.updateFormation(any(Formation.class), eq(1))).thenReturn(formation);
 
         MockHttpServletRequestBuilder builder = 
@@ -234,8 +241,8 @@ class FormationRestControllerTests {
 
         mockMvc.perform(builder).andExpect(status().isOk());
 
-        verify(oneDriveService, times(1)).deleteFile("file2.pdf||http://onedrive.link/file2.pdf||item456");
-        verify(oneDriveService, never()).deleteFile(FILE1_ONEDRIVE_URL);
+        verify(cloudStorageAdapter, times(1)).deleteFile("file2.pdf||http://onedrive.link/file2.pdf||item456");
+        verify(cloudStorageAdapter, never()).deleteFile(FILE1_ONEDRIVE_URL);
     }
 
     @Test
@@ -346,7 +353,7 @@ class FormationRestControllerTests {
         when(formationService.findById(1)).thenReturn(Optional.of(existing));
         when(formationService.updateFormation(any(Formation.class), eq(1))).thenReturn(existing);
         
-        doThrow(new RuntimeException("Delete error")).when(oneDriveService).deleteFile(anyString());
+        doThrow(new RuntimeException("Delete error")).when(cloudStorageAdapter).deleteFile(anyString());
 
         MockHttpServletRequestBuilder builder = 
                 MockMvcRequestBuilders.multipart(BASE_URL + "/1")
@@ -372,7 +379,7 @@ class FormationRestControllerTests {
                 FILES_PART, "doc2.pdf", MediaType.APPLICATION_PDF_VALUE, "content2".getBytes());
 
         when(formationService.findById(1)).thenReturn(Optional.of(formation));
-        when(oneDriveService.uploadFile(any(), anyString())).thenThrow(new RuntimeException("Upload error"));
+        when(cloudStorageAdapter.uploadFile(any(), anyString())).thenThrow(new RuntimeException("Upload error"));
         when(formationService.updateFormation(any(Formation.class), eq(1))).thenReturn(formation);
 
         MockHttpServletRequestBuilder builder = 
@@ -404,7 +411,7 @@ class FormationRestControllerTests {
                 .andExpect(status().isOk());
 
         // Verify uploadFile is not called for empty file
-        verify(oneDriveService, never()).uploadFile(any(), anyString());
+        verify(cloudStorageAdapter, never()).uploadFile(any(), anyString());
     }
     
     @Test
@@ -420,7 +427,7 @@ class FormationRestControllerTests {
         MockMultipartFile filePart = new MockMultipartFile(
                 FILES_PART, DOC_PDF, MediaType.APPLICATION_PDF_VALUE, "content".getBytes());
 
-        when(oneDriveService.uploadFile(any(), anyString())).thenThrow(new RuntimeException("Upload error"));
+        when(cloudStorageAdapter.uploadFile(any(), anyString())).thenThrow(new RuntimeException("Upload error"));
         when(formationService.saveFormation(any(Formation.class))).thenReturn(formation);
 
         mockMvc.perform(MockMvcRequestBuilders.multipart(BASE_URL)

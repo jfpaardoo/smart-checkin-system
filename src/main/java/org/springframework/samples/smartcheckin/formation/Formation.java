@@ -26,6 +26,10 @@ import lombok.EqualsAndHashCode;
 
 @Getter
 @Setter
+@org.jpatterns.gof.BuilderPattern.Builder
+@lombok.Builder
+@lombok.AllArgsConstructor
+@lombok.NoArgsConstructor
 @EqualsAndHashCode(callSuper = false, exclude = {"attendances"})
 @Entity
 @Table(name = "formations")
@@ -45,10 +49,12 @@ public class Formation extends BaseEntity {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "formation_documents", joinColumns = @JoinColumn(name = "formation_id"))
     @Column(name = "document_url", length = 1000)
+    @lombok.Builder.Default
     private List<String> documentUrls = new ArrayList<>();
 
     @OneToMany(mappedBy = "formation", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnoreProperties("formation")
+    @lombok.Builder.Default
     private List<FormationAttendance> attendances = new ArrayList<>();
 
 

@@ -37,7 +37,7 @@ test.describe('Flujo de Activación de 2FA y Verificación TOTP (2FA Setup E2E)'
     });
 
     // Interceptar API de configuración 2FA
-    await page.route('**/api/v1/users/2fa/setup', async (route) => {
+    await page.route('**/api/v1/users/2fa/setup**', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -57,10 +57,11 @@ test.describe('Flujo de Activación de 2FA y Verificación TOTP (2FA Setup E2E)'
       });
     });
 
-    // Inyectar JWT en localStorage
+    // Inyectar JWT y Usuario en localStorage
     const validEmployeeJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqdWFucGVyZXoiLCJhdXRob3JpdGllcyI6WyJFTVBMT1lFRSJdLCJleHAiOjI1MzQwMjMwMDc5OX0.mock";
     await page.addInitScript((token) => {
       window.localStorage.setItem('jwt', JSON.stringify(token));
+      window.localStorage.setItem('user', JSON.stringify({ username: 'juanperez', roles: ['EMPLOYEE'], authority: { authority: 'EMPLOYEE' } }));
     }, validEmployeeJwt);
 
     // 1. Cargar aplicación en la raíz

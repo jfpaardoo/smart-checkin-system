@@ -35,10 +35,14 @@ import lombok.EqualsAndHashCode;
 
 @Getter
 @Setter
-@EqualsAndHashCode(callSuper = false, exclude = {"formationAttendances", "checkins"})
+@org.jpatterns.gof.BuilderPattern.Builder
+@lombok.Builder
+@lombok.AllArgsConstructor
+@lombok.NoArgsConstructor
+@EqualsAndHashCode(callSuper = false, exclude = {"formationAttendances", "checkins", "pushSubscriptions"})
 @Entity
 @Table(name = "appusers")
-public class User extends BaseEntity {
+public class User extends BaseEntity implements OrganizationalUnit {
 
     @NotBlank
     @Size(min = 1, max = 255)
@@ -68,23 +72,28 @@ public class User extends BaseEntity {
     private String lastName;
 
     @NotNull
-    @Column(name = "is_working", columnDefinition = "boolean default false")
+    @Column(name = "is_working")
+    @lombok.Builder.Default
     private Boolean isWorking = false;
 
     @NotNull
-    @Column(name = "is_approved", columnDefinition = "boolean default true")
+    @Column(name = "is_approved")
+    @lombok.Builder.Default
     private Boolean isApproved = true;
 
     @Column(name = "failed_login_attempts")
+    @lombok.Builder.Default
     private Integer failedLoginAttempts = 0;
 
     @Column(name = "account_locked_until")
     private LocalDateTime accountLockedUntil;
 
     @Column(name = "two_factor_enabled")
+    @lombok.Builder.Default
     private Boolean twoFactorEnabled = false;
 
-    @Column(name = "two_factor_type", columnDefinition = "varchar(10) default 'APP'")
+    @Column(name = "two_factor_type", length = 10)
+    @lombok.Builder.Default
     private String twoFactorType = "APP"; // Can be 'APP', 'EMAIL'
 
     @Column(name = "two_factor_secret")
@@ -92,14 +101,17 @@ public class User extends BaseEntity {
     private String twoFactorSecret;
 
     @NotNull
-    @Column(name = "email_notifications_enabled", columnDefinition = "boolean default true")
+    @Column(name = "email_notifications_enabled")
+    @lombok.Builder.Default
     private Boolean emailNotificationsEnabled = true;
 
     @NotNull
-    @Column(name = "push_notifications_enabled", columnDefinition = "boolean default true")
+    @Column(name = "push_notifications_enabled")
+    @lombok.Builder.Default
     private Boolean pushNotificationsEnabled = true;
 
-    @Column(name = "privacy_policy_accepted", columnDefinition = "boolean default false")
+    @Column(name = "privacy_policy_accepted")
+    @lombok.Builder.Default
     private Boolean privacyPolicyAccepted = false;
 
     @Column(name = "privacy_policy_accepted_at")
@@ -148,5 +160,28 @@ public class User extends BaseEntity {
             return List.of(new SimpleGrantedAuthority(authority.getAuthority()));
         }
         return List.of();
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    @JsonIgnore
+    private Department department;
+
+    @Override
+    @Transient
+    public String getName() {
+        return this.firstName + " " + this.lastName;
+    }
+
+    @Override
+    @Transient
+    public int getTotalEmployees() {
+        return 1;
+    }
+
+    @Override
+    @Transient
+    public int getCurrentlyWorkingCount() {
+        return (this.isWorking != null && this.isWorking) ? 1 : 0;
     }
 }

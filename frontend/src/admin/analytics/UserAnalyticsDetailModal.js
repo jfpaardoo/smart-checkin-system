@@ -3,7 +3,7 @@ import { Modal, ModalHeader, ModalBody, ModalFooter, Table, Badge, Button } from
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faGraduationCap, faClock, faTimes, faCheckCircle, faSpinner } from '@fortawesome/free-solid-svg-icons';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { formatDuration } from '../../util/dateTimeUtil';
 
 export default function UserAnalyticsDetailModal({ isOpen, toggle, userAnalytics }) {
@@ -86,9 +86,9 @@ export default function UserAnalyticsDetailModal({ isOpen, toggle, userAnalytics
                             {userAnalytics.formationDetails.map((f) => (
                                 <tr key={f.formationId}>
                                     <td data-label={t('analytics.formationName', 'Formation')} className="fw-bold">{f.formationName}</td>
-                                    <td data-label={t('analytics.date', 'Date')}>{f.formationDate ? moment(f.formationDate).format('YYYY-MM-DD HH:mm') : 'N/A'}</td>
-                                    <td data-label={t('analytics.checkIn', 'Check-in')}>{f.checkInDate ? moment(f.checkInDate).format('HH:mm') : '-'}</td>
-                                    <td data-label={t('analytics.checkOut', 'Check-out')}>{f.checkOutDate ? moment(f.checkOutDate).format('HH:mm') : '-'}</td>
+                                    <td data-label={t('analytics.date', 'Date')}>{f.formationDate ? dayjs(f.formationDate).format('YYYY-MM-DD HH:mm') : 'N/A'}</td>
+                                    <td data-label={t('analytics.checkIn', 'Check-in')}>{f.checkInDate ? dayjs(f.checkInDate).format('HH:mm') : '-'}</td>
+                                    <td data-label={t('analytics.checkOut', 'Check-out')}>{f.checkOutDate ? dayjs(f.checkOutDate).format('HH:mm') : '-'}</td>
                                     <td data-label={t('analytics.duration', 'Time Spent')}>
                                         <Badge color="info" className="da-badge text-dark fw-bold">
                                             {formatDuration(f.durationMinutes)}

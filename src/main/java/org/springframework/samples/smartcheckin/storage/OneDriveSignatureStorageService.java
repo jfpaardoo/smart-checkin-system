@@ -3,7 +3,7 @@ package org.springframework.samples.smartcheckin.storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.samples.smartcheckin.settings.OneDriveService;
+import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
@@ -14,11 +14,11 @@ public class OneDriveSignatureStorageService implements SignatureStorageService 
 
     private static final Logger logger = LoggerFactory.getLogger(OneDriveSignatureStorageService.class);
 
-    private final OneDriveService oneDriveService;
+    private final CloudStorageAdapter cloudStorageAdapter;
 
     @Autowired
-    public OneDriveSignatureStorageService(OneDriveService oneDriveService) {
-        this.oneDriveService = oneDriveService;
+    public OneDriveSignatureStorageService(CloudStorageAdapter cloudStorageAdapter) {
+        this.cloudStorageAdapter = cloudStorageAdapter;
     }
 
     @Override
@@ -32,7 +32,7 @@ public class OneDriveSignatureStorageService implements SignatureStorageService 
             String extension = determineFileExtension(imageBytes);
             String fileName = UUID.randomUUID().toString() + extension;
             
-            return oneDriveService.uploadSignature(imageBytes, fileName, pathContext);
+            return cloudStorageAdapter.uploadSignature(imageBytes, fileName, pathContext);
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
@@ -44,7 +44,7 @@ public class OneDriveSignatureStorageService implements SignatureStorageService 
     @Override
     public byte[] loadSignature(String reference) {
         try {
-            return oneDriveService.downloadFile(reference);
+            return cloudStorageAdapter.downloadFile(reference);
         } catch (Exception e) {
             logger.error("Could not read signature file from OneDrive: {}", e.getMessage(), e);
             return new byte[0];
@@ -54,7 +54,7 @@ public class OneDriveSignatureStorageService implements SignatureStorageService 
     @Override
     public boolean deleteSignature(String reference) {
         try {
-            oneDriveService.deleteFile(reference);
+            cloudStorageAdapter.deleteFile(reference);
             return true;
         } catch (Exception e) {
             logger.error("Error deleting signature file from OneDrive: {}", e.getMessage(), e);

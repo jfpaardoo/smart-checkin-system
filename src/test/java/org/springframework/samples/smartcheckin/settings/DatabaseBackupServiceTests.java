@@ -1,9 +1,10 @@
 package org.springframework.samples.smartcheckin.settings;
 
+import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter;
+
 import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ class DatabaseBackupServiceTests {
 	private UserRepository userRepository;
 	private FormationRepository formationRepository;
 	private AuditLogRepository auditLogRepository;
-	private OneDriveService oneDriveService;
+	private CloudStorageAdapter cloudStorageAdapter;
 	private DatabaseBackupService backupService;
 
 	@BeforeEach
@@ -24,18 +25,18 @@ class DatabaseBackupServiceTests {
 		userRepository = mock(UserRepository.class);
 		formationRepository = mock(FormationRepository.class);
 		auditLogRepository = mock(AuditLogRepository.class);
-		oneDriveService = mock(OneDriveService.class);
-		backupService = new DatabaseBackupService(userRepository, formationRepository, auditLogRepository, oneDriveService, new ObjectMapper());
+		cloudStorageAdapter = mock(CloudStorageAdapter.class);
+		backupService = new DatabaseBackupService(userRepository, formationRepository, auditLogRepository, cloudStorageAdapter, new ObjectMapper());
 	}
 
 	@Test
-	void testCreateAndUploadBackup() throws IOException {
+	void testCreateAndUploadBackup() throws Exception {
 		when(userRepository.findAll()).thenReturn(List.of());
 		when(formationRepository.findAll()).thenReturn(List.of());
 		when(auditLogRepository.findAll()).thenReturn(List.of());
 
 		backupService.createAndUploadBackup();
 
-		verify(oneDriveService, times(1)).uploadBackup(any(byte[].class), anyString());
+		verify(cloudStorageAdapter, times(1)).uploadBackup(any(byte[].class), anyString());
 	}
 }

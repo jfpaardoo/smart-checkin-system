@@ -28,7 +28,7 @@ class AnalyticsServiceTests {
     private UserRepository userRepository;
     private CheckinRepository checkinRepository;
     private FormationAttendanceRepository attendanceRepository;
-    private FormationRepository formationRepository;
+
     private AnalyticsService analyticsService;
 
     @BeforeEach
@@ -36,7 +36,7 @@ class AnalyticsServiceTests {
         userRepository = mock(UserRepository.class);
         checkinRepository = mock(CheckinRepository.class);
         attendanceRepository = mock(FormationAttendanceRepository.class);
-        formationRepository = mock(FormationRepository.class);
+        FormationRepository formationRepository = mock(FormationRepository.class);
         analyticsService = new AnalyticsService(userRepository, checkinRepository, attendanceRepository, formationRepository);
     }
 

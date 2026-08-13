@@ -19,7 +19,7 @@ export default function UserFormationsTable({
   }
 
   if (attendances && attendances.length > 0) {
-    const sortedAttendances = [...attendances].sort((a, b) => {
+    const sortedAttendances = attendances.slice().sort((a, b) => {
       const aCompleted = !!a.checkOutDate;
       const bCompleted = !!b.checkOutDate;
 

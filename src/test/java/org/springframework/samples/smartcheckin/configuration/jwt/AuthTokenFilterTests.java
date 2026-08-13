@@ -121,4 +121,20 @@ class AuthTokenFilterTests {
         verify(filterChain, times(1)).doFilter(request, response);
         verify(jwtUtils, never()).validateJwtToken(anyString());
     }
+
+    @Test
+    void testDoFilterInternalCookieJwt() throws Exception {
+        when(jwtUtils.getJwtFromCookies(request)).thenReturn("cookieJwtToken");
+        when(jwtUtils.validateJwtToken("cookieJwtToken")).thenReturn(true);
+        when(jwtBlacklistService.isBlacklisted("cookieJwtToken")).thenReturn(false);
+        when(jwtUtils.getUserNameFromJwtToken("cookieJwtToken")).thenReturn("cookieUser");
+
+        UserDetails userDetails = mock(UserDetails.class);
+        when(userDetailsService.loadUserByUsername("cookieUser")).thenReturn(userDetails);
+
+        authTokenFilter.doFilterInternal(request, response, filterChain);
+
+        assertNotNull(SecurityContextHolder.getContext().getAuthentication());
+        verify(filterChain, times(1)).doFilter(request, response);
+    }
 }

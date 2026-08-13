@@ -1,12 +1,77 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import api from '../../services/api';
 import { Table, Badge } from 'reactstrap';
 import { FaShieldAlt, FaSearch, FaDownload } from 'react-icons/fa';
-import tokenService from '../../services/token.service';
 import { TableGhostLoader } from '../../components/GhostLoader';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../components/ToastProvider';
 import { useWebSocket } from '../../context/WebSocketProvider';
+
+
+dayjs.extend(utc);
+
+const handleDownloadCsv = async () => {
+  try {
+    const res = await api.get('/audit/csv', { responseType: 'blob' });
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'audit_logs.csv';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
+  } catch (error) {
+    console.error("Error downloading CSV", error);
+  }
+};
+
+const handleDownloadPdf = async (toast, t) => {
+  try {
+    const res = await api.get('/exports/audit/pdf', { responseType: 'blob' });
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `audit-log-${new Date().toISOString().split('T')[0]}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+    toast.success(t('common.exportSuccess', 'Informe descargado con éxito'));
+  } catch (error) {
+    console.error('Error exporting PDF:', error);
+    toast.error(t('common.networkError', 'Error de conexión con el servidor'));
+  }
+};
+
+
+
+const getActionColor = (action) => {
+  if (action.includes('SECURITY_ANOMALY')) return 'danger';
+  if (action.includes('FAILED')) return 'warning';
+  if (action.includes('SAVE') || action.includes('CREATE') || action.includes('UPDATE')) return 'primary';
+  if (action.includes('DELETE')) return 'danger';
+  if (action.includes('SUCCESS') || action.includes('APPROVE')) return 'success';
+  if (action.includes('FORMATION') || action.includes('2FA')) return 'info';
+  return 'secondary';
+};
+
+const formatDetails = (action, details, t) => {
+  if (!details) return t(`audit.details.${action}`, action);
+  
+  try {
+    // Intentamos parsear si los detalles vienen en formato estructurado (nuevo backend JSON)
+    const parsed = JSON.parse(details);
+    // Delegamos en i18next la interpolación. La clave base es audit.details.ACCION. 
+    // Si no existe la traducción, usamos un fallback al mensaje que pudiera venir en el JSON.
+    return t(`audit.details.${action}`, parsed.message || action, parsed);
+  } catch {
+    // Return raw string if JSON parsing fails for legacy logs
+    return details;
+  }
+};
 
 export default function AuditDashboard() {
   const [logs, setLogs] = useState([]);
@@ -16,9 +81,22 @@ export default function AuditDashboard() {
   const toast = useToast();
   const { stompClient, isConnected } = useWebSocket();
 
+  const fetchLogs = useCallback(() => {
+    api.get('/audit')
+      .then(response => {
+        setLogs(response.data);
+      })
+      .catch(error => {
+        console.error("Error fetching audit logs", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
   useEffect(() => {
     fetchLogs();
-  }, []);
+  }, [fetchLogs]);
 
   useEffect(() => {
     let auditSub = null;
@@ -33,35 +111,7 @@ export default function AuditDashboard() {
         auditSub.unsubscribe();
       }
     };
-  }, [isConnected, stompClient, toast]);
-
-  const fetchLogs = async () => {
-    try {
-      const response = await fetch('/api/v1/audit', {
-        headers: {
-          Authorization: `Bearer ${tokenService.getLocalAccessToken()}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setLogs(data);
-      }
-    } catch (error) {
-      console.error("Error fetching audit logs", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getActionColor = (action) => {
-    if (action.includes('SECURITY_ANOMALY')) return 'danger';
-    if (action.includes('FAILED')) return 'warning';
-    if (action.includes('SAVE') || action.includes('CREATE') || action.includes('UPDATE')) return 'primary';
-    if (action.includes('DELETE')) return 'danger';
-    if (action.includes('SUCCESS') || action.includes('APPROVE')) return 'success';
-    if (action.includes('FORMATION') || action.includes('2FA')) return 'info';
-    return 'secondary';
-  };
+  }, [isConnected, stompClient, fetchLogs, toast]);
 
   const filteredLogs = logs.filter(log => 
     (log.action || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -69,102 +119,8 @@ export default function AuditDashboard() {
     (log.details || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDownloadCsv = async () => {
-    try {
-      const response = await fetch('/api/v1/audit/csv', {
-        headers: {
-          Authorization: `Bearer ${tokenService.getLocalAccessToken()}`
-        }
-      });
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'audit_logs.csv';
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        a.remove();
-      }
-    } catch (error) {
-      console.error("Error downloading CSV", error);
-    }
-  };
 
-  const handleDownloadPdf = async () => {
-    try {
-      const response = await fetch('/api/v1/exports/audit/pdf', {
-        headers: {
-          Authorization: `Bearer ${tokenService.getLocalAccessToken()}`
-        }
-      });
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `audit-log-${new Date().toISOString().split('T')[0]}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
-        toast.success(t('common.exportSuccess', 'Informe descargado con éxito'));
-      } else {
-        toast.error(t('common.exportError', 'Error al generar la descarga del informe'));
-      }
-    } catch (error) {
-      console.error('Error exporting PDF:', error);
-      toast.error(t('common.networkError', 'Error de conexión con el servidor'));
-    }
-  };
 
-  const EXACT_MATCHES = {
-    'User successfully checked in': ['audit.details.checkinSuccess', 'Usuario fichó entrada correctamente'],
-    'User successfully checked out with signature': ['audit.details.checkoutSuccess', 'Usuario fichó salida correctamente con firma'],
-    'User logged in successfully': ['audit.details.loginSuccess', 'Usuario inició sesión correctamente'],
-    'User logged in successfully using 2FA': ['audit.details.loginSuccess2FA', 'Usuario inició sesión correctamente usando 2FA'],
-    'User changed their password': ['audit.details.passwordChange', 'El usuario cambió su contraseña'],
-    'User enabled Two-Factor Authentication': ['audit.details.2faEnable', 'Usuario habilitó la autenticación en dos pasos'],
-    'User disabled Two-Factor Authentication': ['audit.details.2faDisable', 'Usuario deshabilitó la autenticación en dos pasos'],
-    'Database backup triggered': ['audit.details.dbBackup', 'Se inició copia de seguridad de la base de datos'],
-    'User saved/updated': ['audit.details.userSavedNoName', 'Usuario guardado/actualizado'],
-    'Formation created/updated': ['audit.details.formationSavedNoName', 'Formación guardada/actualizada'],
-    'User updated their profile preferences': ['audit.details.userUpdatePrefs', 'El usuario actualizó sus preferencias de perfil'],
-    'User initiated 2FA setup': ['audit.details.2faSetupInit', 'Usuario inició la configuración de 2FA'],
-    '2FA verification code sent to user': ['audit.details.2faCodeSent', 'Código de verificación 2FA enviado al usuario']
-  };
-
-  const PREFIX_MATCHES = [
-    { prefix: 'Data exported via method: ', key: 'audit.details.dataExported', defaultText: 'Datos exportados mediante método: {{method}}', paramName: 'method' },
-    { prefix: 'User deleted: ID ', key: 'audit.details.userDeleted', defaultText: 'Usuario eliminado: ID {{id}}', paramName: 'id' },
-    { prefix: 'User saved/updated: ', key: 'audit.details.userSaved', defaultText: 'Usuario guardado/actualizado: {{user}}', paramName: 'user' },
-    { prefix: 'Admin created user: ', key: 'audit.details.adminCreatedUser', defaultText: 'Administrador creó al usuario: {{user}}', paramName: 'user' },
-    { prefix: 'Admin updated user: ', key: 'audit.details.adminUpdatedUser', defaultText: 'Administrador actualizó al usuario: {{user}}', paramName: 'user' },
-    { prefix: 'Admin approved user ID: ', key: 'audit.details.adminApprovedUser', defaultText: 'Administrador aprobó al usuario con ID: {{id}}', paramName: 'id' },
-    { prefix: 'Formation created/updated: ', key: 'audit.details.formationSaved', defaultText: 'Formación guardada/actualizada: {{form}}', paramName: 'form' },
-    { prefix: 'Formation deleted: ID ', key: 'audit.details.formationDeleted', defaultText: 'Formación eliminada: ID {{id}}', paramName: 'id' },
-    { prefix: 'User checked into formation ID: ', key: 'audit.details.userCheckedInFormation', defaultText: 'Usuario registró asistencia en la formación ID: {{id}}', paramName: 'id' },
-    { prefix: 'Failed login attempt for user: ', key: 'audit.details.failedLogin', defaultText: 'Intento de login fallido para el usuario: {{user}}', paramName: 'user' }
-  ];
-
-  const formatDetails = (details) => {
-    if (!details) return '';
-    
-    if (EXACT_MATCHES[details]) {
-      const [key, fallback] = EXACT_MATCHES[details];
-      return t(key, fallback);
-    }
-
-    for (const { prefix, key, defaultText, paramName } of PREFIX_MATCHES) {
-      if (details.startsWith(prefix)) {
-        const paramValue = details.replace(prefix, '');
-        return t(key, defaultText, { [paramName]: paramValue });
-      }
-    }
-    
-    return details;
-  };
 
   return (
     <div className="da-container">
@@ -179,7 +135,7 @@ export default function AuditDashboard() {
           <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto justify-center">
             <button 
               type="button" 
-              className="inline-flex items-center justify-center px-5 py-2.5 bg-white/80 hover:bg-white text-slate-800 font-semibold text-sm rounded-full transition-all border border-white shadow-[0_8px_25px_rgba(0,0,0,0.06),inset_0_1px_2px_rgba(255,255,255,1)] backdrop-blur-xl active:scale-95 hover:-translate-y-0.5 gap-2 w-full sm:w-auto" 
+              className="inline-flex items-center justify-center px-5 py-2.5 bg-white/80 hover:bg-white text-slate-800 font-semibold text-sm rounded-full transition border border-white shadow-[0_8px_25px_rgba(0,0,0,0.06),inset_0_1px_2px_rgba(255,255,255,1)] backdrop-blur-xl active:scale-95 hover:-translate-y-0.5 gap-2 w-full sm:w-auto" 
               onClick={handleDownloadCsv}
             >
               <FaDownload className="text-[#b3c34c]" /> 
@@ -187,8 +143,8 @@ export default function AuditDashboard() {
             </button>
             <button 
               type="button" 
-              className="inline-flex items-center justify-center px-5 py-2.5 bg-white/80 hover:bg-white text-slate-800 font-semibold text-sm rounded-full transition-all border border-white shadow-[0_8px_25px_rgba(0,0,0,0.06),inset_0_1px_2px_rgba(255,255,255,1)] backdrop-blur-xl active:scale-95 hover:-translate-y-0.5 gap-2 w-full sm:w-auto" 
-              onClick={handleDownloadPdf}
+              className="inline-flex items-center justify-center px-5 py-2.5 bg-white/80 hover:bg-white text-slate-800 font-semibold text-sm rounded-full transition border border-white shadow-[0_8px_25px_rgba(0,0,0,0.06),inset_0_1px_2px_rgba(255,255,255,1)] backdrop-blur-xl active:scale-95 hover:-translate-y-0.5 gap-2 w-full sm:w-auto" 
+              onClick={() => handleDownloadPdf(toast, t)}
             >
               <FaDownload className="text-[#b3c34c]" /> 
               <span>{t('audit.exportPDF', 'Exportar a PDF')}</span>
@@ -205,6 +161,8 @@ export default function AuditDashboard() {
         <div className="mb-4 position-relative">
           <FaSearch className="position-absolute da-search-bar-icon" />
           <input
+            id="auditSearchInput"
+            name="auditSearchInput"
             type="text"
             className="form-control da-glass-search-input w-100"
             placeholder={t('audit.searchPlaceholder', 'Buscar por acción, usuario o detalles...')}
@@ -233,7 +191,7 @@ export default function AuditDashboard() {
                   {filteredLogs.map(log => (
                     <tr key={log.id} className={log.action === 'SECURITY_ANOMALY' ? 'table-danger border-danger' : ''}>
                       <td className={`small fw-medium ${log.action === 'SECURITY_ANOMALY' ? 'text-danger fw-bold' : 'text-muted'}`}>
-                        {moment.utc(log.timestamp).local().format('DD/MM/YYYY HH:mm:ss')}
+                        {dayjs.utc(log.timestamp).local().format('DD/MM/YYYY HH:mm:ss')}
                       </td>
                       <td>
                         <Badge color={getActionColor(log.action)} pill className="px-3 py-2 fw-semibold text-wrap" style={{ wordBreak: 'break-all', minWidth: '100px' }}>
@@ -241,7 +199,7 @@ export default function AuditDashboard() {
                         </Badge>
                       </td>
                       <td className="fw-bold text-dark">{log.username}</td>
-                      <td className="text-muted small">{formatDetails(log.details)}</td>
+                      <td className="text-muted small">{formatDetails(log.action, log.details, t)}</td>
                       <td><code className="text-secondary bg-light px-2 py-1 rounded">{log.ipAddress || 'N/A'}</code></td>
                     </tr>
                   ))}
@@ -264,7 +222,7 @@ export default function AuditDashboard() {
                     <div className="flex justify-between items-start gap-3">
                       <div>
                         <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
-                          {moment.utc(log.timestamp).local().format('DD/MM/YYYY HH:mm:ss')}
+                          {dayjs.utc(log.timestamp).local().format('DD/MM/YYYY HH:mm:ss')}
                         </span>
                         <h3 className="font-bold text-slate-800 m-0 text-base mt-0.5">{log.username || 'Sistema'}</h3>
                       </div>
@@ -277,7 +235,7 @@ export default function AuditDashboard() {
 
                     <div className="text-xs text-slate-600 bg-white/40 rounded-xl p-3 border border-white/50 shadow-inner">
                       <span className="font-semibold text-slate-700 block mb-1">{t('audit.columns.details', 'Detalles')}:</span>
-                      {formatDetails(log.details)}
+                      {formatDetails(log.action, log.details, t)}
                     </div>
 
                     <div className="flex items-center justify-between border-t border-slate-200/50 pt-3 text-xs text-slate-500">

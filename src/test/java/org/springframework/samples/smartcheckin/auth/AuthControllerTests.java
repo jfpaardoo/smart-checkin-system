@@ -19,6 +19,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.samples.smartcheckin.audit.AnomalyDetectionService;
@@ -30,6 +31,8 @@ import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsServiceImpl;
 import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
+import org.springframework.samples.smartcheckin.notifications.EmailNotificationSender;
+import org.springframework.samples.smartcheckin.notifications.PushNotificationSender;
 import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.samples.smartcheckin.user.AuthoritiesService;
@@ -97,6 +100,12 @@ class AuthControllerTests {
 	@MockitoBean
 	private JavaMailSender javaMailSender;
 
+	@MockitoBean
+	private EmailNotificationSender emailNotificationSender;
+
+	@MockitoBean
+	private PushNotificationSender pushNotificationSender;
+
 	@Autowired
 	@SuppressWarnings("java:S6813")
 	private ObjectMapper objectMapper;
@@ -119,6 +128,7 @@ class AuthControllerTests {
 	private LoginRequest loginRequest;
 	private UserDetailsImpl userDetails;
 	private String token;
+	private ResponseCookie jwtCookie;
 
 	@BeforeEach
 	void setup() {
@@ -129,14 +139,15 @@ class AuthControllerTests {
 		userDetails = new UserDetailsImpl(1, loginRequest.getUsername(), loginRequest.getPassword(),
 				List.of(new SimpleGrantedAuthority("OWNER")));
 
-		token = "JWT TOKEN";
+		token = "JWT_TOKEN";
+		jwtCookie = ResponseCookie.from("jwt", token).path("/api").maxAge(24 * 60 * 60).httpOnly(true).build();
 	}
 
 	@Test
 	void shouldAuthenticateUser() throws Exception {
 		Authentication auth = mock(Authentication.class);
 
-		when(this.jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn(token);
+		when(this.jwtUtils.generateJwtCookie(any(Authentication.class))).thenReturn(jwtCookie);
 		when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
 		doReturn(userDetails).when(auth).getPrincipal();
 
@@ -215,7 +226,7 @@ class AuthControllerTests {
 		when(userService.findUser(USER1)).thenReturn(user);
 		when(totpService.validateCode(SECRET, VALID_TOTP_CODE)).thenReturn(true);
 		when(userDetailsService.loadUserByUsername(USER1)).thenReturn(userDetails);
-		when(jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn(MOCK_JWT_LITERAL);
+		when(jwtUtils.generateJwtCookie(any(Authentication.class))).thenReturn(ResponseCookie.from("jwt", MOCK_JWT_LITERAL).path("/api").maxAge(24 * 60 * 60).httpOnly(true).build());
 
 		mockMvc.perform(post(BASE_URL + VERIFY_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req)))
@@ -262,10 +273,11 @@ class AuthControllerTests {
 
 	@Test
 	void shouldValidateToken() throws Exception {
-		when(this.jwtUtils.validateJwtToken(token)).thenReturn(true);
+		when(jwtUtils.validateJwtToken(MOCK_JWT_LITERAL)).thenReturn(true);
+		when(jwtUtils.getJwtFromCookies(any())).thenReturn(MOCK_JWT_LITERAL);
 
-		mockMvc.perform(get(BASE_URL + "/validate").with(csrf()).contentType(MediaType.APPLICATION_JSON)
-				.param("token", token)).andExpect(status().isOk())
+		mockMvc.perform(get(BASE_URL + "/validate").header("Authorization", "Bearer " + MOCK_JWT_LITERAL))
+				.andExpect(status().isOk())
 				.andExpect(jsonPath("$").value(true));
 	}
 
@@ -327,7 +339,7 @@ class AuthControllerTests {
 
 		when(userService.findUser(loginRequest.getUsername())).thenReturn(user);
 		Authentication auth = mock(Authentication.class);
-		when(this.jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn(token);
+		when(this.jwtUtils.generateJwtCookie(any(Authentication.class))).thenReturn(jwtCookie);
 		when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
 		doReturn(userDetails).when(auth).getPrincipal();
 
@@ -372,7 +384,7 @@ class AuthControllerTests {
         Authentication auth = mock(Authentication.class);
         when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
         doReturn(userDetails).when(auth).getPrincipal();
-        when(this.jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn(token);
+        when(this.jwtUtils.generateJwtCookie(any(Authentication.class))).thenReturn(jwtCookie);
 
         mockMvc.perform(post(SIGNIN_URL).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -405,14 +417,17 @@ class AuthControllerTests {
     }
 
 	@Test
-    void shouldLogoutUserSuccessfully() throws Exception {
-        mockMvc.perform(post(LOGOUT_URL).with(csrf())
-                .header("Authorization", "Bearer MOCK_VALID_JWT_TOKEN"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Log out successful!"));
+	void shouldLogoutUserSuccessfully() throws Exception {
+		when(jwtUtils.getJwtFromCookies(any())).thenReturn("MOCK_VALID_JWT_TOKEN");
+		when(jwtUtils.getCleanJwtCookie()).thenReturn(ResponseCookie.from("jwt", "").path("/api").maxAge(0).build());
+		
+		mockMvc.perform(post(LOGOUT_URL).with(csrf())
+				.header("Authorization", "Bearer MOCK_VALID_JWT_TOKEN"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.message").value("Log out successful!"));
 
-        verify(jwtBlacklistService, times(1)).blacklistToken("MOCK_VALID_JWT_TOKEN");
-    }
+		verify(jwtBlacklistService, times(1)).blacklistToken("MOCK_VALID_JWT_TOKEN");
+	}
 
     @Test
     void shouldVerifyTwoFactorUserNotFound() throws Exception {
@@ -442,7 +457,7 @@ class AuthControllerTests {
         when(userService.findUser(USER1)).thenReturn(user);
         when(totpService.validateCode(SECRET, VALID_TOTP_CODE)).thenReturn(true);
         when(userDetailsService.loadUserByUsername(USER1)).thenReturn(userDetails);
-        when(jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn(MOCK_JWT_LITERAL);
+        when(jwtUtils.generateJwtCookie(any(Authentication.class))).thenReturn(ResponseCookie.from("jwt", MOCK_JWT_LITERAL).path("/api").maxAge(24 * 60 * 60).httpOnly(true).build());
 
         mockMvc.perform(post(BASE_URL + VERIFY_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))

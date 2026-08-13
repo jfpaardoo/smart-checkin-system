@@ -31,11 +31,12 @@ test.describe('Flujo de Gestión y Edición de Formaciones por Administrador (Ad
       });
     });
 
-    // Mock Admin JWT token in localStorage (valid base64 header.payload.signature)
-    const adminJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbjEiLCJhdXRob3JpdGllcyI6WyJBRE1JTiJdfQ.signature";
-    await page.addInitScript((token) => {
-      window.localStorage.setItem('jwt', JSON.stringify(token));
-    }, adminJwt);
+    // Mock Admin JWT and User token in localStorage (valid base64 header.payload.signature)
+  const adminJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbjEiLCJhdXRob3JpdGllcyI6WyJBRE1JTiJdfQ.signature";
+  await page.addInitScript((token) => {
+    window.localStorage.setItem('jwt', JSON.stringify(token));
+    window.localStorage.setItem('user', JSON.stringify({ username: 'admin1', roles: ['ADMIN'], authority: { authority: 'ADMIN' } }));
+  }, adminJwt);
 
     // Navigate to Formations Management page
     await page.goto('/formations');

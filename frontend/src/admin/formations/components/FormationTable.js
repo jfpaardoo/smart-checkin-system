@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUsers } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'react-i18next';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { TableGhostLoader } from '../../../components/GhostLoader';
 
 export default function FormationTable({ formations, loading }) {
@@ -46,7 +46,7 @@ export default function FormationTable({ formations, loading }) {
                 <tr key={formation.id}>
                   <td className="font-semibold">{formation.name}</td>
                   <td className="max-w-[200px] truncate">{formation.description}</td>
-                  <td>{moment(formation.formationDate).format('YYYY-MM-DD HH:mm')}</td>
+                  <td>{dayjs(formation.formationDate).format('YYYY-MM-DD HH:mm')}</td>
                   <td>
                     <div className="flex flex-col gap-1.5 items-center justify-center">
                       <span className="w-[130px] text-center inline-block py-1.5 px-3 bg-slate-200/80 border border-slate-300/50 shadow-sm text-slate-900 font-bold text-xs rounded-full">
@@ -96,7 +96,7 @@ export default function FormationTable({ formations, loading }) {
                 <div className="flex-1">
                   <h3 className="font-bold text-slate-800 m-0 text-[1.1rem] leading-tight">{formation.name}</h3>
                   <p className="text-xs font-medium text-slate-500 m-0 mt-2">
-                    {moment(formation.formationDate).format('YYYY-MM-DD HH:mm')}
+                    {dayjs(formation.formationDate).format('YYYY-MM-DD HH:mm')}
                   </p>
                 </div>
                 <Button

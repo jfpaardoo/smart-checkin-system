@@ -19,12 +19,15 @@ import dev.samstevens.totp.exceptions.CodeGenerationException;
 @SuppressWarnings("null")
 class TotpServiceTests {
 
+	private static final String TEST_SECRET_KEY = "TEST_SECRET_KEY_12345";
+	private static final String DEFAULT_TOKEN = "123456";
+
 	private TotpService totpService;
 
 	@BeforeEach
 	void setUp() {
 		totpService = new TotpService();
-		ReflectionTestUtils.setField(totpService, "secret", "TEST_SECRET_KEY_12345");
+		ReflectionTestUtils.setField(totpService, "secret", TEST_SECRET_KEY);
 	}
 
 	@Test
@@ -60,9 +63,9 @@ class TotpServiceTests {
 
 	@Test
 	void testValidateCode() {
-		assertFalse(totpService.validateCode(null, "123456"));
+		assertFalse(totpService.validateCode(null, DEFAULT_TOKEN));
 		assertFalse(totpService.validateCode("SECRET", null));
-		assertFalse(totpService.validateCode(" ", "123456"));
+		assertFalse(totpService.validateCode(" ", DEFAULT_TOKEN));
 	}
 
 	@Test
@@ -82,60 +85,156 @@ class TotpServiceTests {
 	}
 
 	@Test
-    void testGetHashedSecretForFormation_NoSuchAlgorithmException() {
-        // Añadir Mockito.CALLS_REAL_METHODS evita corromper la generación interna del TOTP
-        try (MockedStatic<MessageDigest> mockedDigest = Mockito.mockStatic(MessageDigest.class, Mockito.CALLS_REAL_METHODS)) {
-            mockedDigest.when(() -> MessageDigest.getInstance("SHA-256"))
-                    .thenThrow(new NoSuchAlgorithmException("Algoritmo simulado no encontrado"));
+	void testGetHashedSecretForFormationNoSuchAlgorithmException() {
+		try (MockedStatic<MessageDigest> mockedDigest = Mockito.mockStatic(MessageDigest.class, Mockito.CALLS_REAL_METHODS)) {
+			mockedDigest.when(() -> MessageDigest.getInstance("SHA-256"))
+					.thenThrow(new NoSuchAlgorithmException("Algoritmo simulado no encontrado"));
 
-            // El bloque catch debería hacer un fallback codificando en Base32 directo sin hashear
-            String token = totpService.getCurrentToken();
-            assertNotNull(token);
-            assertEquals(6, token.length());
-        }
-    }
-
-    @Test
-    void testGetCurrentToken_CodeGeneratorException() {
-        // Inyectamos un generador defectuoso para forzar la excepción al generar el código
-        CodeGenerator brokenGenerator = mock(CodeGenerator.class);
-        
-        try {
-            when(brokenGenerator.generate(anyString(), anyLong()))
-                    .thenThrow(new CodeGenerationException("Error forzado", new RuntimeException()));
-        } catch (CodeGenerationException e) {
-            // No hacemos nada, es solo configuración del mock
-        }
-
-        ReflectionTestUtils.setField(totpService, "codeGenerator", brokenGenerator);
-
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> {
-            totpService.getCurrentToken();
-        });
-
-        assertTrue(ex.getMessage().contains("Error generating TOTP token"));
-    }
+			String token = totpService.getCurrentToken();
+			assertNotNull(token);
+			assertEquals(6, token.length());
+		}
+	}
 
 	@Test
-    void shouldValidateCodeSuccessfully() {
-        String secretKey = "TEST_SECRET_KEY_12345";
-        
-        dev.samstevens.totp.time.TimeProvider timeProvider = new dev.samstevens.totp.time.SystemTimeProvider();
-        long currentBucket = Math.floorDiv(timeProvider.getTime(), 30);
-        
-        dev.samstevens.totp.code.CodeGenerator codeGenerator = new dev.samstevens.totp.code.DefaultCodeGenerator();
-        
-        String validToken = org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> 
-            codeGenerator.generate(secretKey, currentBucket)
-        );
-        
-        boolean isValid = totpService.validateCode(secretKey, validToken);
-        assertTrue(isValid);
-    }
+	void testGetCurrentTokenCodeGeneratorException() {
+		CodeGenerator brokenGenerator = mock(CodeGenerator.class);
+		
+		try {
+			when(brokenGenerator.generate(anyString(), anyLong()))
+					.thenThrow(new CodeGenerationException("Error forzado", new RuntimeException()));
+		} catch (CodeGenerationException e) {
+			// mock config only
+		}
 
-    @Test
-    void shouldFailValidateCodeWithInvalidFormatOrEmpty() {
-        assertFalse(totpService.validateCode("SECRET", ""));
-        assertFalse(totpService.validateCode("   ", "123456"));
-    }
+		ReflectionTestUtils.setField(totpService, "codeGenerator", brokenGenerator);
+
+		RuntimeException ex = assertThrows(RuntimeException.class, () -> totpService.getCurrentToken());
+
+		assertTrue(ex.getMessage().contains("Error generating TOTP token"));
+	}
+
+	@Test
+	void shouldValidateCodeSuccessfully() {
+		dev.samstevens.totp.time.TimeProvider timeProvider = new dev.samstevens.totp.time.SystemTimeProvider();
+		long currentBucket = Math.floorDiv(timeProvider.getTime(), 30);
+		
+		CodeGenerator codeGenerator = new dev.samstevens.totp.code.DefaultCodeGenerator();
+		
+		String validToken = assertDoesNotThrow(() -> 
+			codeGenerator.generate(TEST_SECRET_KEY, currentBucket)
+		);
+		
+		boolean isValid = totpService.validateCode(TEST_SECRET_KEY, validToken);
+		assertTrue(isValid);
+	}
+
+	@Test
+	void shouldFailValidateCodeWithInvalidFormatOrEmpty() {
+		assertFalse(totpService.validateCode("SECRET", ""));
+		assertFalse(totpService.validateCode("   ", DEFAULT_TOKEN));
+	}
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// generateCode
+	// ══════════════════════════════════════════════════════════════════════════
+
+	@Test
+	void testGenerateCodeNullSecretReturnsNull() {
+		assertNull(totpService.generateCode(null));
+	}
+
+	@Test
+	void testGenerateCodeBlankSecretReturnsNull() {
+		assertNull(totpService.generateCode("   "));
+	}
+
+	@Test
+	void testGenerateCodeEmptySecretReturnsNull() {
+		assertNull(totpService.generateCode(""));
+	}
+
+	@Test
+	void testGenerateCodeValidSecretReturns6DigitToken() {
+		String code = totpService.generateCode(TEST_SECRET_KEY);
+		assertNotNull(code);
+		assertEquals(6, code.length());
+	}
+
+	@Test
+	void testGenerateCodeBrokenGeneratorThrowsRuntimeException() {
+		CodeGenerator brokenGenerator = mock(CodeGenerator.class);
+		try {
+			when(brokenGenerator.generate(anyString(), anyLong()))
+					.thenThrow(new CodeGenerationException("Error", new RuntimeException()));
+		} catch (CodeGenerationException e) {
+			// setup only
+		}
+		ReflectionTestUtils.setField(totpService, "codeGenerator", brokenGenerator);
+
+		RuntimeException ex = assertThrows(RuntimeException.class,
+				() -> totpService.generateCode("SOME_SECRET"));
+		assertTrue(ex.getMessage().contains("Error generating TOTP token for secret"));
+	}
+
+	// ══════════════════════════════════════════════════════════════════════════
+	// cacheAdminLocation & getCachedAdminLocation
+	// ══════════════════════════════════════════════════════════════════════════
+
+	@Test
+	void testCacheAdminLocationNullLatDoesNotCache() {
+		totpService.cacheAdminLocation(1, null, 10.0);
+		assertNull(totpService.getCachedAdminLocation(1));
+	}
+
+	@Test
+	void testCacheAdminLocationNullLngDoesNotCache() {
+		totpService.cacheAdminLocation(2, 40.0, null);
+		assertNull(totpService.getCachedAdminLocation(2));
+	}
+
+	@Test
+	void testCacheAdminLocationBothNullDoesNotCache() {
+		totpService.cacheAdminLocation(3, null, null);
+		assertNull(totpService.getCachedAdminLocation(3));
+	}
+
+	@Test
+	void testCacheAdminLocationValidCoordsCachedSuccessfully() {
+		totpService.cacheAdminLocation(10, 40.416775, -3.703790);
+		double[] cached = totpService.getCachedAdminLocation(10);
+		assertNotNull(cached);
+		assertEquals(40.416775, cached[0], 0.000001);
+		assertEquals(-3.703790, cached[1], 0.000001);
+	}
+
+	@Test
+	void testCacheAdminLocationNullFormationIdUsesGlobalKey() {
+		totpService.cacheAdminLocation(null, 51.5074, -0.1278);
+		double[] cached = totpService.getCachedAdminLocation(null);
+		assertNotNull(cached);
+		assertEquals(51.5074, cached[0], 0.000001);
+	}
+
+	@Test
+	void testGetCachedAdminLocationNonExistentKeyReturnsNull() {
+		assertNull(totpService.getCachedAdminLocation(999999));
+	}
+
+	@Test
+	void testGetCachedAdminLocationNullFormationIdUsesGlobalKeyAndReturnsNull() {
+		TotpService fresh = new TotpService();
+		ReflectionTestUtils.setField(fresh, "secret", TEST_SECRET_KEY);
+		assertNull(fresh.getCachedAdminLocation(null));
+	}
+
+	@Test
+	void testGetCachedAdminLocationAfterCacheReturnsCorrectValues() {
+		totpService.cacheAdminLocation("FORM_99", 48.8566, 2.3522);
+		double[] result = totpService.getCachedAdminLocation("FORM_99");
+		assertNotNull(result);
+		assertEquals(2, result.length);
+		assertEquals(48.8566, result[0], 0.0001);
+		assertEquals(2.3522, result[1], 0.0001);
+	}
 }

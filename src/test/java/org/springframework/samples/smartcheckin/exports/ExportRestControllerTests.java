@@ -19,6 +19,7 @@ import org.springframework.samples.smartcheckin.checkin.Checkin;
 import org.springframework.samples.smartcheckin.checkin.CheckinRepository;
 import org.springframework.samples.smartcheckin.checkin.CheckinType;
 import org.springframework.samples.smartcheckin.configuration.SecurityConfiguration;
+import org.springframework.samples.smartcheckin.exports.strategy.ExportFactory;
 import org.springframework.samples.smartcheckin.formation.Formation;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.samples.smartcheckin.formation.FormationAttendanceRepository;
@@ -35,7 +36,13 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import org.springframework.context.annotation.Import;
+import org.springframework.samples.smartcheckin.exports.strategy.CsvExportStrategy;
+import org.springframework.samples.smartcheckin.exports.strategy.ExcelExportStrategy;
+import org.springframework.samples.smartcheckin.exports.strategy.PdfExportStrategy;
+
 @WebMvcTest(controllers = ExportRestController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebSecurityConfigurer.class), excludeAutoConfiguration = SecurityConfiguration.class)
+@Import({ExportFactory.class, CsvExportStrategy.class, ExcelExportStrategy.class, PdfExportStrategy.class})
 class ExportRestControllerTests {
 
 	private static final String BASE_URL = "/api/v1/exports";

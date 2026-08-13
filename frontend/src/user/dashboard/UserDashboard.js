@@ -5,15 +5,17 @@ import { useToast } from '../../components/ToastProvider';
 import useFetchState from '../../util/useFetchState';
 import tokenService from '../../services/token.service';
 import { useSubscription } from '../../hooks/useSubscription';
+import api from '../../services/api';
 import UserFormationsTable from './components/UserFormationsTable';
 import CheckoutModal from './components/CheckoutModal';
+import FormationDetailsModal from './components/FormationDetailsModal';
 import '../../App.css';
 import '../../static/css/admin/adminPage.css';
 
 export default function UserDashboard() {
   const { t } = useTranslation();
   const toast = useToast();
-  const jwt = tokenService.getLocalAccessToken();
+  const jwt = tokenService.getUser();
   const user = tokenService.getUser();
 
   const [attendances, setAttendances, isLoading] = useFetchState(
@@ -23,30 +25,25 @@ export default function UserDashboard() {
   );
 
   const reloadUserFormations = () => {
-    fetch("/api/v1/users/me/formations", {
-      headers: { Authorization: `Bearer ${jwt}` },
-    })
-      .then((r) => r.json())
-      .then((data) => setAttendances(data))
+    api.get("/users/me/formations")
+      .then((r) => setAttendances(r.data))
       .catch((e) => console.error("Error updating user formations via WS", e));
   };
 
   useSubscription('/topic/formations', reloadUserFormations);
 
   const [detailsModal, setDetailsModal] = useState(false);
+  const [checkoutModal, setCheckoutModal] = useState(false);
   const [selectedAtt, setSelectedAtt] = useState(null);
-  const [modalStep, setModalStep] = useState('details');
 
   const openDetails = (attendance) => {
     setSelectedAtt(attendance);
-    setModalStep('details');
     setDetailsModal(true);
   };
 
   const handleOpenCheckout = (attendance) => {
     setSelectedAtt(attendance);
-    setModalStep('scan');
-    setDetailsModal(true);
+    setCheckoutModal(true);
   };
 
   const handleCheckoutSubmit = async (signatureBase64, manualCheckoutCode) => {
@@ -56,26 +53,15 @@ export default function UserDashboard() {
         token: manualCheckoutCode || undefined
       };
 
-      const response = await fetch(`/api/v1/formations/${selectedAtt.formation.id}/checkout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "Authorization": `Bearer ${jwt}` 
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || t('dashboard.checkoutError'));
-      }
+      await api.post(`/formations/${selectedAtt.formation.id}/checkout`, payload);
 
       toast.success(t('dashboard.checkoutSuccess'));
+      setCheckoutModal(false);
       reloadUserFormations();
 
     } catch (error) {
-      toast.error(error.message || t('dashboard.checkoutError'));
+      const msg = error.response?.data?.message || t('dashboard.checkoutError');
+      toast.error(msg);
     }
   };
 
@@ -87,7 +73,7 @@ export default function UserDashboard() {
         </h2>
         
         <div className="flex justify-center mb-10 w-full">
-          <Link to="/checkin" className="da-btn-primary px-8 py-4 text-lg font-bold rounded-full w-full md:w-auto text-center shadow-lg hover:shadow-xl transition-all duration-400 ease-out hover:-translate-y-1">
+          <Link to="/checkin" className="da-btn-primary px-8 py-4 text-lg font-bold rounded-full w-full md:w-auto text-center shadow-lg hover:shadow-xl transition duration-400 ease-out hover:-translate-y-1">
             {t('dashboard.scannerButton')}
           </Link>
         </div>
@@ -104,12 +90,17 @@ export default function UserDashboard() {
         />
       </div>
 
-      <CheckoutModal 
+      <FormationDetailsModal 
         isOpen={detailsModal}
         onClose={() => setDetailsModal(false)}
         selectedAtt={selectedAtt}
+      />
+
+      <CheckoutModal 
+        isOpen={checkoutModal}
+        onClose={() => setCheckoutModal(false)}
+        selectedAtt={selectedAtt}
         onSubmitCheckout={handleCheckoutSubmit}
-        initialStep={modalStep}
       />
     </div>
   );

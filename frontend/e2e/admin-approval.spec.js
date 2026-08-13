@@ -68,11 +68,12 @@ test.describe('Flujo de Aprobación por Administrador (Admin Approval E2E)', () 
       });
     });
 
-    // Inyectar Admin JWT en localStorage
-    const validAdminJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImF1dGhvcml0aWVzIjpbIkFETUlOIl0sImV4cCI6MjUzNDAyMzAwNzk5fQ.mock";
-    await page.addInitScript((token) => {
-      window.localStorage.setItem('jwt', JSON.stringify(token));
-    }, validAdminJwt);
+    // Inyectar Admin JWT y Usuario en localStorage
+  const validAdminJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImF1dGhvcml0aWVzIjpbIkFETUlOIl0sImV4cCI6MjUzNDAyMzAwNzk5fQ.mock";
+  await page.addInitScript((token) => {
+    window.localStorage.setItem('jwt', JSON.stringify(token));
+    window.localStorage.setItem('user', JSON.stringify({ username: 'admin', roles: ['ADMIN'], authority: { authority: 'ADMIN' } }));
+  }, validAdminJwt);
 
     // 1. Cargar aplicación en la raíz
     await page.goto('/');

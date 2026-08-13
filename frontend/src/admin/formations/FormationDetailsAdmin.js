@@ -4,7 +4,7 @@ import { Button, Collapse } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faQrcode, faPencil, faTrash, faFileLines, faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
-import moment from "moment";
+import dayjs from "dayjs";
 import getIdFromUrl from "../../util/getIdFromUrl";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import { getFileIconAndType, getCleanFileInfo } from "../../utils/fileUtils";
@@ -73,7 +73,7 @@ export default function FormationDetailsAdmin() {
           <h4>{t('formationDetails.description')}</h4>
           <p>{formation.description}</p>
           <h4>{t('formationDetails.dateTime')}</h4>
-          <p>{moment(formation.formationDate).format('YYYY-MM-DD HH:mm')}</p>
+          <p>{dayjs(formation.formationDate).format('YYYY-MM-DD HH:mm')}</p>
 
           {formation.documentUrls && formation.documentUrls.length > 0 && (
             <div className="formation-document-section mt-4 pt-3 border-top" style={{ borderColor: 'rgba(255, 255, 255, 0.4)' }}>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useToast } from "../../components/ToastProvider";
 import FormGenerator from "../../components/formGenerator/formGenerator";
@@ -11,6 +12,7 @@ export default function Login() {
   const { t } = useTranslation();
   const toast = useToast();
   
+  const navigate = useNavigate();
   const [requires2FA, setRequires2FA] = useState(false);
   const [username2FA, setUsername2FA] = useState("");
   const [totpCode, setTotpCode] = useState("");
@@ -43,6 +45,7 @@ export default function Login() {
       const response = await fetch("/api/v1/auth/signin", {
         headers: { "Content-Type": "application/json" },
         method: "POST",
+        credentials: "include",
         body: JSON.stringify(reqBody),
       });
 
@@ -56,8 +59,7 @@ export default function Login() {
         } else {
           toast.success(t('login.success', 'Sesión iniciada con éxito'));
           tokenService.setUser(data);
-          tokenService.updateLocalAccessToken(data.token);
-          setTimeout(() => { window.location.href = "/"; }, 1000);
+          setTimeout(() => { navigate("/"); }, 1000);
         }
       } else if (data.message === "Bad Credentials!") {
         throw new Error(t('login.badCredentials', 'Usuario o contraseña incorrectos'));
@@ -85,6 +87,7 @@ export default function Login() {
       const response = await fetch("/api/v1/auth/verify-2fa", {
         headers: { "Content-Type": "application/json" },
         method: "POST",
+        credentials: "include",
         body: JSON.stringify({ username: username2FA, code: totpCode }),
       });
 
@@ -93,8 +96,7 @@ export default function Login() {
       if (response.status === 200) {
         toast.success(t('login.success'));
         tokenService.setUser(data);
-        tokenService.updateLocalAccessToken(data.token);
-        setTimeout(() => { window.location.href = "/"; }, 1000);
+        setTimeout(() => { navigate("/"); }, 1000);
       } else {
         throw new Error(data.message || "Código 2FA incorrecto.");
       }
@@ -156,7 +158,7 @@ export default function Login() {
                 onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ""))}
                 required
                 autoFocus
-                className="w-full text-center text-3xl tracking-[0.5rem] py-4 rounded-2xl border border-white/50 bg-white/50 backdrop-blur-sm focus:border-[#b3c34c] focus:bg-white/80 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition-all font-mono text-slate-800 shadow-inner"
+                className="w-full text-center text-3xl tracking-[0.5rem] py-4 rounded-2xl border border-white/50 bg-white/50 backdrop-blur-sm focus:border-[#b3c34c] focus:bg-white/80 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition font-mono text-slate-800 shadow-inner"
               />
             </div>
             

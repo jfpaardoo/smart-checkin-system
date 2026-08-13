@@ -63,7 +63,7 @@ class StatisticsObserverTests {
         List<FormationAttendance> list1 = new ArrayList<>();
         for(int i=0; i<10; i++) {
             FormationAttendance a = new FormationAttendance();
-            if(i < 8) a.setCheckInDate(LocalDateTime.now());
+            if(i < 8) a.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
             list1.add(a);
         }
         when(attendanceRepository.findAll()).thenReturn(list1);
@@ -88,7 +88,7 @@ class StatisticsObserverTests {
         List<FormationAttendance> list2 = new ArrayList<>();
         for(int i=0; i<10; i++) {
             FormationAttendance a = new FormationAttendance();
-            a.setCheckInDate(LocalDateTime.now());
+            a.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
             list2.add(a);
         }
         when(attendanceRepository.findAll()).thenReturn(list2);

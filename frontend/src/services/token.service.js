@@ -1,42 +1,27 @@
 class TokenService {
-    getLocalRefreshToken() {
-        const user = JSON.parse(localStorage.getItem("user"));
-        return user?.refreshToken;
-    }
-
-    // getLocalAccessToken() {
-    //     const user = JSON.parse(localStorage.getItem("user"));
-    //     return user?.token;
-    // }
-
-    getLocalAccessToken() {
-        const jwt = JSON.parse(localStorage.getItem("jwt"));
-        return jwt ? jwt : null;
-    }
-
-    updateLocalAccessToken(token) {
-        window.localStorage.setItem("jwt", JSON.stringify(token));
-    }
-
-    // updateLocalAccessToken(token) {
-    //     let user = JSON.parse(localStorage.getItem("user"));
-    //     user.token = token;
-    //     window.localStorage.setItem("user", JSON.stringify(user));
-    // }
-
     getUser() {
-        return JSON.parse(localStorage.getItem("user"));
+        try {
+            const userStr = window.localStorage.getItem("user");
+            if (!userStr) return null;
+            return JSON.parse(userStr);
+        } catch {
+            return null;
+        }
     }
 
     setUser(user) {
-        window.localStorage.setItem("user", JSON.stringify(user));
+        const displayUser = {
+            username: user.username,
+            roles: user.roles,
+            authority: { authority: (user.roles && user.roles.length > 0) ? user.roles[0] : null }
+        };
+        window.localStorage.setItem("user", JSON.stringify(displayUser));
     }
 
     removeUser() {
         window.localStorage.removeItem("user");
-        window.localStorage.removeItem("jwt");
+        window.localStorage.removeItem("jwt"); // Clean up old tokens
     }
-
 }
 const tokenService = new TokenService();
 

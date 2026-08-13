@@ -3,8 +3,23 @@ import { Table, Button, Form, FormGroup } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faFilePdf, faTrash } from "@fortawesome/free-solid-svg-icons";
-import moment from "moment";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import GlassDropdown from "../../../components/GlassDropdown";
+
+dayjs.extend(utc);
+
+// Estilo común para que los 3 botones tengan el mismo ancho y alineación
+const actionButtonStyle = { 
+  width: '100px', // Ancho fijo para los 3 botones
+  height: '34px', // Altura fija
+  padding: '0', 
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '6px',
+  whiteSpace: 'nowrap'
+};
 
 export default function FormationAttendeesTable({
   formation,
@@ -23,8 +38,8 @@ export default function FormationAttendeesTable({
     return <span className="badge-glass-secondary text-xs">{t('formationDetails.statusPending')}</span>;
   };
 
-  const attendeeIds = formation.attendances ? formation.attendances.map(a => a.user.id) : [];
-  const availableUsers = allUsers.filter(u => !attendeeIds.includes(u.id));
+  const attendeeIds = new Set(formation.attendances ? formation.attendances.map(a => a.user.id) : []);
+  const availableUsers = allUsers.filter(u => !attendeeIds.has(u.id));
 
   const [selectedUserId, setSelectedUserId] = React.useState("");
 
@@ -36,21 +51,6 @@ export default function FormationAttendeesTable({
   };
 
   const attendees = formation.attendances || [];
-
-  // Estilo común para que los 3 botones tengan el mismo ancho y alineación
-  const actionButtonStyle = { 
-    width: '100px', // Ancho fijo para los 3 botones
-    height: '34px', // Altura fija
-    padding: '0', 
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px',
-    fontSize: '12px',
-    fontWeight: '700',
-    borderRadius: '17px', // Borde totalmente redondeado
-    flexShrink: 0 
-  };
 
   return (
     <>
@@ -105,8 +105,8 @@ export default function FormationAttendeesTable({
                       <td style={{ color: '#2c3e50', fontWeight: 600, paddingLeft: '1rem' }}>{user.personalCode}</td>
                       <td style={{ color: '#2c3e50' }}>{user.firstName} {user.lastName}</td>
                       <td style={{ color: '#64748b' }}>{user.username}</td>
-                      <td style={{ color: '#64748b' }}>{hasCheckedIn ? moment.utc(att.checkInDate).local().format('HH:mm:ss') : '-'}</td>
-                      <td style={{ color: '#64748b' }}>{isCompleted ? moment.utc(att.checkOutDate).local().format('HH:mm:ss') : '-'}</td>
+                      <td style={{ color: '#64748b' }}>{hasCheckedIn ? dayjs.utc(att.checkInDate).local().format('HH:mm:ss') : '-'}</td>
+                      <td style={{ color: '#64748b' }}>{isCompleted ? dayjs.utc(att.checkOutDate).local().format('HH:mm:ss') : '-'}</td>
                       <td>{renderAttendanceBadge(att)}</td>
                       <td className="text-center" style={{ paddingRight: '1rem' }}>
                         <div className="flex justify-center gap-2 items-center w-full">
@@ -179,8 +179,8 @@ export default function FormationAttendeesTable({
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 border-t border-slate-200/50 pt-3 text-xs text-slate-600">
-                    <div><span className="font-semibold text-slate-500">Check-in:</span> {hasCheckedIn ? moment.utc(att.checkInDate).local().format('HH:mm:ss') : '-'}</div>
-                    <div><span className="font-semibold text-slate-500">Check-out:</span> {isCompleted ? moment.utc(att.checkOutDate).local().format('HH:mm:ss') : '-'}</div>
+                    <div><span className="font-semibold text-slate-500">Check-in:</span> {hasCheckedIn ? dayjs.utc(att.checkInDate).local().format('HH:mm:ss') : '-'}</div>
+                    <div><span className="font-semibold text-slate-500">Check-out:</span> {isCompleted ? dayjs.utc(att.checkOutDate).local().format('HH:mm:ss') : '-'}</div>
                   </div>
 
                   {/* Botones móviles ordenados en grid simétrica (Mismo diseño previo) */}
