@@ -31,21 +31,21 @@ export default function Home() {
     <div className="da-container">
       <div className="da-card home-card text-center py-4 px-4 px-md-5" style={{ maxWidth: '1080px', margin: '1.5rem auto' }}>
         
-        {/* LOGO & TITLE HEADER */}
-        <div className="da-home-header">
-          <div className="da-home-logo-group">
-            <div className="da-home-logo">
+        {/* LOGO & TITLE HEADER (Centrado en móvil, en fila en PC) */}
+        <div className="da-home-header mb-4">
+          <div className="d-flex flex-column flex-md-row align-items-center justify-content-center text-center text-md-start gap-2 gap-md-3">
+            <div className="da-home-logo mb-2 mb-md-0">
               <img
                 src="/favicon.png"
                 alt="la empresa"
                 style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.15)' }}
               />
             </div>
-            <div className="text-start">
+            <div>
               <h2 className="fw-bold mb-0 text-dark" style={{ letterSpacing: '-0.5px' }}>
                 Distribution Academy
               </h2>
-              <span className="text-muted small fw-semibold">
+              <span className="text-muted small fw-semibold d-block mt-1 mt-md-0">
                 {t('home.subtitle', 'Sistema Inteligente de Fichaje y Gestión de Formaciones')}
               </span>
             </div>
@@ -219,26 +219,49 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="da-home-auth-actions">
+            {/* CONTENEDOR FLEX EN COLUMNA CON BOTONES AL 100% DE ANCHO */}
+            <div className="d-flex flex-column align-items-center gap-3 w-100 mx-auto px-2 mt-4" style={{ maxWidth: '280px' }}>
               <Button
                 tag={Link}
                 to="/login"
-                className="da-btn-primary da-home-auth-btn"
+                className="da-btn-primary d-flex align-items-center justify-content-center gap-2 rounded-pill shadow-sm border-0 w-100"
+                style={{ padding: '12px 10px', fontSize: '1rem' }}
               >
-                <FaSignInAlt /> {t('nav.login', 'Iniciar Sesión')}
+                <FaSignInAlt /> 
+                <span>{t('nav.login', 'Iniciar Sesión')}</span>
               </Button>
+              
               <Button
                 tag={Link}
                 to="/register"
-                className="da-btn-secondary da-home-auth-btn"
+                className="da-btn-secondary d-flex align-items-center justify-content-center gap-2 rounded-pill shadow-sm border-0 w-100"
+                style={{ padding: '12px 10px', fontSize: '1rem' }}
               >
-                <FaUserPlus /> {t('nav.register', 'Solicitar Registro')}
+                <FaUserPlus /> 
+                <span>{t('nav.register', 'Solicitar Registro')}</span>
               </Button>
             </div>
           </div>
         )}
 
       </div>
+
+      {/* FOOTER PÚBLICO HOME - POLÍTICA DE PRIVACIDAD */}
+      <div className="text-center mt-4 pb-4" style={{ zIndex: 10 }}>
+        <span className="text-muted" style={{ fontSize: '0.85rem' }}>
+          &copy; {new Date().getFullYear()} Distribution Academy |{' '}
+        </span>
+        <Link 
+          to="/privacy-policy" 
+          className="text-muted fw-bold text-decoration-none" 
+          style={{ fontSize: '0.85rem', transition: 'color 0.2s' }}
+          onMouseOver={(e) => e.target.style.color = '#88982a'}
+          onMouseOut={(e) => e.target.style.color = '#6c757d'}
+        >
+          Política de Privacidad
+        </Link>
+      </div>
+
     </div>
   );
 }

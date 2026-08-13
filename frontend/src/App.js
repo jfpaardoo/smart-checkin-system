@@ -24,6 +24,7 @@ import UserDashboard from "./user/dashboard/UserDashboard";
 import UserProfile from "./user/profile/UserProfile";
 import { ToastProvider } from "./components/ToastProvider";
 import CloudSettingsAdmin from "./admin/settings/CloudSettingsAdmin";
+import PrivacyPolicy from "./legal/PrivacyPolicy";
 
 function ErrorFallback({ error, resetErrorBoundary }) {
   return (
@@ -91,6 +92,9 @@ function App() {
         <AppNavbar />
         <Routes>
           <Route path="/" exact={true} element={<Home />} />
+          {/* Ruta pública siempre accesible */}
+          <Route path="/privacy-policy" exact={true} element={<PrivacyPolicy />} />
+          
           {publicRoutes}
           {userRoutes}
           {adminRoutes}
@@ -101,4 +105,3 @@ function App() {
 }
 
 export default App;
-

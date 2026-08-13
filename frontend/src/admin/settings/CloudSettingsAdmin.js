@@ -83,8 +83,9 @@ export default function CloudSettingsAdmin() {
         
         {/* Cabecera y botón de Backup */}
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mb-4 text-center text-md-start">
-          <h2 className="mb-0 text-dark fw-bold">
-            <FaCloudUploadAlt className="me-2" style={{ color: 'var(--da-primary)' }} /> {t('cloudSettings.title', 'Ajustes de Nube')}
+          <h2 className="mb-0 text-dark fw-bold d-flex flex-column flex-md-row align-items-center">
+            <FaCloudUploadAlt className="mb-2 mb-md-0 me-md-2" style={{ color: 'var(--da-primary)' }} />
+            <span>{t('cloudSettings.title', 'Ajustes de Nube')}</span>
           </h2>
           <Button 
             className="da-btn-primary d-flex align-items-center justify-content-center gap-2" 

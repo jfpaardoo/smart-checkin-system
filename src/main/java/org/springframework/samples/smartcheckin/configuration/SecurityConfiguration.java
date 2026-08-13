@@ -48,10 +48,10 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .headers(headers -> headers
-                    .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
-                    .xssProtection(HeadersConfigurer.XXssConfig::disable)
-                    .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self' https: data: blob:; script-src 'self' https:; style-src 'self' https: 'unsafe-inline'; object-src 'none'"))
-                )
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
+                        .xssProtection(HeadersConfigurer.XXssConfig::disable)
+                        .contentSecurityPolicy(csp -> csp.policyDirectives(
+                                "default-src 'self' https: data: blob:; script-src 'self' https:; style-src 'self' https: 'unsafe-inline'; object-src 'none'")))
                 .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(unauthorizedHandler))
 
                 .authorizeHttpRequests(auth -> auth
@@ -60,7 +60,11 @@ public class SecurityConfiguration {
 
                         // 2. Recursos estáticos, consolas, Service Worker y rutas del frontend/errores
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                        .requestMatchers("/", "/oups", "/index.html", "/manifest.json", "/favicon.ico", "/*.png", "/static/**", "/locales/**", "/error", "/login", "/sw.js").permitAll()
+                        .requestMatchers(
+                                "/", "/oups", "/index.html", "/manifest.json", "/favicon.ico", "/*.png",
+                                "/static/**", "/locales/**", "/error", "/login", "/sw.js",
+                                "/admin/**", "/qr-generator")
+                        .permitAll()
 
                         // 3. Swagger / OpenAPI (solo ADMIN)
                         .requestMatchers(
@@ -71,7 +75,8 @@ public class SecurityConfiguration {
                         .hasAuthority(ADMIN)
 
                         // 4. Endpoints públicos
-                        .requestMatchers("/api/v1/auth/**", "/ws/**", "/api/v1/cloud-settings/oauth/callback").permitAll()
+                        .requestMatchers("/api/v1/auth/**", "/ws/**", "/api/v1/cloud-settings/oauth/callback")
+                        .permitAll()
 
                         // 5. Perfil personal del usuario y configuración de 2FA
                         .requestMatchers(
@@ -80,8 +85,8 @@ public class SecurityConfiguration {
                                 "/api/v1/users/2fa/setup",
                                 "/api/v1/users/2fa/enable",
                                 "/api/v1/users/2fa/disable",
-                                "/api/v1/exports/me/export"
-                        ).authenticated()
+                                "/api/v1/exports/me/export")
+                        .authenticated()
 
                         // 6. Administración y HR
                         .requestMatchers("/api/v1/users/pending", "/api/v1/users/*/approve").hasAuthority(ADMIN)
@@ -97,7 +102,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, FORMATIONS_BASE).hasAuthority(ADMIN)
                         .requestMatchers(HttpMethod.PUT, FORMATIONS_BASE, FORMATIONS_WILDCARD).hasAuthority(ADMIN)
                         .requestMatchers(HttpMethod.DELETE, FORMATIONS_BASE, FORMATIONS_WILDCARD).hasAuthority(ADMIN)
-                        
+
                         // 8. Formaciones GET y checkout permitidos para autenticados
                         .requestMatchers(FORMATIONS_BASE, FORMATIONS_WILDCARD).authenticated()
 
@@ -144,7 +149,7 @@ public class SecurityConfiguration {
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
