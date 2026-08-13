@@ -71,4 +71,41 @@ class NotificationTests {
         update.notify("/topic/formations");
         verify(messagingTemplate, times(1)).convertAndSend("/topic/formations", "UPDATED");
     }
+
+    @Test
+    void testAlertNotificationNullSender() {
+        Notification alert = new AlertNotification(null, "Anomaly detected");
+        alert.notify("admin@example.com");
+        verifyNoInteractions(emailService);
+    }
+
+    @Test
+    void testAuthNotificationNullSender() {
+        Notification auth = new AuthNotification(null, "User logged in");
+        auth.notify("user123");
+        verifyNoInteractions(messagingTemplate);
+    }
+
+    @Test
+    void testTwoFactorNotificationNullSender() {
+        Notification twoFactor = new TwoFactorNotification(null, "123456");
+        twoFactor.notify("user@example.com");
+        verifyNoInteractions(emailService);
+    }
+
+    @Test
+    void testSystemUpdateNotificationNullSender() {
+        Notification update = new SystemUpdateNotification(null, "UPDATED");
+        update.notify("/topic/formations");
+        verifyNoInteractions(messagingTemplate);
+    }
+
+    @Test
+    void testSetSender() {
+        Notification alert = new AlertNotification(null, "Test");
+        alert.setSender(emailSender);
+        alert.notify("admin@example.com");
+        verify(emailService, times(1)).sendEmailWithAttachment("admin@example.com", "Aviso del Sistema", "ATENCIÓN: Test", null, null);
+    }
 }
+

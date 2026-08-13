@@ -138,4 +138,110 @@ class TotpServiceTests {
         assertFalse(totpService.validateCode("SECRET", ""));
         assertFalse(totpService.validateCode("   ", "123456"));
     }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // generateCode
+    // ══════════════════════════════════════════════════════════════════════════
+
+    @Test
+    void generateCode_nullSecret_returnsNull() {
+        assertNull(totpService.generateCode(null));
+    }
+
+    @Test
+    void generateCode_blankSecret_returnsNull() {
+        assertNull(totpService.generateCode("   "));
+    }
+
+    @Test
+    void generateCode_emptySecret_returnsNull() {
+        assertNull(totpService.generateCode(""));
+    }
+
+    @Test
+    void generateCode_validSecret_returns6DigitToken() {
+        String secret = "TEST_SECRET_KEY_12345";
+        String code = totpService.generateCode(secret);
+        assertNotNull(code);
+        assertEquals(6, code.length());
+    }
+
+    @Test
+    void generateCode_brokenGenerator_throwsRuntimeException() {
+        dev.samstevens.totp.code.CodeGenerator brokenGenerator = mock(dev.samstevens.totp.code.CodeGenerator.class);
+        try {
+            when(brokenGenerator.generate(anyString(), anyLong()))
+                    .thenThrow(new dev.samstevens.totp.exceptions.CodeGenerationException("Error", new RuntimeException()));
+        } catch (dev.samstevens.totp.exceptions.CodeGenerationException e) {
+            // setup only
+        }
+        ReflectionTestUtils.setField(totpService, "codeGenerator", brokenGenerator);
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> totpService.generateCode("SOME_SECRET"));
+        assertTrue(ex.getMessage().contains("Error generating TOTP token for secret"));
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // cacheAdminLocation & getCachedAdminLocation
+    // ══════════════════════════════════════════════════════════════════════════
+
+    @Test
+    void cacheAdminLocation_nullLat_doesNotCache() {
+        totpService.cacheAdminLocation(1, null, 10.0);
+        assertNull(totpService.getCachedAdminLocation(1));
+    }
+
+    @Test
+    void cacheAdminLocation_nullLng_doesNotCache() {
+        totpService.cacheAdminLocation(2, 40.0, null);
+        assertNull(totpService.getCachedAdminLocation(2));
+    }
+
+    @Test
+    void cacheAdminLocation_bothNull_doesNotCache() {
+        totpService.cacheAdminLocation(3, null, null);
+        assertNull(totpService.getCachedAdminLocation(3));
+    }
+
+    @Test
+    void cacheAdminLocation_validCoords_cachedSuccessfully() {
+        totpService.cacheAdminLocation(10, 40.416775, -3.703790);
+        double[] cached = totpService.getCachedAdminLocation(10);
+        assertNotNull(cached);
+        assertEquals(40.416775, cached[0], 0.000001);
+        assertEquals(-3.703790, cached[1], 0.000001);
+    }
+
+    @Test
+    void cacheAdminLocation_nullFormationId_usesGlobalKey() {
+        totpService.cacheAdminLocation(null, 51.5074, -0.1278);
+        double[] cached = totpService.getCachedAdminLocation(null);
+        assertNotNull(cached);
+        assertEquals(51.5074, cached[0], 0.000001);
+    }
+
+    @Test
+    void getCachedAdminLocation_nonExistentKey_returnsNull() {
+        assertNull(totpService.getCachedAdminLocation(999999));
+    }
+
+    @Test
+    void getCachedAdminLocation_nullFormationId_usesGlobalKeyAndReturnsNull() {
+        // No entry cached under GLOBAL yet (fresh service)
+        // Confirm it doesn't throw and returns null when not found
+        TotpService fresh = new TotpService();
+        ReflectionTestUtils.setField(fresh, "secret", "TEST_SECRET_KEY_12345");
+        assertNull(fresh.getCachedAdminLocation(null));
+    }
+
+    @Test
+    void getCachedAdminLocation_afterCache_returnsCorrectValues() {
+        totpService.cacheAdminLocation("FORM_99", 48.8566, 2.3522);
+        double[] result = totpService.getCachedAdminLocation("FORM_99");
+        assertNotNull(result);
+        assertEquals(2, result.length);
+        assertEquals(48.8566, result[0], 0.0001);
+        assertEquals(2.3522, result[1], 0.0001);
+    }
 }

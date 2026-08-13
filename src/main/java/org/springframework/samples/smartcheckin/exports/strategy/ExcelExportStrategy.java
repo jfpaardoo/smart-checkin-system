@@ -12,12 +12,10 @@ import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.io.IOException;
 
 @Component
 public class ExcelExportStrategy implements DataExportStrategy {
@@ -25,7 +23,7 @@ public class ExcelExportStrategy implements DataExportStrategy {
     private static final String PERSONAL_CODE = "Personal Code";
 
     @Override
-    public byte[] exportUsers(List<UserAnalyticsDTO> users) throws Exception {
+    public byte[] exportUsers(List<UserAnalyticsDTO> users) throws IOException {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Employees Analytics");
             Row headerRow = sheet.createRow(0);
@@ -58,7 +56,7 @@ public class ExcelExportStrategy implements DataExportStrategy {
     }
 
     @Override
-    public byte[] exportCheckins(List<Checkin> checkins) throws Exception {
+    public byte[] exportCheckins(List<Checkin> checkins) throws IOException {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Checkins");
             Row headerRow = sheet.createRow(0);
@@ -82,7 +80,7 @@ public class ExcelExportStrategy implements DataExportStrategy {
     }
 
     @Override
-    public byte[] exportFormations(List<Formation> formations) throws Exception {
+    public byte[] exportFormations(List<Formation> formations) throws IOException {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             buildFormationsSummarySheet(workbook, formations);
             
@@ -162,11 +160,11 @@ public class ExcelExportStrategy implements DataExportStrategy {
         }
         r.createCell(8).setCellValue(duration);
         r.createCell(9).setCellValue(hasSig ? "YES" : "NO");
-        r.createCell(10).setCellValue(generateVerificationHash(att));
+        r.createCell(10).setCellValue(ExportUtils.generateVerificationHash(att));
     }
     
     @Override
-    public byte[] exportAuditLogs(List<AuditLog> auditLogs) throws Exception {
+    public byte[] exportAuditLogs(List<AuditLog> auditLogs) throws IOException {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Audit Logs");
             Row headerRow = sheet.createRow(0);
@@ -201,34 +199,6 @@ public class ExcelExportStrategy implements DataExportStrategy {
             headerRow.createCell(i).setCellValue(headers[i]);
         }
     }
-    
-    private String generateVerificationHash(FormationAttendance att) {
-        if (att == null) return "N/A";
-        boolean hasSig = att.getSignature() != null && !att.getSignature().trim().isEmpty();
-        if (!hasSig) {
-            return "N/A";
-        }
-        try {
-            String dataToHash = String.format("%d|%s|%d|%s|%s|%s|%s",
-                att.getFormation() != null ? att.getFormation().getId() : 0,
-                att.getFormation() != null && att.getFormation().getFormationDate() != null ? att.getFormation().getFormationDate().toString() : "",
-                att.getUser() != null ? att.getUser().getId() : 0,
-                att.getUser() != null ? att.getUser().getPersonalCode() : "",
-                att.getCheckInDate() != null ? att.getCheckInDate().toString() : "",
-                att.getCheckOutDate() != null ? att.getCheckOutDate().toString() : "",
-                att.getSignature()
-            );
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashBytes = digest.digest(dataToHash.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hashBytes) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
-            }
-            return "SHA256:" + hexString.toString().toUpperCase();
-        } catch (NoSuchAlgorithmException e) {
-            return "HASH_ERROR";
-        }
-    }
 }
+
+

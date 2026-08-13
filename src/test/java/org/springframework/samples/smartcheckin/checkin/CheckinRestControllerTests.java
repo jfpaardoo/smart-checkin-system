@@ -478,4 +478,111 @@ class CheckinRestControllerTests {
             	.content(objectMapper.writeValueAsString(req)))
             	.andExpect(status().isBadRequest());
 	}
-}
+
+	@Test
+	@WithMockUser
+	void qrCheckinInjectsCachedAdminLocationWhenMissing() throws Exception {
+		user.setIsWorking(false);
+		when(userService.findCurrentUser()).thenReturn(user);
+		when(formationService.findAll()).thenReturn(List.of());
+		when(totpService.getCachedAdminLocation(null)).thenReturn(new double[]{40.0, -3.0});
+		when(totpService.verifyToken(DEFAULT_QR_TOKEN)).thenReturn(true);
+		when(checkInService.performCheckIn(user, CheckinType.ENTRADA)).thenReturn(checkin);
+
+		QrCheckinRequest req = new QrCheckinRequest();
+		req.setToken(DEFAULT_QR_TOKEN);
+		req.setUserLat(40.0);
+		req.setUserLng(-3.0);
+		// adminLat and adminLng are null
+
+		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL)
+				.with(csrf())
+				.with(request -> {
+					request.setRemoteAddr("10.0.0.104");
+					return request;
+				})
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req)))
+				.andExpect(status().isCreated());
+	}
+
+	@Test
+	@WithMockUser
+	void qrCheckinMissingUserLocationForbidden() throws Exception {
+		when(userService.findCurrentUser()).thenReturn(user);
+		when(formationService.findAll()).thenReturn(List.of());
+		when(totpService.verifyToken(DEFAULT_QR_TOKEN)).thenReturn(true);
+
+		QrCheckinRequest req = new QrCheckinRequest();
+		req.setToken(DEFAULT_QR_TOKEN);
+		req.setAdminLat(40.0);
+		req.setAdminLng(-3.0);
+		// userLat / userLng are null
+
+		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL)
+				.with(csrf())
+				.with(request -> {
+					request.setRemoteAddr("10.0.0.105");
+					return request;
+				})
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req)))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("Se requiere ubicación GPS activa para fichar."));
+	}
+
+	@Test
+	@WithMockUser
+	void qrCheckinMissingAdminLocationForbidden() throws Exception {
+		when(userService.findCurrentUser()).thenReturn(user);
+		when(formationService.findAll()).thenReturn(List.of());
+		when(totpService.verifyToken(DEFAULT_QR_TOKEN)).thenReturn(true);
+		when(totpService.getCachedAdminLocation(null)).thenReturn(null);
+
+		QrCheckinRequest req = new QrCheckinRequest();
+		req.setToken(DEFAULT_QR_TOKEN);
+		req.setUserLat(40.0);
+		req.setUserLng(-3.0);
+		// adminLat / adminLng are null and cache returns null
+
+		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL)
+				.with(csrf())
+				.with(request -> {
+					request.setRemoteAddr("10.0.0.106");
+					return request;
+				})
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req)))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").value("El código no contiene ubicación válida del administrador para validar la distancia."));
+	}
+
+	@Test
+	@WithMockUser
+	void qrCheckinNotificationExceptionDoesNotBlockCheckin() throws Exception {
+		user.setIsWorking(false);
+		when(userService.findCurrentUser()).thenReturn(user);
+		when(formationService.findAll()).thenReturn(List.of());
+		when(totpService.verifyToken(DEFAULT_QR_TOKEN)).thenReturn(true);
+		when(checkInService.performCheckIn(user, CheckinType.ENTRADA)).thenReturn(checkin);
+		doThrow(new RuntimeException("Notification service down"))
+				.when(notificationContext).sendNotification(any(), anyString(), anyString());
+
+		QrCheckinRequest req = new QrCheckinRequest();
+		req.setToken(DEFAULT_QR_TOKEN);
+		req.setUserLat(40.0);
+		req.setUserLng(-3.0);
+		req.setAdminLat(40.0);
+		req.setAdminLng(-3.0);
+
+		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL)
+				.with(csrf())
+				.with(request -> {
+					request.setRemoteAddr("10.0.0.107");
+					return request;
+				})
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req)))
+				.andExpect(status().isCreated());
+	}
+}

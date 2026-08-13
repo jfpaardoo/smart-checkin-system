@@ -6,12 +6,13 @@ import org.springframework.samples.smartcheckin.formation.Formation;
 import org.springframework.samples.smartcheckin.audit.AuditLog;
 
 import java.util.List;
+import java.io.IOException;
 
 public interface DataExportStrategy {
-    byte[] exportUsers(List<UserAnalyticsDTO> users) throws Exception;
-    byte[] exportCheckins(List<Checkin> checkins) throws Exception;
-    byte[] exportFormations(List<Formation> formations) throws Exception;
-    byte[] exportAuditLogs(List<AuditLog> auditLogs) throws Exception;
+    byte[] exportUsers(List<UserAnalyticsDTO> users) throws IOException;
+    byte[] exportCheckins(List<Checkin> checkins) throws IOException;
+    byte[] exportFormations(List<Formation> formations) throws IOException;
+    byte[] exportAuditLogs(List<AuditLog> auditLogs) throws IOException;
     
     String getContentType();
     String getFileExtension();

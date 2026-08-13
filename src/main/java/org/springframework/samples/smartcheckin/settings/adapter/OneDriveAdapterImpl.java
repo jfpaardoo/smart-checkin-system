@@ -16,6 +16,7 @@ import org.springframework.samples.smartcheckin.settings.CloudSettings;
 import org.springframework.samples.smartcheckin.settings.CloudSettingsService;
 
 import java.util.Map;
+import java.io.IOException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -70,7 +71,7 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
     }
 
     @Override
-    public String uploadFile(MultipartFile file, String folderName) throws Exception {
+    public String uploadFile(MultipartFile file, String folderName) throws IOException {
         CloudSettings settings = cloudSettingsService.getSettings();
         if (settings == null || settings.getOneDriveClientId() == null) {
             throw new IllegalStateException("OneDrive credentials not configured");
@@ -136,7 +137,7 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
     }
 
     @Override
-    public String uploadBackup(byte[] data, String fileName) throws Exception {
+    public String uploadBackup(byte[] data, String fileName) throws IOException {
         CloudSettings settings = cloudSettingsService.getSettings();
         if (settings == null || settings.getOneDriveClientId() == null) {
             throw new IllegalStateException("OneDrive credentials not configured");
@@ -168,7 +169,7 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
     }
 
     @Override
-    public String uploadSignature(byte[] data, String fileName, String pathContext) throws Exception {
+    public String uploadSignature(byte[] data, String fileName, String pathContext) throws IOException {
         CloudSettings settings = cloudSettingsService.getSettings();
         if (settings == null || settings.getOneDriveClientId() == null) {
             throw new IllegalStateException("OneDrive credentials not configured");
@@ -200,7 +201,7 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
     }
 
     @Override
-    public byte[] downloadFile(String itemId) throws Exception {
+    public byte[] downloadFile(String itemId) throws IOException {
         CloudSettings settings = cloudSettingsService.getSettings();
         if (settings == null || settings.getOneDriveClientId() == null) {
             throw new IllegalStateException("OneDrive credentials not configured");
@@ -225,7 +226,7 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
     }
 
     @Override
-    public void deleteFile(String fileIdOrUrl) throws Exception {
+    public void deleteFile(String fileIdOrUrl) throws IOException {
         if (fileIdOrUrl == null || fileIdOrUrl.trim().isEmpty()) {
             return;
         }
