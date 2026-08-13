@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.time.Month;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -196,7 +197,7 @@ class ExcelExportStrategyTests {
         checkin.setId(99);
         checkin.setUser(user);
         checkin.setCheckInType(CheckinType.ENTRADA);
-        checkin.setCheckInDate(LocalDateTime.of(2025, 6, 1, 9, 0));
+        checkin.setCheckInDate(LocalDateTime.of(2025, Month.JUNE, 1, 9, 0));
 
         byte[] bytes = strategy.exportCheckins(List.of(checkin));
         try (Workbook wb = toWorkbook(bytes)) {
@@ -331,8 +332,8 @@ class ExcelExportStrategyTests {
     void exportFormations_withAttendanceAndSignature_detailSheetHasYES() throws Exception {
         LocalDateTime date = LocalDateTime.now().plusDays(3);
         User user = buildUser(1, "jdoe", "A001", "John", "Doe");
-        LocalDateTime ci = LocalDateTime.of(2025, 6, 1, 9, 0);
-        LocalDateTime co = LocalDateTime.of(2025, 6, 1, 10, 0);
+        LocalDateTime ci = LocalDateTime.of(2025, Month.JUNE, 1, 9, 0);
+        LocalDateTime co = LocalDateTime.of(2025, Month.JUNE, 1, 10, 0);
 
         Formation f = buildFormation(10, "Safety", date, new ArrayList<>());
         FormationAttendance att = buildAttendance(f, user, ci, co, "SIGNATURE");
@@ -356,8 +357,8 @@ class ExcelExportStrategyTests {
 
         Formation f = buildFormation(11, "Orientation", date, new ArrayList<>());
         FormationAttendance att = buildAttendance(f, user,
-                LocalDateTime.of(2025, 6, 1, 9, 0),
-                LocalDateTime.of(2025, 6, 1, 10, 30), null);
+                LocalDateTime.of(2025, Month.JUNE, 1, 9, 0),
+                LocalDateTime.of(2025, Month.JUNE, 1, 10, 30), null);
         f.setAttendances(List.of(att));
 
         byte[] bytes = strategy.exportFormations(List.of(f));
@@ -409,8 +410,8 @@ class ExcelExportStrategyTests {
         LocalDateTime date = LocalDateTime.now().plusDays(3);
         Formation f = buildFormation(14, "Null User", date, new ArrayList<>());
         FormationAttendance att = buildAttendance(f, null,
-                LocalDateTime.of(2025, 1, 1, 8, 0),
-                LocalDateTime.of(2025, 1, 1, 9, 0), null);
+                LocalDateTime.of(2025, Month.JANUARY, 1, 8, 0),
+                LocalDateTime.of(2025, Month.JANUARY, 1, 9, 0), null);
         f.setAttendances(List.of(att));
 
         byte[] bytes = strategy.exportFormations(List.of(f));
@@ -451,11 +452,11 @@ class ExcelExportStrategyTests {
 
         Formation f = buildFormation(20, "Rate Test", date, new ArrayList<>());
         FormationAttendance att1 = buildAttendance(f, user1,
-                LocalDateTime.of(2025, 6, 1, 9, 0),
-                LocalDateTime.of(2025, 6, 1, 10, 0), null);
+                LocalDateTime.of(2025, Month.JUNE, 1, 9, 0),
+                LocalDateTime.of(2025, Month.JUNE, 1, 10, 0), null);
         // att2: no checkout (incomplete)
         FormationAttendance att2 = buildAttendance(f, user2,
-                LocalDateTime.of(2025, 6, 1, 9, 0), null, null);
+                LocalDateTime.of(2025, Month.JUNE, 1, 9, 0), null, null);
         f.setAttendances(List.of(att1, att2));
 
         byte[] bytes = strategy.exportFormations(List.of(f));

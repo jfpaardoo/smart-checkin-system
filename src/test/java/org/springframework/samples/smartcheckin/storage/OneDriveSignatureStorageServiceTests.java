@@ -1,8 +1,8 @@
 package org.springframework.samples.smartcheckin.storage;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter;
@@ -21,14 +21,11 @@ class OneDriveSignatureStorageServiceTests {
     @Mock
     private CloudStorageAdapter cloudStorageAdapter;
 
+    @InjectMocks
     private OneDriveSignatureStorageService service;
 
     private static final String TEST_CONTEXT = "checkins";
 
-    @BeforeEach
-    void setUp() {
-        service = new OneDriveSignatureStorageService(cloudStorageAdapter);
-    }
 
     // ─── saveSignature ────────────────────────────────────────────────────────
 

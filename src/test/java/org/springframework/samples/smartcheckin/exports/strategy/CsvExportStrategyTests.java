@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.time.Month;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -167,7 +168,7 @@ class CsvExportStrategyTests {
         checkin.setId(99);
         checkin.setUser(user);
         checkin.setCheckInType(CheckinType.ENTRADA);
-        checkin.setCheckInDate(LocalDateTime.of(2025, 6, 1, 9, 0));
+        checkin.setCheckInDate(LocalDateTime.of(2025, Month.JUNE, 1, 9, 0));
 
         String csv = new String(strategy.exportCheckins(List.of(checkin)), StandardCharsets.UTF_8);
         assertTrue(csv.contains("99,jdoe,A001,ENTRADA"));
@@ -270,8 +271,8 @@ class CsvExportStrategyTests {
         LocalDateTime date = LocalDateTime.now().plusDays(3);
         User user = buildUser(1, "jdoe", "A001", "John", "Doe");
 
-        LocalDateTime ci = LocalDateTime.of(2025, 6, 1, 9, 0);
-        LocalDateTime co = LocalDateTime.of(2025, 6, 1, 10, 0);
+        LocalDateTime ci = LocalDateTime.of(2025, Month.JUNE, 1, 9, 0);
+        LocalDateTime co = LocalDateTime.of(2025, Month.JUNE, 1, 10, 0);
 
         Formation f = buildFormation(10, "Safety Training", date, new ArrayList<>());
         FormationAttendance att = buildAttendance(f, user, ci, co, "BASE64_SIG");
@@ -290,8 +291,8 @@ class CsvExportStrategyTests {
 
         Formation f = buildFormation(11, "Orientation", date, new ArrayList<>());
         FormationAttendance att = buildAttendance(f, user,
-                LocalDateTime.of(2025, 6, 1, 9, 0),
-                LocalDateTime.of(2025, 6, 1, 10, 30), null);
+                LocalDateTime.of(2025, Month.JUNE, 1, 9, 0),
+                LocalDateTime.of(2025, Month.JUNE, 1, 10, 30), null);
         f.setAttendances(List.of(att));
 
         String csv = new String(strategy.exportFormations(List.of(f)), StandardCharsets.UTF_8);
@@ -330,8 +331,8 @@ class CsvExportStrategyTests {
         LocalDateTime date = LocalDateTime.now().plusDays(3);
         Formation f = buildFormation(14, "Null User Test", date, new ArrayList<>());
         FormationAttendance att = buildAttendance(f, null,
-                LocalDateTime.of(2025, 1, 1, 8, 0),
-                LocalDateTime.of(2025, 1, 1, 9, 0), null);
+                LocalDateTime.of(2025, Month.JANUARY, 1, 8, 0),
+                LocalDateTime.of(2025, Month.JANUARY, 1, 9, 0), null);
         f.setAttendances(List.of(att));
 
         String csv = new String(strategy.exportFormations(List.of(f)), StandardCharsets.UTF_8);
@@ -359,8 +360,8 @@ class CsvExportStrategyTests {
         Formation f = buildFormation(20, "Safety, Training", date, new ArrayList<>());
         User user = buildUser(1, "jdoe", "A001", "John", "Doe");
         FormationAttendance att = buildAttendance(f, user,
-                LocalDateTime.of(2025, 6, 1, 9, 0),
-                LocalDateTime.of(2025, 6, 1, 10, 0), null);
+                LocalDateTime.of(2025, Month.JUNE, 1, 9, 0),
+                LocalDateTime.of(2025, Month.JUNE, 1, 10, 0), null);
         f.setAttendances(List.of(att));
 
         String csv = new String(strategy.exportFormations(List.of(f)), StandardCharsets.UTF_8);
@@ -389,8 +390,8 @@ class CsvExportStrategyTests {
         User user = buildUser(1, "jdoe", null, "John", "Doe");
         Formation f = buildFormation(60, "Test", date, new ArrayList<>());
         FormationAttendance att = buildAttendance(f, user,
-                LocalDateTime.of(2025, 6, 1, 9, 0),
-                LocalDateTime.of(2025, 6, 1, 10, 0), "SIG");
+                LocalDateTime.of(2025, Month.JUNE, 1, 9, 0),
+                LocalDateTime.of(2025, Month.JUNE, 1, 10, 0), "SIG");
         f.setAttendances(List.of(att));
 
         byte[] result = strategy.exportFormations(List.of(f));

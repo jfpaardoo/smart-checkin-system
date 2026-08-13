@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
+import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -18,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.jpatterns.gof.SingletonPattern;
-
 @Service
 @SingletonPattern.Singleton
 @SuppressWarnings("null")
@@ -57,7 +57,7 @@ public class FormationService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Formation saveFormation(Formation formation, MultipartFile file) throws Exception {
+    public Formation saveFormation(Formation formation, MultipartFile file) throws IOException {
         if (file != null && !file.isEmpty()) {
             String fileUrl = cloudStorageAdapter.uploadFile(file, "formations");
             formation.getDocumentUrls().add(fileUrl);
@@ -178,7 +178,7 @@ public class FormationService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Formation updateFormation(Formation formationDetails, Integer id, MultipartFile file) throws Exception {
+    public Formation updateFormation(Formation formationDetails, Integer id, MultipartFile file) throws IOException {
         Formation toUpdate = formationRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
 

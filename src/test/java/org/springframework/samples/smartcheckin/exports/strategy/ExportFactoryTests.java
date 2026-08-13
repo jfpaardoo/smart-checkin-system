@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.samples.smartcheckin.exports.PdfReportGenerator;
 
 class ExportFactoryTests {
@@ -23,45 +25,24 @@ class ExportFactoryTests {
 
     // ─── Successful lookups ──────────────────────────────────────────────────
 
-    @Test
-    void getStrategy_csv_returnsCsvStrategy() {
-        DataExportStrategy s = factory.getStrategy("csv");
+    @ParameterizedTest
+    @ValueSource(strings = {"csv", "CSV", "Csv"})
+    void getStrategy_csvFormats_returnsCsvStrategy(String format) {
+        DataExportStrategy s = factory.getStrategy(format);
         assertSame(csvStrategy, s);
     }
 
-    @Test
-    void getStrategy_csvUppercase_returnsCsvStrategy() {
-        DataExportStrategy s = factory.getStrategy("CSV");
-        assertSame(csvStrategy, s);
-    }
-
-    @Test
-    void getStrategy_csvMixedCase_returnsCsvStrategy() {
-        DataExportStrategy s = factory.getStrategy("Csv");
-        assertSame(csvStrategy, s);
-    }
-
-    @Test
-    void getStrategy_excel_returnsExcelStrategy() {
-        DataExportStrategy s = factory.getStrategy("excel");
+    @ParameterizedTest
+    @ValueSource(strings = {"excel", "EXCEL", "Excel"})
+    void getStrategy_excelFormats_returnsExcelStrategy(String format) {
+        DataExportStrategy s = factory.getStrategy(format);
         assertSame(excelStrategy, s);
     }
 
-    @Test
-    void getStrategy_excelUppercase_returnsExcelStrategy() {
-        DataExportStrategy s = factory.getStrategy("EXCEL");
-        assertSame(excelStrategy, s);
-    }
-
-    @Test
-    void getStrategy_pdf_returnsPdfStrategy() {
-        DataExportStrategy s = factory.getStrategy("pdf");
-        assertSame(pdfStrategy, s);
-    }
-
-    @Test
-    void getStrategy_pdfUppercase_returnsPdfStrategy() {
-        DataExportStrategy s = factory.getStrategy("PDF");
+    @ParameterizedTest
+    @ValueSource(strings = {"pdf", "PDF", "Pdf"})
+    void getStrategy_pdfFormats_returnsPdfStrategy(String format) {
+        DataExportStrategy s = factory.getStrategy(format);
         assertSame(pdfStrategy, s);
     }
 
@@ -88,13 +69,9 @@ class ExportFactoryTests {
         assertTrue(ex.getMessage().contains("xml"));
     }
 
-    @Test
-    void getStrategy_emptyString_throwsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> factory.getStrategy(""));
-    }
-
-    @Test
-    void getStrategy_whitespaceOnlyFormat_throwsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> factory.getStrategy("   "));
+    @ParameterizedTest
+    @ValueSource(strings = {"", "   "})
+    void getStrategy_blankFormats_throwsIllegalArgumentException(String format) {
+        assertThrows(IllegalArgumentException.class, () -> factory.getStrategy(format));
     }
 }

@@ -6,9 +6,9 @@ import static org.mockito.Mockito.*;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.samples.smartcheckin.analytics.UserAnalyticsDTO;
@@ -23,12 +23,9 @@ class PdfExportStrategyTests {
     @Mock
     private PdfReportGenerator pdfReportGenerator;
 
+    @InjectMocks
     private PdfExportStrategy strategy;
 
-    @BeforeEach
-    void setUp() {
-        strategy = new PdfExportStrategy(pdfReportGenerator);
-    }
 
     // ─── Metadata ─────────────────────────────────────────────────────────────
 
@@ -89,7 +86,7 @@ class PdfExportStrategyTests {
     }
 
     @Test
-    void exportAuditLogs_propagatesExceptionFromGenerator() throws Exception {
+    void exportAuditLogs_propagatesExceptionFromGenerator() {
         List<AuditLog> logs = List.of(new AuditLog());
         when(pdfReportGenerator.generateAuditLogPdf(logs))
                 .thenThrow(new RuntimeException("PDF generation failed"));

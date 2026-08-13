@@ -69,7 +69,7 @@ public class ExportRestController {
 
     @GetMapping("/users/{format}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<byte[]> exportUsers(@PathVariable String format) throws Exception {
+    public ResponseEntity<byte[]> exportUsers(@PathVariable String format) throws IOException {
         DataExportStrategy strategy = exportFactory.getStrategy(format);
         List<UserAnalyticsDTO> users = analyticsService.getAllUsersAnalytics("");
         byte[] data = strategy.exportUsers(users);
@@ -78,7 +78,7 @@ public class ExportRestController {
 
     @GetMapping("/checkins/{format}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<byte[]> exportCheckins(@PathVariable String format) throws Exception {
+    public ResponseEntity<byte[]> exportCheckins(@PathVariable String format) throws IOException {
         DataExportStrategy strategy = exportFactory.getStrategy(format);
         List<Checkin> checkins = (List<Checkin>) checkinRepository.findAll();
         byte[] data = strategy.exportCheckins(checkins);
@@ -87,7 +87,7 @@ public class ExportRestController {
 
     @GetMapping("/formations/{format}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<byte[]> exportFormations(@PathVariable String format) throws Exception {
+    public ResponseEntity<byte[]> exportFormations(@PathVariable String format) throws IOException {
         DataExportStrategy strategy = exportFactory.getStrategy(format);
         List<Formation> formations = (List<Formation>) formationRepository.findAll();
         byte[] data = strategy.exportFormations(formations);
@@ -96,7 +96,7 @@ public class ExportRestController {
 
     @GetMapping("/audit/{format}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<byte[]> exportAuditLogs(@PathVariable String format) throws Exception {
+    public ResponseEntity<byte[]> exportAuditLogs(@PathVariable String format) throws IOException {
         DataExportStrategy strategy = exportFactory.getStrategy(format);
         List<AuditLog> auditLogs = (List<AuditLog>) auditLogRepository.findAll();
         byte[] data = strategy.exportAuditLogs(auditLogs);

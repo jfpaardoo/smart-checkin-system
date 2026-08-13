@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter;
+import java.io.IOException;
 
 @Service
 public class DatabaseBackupService {
@@ -41,7 +42,7 @@ public class DatabaseBackupService {
         this.objectMapper = objectMapper;
     }
 
-    public void createAndUploadBackup() throws Exception {
+    public void createAndUploadBackup() throws IOException {
         Map<String, Object> exportData = new HashMap<>();
         exportData.put("users", userRepository.findAll());
         exportData.put("formations", formationRepository.findAll());
