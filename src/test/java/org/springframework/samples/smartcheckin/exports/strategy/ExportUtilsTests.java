@@ -14,12 +14,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class ExportUtilsTests {
 
     @Test
-    void generateVerificationHash_nullAttendance_returnsNA() {
+    void testGenerateVerificationHashNullAttendanceReturnsNA() {
         assertEquals("N/A", ExportUtils.generateVerificationHash(null));
     }
 
     @Test
-    void generateVerificationHash_nullOrEmptySignature_returnsNA() {
+    void testGenerateVerificationHashNullOrEmptySignatureReturnsNA() {
         FormationAttendance att = new FormationAttendance();
         assertEquals("N/A", ExportUtils.generateVerificationHash(att));
 

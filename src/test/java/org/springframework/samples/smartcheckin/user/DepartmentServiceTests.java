@@ -43,7 +43,7 @@ class DepartmentServiceTests {
     }
 
     @Test
-    void getAllDepartments_emptyRepository_returnsEmptyList() {
+    void testGetAllDepartmentsEmptyRepositoryReturnsEmptyList() {
         when(departmentRepository.findAll()).thenReturn(List.of());
         assertTrue(departmentService.getAllDepartments().isEmpty());
     }
@@ -51,7 +51,7 @@ class DepartmentServiceTests {
     // ─── getRootDepartments ───────────────────────────────────────────────────
 
     @Test
-    void getRootDepartments_returnsOnlyRootDepartments() {
+    void testGetRootDepartmentsReturnsOnlyRootDepartments() {
         when(departmentRepository.findByParentDepartmentIsNull()).thenReturn(List.of(dept));
         List<Department> result = departmentService.getRootDepartments();
         assertEquals(1, result.size());
@@ -59,7 +59,7 @@ class DepartmentServiceTests {
     }
 
     @Test
-    void getRootDepartments_noRootDepts_returnsEmptyList() {
+    void testGetRootDepartmentsNoRootDeptsReturnsEmptyList() {
         when(departmentRepository.findByParentDepartmentIsNull()).thenReturn(List.of());
         assertTrue(departmentService.getRootDepartments().isEmpty());
     }

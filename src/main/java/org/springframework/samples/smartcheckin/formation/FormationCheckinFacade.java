@@ -64,7 +64,7 @@ public class FormationCheckinFacade {
                         String link = cloudStorageAdapter.uploadFile(file, request.getName());
                         formation.getDocumentUrls().add(link);
                     } catch (Exception e) {
-                        log.error("Error uploading file: {}", e.getMessage(), e);
+                        throw new IllegalStateException("Error al subir el archivo '" + file.getOriginalFilename() + "' a OneDrive: " + e.getMessage(), e);
                     }
                 }
             }
@@ -106,7 +106,7 @@ public class FormationCheckinFacade {
                         String link = cloudStorageAdapter.uploadFile(file, request.getName());
                         existing.getDocumentUrls().add(link);
                     } catch (Exception e) {
-                        log.error("Error uploading file: {}", e.getMessage(), e);
+                        throw new IllegalStateException("Error al subir el archivo '" + file.getOriginalFilename() + "' a OneDrive: " + e.getMessage(), e);
                     }
                 }
             }

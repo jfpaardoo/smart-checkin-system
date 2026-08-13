@@ -198,7 +198,7 @@ class CertificateGeneratorServiceTests {
         byte[] pdfBytes = certificateGeneratorService.generateCertificatePdf(attendance);
 
         assertNotNull(pdfBytes);
-        assertEquals(0, pdfBytes.length);
+        assertTrue(pdfBytes.length > 0);
     }
 
 	@Test

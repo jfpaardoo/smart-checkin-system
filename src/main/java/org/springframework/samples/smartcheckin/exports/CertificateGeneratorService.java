@@ -55,16 +55,25 @@ public class CertificateGeneratorService {
             subtitle.setSpacingAfter(40);
             document.add(subtitle);
 
-            // Body text
-            String studentName = attendance.getUser().getFirstName() + " " + attendance.getUser().getLastName();
-            String studentCode = attendance.getUser().getPersonalCode();
-            String formationName = attendance.getFormation().getName();
+            // Defensive checks for null values
+            if (attendance == null || attendance.getUser() == null || attendance.getFormation() == null) {
+                logger.error("Invalid attendance data for certificate generation");
+                Paragraph errorBody = new Paragraph("Error: Datos de asistencia insuficientes para generar el certificado.", bodyFont);
+                document.add(errorBody);
+                document.close();
+                return out.toByteArray();
+            }
+
+            // Body text with null safety
+            String studentName = safe(attendance.getUser().getFirstName()) + " " + safe(attendance.getUser().getLastName());
+            String studentCode = safe(attendance.getUser().getPersonalCode());
+            String formationName = safe(attendance.getFormation().getName());
             
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
             String dateString = attendance.getCheckInDate() != null ? attendance.getCheckInDate().format(formatter) : "N/A";
 
             Paragraph body = new Paragraph(
-                "Por la presente se certifica que el empleado " + studentName + " (Código: " + studentCode + ") " +
+                "Por la presente se certifica que el empleado " + studentName.trim() + " (Código: " + studentCode + ") " +
                 "ha asistido a la formación:\n\n\"" + formationName + "\"\n\nRegistrado oficialmente el " + dateString + ".",
                 bodyFont
             );
@@ -93,15 +102,13 @@ public class CertificateGeneratorService {
         return out.toByteArray();
     }
 
+    private String safe(String value) {
+        return value == null ? "" : value;
+    }
+
     private void addSignatureImage(Document document, String signatureFileName, Font bodyFont) {
         try {
-            byte[] imageBytes = null;
-            if (signatureFileName.startsWith("data:image")) {
-                String base64Image = signatureFileName.split(",")[1];
-                imageBytes = Base64.getDecoder().decode(base64Image);
-            } else {
-                imageBytes = signatureStorageService.loadSignature(signatureFileName);
-            }
+            byte[] imageBytes = resolveImageBytes(signatureFileName);
             
             if (imageBytes != null && imageBytes.length > 0) {
                 Image signatureImg = Image.getInstance(imageBytes);
@@ -120,4 +127,20 @@ public class CertificateGeneratorService {
         }
     }
 
+    private byte[] resolveImageBytes(String signatureFileName) {
+        if (signatureFileName.startsWith("data:image")) {
+            String[] parts = signatureFileName.split(",", 2);
+            if (parts.length < 2) {
+                logger.error("Invalid data URL format for signature image");
+                return new byte[0];
+            }
+            try {
+                return Base64.getDecoder().decode(parts[1]);
+            } catch (IllegalArgumentException e) {
+                return Base64.getUrlDecoder().decode(parts[1]);
+            }
+        } else {
+            return signatureStorageService.loadSignature(signatureFileName);
+        }
+    }
 }

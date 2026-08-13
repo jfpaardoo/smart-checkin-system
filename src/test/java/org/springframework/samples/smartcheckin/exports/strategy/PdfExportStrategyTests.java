@@ -30,19 +30,19 @@ class PdfExportStrategyTests {
     // ─── Metadata ─────────────────────────────────────────────────────────────
 
     @Test
-    void getContentType_returnsPdfMime() {
+    void testGetContentTypeReturnsPdfMime() {
         assertEquals("application/pdf", strategy.getContentType());
     }
 
     @Test
-    void getFileExtension_returnsPdf() {
+    void testGetFileExtensionReturnsPdf() {
         assertEquals("pdf", strategy.getFileExtension());
     }
 
     // ─── Unsupported operations ────────────────────────────────────────────────
 
     @Test
-    void exportUsers_throwsUnsupportedOperationException() {
+    void testExportUsersThrowsUnsupportedOperationException() {
         List<UserAnalyticsDTO> users = Collections.emptyList();
         assertThrows(UnsupportedOperationException.class, () -> strategy.exportUsers(users));
     }

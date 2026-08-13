@@ -33,18 +33,18 @@ class CloudIntegrationFactoryTests {
     // ─── MicrosoftIntegrationFactory ─────────────────────────────────────────
 
     @Test
-    void microsoftFactory_createStorageAdapter_returnsOneDriveAdapter() {
+    void testMicrosoftFactoryCreateStorageAdapterReturnsOneDriveAdapter() {
         CloudStorageAdapter result = microsoftFactory.createStorageAdapter();
         assertSame(oneDriveAdapter, result);
     }
 
     @Test
-    void microsoftFactory_createStorageAdapter_isNotNull() {
+    void testMicrosoftFactoryCreateStorageAdapterIsNotNull() {
         assertNotNull(microsoftFactory.createStorageAdapter());
     }
 
     @Test
-    void microsoftFactory_createStorageAdapter_returnsInstanceOfCloudStorageAdapter() {
+    void testMicrosoftFactoryCreateStorageAdapterReturnsInstanceOfCloudStorageAdapter() {
         CloudStorageAdapter adapter = microsoftFactory.createStorageAdapter();
         assertInstanceOf(CloudStorageAdapter.class, adapter);
     }

@@ -59,6 +59,7 @@ export const useFormationEdit = (id, jwt, toast, t) => {
       url: "/formations" + (formation.id ? "/" + formation.id : ""),
       method: formation.id ? "PUT" : "POST",
       data: formData,
+      withCredentials: true,
       headers: {
         Accept: "application/json",
         "Content-Type": "multipart/form-data",
@@ -74,8 +75,14 @@ export const useFormationEdit = (id, jwt, toast, t) => {
           setTimeout(() => { window.location.href = "/formations"; }, 1200);
         }
       })
-      .catch(() => {
-        toast.error(t('formations.connectionError'));
+      .catch((error) => {
+        // Leemos la respuesta de error del backend
+        if (error?.response?.status === 400 && error?.response?.data?.message) {
+          // Muestra: "El almacenamiento en la nube no está configurado..."
+          toast.error(error?.response?.data?.message);
+        } else {
+          toast.error(t('formations.connectionError'));
+        }
         setIsSaving(false);
       });
   };

@@ -57,15 +57,23 @@ public class PdfReportGenerator {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             StringBuilder rawDataForHash = new StringBuilder();
 
-            for (AuditLog log : logs) {
+            // Guard against null logs list
+            List<AuditLog> safeLogs = logs != null ? logs : List.of();
+
+            for (AuditLog log : safeLogs) {
+                if (log == null) continue;
+                
                 String timestampStr = log.getTimestamp() != null ? log.getTimestamp().format(formatter) : "";
+                String actionStr = log.getAction() != null ? log.getAction() : "";
+                String detailsStr = log.getDetails() != null ? log.getDetails() : "";
+                String ipStr = log.getIpAddress() != null ? log.getIpAddress() : "";
                 
                 table.addCell(new Phrase(timestampStr, tableBodyFont));
-                table.addCell(new Phrase(log.getAction(), tableBodyFont));
-                table.addCell(new Phrase(log.getDetails(), tableBodyFont));
-                table.addCell(new Phrase(log.getIpAddress(), tableBodyFont));
+                table.addCell(new Phrase(actionStr, tableBodyFont));
+                table.addCell(new Phrase(detailsStr, tableBodyFont));
+                table.addCell(new Phrase(ipStr, tableBodyFont));
                 
-                rawDataForHash.append(timestampStr).append(log.getAction()).append(log.getIpAddress());
+                rawDataForHash.append(timestampStr).append(actionStr).append(ipStr);
             }
 
             document.add(table);

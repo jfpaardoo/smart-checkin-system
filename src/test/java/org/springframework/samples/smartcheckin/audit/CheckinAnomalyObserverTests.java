@@ -40,7 +40,7 @@ class CheckinAnomalyObserverTests {
     }
 
     @Test
-    void onCheckinEvent_eventSourceNotCheckinService_doesNothing() {
+    void testOnCheckinEventWhenSourceNotCheckinService() {
         Object otherSource = new Object();
         CheckinEvent event = new CheckinEvent(otherSource);
 
@@ -50,7 +50,7 @@ class CheckinAnomalyObserverTests {
     }
 
     @Test
-    void onCheckinEvent_countBelowThreshold_doesNotLogAnomaly() {
+    void testOnCheckinEventWhenCountBelowThreshold() {
         CheckinEvent event = new CheckinEvent(checkinService);
         when(checkinRepository.count()).thenReturn(500L);
 
@@ -61,7 +61,7 @@ class CheckinAnomalyObserverTests {
     }
 
     @Test
-    void onCheckinEvent_countAboveThreshold_logsAnomalyAndSendsNotification() {
+    void testOnCheckinEventWhenCountAboveThreshold() {
         CheckinEvent event = new CheckinEvent(checkinService);
         when(checkinRepository.count()).thenReturn(10001L);
 
@@ -73,7 +73,7 @@ class CheckinAnomalyObserverTests {
     }
 
     @Test
-    void onCheckinEvent_repositoryThrowsException_logsErrorWithoutCrashing() {
+    void testOnCheckinEventWhenRepositoryThrowsException() {
         CheckinEvent event = new CheckinEvent(checkinService);
         when(checkinRepository.count()).thenThrow(new RuntimeException("DB offline"));
 
