@@ -77,7 +77,7 @@ export default function AnalyticsOverviewTab({ statistics }) {
                   </div>
                   <div className="chart-container-wrapper">
                       {Recharts ? (
-                          <Recharts.ResponsiveContainer width="100%" height="100%">
+                          <Recharts.ResponsiveContainer width="100%" height="100%" debounce={60}>
                               <Recharts.LineChart data={chronologicalStatistics} margin={{ top: 15, right: 25, left: -15, bottom: 5 }}>
                                   <Recharts.CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 0, 0, 0.06)" />
                                   <Recharts.XAxis 
@@ -122,7 +122,7 @@ export default function AnalyticsOverviewTab({ statistics }) {
                   </div>
                   <div className="chart-container-wrapper d-flex flex-column align-items-center justify-content-center">
                       {Recharts ? (
-                          <Recharts.ResponsiveContainer width="100%" height="100%">
+                          <Recharts.ResponsiveContainer width="100%" height="100%" debounce={60}>
                               <Recharts.PieChart>
                                   <Recharts.Pie
                                       data={pieData}

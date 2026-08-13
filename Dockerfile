@@ -32,7 +32,7 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 WORKDIR /app
 
 # Copy built JAR artifact from stage 1
-COPY --from=builder /app/target/ba-distribution-academy-*.jar app.jar
+COPY --from=builder /app/target/smartcheckin-*.jar app.jar
 
 # Set ownership to non-root user
 RUN chown -R appuser:appgroup /app

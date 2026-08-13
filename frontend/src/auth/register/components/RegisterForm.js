@@ -93,6 +93,7 @@ export default function RegisterForm({ form, handleChange, handleSubmit, loading
             id="username"
             name="username"
             placeholder="Nombre de Usuario"
+            autoComplete="username"
             value={form.username}
             onChange={handleChange}
             required
@@ -134,6 +135,7 @@ export default function RegisterForm({ form, handleChange, handleSubmit, loading
             id="password"
             name="password"
             placeholder="Contraseña"
+            autoComplete="new-password"
             value={form.password}
             onChange={handleChange}
             required

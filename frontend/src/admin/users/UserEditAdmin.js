@@ -44,6 +44,7 @@ export default function UserEditAdmin() {
                   required
                   name="username"
                   id="username"
+                  autoComplete="username"
                   value={user.username || ""}
                   onChange={handleChange}
                 />
@@ -59,6 +60,7 @@ export default function UserEditAdmin() {
                     required
                     name="password"
                     id="password"
+                    autoComplete="current-password"
                     value={user.password || ""}
                     onChange={handleChange}
                   />
