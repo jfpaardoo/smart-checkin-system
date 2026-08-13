@@ -116,6 +116,7 @@ export default function CloudSettingsAdmin() {
                   type="password"
                   name="oneDriveClientSecret"
                   id="oneDriveClientSecret"
+                  autoComplete="current-password"
                   value={settings.oneDriveClientSecret || ""}
                   onChange={handleChange}
                 />

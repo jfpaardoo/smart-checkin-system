@@ -18,14 +18,12 @@ export const WebSocketProvider = ({ children }) => {
 
         if (username) {
             const socketUrl = window.location.hostname === 'localhost'
-                ? '/ws'
+                ? 'http://localhost:8080/ws'
                 : 'https://smart-checkin-system.onrender.com/ws';
 
             client = new Client({
-                webSocketFactory: () => new SockJS(socketUrl, null, { transports: ['websocket', 'xhr-streaming', 'xhr-polling'] }),
-                connectHeaders: {
-                    // Puedes enviar el token si quieres seguridad extra a nivel STOMP
-                    },
+                webSocketFactory: () => new SockJS(socketUrl),
+                connectHeaders: {},
                 debug: function (str) {
                     if (process.env.NODE_ENV === 'development' && window.DEBUG_STOMP) {
                         console.log('STOMP: ' + str);
