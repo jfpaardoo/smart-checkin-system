@@ -81,4 +81,10 @@ class WebSocketConfigTests {
         Message<?> result = interceptor.preSend(message, messageChannel);
         assertNotNull(result);
     }
+
+    @Test
+    void preSendNullMessageReturnsNull() {
+        assertNull(interceptor.preSend(null, messageChannel));
+    }
 }
+

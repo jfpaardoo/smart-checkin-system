@@ -300,6 +300,74 @@ class OneDriveAdapterImplTests {
     }
 
     @Test
+    void testDownloadFileSuccess() throws Exception {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId(CLIENT_ID);
+        settings.setOneDriveClientSecret(SECRET);
+        settings.setOneDriveRefreshToken(REFRESH);
+        settings.setOneDriveTenantId(TENANT);
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+
+        Map<String, Object> tokenResponse = Map.of(ACCESS_TOKEN, TOKEN_123);
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+
+        when(restTemplate.exchange(
+                eq(TOKEN_URL),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq(TENANT)
+        )).thenReturn(tokenEntity);
+
+        byte[] expectedBytes = "downloaded content".getBytes();
+        ResponseEntity<byte[]> downloadEntity = new ResponseEntity<>(expectedBytes, HttpStatus.OK);
+
+        when(restTemplate.exchange(
+                eq("https://graph.microsoft.com/v1.0/me/drive/items/{itemId}/content"),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(byte[].class),
+                (Object) eq("item123")
+        )).thenReturn(downloadEntity);
+
+        byte[] result = oneDriveAdapterImpl.downloadFile("item123");
+        assertArrayEquals(expectedBytes, result);
+    }
+
+    @Test
+    void testDownloadFileExceptionHandled() throws Exception {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId(CLIENT_ID);
+        settings.setOneDriveClientSecret(SECRET);
+        settings.setOneDriveRefreshToken(REFRESH);
+        settings.setOneDriveTenantId(TENANT);
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+
+        Map<String, Object> tokenResponse = Map.of(ACCESS_TOKEN, TOKEN_123);
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+
+        when(restTemplate.exchange(
+                eq(TOKEN_URL),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                org.mockito.ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq(TENANT)
+        )).thenReturn(tokenEntity);
+
+        when(restTemplate.exchange(
+                eq("https://graph.microsoft.com/v1.0/me/drive/items/{itemId}/content"),
+                eq(HttpMethod.GET),
+                any(HttpEntity.class),
+                eq(byte[].class),
+                (Object) eq("errorItem")
+        )).thenThrow(new RestClientException("Download failed"));
+
+        byte[] result = oneDriveAdapterImpl.downloadFile("errorItem");
+        assertNotNull(result);
+        assertEquals(0, result.length);
+    }
+
+    @Test
     void testUploadBackupNoSettings() {
         when(cloudSettingsService.getSettings()).thenReturn(null);
         byte[] data = TEST_DATA.getBytes();

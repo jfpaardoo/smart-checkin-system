@@ -110,4 +110,35 @@ class AuditAspectTests {
         
         verify(auditLogRepository, times(1)).save(any(AuditLog.class));
     }
+
+    @Test
+    void testLogAuditableActionWithBodyNameAndIdAndEmptyDetails() {
+        JoinPoint joinPoint = mock(JoinPoint.class);
+        Auditable auditable = createAuditable("TEST_ACTION", "");
+        
+        class FullEntity {
+            @SuppressWarnings("unused")
+            public String getName() { return "Formation Alpha"; }
+            @SuppressWarnings("unused")
+            public Long getId() { return 42L; }
+        }
+        
+        aspect.logAuditableAction(joinPoint, auditable, new FullEntity());
+        
+        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
+    }
+
+    @Test
+    void testLogAuditableActionRequestThrowsException() {
+        HttpServletRequest throwingRequest = mock(HttpServletRequest.class);
+        when(throwingRequest.getRemoteAddr()).thenThrow(new IllegalStateException("No request bound"));
+        
+        AuditAspect throwingAspect = new AuditAspect(auditLogRepository, throwingRequest, mock(SimpMessagingTemplate.class));
+        JoinPoint joinPoint = mock(JoinPoint.class);
+        Auditable auditable = createAuditable("TEST_ACTION", "");
+        
+        throwingAspect.logAuditableAction(joinPoint, auditable, null);
+        
+        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
+    }
 }
