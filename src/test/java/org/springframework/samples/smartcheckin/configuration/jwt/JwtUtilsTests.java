@@ -126,4 +126,52 @@ class JwtUtilsTests {
         assertNotNull(expirationDate);
         assertTrue(expirationDate.isAfter(Instant.now()));
     }
+
+	@Test
+	void testGenerateJwtCookieAndGetCleanJwtCookie() {
+		UserDetailsImpl userDetails = new UserDetailsImpl(1, "john", "pass", List.of(new SimpleGrantedAuthority("ADMIN")));
+		Authentication auth = mock(Authentication.class);
+		when(auth.getPrincipal()).thenReturn(userDetails);
+
+		org.springframework.http.ResponseCookie cookie = jwtUtils.generateJwtCookie(auth);
+		assertNotNull(cookie);
+		assertEquals("jwt", cookie.getName());
+		assertNotNull(cookie.getValue());
+		assertEquals(86400, cookie.getMaxAge().getSeconds());
+
+		org.springframework.http.ResponseCookie cleanCookie = jwtUtils.getCleanJwtCookie();
+		assertNotNull(cleanCookie);
+		assertEquals("jwt", cleanCookie.getName());
+		assertEquals("", cleanCookie.getValue());
+		assertEquals(0, cleanCookie.getMaxAge().getSeconds());
+	}
+
+	@Test
+	void testGetJwtFromCookies() {
+		jakarta.servlet.http.HttpServletRequest reqWithCookie = mock(jakarta.servlet.http.HttpServletRequest.class);
+		jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("jwt", "sampleTokenValue");
+		when(reqWithCookie.getCookies()).thenReturn(new jakarta.servlet.http.Cookie[]{cookie});
+
+		assertEquals("sampleTokenValue", jwtUtils.getJwtFromCookies(reqWithCookie));
+
+		jakarta.servlet.http.HttpServletRequest reqWithoutCookie = mock(jakarta.servlet.http.HttpServletRequest.class);
+		when(reqWithoutCookie.getCookies()).thenReturn(null);
+
+		assertNull(jwtUtils.getJwtFromCookies(reqWithoutCookie));
+	}
+
+	@Test
+	void testMalformedJwtException() {
+		assertFalse(jwtUtils.validateJwtToken("not.a.valid.jwt.structure"));
+	}
+
+	@Test
+	void testGenericExceptionBranchInValidate() {
+		// Mock parseSignedClaims to throw an unexpected RuntimeException
+		JwtUtils spyUtils = spy(jwtUtils);
+		doThrow(new RuntimeException("Unexpected error")).when(spyUtils).getUserNameFromJwtToken(anyString());
+		
+		assertFalse(spyUtils.validateJwtToken("someToken"));
+	}
 }
+
