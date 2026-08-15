@@ -3,9 +3,10 @@ import { FaEye, FaEyeSlash, FaUserPlus } from 'react-icons/fa';
 import { Spinner } from 'reactstrap';
 import { Link } from 'react-router-dom';
 
-export default function RegisterForm({ form, handleChange, handleSubmit, loading, t }) {
+export default function RegisterForm({ form, handleChange, handleSubmit, loading, t, captchaComponent }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
   return (
     <div>
       <div className="text-center mb-6">
@@ -184,6 +185,11 @@ export default function RegisterForm({ form, handleChange, handleSubmit, loading
           >
             {showConfirmPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
           </button>
+        </div>
+
+        {/* CAPTCHA: Se inyecta aquí ocupando 2 columnas */}
+        <div className="md:col-span-2 mt-1 mb-1">
+          {captchaComponent}
         </div>
 
         {/* Contenedor del Botón (Ocupa 2 columnas en PC) */}

@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useToast } from "../../components/ToastProvider";
-import FormGenerator from "../../components/formGenerator/formGenerator";
+import { Turnstile } from '@marsidev/react-turnstile';
 import tokenService from "../../services/token.service";
-import { loginFormInputs } from "./form/loginFormInputs";
 import { FaSignInAlt, FaShieldAlt } from "react-icons/fa";
 import "../../App.css";
 
@@ -17,30 +16,26 @@ export default function Login() {
   const [username2FA, setUsername2FA] = useState("");
   const [totpCode, setTotpCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(null);
 
-  // 1. Bloqueamos el scroll de toda la ventana mientras estamos en el Login
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
   useEffect(() => {
-    document.body.style.overflow = "hidden";
-    
-    // Cleanup: Al salir del componente, restauramos el scroll a su estado original
-    return () => {
-      document.body.style.overflow = "auto";
-    };
+    document.body.style.overflow = "auto";
   }, []);
 
-  const localizedInputs = loginFormInputs.map(input => {
-    if (input.name === 'username') {
-      return { ...input, tag: t('login.usernameOrEmail', 'Usuario o Correo Electrónico') };
-    }
-    if (input.name === 'password') {
-      return { ...input, tag: t('login.password', t('users.password', 'Contraseña')) };
-    }
-    return input;
-  });
+  async function handleSubmit(e) {
+    e.preventDefault();
 
-  async function handleSubmit({ values }) {
+    if (!captchaToken) {
+      toast.error(t('login.captchaRequired', 'Por favor, completa la verificación de seguridad.'));
+      return;
+    }
+
     setLoading(true);
-    const reqBody = values;
+    const reqBody = { username, password, captchaToken };
+
     try {
       const response = await fetch("/api/v1/auth/signin", {
         headers: { "Content-Type": "application/json" },
@@ -62,10 +57,13 @@ export default function Login() {
           setTimeout(() => { navigate("/"); }, 1000);
         }
       } else if (data.message === "Bad Credentials!") {
+        setCaptchaToken(null);
         throw new Error(t('login.badCredentials', 'Usuario o contraseña incorrectos'));
       } else if (data.message?.includes("Account is locked")) {
+        setCaptchaToken(null);
         throw new Error(t('login.accountLocked', 'La cuenta está bloqueada por demasiados intentos. Inténtalo más tarde.'));
       } else {
+        setCaptchaToken(null);
         throw new Error(data.message || t('login.error', 'Error al iniciar sesión'));
       }
     } catch (error) {
@@ -107,33 +105,80 @@ export default function Login() {
     }
   }
 
-  // Estilo Glassmorphism con altura estricta (h-[52px]) para igualar los botones que SÍ existen aquí
   const glassButtonClass = "w-full mt-2 h-[52px] rounded-full font-bold text-slate-900 bg-[#b3c34c]/60 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(179,195,76,0.35)] hover:bg-[#b3c34c]/80 hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.55)] transition-all duration-300 active:scale-95 flex justify-center items-center gap-2 box-border";
+  
+  // Clases modificadas para dejar espacio extra arriba (pt-6) para la animación
+  const inputClass = "block w-full px-4 pt-6 pb-2 rounded-2xl border border-white/50 bg-white/50 backdrop-blur-sm focus:border-[#b3c34c] focus:bg-white/80 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition text-slate-800 shadow-inner peer";
+  // Clases que manejan la animación (se hacen pequeñas y suben al hacer focus)
+  const labelClass = "absolute text-sm font-semibold text-slate-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-focus:text-[#b3c34c] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 cursor-text pointer-events-none";
 
   return (
-    // Altura controlada al máximo posible dentro de la vista para evitar cortes raros si redimensionan
-    <div className="flex flex-col items-center justify-center h-[calc(100vh-80px)] w-full px-4 overflow-hidden">
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] w-full px-4 py-8 overflow-y-auto">
       
       <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 mb-8 drop-shadow-sm text-center">
-        {t('login.title')}
+        {t('login.title', 'Iniciar Sesión')}
       </h1>
       
       <div className="w-full max-w-md bg-white/40 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-[32px] p-6 md:p-8 border border-white/60">
         {!requires2FA ? (
-          <FormGenerator
-            inputs={localizedInputs}
-            onSubmit={handleSubmit}
-            numberOfColumns={1}
-            listenEnterKey
-            buttonText={
-              <span className="flex items-center justify-center gap-2">
-                <FaSignInAlt />
-                {t('login.title')}
-              </span>
-            }
-            // Inyectamos nuestra clase de botón Glassmorphic
-            buttonClassName={glassButtonClass + " border-0"}
-          />
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            
+            {/* Input Usuario animado */}
+            <div className="relative w-full">
+              <input
+                type="text"
+                id="username"
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                disabled={loading}
+                placeholder=" "
+                autoComplete="username"
+                className={inputClass}
+              />
+              <label htmlFor="username" className={labelClass}>
+                {t('login.usernameOrEmail', 'Usuario o Correo Electrónico')} <span className="text-red-500">*</span>
+              </label>
+            </div>
+
+            {/* Input Contraseña animado */}
+            <div className="relative w-full">
+              <input
+                type="password"
+                id="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                placeholder=" "
+                autoComplete="current-password"
+                className={inputClass}
+              />
+              <label htmlFor="password" className={labelClass}>
+                {t('login.password', 'Contraseña')} <span className="text-red-500">*</span>
+              </label>
+            </div>
+
+            <div className="flex justify-center items-center mt-2 p-3 rounded-2xl bg-white/30 backdrop-blur-md border border-white/40 shadow-inner">
+              <Turnstile 
+                siteKey={process.env.REACT_APP_CAPTCHA_SITE_KEY || '1x00000000000000000000AA'} 
+                onSuccess={(token) => setCaptchaToken(token)}
+                onError={() => setCaptchaToken(null)}
+                onExpire={() => setCaptchaToken(null)}
+                options={{ theme: 'light' }}
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={loading || !captchaToken}
+              className={`${glassButtonClass} disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              <FaSignInAlt />
+              {loading ? "Iniciando..." : t('login.title', 'Iniciar Sesión')}
+            </button>
+
+          </form>
         ) : (
           <form onSubmit={handleVerify2FA} className="flex flex-col gap-5">
             <div className="text-center">
@@ -173,10 +218,7 @@ export default function Login() {
         )}
       </div>
 
-      {/* FOOTER PÚBLICO LOGIN (TAILWIND) */}
       <div className="flex flex-col gap-3 mt-10 mb-4 text-center text-sm text-slate-500 z-10">
-        
-        {/* ENLACE PARA RECUPERAR CONTRASEÑA */}
         <div>
           <Link 
             to="/forgot-password" 
@@ -185,8 +227,6 @@ export default function Login() {
             ¿Has olvidado tu contraseña?
           </Link>
         </div>
-
-        {/* COPYRIGHT Y POLÍTICA */}
         <div>
           &copy; {new Date().getFullYear()} Distribution Academy |{' '}
           <Link 
@@ -196,7 +236,6 @@ export default function Login() {
             Política de Privacidad
           </Link>
         </div>
-        
       </div>
 
     </div>

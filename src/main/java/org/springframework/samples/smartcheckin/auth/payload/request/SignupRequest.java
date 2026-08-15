@@ -34,4 +34,7 @@ public class SignupRequest {
     @NotBlank
     @Size(min = 1, max = 100)
     private String lastName;
+
+    @NotBlank(message = "El token del captcha es obligatorio")
+    private String captchaToken;
 }

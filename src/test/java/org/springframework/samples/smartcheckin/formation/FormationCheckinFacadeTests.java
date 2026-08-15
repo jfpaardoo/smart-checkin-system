@@ -59,7 +59,7 @@ class FormationCheckinFacadeTests {
     }
 
     @Test
-    void createFormation_withFiles_success() throws Exception {
+    void testCreateFormationWithFilesSuccess() throws Exception {
         FormationRequest req = new FormationRequest();
         req.setName("Java 101");
         req.setDescription("Learn Java");

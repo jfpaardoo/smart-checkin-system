@@ -1,34 +1,47 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Turnstile } from '@marsidev/react-turnstile';
 import AuthService from '../../services/auth.service';
 
 export default function ForgotPassword() {
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState({ text: '', type: '' });
     const [loading, setLoading] = useState(false);
+    const [captchaToken, setCaptchaToken] = useState(null);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (!captchaToken) {
+            setMessage({ text: 'Por favor, completa la verificación de seguridad.', type: 'error' });
+            return;
+        }
+
         setLoading(true);
         setMessage({ text: '', type: '' });
 
         try {
-            const response = await AuthService.forgotPassword(email);
+            const response = await AuthService.forgotPassword(email, captchaToken);
             setMessage({ 
                 text: response.data?.message || 'Si el correo está registrado, recibirás un enlace de recuperación.', 
                 type: 'success' 
             });
             setEmail('');
+            setCaptchaToken(null);
         } catch (error) {
             const resMessage = error.response?.data?.message || 'Ocurrió un error. Inténtalo más tarde.';
             setMessage({ text: resMessage, type: 'error' });
+            setCaptchaToken(null);
         } finally {
             setLoading(false);
         }
     };
 
-    // Estilo de botón cápsula idéntico al del Login
     const glassButtonClass = "w-full mt-2 h-[52px] rounded-full font-bold text-slate-900 bg-[#b3c34c]/80 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(179,195,76,0.35)] hover:bg-[#b3c34c] hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.55)] transition-all duration-300 active:scale-95 flex justify-center items-center gap-2 box-border cursor-pointer";
+    
+    // Clases para la animación del Floating Label
+    const inputClass = "block w-full px-4 pt-6 pb-2 rounded-2xl border border-white/50 bg-white/50 backdrop-blur-sm focus:border-[#b3c34c] focus:bg-white/80 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition text-slate-800 shadow-inner peer";
+    const labelClass = "absolute text-sm font-semibold text-slate-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-focus:text-[#b3c34c] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 cursor-text pointer-events-none";
 
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-80px)] w-full px-4 overflow-hidden">
@@ -43,25 +56,38 @@ export default function ForgotPassword() {
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <label htmlFor="email" className="text-sm font-semibold text-slate-700 ml-1">
-                Correo Electrónico
-              </label>
+            
+            {/* Input animado */}
+            <div className="relative w-full">
               <input
                 type="email"
                 id="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="tu@email.com"
+                placeholder=" "
                 disabled={loading}
-                className="w-full px-4 py-3 rounded-2xl border border-white/50 bg-white/50 backdrop-blur-sm focus:border-[#b3c34c] focus:bg-white/80 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition text-slate-800 placeholder-slate-400 shadow-inner"
+                className={inputClass}
               />
+              <label htmlFor="email" className={labelClass}>
+                Correo Electrónico <span className="text-red-500">*</span>
+              </label>
+            </div>
+
+            {/* Contenedor Glassmorphism para Cloudflare */}
+            <div className="flex justify-center items-center mt-2 p-3 rounded-2xl bg-white/30 backdrop-blur-md border border-white/40 shadow-inner">
+                <Turnstile 
+                    siteKey={process.env.REACT_APP_CAPTCHA_SITE_KEY || '1x00000000000000000000AA'} 
+                    onSuccess={(token) => setCaptchaToken(token)}
+                    onError={() => setCaptchaToken(null)}
+                    onExpire={() => setCaptchaToken(null)}
+                    options={{ theme: 'light' }}
+                />
             </div>
 
             <button 
               type="submit" 
-              disabled={loading}
+              disabled={loading || !captchaToken}
               className={`${glassButtonClass} disabled:opacity-50`}
             >
               {loading ? 'Enviando...' : 'Enviar enlace'}

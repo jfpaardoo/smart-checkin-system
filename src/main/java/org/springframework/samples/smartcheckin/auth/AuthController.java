@@ -76,6 +76,8 @@ public class AuthController {
     private final PushNotificationSender pushNotificationSender;
     private final PasswordResetService passwordResetService;
     private final JavaMailSender javaMailSender;
+    private final CaptchaService captchaService;
+    private static final String CAPTCHA_SUCCESS_MESSAGE = "Error: Verificación de seguridad (Captcha) fallida.";
 
     @Value("${app.frontend.url:http://localhost:3000}")
     private String frontendUrl;
@@ -86,7 +88,8 @@ public class AuthController {
             SimpMessagingTemplate messagingTemplate, TotpService totpService, UserDetailsServiceImpl userDetailsServiceImpl,
             AnomalyDetectionService anomalyDetectionService, HttpServletRequest request,
             JwtBlacklistService jwtBlacklistService, EmailNotificationSender emailNotificationSender, PushNotificationSender pushNotificationSender,
-            PasswordResetService passwordResetService, JavaMailSender javaMailSender) { // <-- Parámetros añadidos
+            PasswordResetService passwordResetService, JavaMailSender javaMailSender,
+            CaptchaService captchaService) { // <-- Parámetro de Captcha añadido
         
         this.userService = userService;
         this.authoritiesService = authoritiesService;
@@ -102,9 +105,9 @@ public class AuthController {
         this.emailNotificationSender = emailNotificationSender;
         this.pushNotificationSender = pushNotificationSender;
         
-        // Asignaciones añadidas
         this.passwordResetService = passwordResetService;
         this.javaMailSender = javaMailSender;
+        this.captchaService = captchaService; // <-- Asignación de Captcha añadida
     }
 
     @PostMapping("/logout")
@@ -122,6 +125,11 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<Object> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        
+        // Validación del Captcha
+        if (!captchaService.validateCaptcha(loginRequest.getCaptchaToken())) {
+            return ResponseEntity.badRequest().body(new MessageResponse(CAPTCHA_SUCCESS_MESSAGE));
+        }
         
         User user = null;
         try {
@@ -220,6 +228,11 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<Object> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
+        // Validación del Captcha
+        if (!captchaService.validateCaptcha(signupRequest.getCaptchaToken())) {
+            return ResponseEntity.badRequest().body(new MessageResponse(CAPTCHA_SUCCESS_MESSAGE));
+        }
+
         try {
             if (userService.findUser(signupRequest.getUsername()) != null) {
                 return ResponseEntity.badRequest().body(new MessageResponse("El nombre de usuario ya se encuentra registrado."));
@@ -308,6 +321,11 @@ public class AuthController {
     @PostMapping("/forgot-password")
     @Auditable(action = "FORGOT_PASSWORD_REQUEST", details = "User requested password reset link")
     public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        // Validación del Captcha
+        if (!captchaService.validateCaptcha(request.getCaptchaToken())) {
+            return ResponseEntity.badRequest().body(new MessageResponse(CAPTCHA_SUCCESS_MESSAGE));
+        }
+
         try {
             User user = userService.findUser(request.getEmail());
             

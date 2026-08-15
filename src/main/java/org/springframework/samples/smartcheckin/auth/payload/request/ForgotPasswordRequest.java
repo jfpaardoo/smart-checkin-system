@@ -8,7 +8,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ForgotPasswordRequest {
+    
     @NotBlank
     @Email
     private String email;
+
+    @NotBlank(message = "El token del captcha es obligatorio")
+    private String captchaToken;
 }
