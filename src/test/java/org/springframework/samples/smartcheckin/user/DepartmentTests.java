@@ -36,19 +36,19 @@ class DepartmentTests {
     // ══════════════════════════════════════════════════════════════════════════
 
     @Test
-    void getTotalEmployees_noSubDepts_countDirectEmployeesOnly() {
+    void testGetTotalEmployeesNoSubDeptsCountDirectEmployeesOnly() {
         Department dept = buildDept("HR", List.of(workingUser(), idleUser()), new ArrayList<>());
         assertEquals(2, dept.getTotalEmployees());
     }
 
     @Test
-    void getTotalEmployees_emptyDept_returnsZero() {
+    void testGetTotalEmployeesEmptyDeptReturnsZero() {
         Department dept = buildDept("Empty", new ArrayList<>(), new ArrayList<>());
         assertEquals(0, dept.getTotalEmployees());
     }
 
     @Test
-    void getTotalEmployees_withSubDepartments_recursiveCount() {
+    void testGetTotalEmployeesWithSubDepartmentsRecursiveCount() {
         // Parent has 2 employees, sub has 3
         Department sub = buildDept("Sub", List.of(workingUser(), idleUser(), workingUser()), new ArrayList<>());
         Department parent = buildDept("Parent", List.of(workingUser(), idleUser()), List.of(sub));
@@ -56,7 +56,7 @@ class DepartmentTests {
     }
 
     @Test
-    void getTotalEmployees_deeplyNestedSubDepts_fullyRecursed() {
+    void testGetTotalEmployeesDeeplyNestedSubDeptsFullyRecursed() {
         // Level 3 has 1 employee, level 2 has 2, level 1 (root) has 1
         Department level3 = buildDept("L3", List.of(workingUser()), new ArrayList<>());
         Department level2 = buildDept("L2", List.of(workingUser(), idleUser()), List.of(level3));
@@ -69,19 +69,19 @@ class DepartmentTests {
     // ══════════════════════════════════════════════════════════════════════════
 
     @Test
-    void getCurrentlyWorkingCount_noSubDepts_countsOnlyWorkingEmployees() {
+    void testGetCurrentlyWorkingCountNoSubDeptsCountsOnlyWorkingEmployees() {
         Department dept = buildDept("IT", List.of(workingUser(), idleUser(), workingUser()), new ArrayList<>());
         assertEquals(2, dept.getCurrentlyWorkingCount());
     }
 
     @Test
-    void getCurrentlyWorkingCount_noWorkingEmployees_returnsZero() {
+    void testGetCurrentlyWorkingCountNoWorkingEmployeesReturnsZero() {
         Department dept = buildDept("Finance", List.of(idleUser(), idleUser()), new ArrayList<>());
         assertEquals(0, dept.getCurrentlyWorkingCount());
     }
 
     @Test
-    void getCurrentlyWorkingCount_withSubDepartments_recursiveSum() {
+    void testGetCurrentlyWorkingCountWithSubDepartmentsRecursiveSum() {
         Department sub = buildDept("Sub", List.of(workingUser(), workingUser()), new ArrayList<>());
         Department parent = buildDept("Parent", List.of(workingUser(), idleUser()), List.of(sub));
         // parent: 1 working, sub: 2 working → total 3
@@ -89,14 +89,14 @@ class DepartmentTests {
     }
 
     @Test
-    void getCurrentlyWorkingCount_allWorking_returnsTotal() {
+    void testGetCurrentlyWorkingCountAllWorkingReturnsTotal() {
         Department sub = buildDept("Sub", List.of(workingUser()), new ArrayList<>());
         Department parent = buildDept("Parent", List.of(workingUser(), workingUser()), List.of(sub));
         assertEquals(3, parent.getCurrentlyWorkingCount());
     }
 
     @Test
-    void getCurrentlyWorkingCount_nullIsWorking_treatedAsNotWorking() {
+    void testGetCurrentlyWorkingCountNullIsWorkingTreatedAsNotWorking() {
         User user = new User();
         user.setIsWorking(null);
         Department dept = buildDept("Null", List.of(user), new ArrayList<>());
@@ -104,7 +104,7 @@ class DepartmentTests {
     }
 
     @Test
-    void getCurrentlyWorkingCount_emptyDept_returnsZero() {
+    void testGetCurrentlyWorkingCountEmptyDeptReturnsZero() {
         Department dept = buildDept("Empty", new ArrayList<>(), new ArrayList<>());
         assertEquals(0, dept.getCurrentlyWorkingCount());
     }
@@ -114,14 +114,14 @@ class DepartmentTests {
     // ══════════════════════════════════════════════════════════════════════════
 
     @Test
-    void setAndGetName_works() {
+    void testSetNameAndGetNameWorks() {
         Department dept = new Department();
         dept.setName("Operations");
         assertEquals("Operations", dept.getName());
     }
 
     @Test
-    void setAndGetParentDepartment_works() {
+    void testSetAndGetParentDepartmentWorks() {
         Department parent = new Department();
         parent.setName("Root");
 
@@ -133,7 +133,7 @@ class DepartmentTests {
     }
 
     @Test
-    void equalsAndHashCode_basedOnIdAndName() {
+    void testEqualsAndHashCodeBasedOnIdAndName() {
         Department d1 = new Department();
         d1.setId(1);
         d1.setName("HR");

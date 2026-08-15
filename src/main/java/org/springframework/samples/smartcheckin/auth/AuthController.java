@@ -11,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.smartcheckin.audit.AnomalyDetectionService;
+import org.springframework.samples.smartcheckin.audit.Auditable;
 import org.springframework.samples.smartcheckin.auth.payload.request.LoginRequest;
 import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest;
 import org.springframework.samples.smartcheckin.auth.payload.response.JwtResponse;
@@ -37,7 +38,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.security.authentication.BadCredentialsException;
 
-
 import org.springframework.samples.smartcheckin.auth.payload.request.SignupRequest;
 import org.springframework.samples.smartcheckin.auth.payload.response.MessageResponse;
 import org.springframework.samples.smartcheckin.user.Authorities;
@@ -50,6 +50,11 @@ import org.springframework.samples.smartcheckin.notifications.PushNotificationSe
 import org.springframework.samples.smartcheckin.notifications.TwoFactorNotification;
 import org.springframework.samples.smartcheckin.notifications.AuthNotification;
 import org.springframework.samples.smartcheckin.notifications.Notification;
+import org.springframework.samples.smartcheckin.auth.payload.request.ForgotPasswordRequest;
+import org.springframework.samples.smartcheckin.auth.payload.request.ResetPasswordRequest;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.beans.factory.annotation.Value;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -69,13 +74,20 @@ public class AuthController {
     private final org.springframework.samples.smartcheckin.configuration.jwt.JwtBlacklistService jwtBlacklistService;
     private final EmailNotificationSender emailNotificationSender;
     private final PushNotificationSender pushNotificationSender;
+    private final PasswordResetService passwordResetService;
+    private final JavaMailSender javaMailSender;
+
+    @Value("${app.frontend.url:http://localhost:3000}")
+    private String frontendUrl;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager, UserService userService, 
             AuthoritiesService authoritiesService, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, 
             SimpMessagingTemplate messagingTemplate, TotpService totpService, UserDetailsServiceImpl userDetailsServiceImpl,
             AnomalyDetectionService anomalyDetectionService, HttpServletRequest request,
-            JwtBlacklistService jwtBlacklistService, EmailNotificationSender emailNotificationSender, PushNotificationSender pushNotificationSender) {
+            JwtBlacklistService jwtBlacklistService, EmailNotificationSender emailNotificationSender, PushNotificationSender pushNotificationSender,
+            PasswordResetService passwordResetService, JavaMailSender javaMailSender) { // <-- Parámetros añadidos
+        
         this.userService = userService;
         this.authoritiesService = authoritiesService;
         this.jwtUtils = jwtUtils;
@@ -89,6 +101,10 @@ public class AuthController {
         this.jwtBlacklistService = jwtBlacklistService;
         this.emailNotificationSender = emailNotificationSender;
         this.pushNotificationSender = pushNotificationSender;
+        
+        // Asignaciones añadidas
+        this.passwordResetService = passwordResetService;
+        this.javaMailSender = javaMailSender;
     }
 
     @PostMapping("/logout")
@@ -289,8 +305,62 @@ public class AuthController {
         return ResponseEntity.ok(isValid);
     }
 
-    @GetMapping("/public-key")
-    public ResponseEntity<String> getPublicKey() {
-        return ResponseEntity.ok(jwtUtils.getPublicKeyBase64());
+    @PostMapping("/forgot-password")
+    @Auditable(action = "FORGOT_PASSWORD_REQUEST", details = "User requested password reset link")
+    public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        try {
+            User user = userService.findUser(request.getEmail());
+            
+            // Verificamos que el usuario esté aprobado y no sea un usuario anonimizado por RGPD
+            if (user != null && Boolean.TRUE.equals(user.getIsApproved()) && !user.getUsername().startsWith("GDPR_DEL_")) {
+                String token = passwordResetService.createOrUpdatePasswordResetToken(user);
+                
+                // Limpiamos la barra final de la URL del frontend por si acaso viene con ella (ej: https://...com/)
+                String baseUrl = frontendUrl.endsWith("/") ? frontendUrl.substring(0, frontendUrl.length() - 1) : frontendUrl;
+                
+                // Enviar email con el enlace dinámico
+                SimpleMailMessage mailMessage = new SimpleMailMessage();
+                mailMessage.setTo(user.getEmail());
+                mailMessage.setSubject("Recuperación de Contraseña - Smart Checkin");
+                mailMessage.setText("Hola " + user.getFirstName() + ",\n\n"
+                        + "Has solicitado restablecer tu contraseña. Haz clic en el siguiente enlace (válido por 15 minutos):\n\n"
+                        + baseUrl + "/reset-password?token=" + token + "\n\n"
+                        + "Si no has sido tú, ignora este correo.");
+                javaMailSender.send(mailMessage);
+            }
+        } catch (ResourceNotFoundException e) {
+            // Se captura en silencio. Prevención de ataque de "Enumeración de Usuarios"
+        }
+        
+        // Siempre devolvemos 200 OK para no darle pistas a los atacantes sobre qué emails existen en la BBDD
+        return ResponseEntity.ok(new MessageResponse("Si el correo está registrado en el sistema, recibirás un enlace de recuperación."));
+    }
+
+    @PostMapping("/reset-password")
+    @Auditable(action = "PASSWORD_RESET_SUCCESS", details = "User successfully reset their password via email token")
+    public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        
+        PasswordResetToken resetToken = passwordResetService.validatePasswordResetToken(request.getToken());
+        if (resetToken == null) {
+            return ResponseEntity.badRequest().body(new MessageResponse("El enlace es inválido o ha expirado."));
+        }
+        
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Las contraseñas no coinciden."));
+        }
+
+        // Actualizamos la contraseña
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        
+        // Desbloquear cuenta si estaba bloqueada
+        user.setFailedLoginAttempts(0);
+        user.setAccountLockedUntil(null);
+        userService.saveUser(user);
+        
+        // Consumimos y destruimos el token (One-Time Use)
+        passwordResetService.deleteToken(resetToken);
+
+        return ResponseEntity.ok(new MessageResponse("Contraseña restablecida con éxito. Ya puedes iniciar sesión con tu nueva contraseña."));
     }
 }

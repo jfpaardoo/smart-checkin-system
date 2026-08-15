@@ -8,31 +8,31 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 public interface UserRepository extends  CrudRepository<User, Integer>{
-	
-	Optional<User> findByUsername(String username);
+    
+    Optional<User> findByUsername(String username);
 
-	Optional<User> findByEmail(String email);
+    Optional<User> findByEmail(String email);
 
-	Optional<User> findByUsernameOrEmail(String username, String email);
+    Optional<User> findByUsernameOrEmail(String username, String email);
 
-	Boolean existsByUsername(String username);
+    Boolean existsByUsername(String username);
 
-	Boolean existsByEmail(String email);
+    Boolean existsByEmail(String email);
 
-	Optional<User> findByPersonalCode(String personalCode);
+    Optional<User> findByPersonalCode(String personalCode);
 
-	@NonNull
-	Optional<User> findById(@NonNull Integer id);
-	
-	@Query("SELECT u FROM User u WHERE u.authority.authority = :auth")
-	Iterable<User> findAllByAuthority(String auth);
+    @NonNull
+    Optional<User> findById(@NonNull Integer id);
 
-	@Query("SELECT u FROM User u WHERE u.isApproved = false")
-	List<User> findAllPendingUsers();
+    @Query("SELECT u FROM User u WHERE u.authority.authority = :auth")
+    Iterable<User> findAllByAuthority(String auth);
 
-	@Query("SELECT u FROM User u WHERE u.isApproved = true")
-	List<User> findAllApprovedUsers();
+    @Query("SELECT u FROM User u WHERE u.isApproved = false AND u.username NOT LIKE 'GDPR_DEL_%'")
+    List<User> findAllPendingUsers();
 
-	@Query("SELECT u FROM User u WHERE u.isApproved = true AND u.authority.authority = :auth")
-	List<User> findAllApprovedUsersByAuthority(String auth);
+    @Query("SELECT u FROM User u WHERE u.isApproved = true AND u.username NOT LIKE 'GDPR_DEL_%'")
+    List<User> findAllApprovedUsers();
+
+    @Query("SELECT u FROM User u WHERE u.isApproved = true AND u.authority.authority = :auth AND u.username NOT LIKE 'GDPR_DEL_%'")
+    List<User> findAllApprovedUsersByAuthority(String auth);
 }

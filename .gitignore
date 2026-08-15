@@ -151,3 +151,4 @@ target/site/allure-maven-plugin
 target/site/allure-results
 .env
 uploads/
+docker-compose.override.yml

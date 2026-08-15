@@ -4,14 +4,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import org.springframework.http.ResponseCookie;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
 import org.springframework.samples.smartcheckin.user.Authorities;
@@ -32,14 +29,6 @@ class JwtUtilsTests {
 	void setUp() {
 		jwtUtils = new JwtUtils();
 		ReflectionTestUtils.setField(jwtUtils, "jwtExpirationMs", 86400000);
-		jwtUtils.initKeys();
-	}
-
-	@Test
-	void testGetPublicKeyBase64() {
-		String pubKey = jwtUtils.getPublicKeyBase64();
-		assertNotNull(pubKey);
-		assertFalse(pubKey.isEmpty());
 	}
 
 	@Test
@@ -104,17 +93,6 @@ class JwtUtilsTests {
 				.subject("test")
 				.compact();
 		assertFalse(jwtUtils.validateJwtToken(token));
-	}
-
-	@Test
-	void testInitKeysNoSuchAlgorithmException() {
-		try (MockedStatic<KeyPairGenerator> mockedStatic = mockStatic(KeyPairGenerator.class)) {
-			mockedStatic.when(() -> KeyPairGenerator.getInstance("RSA"))
-					.thenThrow(new NoSuchAlgorithmException("RSA not found"));
-			
-			RuntimeException exception = assertThrows(RuntimeException.class, () -> jwtUtils.initKeys());
-			assertTrue(exception.getMessage().contains("Failed to generate RSA Key Pair"));
-		}
 	}
 
 	@Test

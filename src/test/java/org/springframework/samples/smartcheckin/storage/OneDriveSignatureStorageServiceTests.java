@@ -97,7 +97,7 @@ class OneDriveSignatureStorageServiceTests {
     // ─── loadSignature ────────────────────────────────────────────────────────
 
     @Test
-    void loadSignature_success() throws Exception {
+    void testLoadSignatureSuccess() throws Exception {
         byte[] content = new byte[] { 1, 2, 3 };
         when(cloudStorageAdapter.downloadFile("ref123")).thenReturn(content);
 
@@ -106,7 +106,7 @@ class OneDriveSignatureStorageServiceTests {
     }
 
     @Test
-    void loadSignature_exception_returnsEmptyArray() throws Exception {
+    void testLoadSignatureExceptionReturnsEmptyArray() throws Exception {
         when(cloudStorageAdapter.downloadFile("ref123")).thenThrow(new IOException("Network error"));
 
         byte[] result = service.loadSignature("ref123");
@@ -117,7 +117,7 @@ class OneDriveSignatureStorageServiceTests {
     // ─── deleteSignature ──────────────────────────────────────────────────────
 
     @Test
-    void deleteSignature_success_returnsTrue() throws Exception {
+    void testDeleteSignatureSuccessReturnsTrue() throws Exception {
         doNothing().when(cloudStorageAdapter).deleteFile("ref123");
 
         assertTrue(service.deleteSignature("ref123"));
@@ -125,7 +125,7 @@ class OneDriveSignatureStorageServiceTests {
     }
 
     @Test
-    void deleteSignature_exception_returnsFalse() throws Exception {
+    void testDeleteSignatureExceptionReturnsFalse() throws Exception {
         doThrow(new IOException("Delete failed")).when(cloudStorageAdapter).deleteFile("ref123");
 
         assertFalse(service.deleteSignature("ref123"));

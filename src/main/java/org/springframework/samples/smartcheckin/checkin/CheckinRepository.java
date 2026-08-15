@@ -13,4 +13,6 @@ public interface CheckinRepository extends CrudRepository<Checkin, Integer> {
     List<Checkin> findByUserIdOrderByCheckInDateDesc(Integer userId);
 
     Long countByCheckInDateBetween(LocalDateTime start, LocalDateTime end);
+
+    void deleteByCheckInDateBefore(java.time.LocalDateTime cutoffDate);
 }

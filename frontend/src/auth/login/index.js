@@ -174,14 +174,29 @@ export default function Login() {
       </div>
 
       {/* FOOTER PÚBLICO LOGIN (TAILWIND) */}
-      <div className="mt-8 text-center text-sm text-slate-500 z-10">
-        &copy; {new Date().getFullYear()} Distribution Academy |{' '}
-        <Link 
-          to="/privacy-policy" 
-          className="font-bold text-slate-600 hover:text-[#b3c34c] transition-colors duration-300"
-        >
-          Política de Privacidad
-        </Link>
+      <div className="flex flex-col gap-3 mt-10 mb-4 text-center text-sm text-slate-500 z-10">
+        
+        {/* ENLACE PARA RECUPERAR CONTRASEÑA */}
+        <div>
+          <Link 
+            to="/forgot-password" 
+            className="font-bold text-slate-600 hover:text-[#b3c34c] transition-colors duration-300"
+          >
+            ¿Has olvidado tu contraseña?
+          </Link>
+        </div>
+
+        {/* COPYRIGHT Y POLÍTICA */}
+        <div>
+          &copy; {new Date().getFullYear()} Distribution Academy |{' '}
+          <Link 
+            to="/privacy-policy" 
+            className="font-bold text-slate-600 hover:text-[#b3c34c] transition-colors duration-300"
+          >
+            Política de Privacidad
+          </Link>
+        </div>
+        
       </div>
 
     </div>

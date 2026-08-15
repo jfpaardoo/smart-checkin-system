@@ -98,7 +98,7 @@ class FormationCheckinFacadeTests {
     }
 
     @Test
-    void updateFormation_notFound_throwsException() {
+    void testUpdateFormationNotFoundThrowsException() {
         FormationRequest req = new FormationRequest();
         when(formationService.findById(1)).thenReturn(Optional.empty());
 
@@ -106,7 +106,7 @@ class FormationCheckinFacadeTests {
     }
 
     @Test
-    void updateFormation_removesAndAddsFiles_success() throws Exception {
+    void testUpdateFormationRemovesAndAddsFilesSuccess() throws Exception {
         Formation existing = new Formation();
         existing.setId(1);
         existing.setName("Old Name");
@@ -134,7 +134,7 @@ class FormationCheckinFacadeTests {
     }
 
     @Test
-    void registerAttendance_withNullPersonalCode_usesCurrentUserCode() {
+    void testRegisterAttendanceWithNullPersonalCodeUsesCurrentUserCode() {
         when(userService.findCurrentUser()).thenReturn(sampleUser);
         Formation formation = new Formation();
         formation.setId(5);
@@ -146,7 +146,7 @@ class FormationCheckinFacadeTests {
     }
 
     @Test
-    void checkoutAttendance_success() {
+    void testCheckoutAttendanceSuccess() {
         when(userService.findCurrentUser()).thenReturn(sampleUser);
         Formation formation = new Formation();
         formation.setId(5);
@@ -157,7 +157,7 @@ class FormationCheckinFacadeTests {
     }
 
     @Test
-    void addRemoveAndDeleteAttendeeMethods_success() {
+    void testAddRemoveAndDeleteAttendeeMethodsSuccess() {
         facade.addAttendee(1, 10);
         verify(formationService).addAttendee(1, 10);
 

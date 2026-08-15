@@ -349,15 +349,6 @@ class AuthControllerTests {
 	}
 
 	@Test
-	void shouldGetPublicKey() throws Exception {
-		when(jwtUtils.getPublicKeyBase64()).thenReturn("PUBLIC_KEY");
-
-		mockMvc.perform(get(BASE_URL + "/public-key"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$").value("PUBLIC_KEY"));
-	}
-
-	@Test
     void testLogoutWithoutAuthorizationHeaderReturnsBadRequest() throws Exception {
         mockMvc.perform(post(LOGOUT_URL).with(csrf()))
                 .andExpect(status().isBadRequest())

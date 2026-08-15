@@ -35,7 +35,7 @@ class DepartmentServiceTests {
     // ─── getAllDepartments ────────────────────────────────────────────────────
 
     @Test
-    void getAllDepartments_returnsAllDepartments() {
+    void testGetAllDepartmentsReturnsAllDepartments() {
         when(departmentRepository.findAll()).thenReturn(List.of(dept));
         List<Department> result = departmentService.getAllDepartments();
         assertEquals(1, result.size());
@@ -67,7 +67,7 @@ class DepartmentServiceTests {
     // ─── getDepartmentById ────────────────────────────────────────────────────
 
     @Test
-    void getDepartmentById_existing_returnsPresent() {
+    void testGetDepartmentByIdExistingReturnsPresent() {
         when(departmentRepository.findById(1)).thenReturn(Optional.of(dept));
         Optional<Department> result = departmentService.getDepartmentById(1);
         assertTrue(result.isPresent());
@@ -75,7 +75,7 @@ class DepartmentServiceTests {
     }
 
     @Test
-    void getDepartmentById_notFound_returnsEmpty() {
+    void testGetDepartmentByIdNotFoundReturnsEmpty() {
         when(departmentRepository.findById(99)).thenReturn(Optional.empty());
         assertTrue(departmentService.getDepartmentById(99).isEmpty());
     }
@@ -83,7 +83,7 @@ class DepartmentServiceTests {
     // ─── saveDepartment ───────────────────────────────────────────────────────
 
     @Test
-    void saveDepartment_persistsAndReturns() {
+    void testSaveDepartmentPersistsAndReturns() {
         when(departmentRepository.save(dept)).thenReturn(dept);
         Department saved = departmentService.saveDepartment(dept);
         assertSame(dept, saved);
@@ -93,7 +93,7 @@ class DepartmentServiceTests {
     // ─── deleteDepartment ─────────────────────────────────────────────────────
 
     @Test
-    void deleteDepartment_callsRepositoryDelete() {
+    void testDeleteDepartmentCallsRepositoryDelete() {
         departmentService.deleteDepartment(1);
         verify(departmentRepository).deleteById(1);
     }

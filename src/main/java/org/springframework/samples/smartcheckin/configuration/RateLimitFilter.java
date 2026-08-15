@@ -46,12 +46,21 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return Bucket.builder().addLimit(limit).build();
     }
 
+    private String getClientIP(HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader == null || xfHeader.isEmpty() || "unknown".equalsIgnoreCase(xfHeader)) {
+            return request.getRemoteAddr();
+        }
+        // X-Forwarded-For puede contener múltiples IPs si hay varios proxies. La primera es la del cliente original.
+        return xfHeader.split(",")[0].trim();
+    }
+
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
         String uri = request.getRequestURI();
-        String ip = request.getRemoteAddr();
+        String ip = getClientIP(request);
         Bucket bucket;
 
         if (uri.startsWith("/api/v1/auth/signin") || uri.startsWith("/api/v1/checkins/qr-fichaje")) {
