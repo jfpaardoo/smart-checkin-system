@@ -4,11 +4,13 @@ import { useToast } from '../../components/ToastProvider';
 import { Turnstile } from '@marsidev/react-turnstile';
 import RegisterSuccess from './components/RegisterSuccess';
 import RegisterForm from './components/RegisterForm';
+import { useCaptchaSiteKey } from '../../hooks/useCaptchaSiteKey';
 import '../../App.css';
 
 export default function Register() {
   const { t } = useTranslation();
   const toast = useToast();
+  const siteKey = useCaptchaSiteKey();
 
   const [form, setForm] = useState({
     username: '',
@@ -123,8 +125,8 @@ export default function Register() {
   const captchaWidget = (
     <div className="flex justify-center items-center p-3 rounded-2xl bg-white/30 backdrop-blur-md border border-white/40 shadow-inner w-fit mx-auto">
       <Turnstile 
-        key={captchaKey}
-        siteKey={process.env.REACT_APP_CAPTCHA_SITE_KEY || '1x00000000000000000000AA'} 
+        key={`${siteKey}-${captchaKey}`}
+        siteKey={siteKey} 
         onSuccess={(token) => setCaptchaToken(token)}
         onError={() => setCaptchaToken(null)}
         onExpire={() => setCaptchaToken(null)}

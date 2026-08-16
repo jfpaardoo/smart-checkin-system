@@ -17,6 +17,7 @@ public class CaptchaService {
     private static final String VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
     private static final String TEST_TOKEN = "1x00000000000000000000AA";
     private static final String MOCKED_TOKEN = "mocked-test-captcha-token";
+    private static final String DEFAULT_TEST_SECRET = "1x0000000000000000000000000000000AA";
 
     @Value("${app.captcha.secret:1x0000000000000000000000000000000AA}")
     private String captchaSecret;
@@ -34,6 +35,11 @@ public class CaptchaService {
 
         // Si se usa el token de pruebas estándar de Cloudflare o mock de pruebas E2E
         if (TEST_TOKEN.equals(captchaResponse) || MOCKED_TOKEN.equals(captchaResponse)) {
+            return true;
+        }
+
+        // Si el secret configurado es el de pruebas por defecto, aceptar para desarrollo local
+        if (DEFAULT_TEST_SECRET.equals(captchaSecret)) {
             return true;
         }
 

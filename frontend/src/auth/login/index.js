@@ -6,11 +6,13 @@ import { Turnstile } from '@marsidev/react-turnstile';
 import tokenService from "../../services/token.service";
 import { FaSignInAlt, FaShieldAlt, FaKey, FaFingerprint } from "react-icons/fa";
 import { isWebAuthnSupported, loginWithPasskey } from "../../util/webauthnUtil";
+import { useCaptchaSiteKey } from "../../hooks/useCaptchaSiteKey";
 import "../../App.css";
 
 export default function Login() {
   const { t } = useTranslation();
   const toast = useToast();
+  const siteKey = useCaptchaSiteKey();
   
   const navigate = useNavigate();
   const [requires2FA, setRequires2FA] = useState(false);
@@ -214,8 +216,8 @@ export default function Login() {
 
               <div className="flex justify-center items-center mt-2 p-3 rounded-2xl bg-white/30 backdrop-blur-md border border-white/40 shadow-inner">
                 <Turnstile 
-                  key={captchaKey}
-                  siteKey={process.env.REACT_APP_CAPTCHA_SITE_KEY || '1x00000000000000000000AA'} 
+                  key={`${siteKey}-${captchaKey}`}
+                  siteKey={siteKey} 
                   onSuccess={(token) => setCaptchaToken(token)}
                   onError={() => setCaptchaToken(null)}
                   onExpire={() => setCaptchaToken(null)}
