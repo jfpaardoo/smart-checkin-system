@@ -23,7 +23,9 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.samples.smartcheckin.audit.AnomalyDetectionService;
+import org.springframework.samples.smartcheckin.auth.payload.request.ForgotPasswordRequest;
 import org.springframework.samples.smartcheckin.auth.payload.request.LoginRequest;
+import org.springframework.samples.smartcheckin.auth.payload.request.ResetPasswordRequest;
 import org.springframework.samples.smartcheckin.auth.payload.request.SignupRequest;
 import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest;
 import org.springframework.samples.smartcheckin.company.Company;
@@ -61,7 +63,8 @@ import io.qameta.allure.Owner;
 @Feature("Authentication")
 @Owner("DP1-tutors")
 @SuppressWarnings("null")
-@WebMvcTest(value = AuthController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebSecurityConfigurer.class), excludeAutoConfiguration = {
+@WebMvcTest(value = AuthController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
+		WebSecurityConfigurer.class, org.springframework.samples.smartcheckin.configuration.RateLimitFilter.class }), excludeAutoConfiguration = {
 		SecurityAutoConfiguration.class })
 class AuthControllerTests {
 
@@ -487,7 +490,7 @@ class AuthControllerTests {
         user.setId(1);
         user.setUsername(USER1);
         user.setTwoFactorSecret(SECRET);
-        user.setFailedLoginAttempts(3); // Para cubrir la condición de restablecimiento de intentos
+        user.setFailedLoginAttempts(3);
 
         when(userService.findUser(USER1)).thenReturn(user);
         when(totpService.validateCode(SECRET, VALID_TOTP_CODE)).thenReturn(true);
@@ -501,5 +504,457 @@ class AuthControllerTests {
 
         verify(userService, times(1)).saveUser(user);
         assertEquals(0, user.getFailedLoginAttempts());
+    }
+
+    @Test
+    void testLogoutWithExpiredJwtInCookie() throws Exception {
+        when(jwtUtils.getJwtFromCookies(any())).thenReturn("EXPIRED_JWT");
+        when(jwtUtils.getUserNameFromJwtToken("EXPIRED_JWT")).thenThrow(new RuntimeException("Token expired"));
+        when(jwtUtils.getCleanJwtCookie()).thenReturn(ResponseCookie.from("jwt", "").path("/api").maxAge(0).build());
+
+        mockMvc.perform(post(LOGOUT_URL).with(csrf())
+                .param("reason", "SessionTimeout")
+                .header("X-Forwarded-For", "192.168.1.100, 10.0.0.1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Log out successful!"));
+
+        verify(jwtBlacklistService).blacklistToken("EXPIRED_JWT");
+        verify(anomalyDetectionService).recordLogout("anonymous", "192.168.1.100", "SessionTimeout");
+    }
+
+    @Test
+    void testLogoutWithoutTokenReturnsBadRequest() throws Exception {
+        when(jwtUtils.getJwtFromCookies(any())).thenReturn(null);
+
+        mockMvc.perform(post(LOGOUT_URL).with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Error: No JWT token found in request."));
+    }
+
+    @Test
+    void testSigninInvalidCaptchaReturnsBadRequest() throws Exception {
+        when(captchaService.validateCaptcha(any())).thenReturn(false);
+
+        mockMvc.perform(post(SIGNIN_URL).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Error: Verificación de seguridad (Captcha) fallida."));
+    }
+
+    @Test
+    void testSigninAccountLockedInFutureReturnsForbidden() throws Exception {
+        User lockedUser = new User();
+        lockedUser.setUsername(loginRequest.getUsername());
+        lockedUser.setIsApproved(true);
+        lockedUser.setAccountLockedUntil(LocalDateTime.now(ZoneId.systemDefault()).plusMinutes(10));
+
+        when(userService.findUser(loginRequest.getUsername())).thenReturn(lockedUser);
+
+        mockMvc.perform(post(SIGNIN_URL).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("Account is locked due to too many failed attempts. Try again later."));
+    }
+
+    @Test
+    void testSigninAccountLockedExpiredResetsLockAndProceeds() throws Exception {
+        User previouslyLockedUser = new User();
+        previouslyLockedUser.setUsername(loginRequest.getUsername());
+        previouslyLockedUser.setIsApproved(true);
+        previouslyLockedUser.setAccountLockedUntil(LocalDateTime.now(ZoneId.systemDefault()).minusMinutes(5));
+        previouslyLockedUser.setFailedLoginAttempts(5);
+
+        when(userService.findUser(loginRequest.getUsername())).thenReturn(previouslyLockedUser);
+
+        Authentication auth = mock(Authentication.class);
+        when(this.jwtUtils.generateJwtCookie(any(Authentication.class))).thenReturn(jwtCookie);
+        when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
+        doReturn(userDetails).when(auth).getPrincipal();
+
+        mockMvc.perform(post(SIGNIN_URL).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk());
+
+        assertNull(previouslyLockedUser.getAccountLockedUntil());
+        assertEquals(0, previouslyLockedUser.getFailedLoginAttempts());
+    }
+
+    @Test
+    void testSigninTwoFactorEnabledWithEmailNotification() throws Exception {
+        User twoFactorUser = new User();
+        twoFactorUser.setUsername(loginRequest.getUsername());
+        twoFactorUser.setEmail("user2fa@example.com");
+        twoFactorUser.setIsApproved(true);
+        twoFactorUser.setTwoFactorEnabled(true);
+        twoFactorUser.setTwoFactorType("EMAIL");
+        twoFactorUser.setTwoFactorSecret(SECRET);
+
+        when(userService.findUser(loginRequest.getUsername())).thenReturn(twoFactorUser);
+        when(totpService.generateCode(SECRET)).thenReturn("654321");
+
+        Authentication auth = mock(Authentication.class);
+        when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
+
+        mockMvc.perform(post(SIGNIN_URL).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.requiresTwoFactor").value(true))
+                .andExpect(jsonPath("$.username").value(loginRequest.getUsername()));
+
+        verify(emailNotificationSender).send(eq("user2fa@example.com"), anyString(), contains("654321"));
+    }
+
+    @Test
+    void testSigninTwoFactorEnabledWithEmailNotificationFailureHandledGracefully() throws Exception {
+        User twoFactorUser = new User();
+        twoFactorUser.setUsername(loginRequest.getUsername());
+        twoFactorUser.setEmail("user2fa@example.com");
+        twoFactorUser.setIsApproved(true);
+        twoFactorUser.setTwoFactorEnabled(true);
+        twoFactorUser.setTwoFactorType("EMAIL");
+        twoFactorUser.setTwoFactorSecret(SECRET);
+
+        when(userService.findUser(loginRequest.getUsername())).thenReturn(twoFactorUser);
+        when(totpService.generateCode(SECRET)).thenReturn("654321");
+        doThrow(new RuntimeException("Mail server offline")).when(emailNotificationSender).send(anyString(), anyString(), anyString());
+
+        Authentication auth = mock(Authentication.class);
+        when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
+
+        mockMvc.perform(post(SIGNIN_URL).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.requiresTwoFactor").value(true));
+    }
+
+    @Test
+    void testSigninBadCredentialsLocksAccountAfter5Attempts() throws Exception {
+        User user = new User();
+        user.setUsername(loginRequest.getUsername());
+        user.setIsApproved(true);
+        user.setFailedLoginAttempts(4);
+
+        when(userService.findUser(loginRequest.getUsername())).thenReturn(user);
+        when(this.authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("Bad Credentials"));
+
+        mockMvc.perform(post(SIGNIN_URL).with(csrf())
+                .header("X-Forwarded-For", "10.0.0.5")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Bad Credentials!"));
+
+        assertEquals(5, user.getFailedLoginAttempts());
+        assertNotNull(user.getAccountLockedUntil());
+        verify(userService).saveUser(user);
+        verify(anomalyDetectionService).recordFailedLogin(loginRequest.getUsername(), "10.0.0.5", 5);
+    }
+
+    @Test
+    void testSigninBadCredentialsUnregisteredUser() throws Exception {
+        when(userService.findUser("unregistered")).thenThrow(new ResourceNotFoundException("User not found"));
+        when(this.authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("Bad Credentials"));
+
+        LoginRequest req = new LoginRequest();
+        req.setUsername("unregistered");
+        req.setPassword("pass");
+        req.setCaptchaToken("token");
+
+        mockMvc.perform(post(SIGNIN_URL).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isBadRequest());
+
+        verify(anomalyDetectionService).recordFailedLogin("unregistered", "127.0.0.1", 1);
+    }
+
+    @Test
+    void testSignupInvalidCaptchaReturnsBadRequest() throws Exception {
+        when(captchaService.validateCaptcha(any())).thenReturn(false);
+
+        SignupRequest req = new SignupRequest();
+        req.setUsername("newuser");
+        req.setPassword("password");
+        req.setEmail("new@example.com");
+        req.setPersonalCode("1234");
+        req.setFirstName("First");
+        req.setLastName("Last");
+        req.setCaptchaToken("invalid-captcha");
+
+        mockMvc.perform(post(SIGNUP_URL).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Error: Verificación de seguridad (Captcha) fallida."));
+    }
+
+    @Test
+    void testSignupExistingUsernameReturnsBadRequest() throws Exception {
+        when(userService.findUser("existingUser")).thenReturn(new User());
+
+        SignupRequest req = new SignupRequest();
+        req.setUsername("existingUser");
+        req.setPassword("password");
+        req.setEmail("exist@example.com");
+        req.setPersonalCode("1234");
+        req.setFirstName("First");
+        req.setLastName("Last");
+        req.setCaptchaToken("token");
+
+        mockMvc.perform(post(SIGNUP_URL).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("El nombre de usuario ya se encuentra registrado."));
+    }
+
+    @Test
+    void testSignupWithCompanyIdAndLocatorSuccess() throws Exception {
+        when(userService.findUser("companyUser")).thenThrow(new ResourceNotFoundException("User not found"));
+        Authorities employeeAuth = new Authorities();
+        employeeAuth.setAuthority("EMPLOYEE");
+        when(authoritiesService.findByAuthority("EMPLOYEE")).thenReturn(employeeAuth);
+
+        Company company = new Company();
+        company.setId(10);
+        when(companyService.findById(10)).thenReturn(company);
+        when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
+
+        SignupRequest req = new SignupRequest();
+        req.setUsername("companyUser");
+        req.setPassword("password");
+        req.setEmail("comp@example.com");
+        req.setPersonalCode("1234");
+        req.setFirstName("First");
+        req.setLastName("Last");
+        req.setCompanyId(10);
+        req.setLocator("loc-abc");
+        req.setCaptchaToken("token");
+
+        mockMvc.perform(post(SIGNUP_URL).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Solicitud de registro enviada con éxito. El administrador activará tu cuenta."));
+
+        verify(userService).saveUser(argThat(u -> u.getCompany() != null && "LOC-ABC".equals(u.getLocator())));
+        verify(simpMessagingTemplate).convertAndSend("/topic/users", "update");
+    }
+
+    @Test
+    void testSignupWithNonExistentCompanyId() throws Exception {
+        when(userService.findUser("companyUser2")).thenThrow(new ResourceNotFoundException("User not found"));
+        Authorities employeeAuth = new Authorities();
+        employeeAuth.setAuthority("EMPLOYEE");
+        when(authoritiesService.findByAuthority("EMPLOYEE")).thenReturn(employeeAuth);
+        when(companyService.findById(999)).thenThrow(new ResourceNotFoundException("Company not found"));
+        when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
+
+        SignupRequest req = new SignupRequest();
+        req.setUsername("companyUser2");
+        req.setPassword("password");
+        req.setEmail("comp2@example.com");
+        req.setPersonalCode("1234");
+        req.setFirstName("First");
+        req.setLastName("Last");
+        req.setCompanyId(999);
+        req.setCaptchaToken("token");
+
+        mockMvc.perform(post(SIGNUP_URL).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk());
+
+        verify(userService).saveUser(argThat(u -> u.getCompany() == null));
+    }
+
+    @Test
+    void testVerifyTwoFactorSecretNullReturnsBadRequest() throws Exception {
+        TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
+        req.setUsername("userNoSecret");
+        req.setCode("123456");
+
+        User user = new User();
+        user.setUsername("userNoSecret");
+        user.setTwoFactorSecret(null);
+
+        when(userService.findUser("userNoSecret")).thenReturn(user);
+
+        mockMvc.perform(post(BASE_URL + VERIFY_URL).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Error: Código 2FA inválido o expirado."));
+    }
+
+    @Test
+    void testGetCaptchaConfig() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/captcha-config").with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.siteKey").exists());
+    }
+
+    @Test
+    void testValidateTokenTrueAndFalse() throws Exception {
+        when(jwtUtils.getJwtFromCookies(any())).thenReturn("VALID_COOKIE_JWT");
+        when(jwtUtils.validateJwtToken("VALID_COOKIE_JWT")).thenReturn(true);
+
+        mockMvc.perform(get(BASE_URL + "/validate").with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(content().string("true"));
+
+        when(jwtUtils.getJwtFromCookies(any())).thenReturn(null);
+
+        mockMvc.perform(get(BASE_URL + "/validate").with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(content().string("false"));
+    }
+
+    @Test
+    void testForgotPasswordInvalidCaptchaReturnsBadRequest() throws Exception {
+        when(captchaService.validateCaptcha(any())).thenReturn(false);
+
+        ForgotPasswordRequest req = new ForgotPasswordRequest();
+        req.setEmail("user@example.com");
+        req.setCaptchaToken("invalid-token");
+
+        mockMvc.perform(post(BASE_URL + "/forgot-password").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Error: Verificación de seguridad (Captcha) fallida."));
+    }
+
+    @Test
+    void testForgotPasswordApprovedUserSendsEmail() throws Exception {
+        User user = new User();
+        user.setUsername("john");
+        user.setEmail("john@example.com");
+        user.setFirstName("John");
+        user.setIsApproved(true);
+
+        when(userService.findUser("john@example.com")).thenReturn(user);
+        when(passwordResetService.createOrUpdatePasswordResetToken(user)).thenReturn("resetToken123");
+
+        ForgotPasswordRequest req = new ForgotPasswordRequest();
+        req.setEmail("john@example.com");
+        req.setCaptchaToken("valid-token");
+
+        mockMvc.perform(post(BASE_URL + "/forgot-password").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Si el correo está registrado en el sistema, recibirás un enlace de recuperación."));
+
+        verify(javaMailSender).send(any(org.springframework.mail.SimpleMailMessage.class));
+    }
+
+    @Test
+    void testForgotPasswordUserNotFoundSilentlySucceeds() throws Exception {
+        when(userService.findUser("unknown@example.com")).thenThrow(new ResourceNotFoundException("User not found"));
+
+        ForgotPasswordRequest req = new ForgotPasswordRequest();
+        req.setEmail("unknown@example.com");
+        req.setCaptchaToken("valid-token");
+
+        mockMvc.perform(post(BASE_URL + "/forgot-password").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Si el correo está registrado en el sistema, recibirás un enlace de recuperación."));
+
+        verifyNoInteractions(javaMailSender);
+    }
+
+    @Test
+    void testForgotPasswordGdprAnonymizedUserIgnored() throws Exception {
+        User gdprUser = new User();
+        gdprUser.setUsername("GDPR_DEL_123");
+        gdprUser.setEmail("gdpr@example.com");
+        gdprUser.setIsApproved(true);
+
+        when(userService.findUser("gdpr@example.com")).thenReturn(gdprUser);
+
+        ForgotPasswordRequest req = new ForgotPasswordRequest();
+        req.setEmail("gdpr@example.com");
+        req.setCaptchaToken("valid-token");
+
+        mockMvc.perform(post(BASE_URL + "/forgot-password").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk());
+
+        verifyNoInteractions(javaMailSender);
+    }
+
+    @Test
+    void testResetPasswordInvalidOrExpiredTokenReturnsBadRequest() throws Exception {
+        when(passwordResetService.validatePasswordResetToken("invalid-token")).thenReturn(null);
+
+        ResetPasswordRequest req = new ResetPasswordRequest();
+        req.setToken("invalid-token");
+        req.setNewPassword("newPassword123");
+        req.setConfirmPassword("newPassword123");
+
+        mockMvc.perform(post(BASE_URL + "/reset-password").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("El enlace es inválido o ha expirado."));
+    }
+
+    @Test
+    void testResetPasswordPasswordsMismatchReturnsBadRequest() throws Exception {
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setToken("valid-token");
+        when(passwordResetService.validatePasswordResetToken("valid-token")).thenReturn(resetToken);
+
+        ResetPasswordRequest req = new ResetPasswordRequest();
+        req.setToken("valid-token");
+        req.setNewPassword("newPassword123");
+        req.setConfirmPassword("differentPassword123");
+
+        mockMvc.perform(post(BASE_URL + "/reset-password").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Las contraseñas no coinciden."));
+    }
+
+    @Test
+    void testResetPasswordSuccess() throws Exception {
+        User user = new User();
+        user.setUsername("resetUser");
+        user.setFailedLoginAttempts(3);
+        user.setAccountLockedUntil(LocalDateTime.now(ZoneId.systemDefault()).plusMinutes(10));
+
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setToken("valid-token");
+        resetToken.setUser(user);
+
+        when(passwordResetService.validatePasswordResetToken("valid-token")).thenReturn(resetToken);
+        when(passwordEncoder.encode("newSecretPass")).thenReturn("encodedSecretPass");
+
+        ResetPasswordRequest req = new ResetPasswordRequest();
+        req.setToken("valid-token");
+        req.setNewPassword("newSecretPass");
+        req.setConfirmPassword("newSecretPass");
+
+        mockMvc.perform(post(BASE_URL + "/reset-password").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Contraseña restablecida con éxito. Ya puedes iniciar sesión con tu nueva contraseña."));
+
+        assertEquals("encodedSecretPass", user.getPassword());
+        assertEquals(0, user.getFailedLoginAttempts());
+        assertNull(user.getAccountLockedUntil());
+        verify(userService).saveUser(user);
+        verify(passwordResetService).deleteToken(resetToken);
     }
 }

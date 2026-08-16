@@ -131,9 +131,9 @@ public class UserSessionService {
     private static String detectOs(String ua) {
         if (ua.contains("windows nt 10.0")) return "Windows 10/11";
         if (ua.contains("windows")) return "Windows";
-        if (ua.contains("macintosh") || ua.contains("mac os x")) return "macOS";
         if (ua.contains("iphone") || ua.contains("ipad")) return "iOS";
         if (ua.contains("android")) return "Android";
+        if (ua.contains("macintosh") || ua.contains("mac os x")) return "macOS";
         if (ua.contains("linux")) return "Linux";
         return "SO";
     }

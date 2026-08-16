@@ -103,13 +103,74 @@ class UserSessionServiceTests {
     }
 
     @Test
-    void testParseDeviceInfo() {
-        String info1 = UserSessionService.parseDeviceInfo("Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0");
-        assertTrue(info1.contains("Chrome"));
-        assertTrue(info1.contains("Windows"));
+    void testRegisterExistingSessionUpdates() {
+        when(userSessionRepository.findByTokenHash(session1.getTokenHash())).thenReturn(Optional.of(session1));
 
-        String info2 = UserSessionService.parseDeviceInfo("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Safari/604.1");
-        assertTrue(info2.contains("Safari"));
-        assertTrue(info2.contains("iOS"));
+        userSessionService.registerOrUpdateSession("testUser", "token1", "192.168.1.200", "Mozilla/5.0");
+
+        assertEquals("192.168.1.200", session1.getIpAddress());
+        assertTrue(session1.isActive());
+        verify(userSessionRepository).save(session1);
+    }
+
+    @Test
+    void testRegisterSessionWithNullsOrNullUserAgent() {
+        userSessionService.registerOrUpdateSession(null, "token", "ip", "agent");
+        userSessionService.registerOrUpdateSession("user", null, "ip", "agent");
+        verify(userSessionRepository, never()).save(any(UserSession.class));
+
+        when(userSessionRepository.findByTokenHash(anyString())).thenReturn(Optional.empty());
+        userSessionService.registerOrUpdateSession("user", "token", "ip", null);
+        verify(userSessionRepository).save(argThat(s -> "Desconocido".equals(s.getUserAgent())));
+    }
+
+    @Test
+    void testRevokeSessionNotFoundReturnsFalse() {
+        when(userSessionRepository.findByIdAndUsername(99, "testUser")).thenReturn(Optional.empty());
+        assertFalse(userSessionService.revokeSession("testUser", 99));
+    }
+
+    @Test
+    void testIsSessionActive() {
+        assertFalse(userSessionService.isSessionActive(null));
+
+        when(userSessionRepository.findByTokenHash(session1.getTokenHash())).thenReturn(Optional.of(session1));
+        assertTrue(userSessionService.isSessionActive("token1"));
+
+        session1.setActive(false);
+        assertFalse(userSessionService.isSessionActive("token1"));
+
+        when(userSessionRepository.findByTokenHash(anyString())).thenReturn(Optional.empty());
+        assertTrue(userSessionService.isSessionActive("unmigratedToken"));
+    }
+
+    @Test
+    void testParseDeviceInfoAllBranches() {
+        assertEquals("Dispositivo Desconocido", UserSessionService.parseDeviceInfo(null));
+        assertEquals("Dispositivo Desconocido", UserSessionService.parseDeviceInfo("   "));
+
+        String edge = UserSessionService.parseDeviceInfo("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 Edg/120.0");
+        assertTrue(edge.contains("Microsoft Edge"));
+        assertTrue(edge.contains("Windows"));
+
+        String ffLinux = UserSessionService.parseDeviceInfo("Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0");
+        assertTrue(ffLinux.contains("Mozilla Firefox"));
+        assertTrue(ffLinux.contains("Linux"));
+
+        String android = UserSessionService.parseDeviceInfo("Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/120.0 Mobile Safari/537.36");
+        assertTrue(android.contains("Google Chrome"));
+        assertTrue(android.contains("Android"));
+
+        String mac = UserSessionService.parseDeviceInfo("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Safari/605.1.15");
+        assertTrue(mac.contains("Safari"));
+        assertTrue(mac.contains("macOS"));
+
+        String ipad = UserSessionService.parseDeviceInfo("Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 Safari/605.1.15");
+        assertTrue(ipad.contains("Safari"));
+        assertTrue(ipad.contains("iOS"));
+
+        String custom = UserSessionService.parseDeviceInfo("CustomBot/1.0");
+        assertTrue(custom.contains("Navegador"));
+        assertTrue(custom.contains("SO"));
     }
 }

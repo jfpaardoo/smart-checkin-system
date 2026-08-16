@@ -67,6 +67,9 @@ class WebAuthnRestControllerTests {
     @MockitoBean
     private org.springframework.samples.smartcheckin.audit.AnomalyDetectionService anomalyDetectionService;
 
+    @MockitoBean
+    private org.springframework.samples.smartcheckin.metrics.AppMetricsService metricsService;
+
     private User testUser;
     private UserDetailsImpl userDetails;
 

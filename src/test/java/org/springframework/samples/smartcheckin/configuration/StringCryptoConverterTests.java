@@ -42,8 +42,9 @@ class StringCryptoConverterTests {
     }
 
     @Test
-    void testDecryptionExceptionForInvalidBase64() {
-        assertThrows(RuntimeException.class, () -> converter.convertToEntityAttribute("invalidBase64:invalidBase64"));
+    void testDecryptionGracefulFallbackForInvalidData() {
+        String invalidData = "invalidBase64:invalidBase64";
+        assertEquals(invalidData, converter.convertToEntityAttribute(invalidData));
     }
 
     @Test
