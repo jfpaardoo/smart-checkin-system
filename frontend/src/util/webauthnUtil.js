@@ -45,21 +45,6 @@ export function isWebAuthnSupported() {
 }
 
 /**
- * Comprueba si hay disponible un autenticador de plataforma (TouchID, FaceID, Windows Hello, huella)
- */
-export async function isPlatformAuthenticatorAvailable() {
-  if (!isWebAuthnSupported()) return false;
-  if (typeof window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable !== 'function') {
-    return false;
-  }
-  try {
-    return await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Detecta de forma amigable el tipo de dispositivo/sistema operativo
  */
 export function detectDeviceType() {

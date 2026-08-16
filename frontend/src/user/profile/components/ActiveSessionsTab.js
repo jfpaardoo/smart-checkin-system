@@ -28,6 +28,8 @@ export default function ActiveSessionsTab({ t, toast }) {
   const [loading, setLoading] = useState(true);
   const [revokingId, setRevokingId] = useState(null);
   const [revokingAll, setRevokingAll] = useState(false);
+  const revokingIdRef = React.useRef(null);
+  const isRevokingOtherRef = React.useRef(false);
 
   const fetchSessions = useCallback(async () => {
     try {
@@ -47,9 +49,10 @@ export default function ActiveSessionsTab({ t, toast }) {
   }, [fetchSessions]);
 
   const handleRevokeSession = async (sessionId) => {
-    if (revokingId) return;
+    if (revokingIdRef.current || revokingId) return;
+    revokingIdRef.current = sessionId;
+    setRevokingId(sessionId);
     try {
-      setRevokingId(sessionId);
       await api.delete(`/users/me/sessions/${sessionId}`);
       toast.success(t("profile.sessionRevokedSuccess", "Sesión remota cerrada correctamente."));
       setSessions((prev) => prev.filter((s) => s.id !== sessionId));
@@ -57,24 +60,27 @@ export default function ActiveSessionsTab({ t, toast }) {
       console.error("Error al revocar sesión:", err);
       toast.error(t("profile.sessionRevokeError", "No se pudo cerrar la sesión remota."));
     } finally {
+      revokingIdRef.current = null;
       setRevokingId(null);
     }
   };
 
   const handleRevokeOtherSessions = async () => {
-    if (revokingAll) return;
+    if (isRevokingOtherRef.current || revokingAll) return;
     if (!window.confirm(t("profile.confirmRevokeOthers", "¿Estás seguro de que deseas cerrar sesión en todos los demás dispositivos?"))) {
       return;
     }
+    isRevokingOtherRef.current = true;
+    setRevokingAll(true);
     try {
-      setRevokingAll(true);
       const res = await api.delete("/users/me/sessions/others");
       toast.success(res.data?.message || t("profile.otherSessionsRevoked", "Se han cerrado las demás sesiones activas."));
-      fetchSessions();
+      await fetchSessions();
     } catch (err) {
       console.error("Error al cerrar otras sesiones:", err);
       toast.error(t("profile.otherSessionsRevokeError", "Error al cerrar las demás sesiones."));
     } finally {
+      isRevokingOtherRef.current = false;
       setRevokingAll(false);
     }
   };

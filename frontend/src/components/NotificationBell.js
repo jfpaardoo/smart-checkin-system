@@ -3,17 +3,7 @@ import { FaBell } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../hooks/useSubscription';
 import tokenService from '../services/token.service';
-
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replaceAll('-', '+').replaceAll('_', '/');
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.codePointAt(i);
-  }
-  return outputArray;
-}
+import { registerPushNotifications } from '../util/pushNotificationUtil';
 
 export default function NotificationBell({ isMobile = false, isOpen = false, onToggle = null }) {
   const { t } = useTranslation();
@@ -64,74 +54,10 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
 
   const userId = user?.id;
 
-  // FIX: React Doctor (effect-needs-cleanup & no-fetch-in-effect)
   useEffect(() => {
-    const abortController = new AbortController();
-    let isMounted = true;
-    let subscription = null;
-
-    if (userId && 'serviceWorker' in navigator && 'PushManager' in window) {
-      const initPushService = async () => {
-        try {
-          const registration = await navigator.serviceWorker.register('/sw.js');
-          await navigator.serviceWorker.ready;
-
-          const response = await fetch('/api/v1/push/vapid-key', { 
-            credentials: 'include',
-            signal: abortController.signal
-          });
-          
-          if (!response.ok) return;
-          const { publicKey } = await response.json();
-
-          subscription = await registration.pushManager.getSubscription();
-          if (!subscription) {
-            const permission = await Notification.requestPermission();
-            if (permission !== 'granted') return;
-
-            subscription = await registration.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: urlBase64ToUint8Array(publicKey)
-            });
-
-            // FIX: Safeguard contra condición de carrera. 
-            // Si el componente se desmontó mientras esperábamos la promesa,
-            // la limpiamos inmediatamente antes de que se convierta en una fuga huérfana.
-            if (!isMounted && subscription) {
-              subscription.unsubscribe().catch(() => {});
-              return;
-            }
-          }
-
-          if (subscription && isMounted) {
-            await fetch('/api/v1/push/subscribe', {
-              credentials: 'include',
-              method: 'POST',
-              signal: abortController.signal,
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(subscription.toJSON())
-            });
-          }
-        } catch (err) {
-          if (err.name !== 'AbortError') {
-            console.warn('Push subscription failed:', err);
-          }
-        }
-      };
-
-      initPushService();
+    if (userId) {
+      registerPushNotifications();
     }
-
-    // Limpieza garantizada que previene el warning exacto de "effect-needs-cleanup"
-    return () => {
-      isMounted = false;
-      abortController.abort();
-      if (subscription) {
-        subscription.unsubscribe().catch(() => {});
-      }
-    };
   }, [userId]);
 
   const markAllRead = () => {

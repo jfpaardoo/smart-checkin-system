@@ -41,7 +41,6 @@
     "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4.3.3",
     "autoprefixer": "^10.5.4",
-    "identity-obj-proxy": "^3.0.0",
     "msw": "^1.2.1",
     "postcss": "^8.5.25",
     "prettier": "^3.4.2",
@@ -60,8 +59,7 @@
   },
   "eslintConfig": {
     "extends": [
-      "react-app",
-      "react-app/jest"
+      "react-app"
     ]
   },
   "browserslist": {

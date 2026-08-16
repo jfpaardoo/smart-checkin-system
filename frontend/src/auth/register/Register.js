@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import useSWR from 'swr';
 import { useToast } from '../../components/ToastProvider';
 import { Turnstile } from '@marsidev/react-turnstile';
 import RegisterSuccess from './components/RegisterSuccess';
 import RegisterForm from './components/RegisterForm';
 import { useCaptchaSiteKey } from '../../hooks/useCaptchaSiteKey';
+
+const companiesFetcher = (url) => fetch(url).then((res) => (res.ok ? res.json() : []));
 
 export default function Register() {
   const { t } = useTranslation();
@@ -23,21 +26,20 @@ export default function Register() {
     locator: ''
   });
 
-  const [companies, setCompanies] = useState([]);
+  const { data: companiesData } = useSWR('/api/v1/companies', companiesFetcher, {
+    revalidateOnFocus: false,
+  });
+  const companies = Array.isArray(companiesData) ? companiesData : [];
+
   const [loading, setLoading] = useState(false);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState(null);
-  const [captchaKey, setCaptchaKey] = useState(0);
-
-  useEffect(() => {
+  const [captchaToken, setCaptchaToken] = useState(() => {
     if (typeof window !== 'undefined' && (window.navigator.webdriver || window.__PLAYWRIGHT__)) {
-      setCaptchaToken('1x00000000000000000000AA');
+      return '1x00000000000000000000AA';
     }
-    fetch('/api/v1/companies')
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data) => setCompanies(Array.isArray(data) ? data : []))
-      .catch(() => setCompanies([]));
-  }, [captchaKey]);
+    return null;
+  });
+  const [captchaKey, setCaptchaKey] = useState(0);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
