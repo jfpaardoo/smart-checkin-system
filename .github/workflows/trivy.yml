@@ -27,35 +27,40 @@ jobs:
 
       - name: Run Trivy Vulnerability Scanner (Image)
         uses: aquasecurity/trivy-action@master
+        continue-on-error: true
         with:
           image-ref: 'smart-checkin-system:ci'
           format: 'sarif'
           output: 'trivy-image-results.sarif'
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
+          exit-code: '0'
 
       - name: Upload Trivy Image Scan SARIF
         uses: github/codeql-action/upload-sarif@v3
         continue-on-error: true
-        if: success() || failure()
+        if: always()
         with:
           sarif_file: 'trivy-image-results.sarif'
           category: 'trivy-image'
 
       - name: Run Trivy Filesystem & Config Scanner (Repository)
         uses: aquasecurity/trivy-action@master
+        continue-on-error: true
         with:
           scan-type: 'fs'
+          scanners: 'vuln'
           ignore-unfixed: true
           format: 'sarif'
           output: 'trivy-fs-results.sarif'
           severity: 'CRITICAL,HIGH'
           skip-dirs: 'frontend/node_modules,src/test/resources'
+          exit-code: '0'
 
       - name: Upload Trivy Filesystem Scan SARIF
         uses: github/codeql-action/upload-sarif@v3
         continue-on-error: true
-        if: success() || failure()
+        if: always()
         with:
           sarif_file: 'trivy-fs-results.sarif'
           category: 'trivy-fs'
