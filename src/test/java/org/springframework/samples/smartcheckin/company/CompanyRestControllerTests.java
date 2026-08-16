@@ -52,6 +52,8 @@ class CompanyRestControllerTests {
                 .andExpect(jsonPath("$[1].name").value("OT Noriega"));
     }
 
+    private static final String JSON_NAME = "$.name";
+
     @Test
     @WithMockUser
     void shouldFindCompanyById() throws Exception {
@@ -62,7 +64,7 @@ class CompanyRestControllerTests {
 
         mockMvc.perform(get(BASE_URL + "/3"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Eurotalia"));
+                .andExpect(jsonPath(JSON_NAME).value("Eurotalia"));
     }
 
     @Test
@@ -79,7 +81,7 @@ class CompanyRestControllerTests {
                 .content(objectMapper.writeValueAsString(c)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(10))
-                .andExpect(jsonPath("$.name").value("New Company"));
+                .andExpect(jsonPath(JSON_NAME).value("New Company"));
     }
 
     @Test
@@ -99,7 +101,7 @@ class CompanyRestControllerTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updated)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Updated Name"));
+                .andExpect(jsonPath(JSON_NAME).value("Updated Name"));
     }
 
     @Test

@@ -62,10 +62,13 @@ class AuditAspectTests {
         };
     }
 
+    private static final String ACTION_TEST = "TEST_ACTION";
+    private static final String DETAILS_TEST = "Test Details";
+
     @Test
     void testLogAuditableActionSuccess() {
         JoinPoint joinPoint = mock(JoinPoint.class);
-        Auditable auditable = createAuditable("TEST_ACTION", "Test Details");
+        Auditable auditable = createAuditable(ACTION_TEST, DETAILS_TEST);
         ResponseEntity<Object> responseEntity = ResponseEntity.ok().build();
         
         aspect.logAuditableAction(joinPoint, auditable, responseEntity);
@@ -76,7 +79,7 @@ class AuditAspectTests {
     @Test
     void testLogAuditableActionFailureResponse() {
         JoinPoint joinPoint = mock(JoinPoint.class);
-        Auditable auditable = createAuditable("TEST_ACTION", "Test Details");
+        Auditable auditable = createAuditable(ACTION_TEST, DETAILS_TEST);
         ResponseEntity<Object> responseEntity = ResponseEntity.badRequest().build();
         
         aspect.logAuditableAction(joinPoint, auditable, responseEntity);
@@ -87,7 +90,7 @@ class AuditAspectTests {
     @Test
     void testLogAuditableActionWithBodyUsername() {
         JoinPoint joinPoint = mock(JoinPoint.class);
-        Auditable auditable = createAuditable("TEST_ACTION", "Test Details");
+        Auditable auditable = createAuditable(ACTION_TEST, DETAILS_TEST);
         
         class DummyBody {
             @SuppressWarnings("unused")
@@ -105,7 +108,7 @@ class AuditAspectTests {
     void testLogAuditableActionNullAuth() {
         SecurityContextHolder.clearContext();
         JoinPoint joinPoint = mock(JoinPoint.class);
-        Auditable auditable = createAuditable("TEST_ACTION", "Test Details");
+        Auditable auditable = createAuditable(ACTION_TEST, DETAILS_TEST);
         
         aspect.logAuditableAction(joinPoint, auditable, "Some Result");
         
@@ -115,7 +118,7 @@ class AuditAspectTests {
     @Test
     void testLogAuditableActionWithBodyNameAndIdAndEmptyDetails() {
         JoinPoint joinPoint = mock(JoinPoint.class);
-        Auditable auditable = createAuditable("TEST_ACTION", "");
+        Auditable auditable = createAuditable(ACTION_TEST, "");
         
         class FullEntity {
             @SuppressWarnings("unused")
@@ -136,7 +139,7 @@ class AuditAspectTests {
         
         AuditAspect throwingAspect = new AuditAspect(auditLogRepository, throwingRequest, mock(SimpMessagingTemplate.class));
         JoinPoint joinPoint = mock(JoinPoint.class);
-        Auditable auditable = createAuditable("TEST_ACTION", "");
+        Auditable auditable = createAuditable(ACTION_TEST, "");
         
         throwingAspect.logAuditableAction(joinPoint, auditable, null);
         
@@ -150,7 +153,7 @@ class AuditAspectTests {
         
         AuditAspect proxyAspect = new AuditAspect(auditLogRepository, proxyRequest, mock(SimpMessagingTemplate.class));
         JoinPoint joinPoint = mock(JoinPoint.class);
-        Auditable auditable = createAuditable("TEST_ACTION", "Proxy Action");
+        Auditable auditable = createAuditable(ACTION_TEST, "Proxy Action");
         
         proxyAspect.logAuditableAction(joinPoint, auditable, null);
         

@@ -33,8 +33,8 @@ export default function UserTable({
               <th style={{ width: '14%' }}>{t('users.firstName', 'Nombre')}</th>
               <th style={{ width: '14%' }}>{t('users.lastName', 'Apellidos')}</th>
               <th style={{ width: '18%' }}>{t('users.company', 'Empresa / Centro')}</th>
-              <th style={{ width: '12%' }} className="text-center">{t('users.status', 'Estado')}</th>
-              <th style={{ width: '18%' }} className="text-center">{t('users.actions', 'Acciones')}</th>
+              <th style={{ width: '12%', textAlign: 'center' }}>{t('users.status', 'Estado')}</th>
+              <th style={{ width: '18%', textAlign: 'center' }}>{t('users.actions', 'Acciones')}</th>
             </tr>
           </thead>
           <tbody>
@@ -62,14 +62,16 @@ export default function UserTable({
                     <span className="text-slate-400 text-xs italic">{t('users.noCompany', 'Sin empresa')}</span>
                   )}
                 </td>
-                <td className="text-center">
-                  {activeTab === 'approved' || activeTab === 'admins' || activeTab === 'employees' ? (
-                    <span className={`da-badge ${user.isWorking ? 'da-badge-active' : 'da-badge-inactive'}`} style={{ whiteSpace: 'normal', display: 'inline-block' }}>
-                      {user.isWorking ? t('users.statusWorking', 'Trabajando') : t('users.statusResting', 'Descansando')}
-                    </span>
-                  ) : (
-                    <span className="da-badge da-badge-warning">{t('users.statusPending', 'Pendiente de Aprobación')}</span>
-                  )}
+                <td style={{ textAlign: 'center' }}>
+                  <div className="flex justify-center items-center w-full">
+                    {activeTab === 'approved' || activeTab === 'admins' || activeTab === 'employees' ? (
+                      <span className={`da-badge ${user.isWorking ? 'da-badge-active' : 'da-badge-inactive'}`} style={{ whiteSpace: 'normal', display: 'inline-block' }}>
+                        {user.isWorking ? t('users.statusWorking', 'Trabajando') : t('users.statusResting', 'Descansando')}
+                      </span>
+                    ) : (
+                      <span className="da-badge da-badge-warning">{t('users.statusPending', 'Pendiente de Aprobación')}</span>
+                    )}
+                  </div>
                 </td>
                 <td>
                   {activeTab === 'approved' || activeTab === 'admins' || activeTab === 'employees' ? (

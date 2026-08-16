@@ -26,9 +26,12 @@ class CompanyServiceTests {
         companyService = new CompanyService(companyRepository, userRepository);
     }
 
+    private static final String BA_GLASS = "BA Glass";
+    private static final String EUROTALIA = "Eurotalia";
+
     @Test
     void testFindAll() {
-        Company c1 = Company.builder().name("BA Glass").build();
+        Company c1 = Company.builder().name(BA_GLASS).build();
         Company c2 = Company.builder().name("OT Noriega").build();
         when(companyRepository.findAll()).thenReturn(List.of(c1, c2));
 
@@ -39,13 +42,13 @@ class CompanyServiceTests {
 
     @Test
     void testFindByIdSuccess() {
-        Company company = Company.builder().name("BA Glass").build();
+        Company company = Company.builder().name(BA_GLASS).build();
         company.setId(1);
         when(companyRepository.findById(1)).thenReturn(Optional.of(company));
 
         Company result = companyService.findById(1);
         assertNotNull(result);
-        assertEquals("BA Glass", result.getName());
+        assertEquals(BA_GLASS, result.getName());
     }
 
     @Test
@@ -56,12 +59,12 @@ class CompanyServiceTests {
 
     @Test
     void testFindByNameSuccess() {
-        Company company = Company.builder().name("Eurotalia").build();
-        when(companyRepository.findByName("Eurotalia")).thenReturn(Optional.of(company));
+        Company company = Company.builder().name(EUROTALIA).build();
+        when(companyRepository.findByName(EUROTALIA)).thenReturn(Optional.of(company));
 
-        Company result = companyService.findByName("Eurotalia");
+        Company result = companyService.findByName(EUROTALIA);
         assertNotNull(result);
-        assertEquals("Eurotalia", result.getName());
+        assertEquals(EUROTALIA, result.getName());
     }
 
     @Test
