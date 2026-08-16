@@ -87,6 +87,12 @@ class UserControllerTests {
 	@MockitoBean
 	private TotpService totpService;
 
+	@MockitoBean
+	private org.springframework.samples.smartcheckin.auth.service.HaveIBeenPwnedService haveIBeenPwnedService;
+
+	@MockitoBean
+	private org.springframework.samples.smartcheckin.auth.service.TwoFactorBackupCodeService backupCodeService;
+
 	@Autowired
 	private ObjectMapper objectMapper;
 

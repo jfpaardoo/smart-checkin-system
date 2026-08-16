@@ -120,6 +120,12 @@ class AuthControllerTests {
 	@MockitoBean
 	private CompanyService companyService;
 
+	@MockitoBean
+	private org.springframework.samples.smartcheckin.auth.service.HaveIBeenPwnedService haveIBeenPwnedService;
+
+	@MockitoBean
+	private org.springframework.samples.smartcheckin.auth.service.TwoFactorBackupCodeService backupCodeService;
+
 	@Autowired
 	@SuppressWarnings("java:S6813")
 	private ObjectMapper objectMapper;
@@ -954,7 +960,77 @@ class AuthControllerTests {
         assertEquals("encodedSecretPass", user.getPassword());
         assertEquals(0, user.getFailedLoginAttempts());
         assertNull(user.getAccountLockedUntil());
-        verify(userService).saveUser(user);
         verify(passwordResetService).deleteToken(resetToken);
+        verify(userService).saveUser(user);
+    }
+
+    @Test
+    void testVerifyTwoFactorWithValidBackupCodeSuccess() throws Exception {
+        User user = new User();
+        user.setId(1);
+        user.setUsername("backupUser");
+        user.setTwoFactorSecret(null);
+
+        TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
+        req.setUsername("backupUser");
+        req.setCode("ABCD-EFGH");
+
+        when(userService.findUser("backupUser")).thenReturn(user);
+        when(backupCodeService.verifyAndConsumeBackupCode(user, "ABCD-EFGH")).thenReturn(true);
+
+        UserDetailsImpl userDetails = new UserDetailsImpl(1, "backupUser", "pass", List.of(new SimpleGrantedAuthority("EMPLOYEE")));
+        when(userDetailsService.loadUserByUsername("backupUser")).thenReturn(userDetails);
+        when(jwtUtils.generateJwtCookie(any())).thenReturn(ResponseCookie.from("jwt", MOCK_JWT_LITERAL).build());
+
+        mockMvc.perform(post(BASE_URL + VERIFY_URL).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("backupUser"));
+
+        verify(backupCodeService).verifyAndConsumeBackupCode(user, "ABCD-EFGH");
+    }
+
+    @Test
+    void testSignupWithPwnedPasswordReturnsBadRequest() throws Exception {
+        when(captchaService.validateCaptcha(any())).thenReturn(true);
+        when(userService.findUser(anyString())).thenThrow(new ResourceNotFoundException("User not found"));
+        when(haveIBeenPwnedService.isPasswordPwned("pwnedPass123")).thenReturn(true);
+
+        SignupRequest signup = new SignupRequest();
+        signup.setUsername("newUser");
+        signup.setPassword("pwnedPass123");
+        signup.setEmail("new@example.com");
+        signup.setPersonalCode("9999");
+        signup.setFirstName("First");
+        signup.setLastName("Last");
+        signup.setCaptchaToken("valid-token");
+
+        mockMvc.perform(post(SIGNUP_URL).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signup)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("La contraseña seleccionada ha aparecido en filtraciones de datos públicas conocidas (HaveIBeenPwned). Por favor, elige una contraseña más segura."));
+    }
+
+    @Test
+    void testResetPasswordWithPwnedPasswordReturnsBadRequest() throws Exception {
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setToken("valid-token");
+        resetToken.setUser(new User());
+
+        when(passwordResetService.validatePasswordResetToken("valid-token")).thenReturn(resetToken);
+        when(haveIBeenPwnedService.isPasswordPwned("pwnedSecretPass")).thenReturn(true);
+
+        ResetPasswordRequest req = new ResetPasswordRequest();
+        req.setToken("valid-token");
+        req.setNewPassword("pwnedSecretPass");
+        req.setConfirmPassword("pwnedSecretPass");
+
+        mockMvc.perform(post(BASE_URL + "/reset-password").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("La nueva contraseña ha aparecido en filtraciones de datos públicas conocidas (HaveIBeenPwned). Por favor, elige una contraseña más segura."));
     }
 }

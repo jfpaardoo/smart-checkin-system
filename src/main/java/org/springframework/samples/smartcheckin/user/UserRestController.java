@@ -15,6 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest;
 import org.springframework.samples.smartcheckin.auth.payload.response.MessageResponse;
+import org.springframework.samples.smartcheckin.auth.payload.response.TwoFactorEnableResponse;
+import org.springframework.samples.smartcheckin.auth.service.HaveIBeenPwnedService;
+import org.springframework.samples.smartcheckin.auth.service.TwoFactorBackupCodeService;
 import org.springframework.samples.smartcheckin.exceptions.AccessDeniedException;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.samples.smartcheckin.totp.TotpService;
@@ -39,6 +42,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 @RestController
 @RequestMapping("/api/v1/users")
 @SecurityRequirement(name = "bearerAuth")
+@SuppressWarnings("java:S2638")
 class UserRestController {
 
     private final UserService userService;
@@ -46,6 +50,8 @@ class UserRestController {
     private final PasswordEncoder passwordEncoder;
     private final SimpMessagingTemplate messagingTemplate;
     private final TotpService totpService;
+    private final TwoFactorBackupCodeService backupCodeService;
+    private final HaveIBeenPwnedService haveIBeenPwnedService;
     private static final String TOPIC_UPDATE_USERS = "/topic/users";
     private static final String UPDATE = "update";
 	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
@@ -54,12 +60,15 @@ class UserRestController {
     @Autowired
     public UserRestController(UserService userService, AuthoritiesService authService, 
             PasswordEncoder passwordEncoder, SimpMessagingTemplate messagingTemplate, TotpService totpService,
+            TwoFactorBackupCodeService backupCodeService, HaveIBeenPwnedService haveIBeenPwnedService,
             JavaMailSender javaMailSender) {
         this.userService = userService;
         this.authService = authService;
         this.passwordEncoder = passwordEncoder;
         this.messagingTemplate = messagingTemplate;
         this.totpService = totpService;
+        this.backupCodeService = backupCodeService;
+        this.haveIBeenPwnedService = haveIBeenPwnedService;
         this.javaMailSender = javaMailSender;
     }
 
@@ -154,6 +163,9 @@ class UserRestController {
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             return ResponseEntity.badRequest().body(new MessageResponse("La confirmación de la contraseña no coincide."));
         }
+        if (haveIBeenPwnedService.isPasswordPwned(request.getNewPassword())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("La nueva contraseña ha aparecido en filtraciones de datos públicas conocidas (HaveIBeenPwned). Por favor, elige una contraseña más segura."));
+        }
         currentUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userService.saveUser(currentUser);
         return ResponseEntity.ok(new MessageResponse("Contraseña actualizada con éxito."));
@@ -196,7 +208,7 @@ class UserRestController {
 
     @PostMapping("2fa/enable")
     @Auditable(action = "2FA_ENABLE", details = "User enabled Two-Factor Authentication")
-    public ResponseEntity<MessageResponse> enableTwoFactor(@RequestBody @Valid TwoFactorVerifyRequest request, Principal principal) {
+    public ResponseEntity<TwoFactorEnableResponse> enableTwoFactor(@RequestBody @Valid TwoFactorVerifyRequest request, Principal principal) {
         User user = userService.findUser(principal.getName());
         if (user.getTwoFactorSecret() != null && totpService.validateCode(user.getTwoFactorSecret(), request.getCode())) {
             user.setTwoFactorEnabled(true);
@@ -205,10 +217,22 @@ class UserRestController {
             } else {
                 user.setTwoFactorType("APP"); // Default
             }
+            List<String> backupCodes = backupCodeService.generateBackupCodes(user);
             userService.saveUser(user);
-            return ResponseEntity.ok(new MessageResponse("2FA activado correctamente."));
+            return ResponseEntity.ok(new TwoFactorEnableResponse("2FA activado correctamente.", backupCodes));
         }
-        return ResponseEntity.badRequest().body(new MessageResponse("Código de verificación incorrecto."));
+        return ResponseEntity.badRequest().body(new TwoFactorEnableResponse("Código de verificación incorrecto.", null));
+    }
+
+    @PostMapping("2fa/backup-codes/regenerate")
+    @Auditable(action = "2FA_BACKUP_CODES_REGENERATE", details = "User regenerated 2FA backup recovery codes")
+    public ResponseEntity<TwoFactorEnableResponse> regenerateBackupCodes(Principal principal) {
+        User user = userService.findUser(principal.getName());
+        if (user.getTwoFactorEnabled() == null || !user.getTwoFactorEnabled()) {
+            return ResponseEntity.badRequest().body(new TwoFactorEnableResponse("El doble factor debe estar activado para generar códigos de recuperación.", null));
+        }
+        List<String> backupCodes = backupCodeService.generateBackupCodes(user);
+        return ResponseEntity.ok(new TwoFactorEnableResponse("Códigos de recuperación regenerados con éxito.", backupCodes));
     }
 
     @PostMapping("2fa/disable")
@@ -218,6 +242,9 @@ class UserRestController {
         if (user.getTwoFactorSecret() != null && totpService.validateCode(user.getTwoFactorSecret(), request.getCode())) {
             user.setTwoFactorEnabled(false);
             user.setTwoFactorSecret(null);
+            if (user.getTwoFactorBackupCodes() != null) {
+                user.getTwoFactorBackupCodes().clear();
+            }
             userService.saveUser(user);
             return ResponseEntity.ok(new MessageResponse("2FA desactivado correctamente."));
         }

@@ -12,7 +12,7 @@ public class TwoFactorVerifyRequest {
     private String username;
 
     @NotBlank
-    @Size(min = 6, max = 6)
+    @Size(min = 6, max = 16)
     private String code;
     
     private String type;

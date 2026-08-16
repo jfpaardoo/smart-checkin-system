@@ -106,10 +106,17 @@ export default function Login() {
     }
   }
 
+  const [useBackupCode, setUseBackupCode] = useState(false);
+
   async function handleVerify2FA(e) {
     e.preventDefault();
-    if (totpCode.length !== 6) {
+    const cleanCode = totpCode.trim().toUpperCase();
+    if (!useBackupCode && cleanCode.length !== 6) {
       toast.error(t('profile.codeMustBe6Digits', "El código debe tener 6 dígitos."));
+      return;
+    }
+    if (useBackupCode && cleanCode.length < 8) {
+      toast.error(t('login.backupCodeInvalidFormat', "El código de recuperación debe tener el formato XXXX-XXXX."));
       return;
     }
 
@@ -119,7 +126,7 @@ export default function Login() {
         headers: { "Content-Type": "application/json" },
         method: "POST",
         credentials: "include",
-        body: JSON.stringify({ username: username2FA, code: totpCode }),
+        body: JSON.stringify({ username: username2FA, code: cleanCode }),
       });
 
       const data = await response.json();
@@ -129,7 +136,7 @@ export default function Login() {
         tokenService.setUser(data);
         setTimeout(() => { navigate("/"); }, 1000);
       } else {
-        throw new Error(data.message || "Código 2FA incorrecto.");
+        throw new Error(data.message || "Código 2FA o código de recuperación incorrecto.");
       }
     } catch (error) {
       toast.error(error.message || t('login.genericError'));
@@ -251,20 +258,33 @@ export default function Login() {
             </div>
             
             <div className="flex flex-col gap-2">
-              <label htmlFor="totpCode" className="text-sm font-semibold text-slate-700 ml-1">
-                {t('login.totpCodeLabel', 'Código de 6 dígitos')}
+              <label htmlFor="totpCode" className="text-sm font-semibold text-slate-700 ml-1 flex justify-between items-center">
+                <span>{useBackupCode ? 'Código de Recuperación (8 caracteres)' : t('login.totpCodeLabel', 'Código de 6 dígitos')}</span>
+                <button
+                  type="button"
+                  onClick={() => { setUseBackupCode(!useBackupCode); setTotpCode(""); }}
+                  className="text-xs text-[#73841e] hover:underline font-normal"
+                >
+                  {useBackupCode ? 'Usar código de app / email' : 'Usar código de recuperación'}
+                </button>
               </label>
               <input
                 type="text"
-                inputMode="numeric"
-                maxLength="6"
+                inputMode={useBackupCode ? "text" : "numeric"}
+                maxLength={useBackupCode ? 9 : 6}
                 id="totpCode"
-                placeholder="000000"
+                placeholder={useBackupCode ? "XXXX-XXXX" : "000000"}
                 value={totpCode}
-                onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ""))}
+                onChange={(e) => {
+                  if (useBackupCode) {
+                    setTotpCode(e.target.value.toUpperCase());
+                  } else {
+                    setTotpCode(e.target.value.replace(/\D/g, ""));
+                  }
+                }}
                 required
                 autoFocus
-                className="w-full text-center text-3xl tracking-[0.5rem] py-4 rounded-2xl border border-white/50 bg-white/50 backdrop-blur-sm focus:border-[#b3c34c] focus:bg-white/80 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition font-mono text-slate-800 shadow-inner"
+                className="w-full text-center text-3xl tracking-[0.4rem] py-4 rounded-2xl border border-white/50 bg-white/50 backdrop-blur-sm focus:border-[#b3c34c] focus:bg-white/80 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition font-mono text-slate-800 shadow-inner"
               />
             </div>
             
@@ -273,7 +293,9 @@ export default function Login() {
               disabled={loading}
               className={`${glassButtonClass} disabled:opacity-50`}
             >
-              {loading ? t('common.loading', 'Verificando...') : t('login.verifyAndEnter', 'Verificar y Acceder')}
+              {loading && t('common.loading', 'Verificando...')}
+              {!loading && useBackupCode && 'Acceder con Código'}
+              {!loading && !useBackupCode && t('login.verifyAndEnter', 'Verificar y Acceder')}
             </button>
           </form>
         )}

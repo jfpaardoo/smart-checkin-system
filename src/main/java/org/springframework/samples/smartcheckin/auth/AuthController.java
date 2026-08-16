@@ -55,6 +55,8 @@ import org.springframework.samples.smartcheckin.notifications.AuthNotification;
 import org.springframework.samples.smartcheckin.notifications.Notification;
 import org.springframework.samples.smartcheckin.auth.payload.request.ForgotPasswordRequest;
 import org.springframework.samples.smartcheckin.auth.payload.request.ResetPasswordRequest;
+import org.springframework.samples.smartcheckin.auth.service.HaveIBeenPwnedService;
+import org.springframework.samples.smartcheckin.auth.service.TwoFactorBackupCodeService;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.beans.factory.annotation.Value;
@@ -82,6 +84,8 @@ public class AuthController {
     private final JavaMailSender javaMailSender;
     private final CaptchaService captchaService;
     private final CompanyService companyService;
+    private final HaveIBeenPwnedService haveIBeenPwnedService;
+    private final TwoFactorBackupCodeService backupCodeService;
     private static final String CAPTCHA_SUCCESS_MESSAGE = "Error: Verificación de seguridad (Captcha) fallida.";
     private static final String HEADER = "X-Forwarded-For";
 
@@ -98,7 +102,8 @@ public class AuthController {
             AnomalyDetectionService anomalyDetectionService, HttpServletRequest request,
             JwtBlacklistService jwtBlacklistService, EmailNotificationSender emailNotificationSender, PushNotificationSender pushNotificationSender,
             PasswordResetService passwordResetService, JavaMailSender javaMailSender,
-            CaptchaService captchaService, CompanyService companyService) {
+            CaptchaService captchaService, CompanyService companyService,
+            HaveIBeenPwnedService haveIBeenPwnedService, TwoFactorBackupCodeService backupCodeService) {
         
         this.userService = userService;
         this.authoritiesService = authoritiesService;
@@ -118,6 +123,8 @@ public class AuthController {
         this.javaMailSender = javaMailSender;
         this.captchaService = captchaService;
         this.companyService = companyService;
+        this.haveIBeenPwnedService = haveIBeenPwnedService;
+        this.backupCodeService = backupCodeService;
     }
 
     @PostMapping("/logout")
@@ -220,7 +227,13 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Error: User not found"));
         }
 
-        if (user.getTwoFactorSecret() == null || !totpService.validateCode(user.getTwoFactorSecret(), request.getCode())) {
+        boolean isTotpValid = user.getTwoFactorSecret() != null && totpService.validateCode(user.getTwoFactorSecret(), request.getCode());
+        boolean isBackupCodeValid = false;
+        if (!isTotpValid) {
+            isBackupCodeValid = backupCodeService.verifyAndConsumeBackupCode(user, request.getCode());
+        }
+
+        if (!isTotpValid && !isBackupCodeValid) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Código 2FA inválido o expirado."));
         }
 
@@ -243,7 +256,7 @@ public class AuthController {
         }
 
         String clientIp = this.request.getHeader(HEADER) != null ? this.request.getHeader(HEADER).split(",")[0].trim() : this.request.getRemoteAddr();
-        anomalyDetectionService.recordSuccessfulLogin(user.getUsername(), clientIp, "2FA TOTP");
+        anomalyDetectionService.recordSuccessfulLogin(user.getUsername(), clientIp, isTotpValid ? "2FA TOTP" : "2FA Backup Code");
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
@@ -263,6 +276,10 @@ public class AuthController {
             }
         } catch (ResourceNotFoundException e) {
             // no hace nada
+        }
+
+        if (haveIBeenPwnedService.isPasswordPwned(signupRequest.getPassword())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("La contraseña seleccionada ha aparecido en filtraciones de datos públicas conocidas (HaveIBeenPwned). Por favor, elige una contraseña más segura."));
         }
 
         User user = new User();
@@ -407,6 +424,10 @@ public class AuthController {
         
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Las contraseñas no coinciden."));
+        }
+
+        if (haveIBeenPwnedService.isPasswordPwned(request.getNewPassword())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("La nueva contraseña ha aparecido en filtraciones de datos públicas conocidas (HaveIBeenPwned). Por favor, elige una contraseña más segura."));
         }
 
         // Actualizamos la contraseña

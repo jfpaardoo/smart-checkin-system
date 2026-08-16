@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaShieldAlt } from "react-icons/fa";
+import { FaShieldAlt, FaKey, FaCopy, FaDownload, FaRedo, FaCheckCircle } from "react-icons/fa";
 import GlassDropdown from "../../../components/GlassDropdown";
 import { QRCodeSVG } from "qrcode.react";
 import api from "../../../services/api";
@@ -13,6 +13,9 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
   
   const [showDisablePrompt, setShowDisablePrompt] = useState(false);
   const [disableCode, setDisableCode] = useState("");
+
+  const [backupCodes, setBackupCodes] = useState(null);
+  const [copiedCodes, setCopiedCodes] = useState(false);
 
   const handleStartSetup = async () => {
     setLoading2FA(true);
@@ -39,10 +42,13 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
     }
     setLoading2FA(true);
     try {
-      await api.post("/users/2fa/enable", { code: verificationCode, type: setupData.type });
+      const res = await api.post("/users/2fa/enable", { code: verificationCode, type: setupData.type });
       setUserData({ ...userData, twoFactorEnabled: true, twoFactorType: setupData.type });
       setSetupData(null);
       setVerificationCode("");
+      if (res.data?.backupCodes?.length > 0) {
+        setBackupCodes(res.data.backupCodes);
+      }
       toast.success(t('profile.twoFactorEnableSuccess', '¡Autenticación de Doble Factor activada con éxito!'));
     } catch (err) {
       const msg = err.response?.data?.message || t('profile.incorrectCode', 'Código incorrecto.');
@@ -50,6 +56,46 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
     } finally {
       setLoading2FA(false);
     }
+  };
+
+  const handleRegenerateBackupCodes = async () => {
+    if (!window.confirm(t('profile.regenerateConfirm', '¿Estás seguro de regenerar los códigos de recuperación? Los anteriores dejarán de ser válidos.'))) {
+      return;
+    }
+    setLoading2FA(true);
+    try {
+      const res = await api.post("/users/2fa/backup-codes/regenerate");
+      if (res.data?.backupCodes?.length > 0) {
+        setBackupCodes(res.data.backupCodes);
+        toast.success(t('profile.backupCodesRegenerated', 'Nuevos códigos de recuperación generados.'));
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Error al regenerar códigos de recuperación.';
+      toast.error(msg);
+    } finally {
+      setLoading2FA(false);
+    }
+  };
+
+  const handleCopyBackupCodes = () => {
+    if (!backupCodes) return;
+    const text = backupCodes.join("\n");
+    navigator.clipboard.writeText(text);
+    setCopiedCodes(true);
+    toast.success(t('profile.copiedBackupCodes', 'Códigos copiados al portapapeles.'));
+    setTimeout(() => setCopiedCodes(false), 3000);
+  };
+
+  const handleDownloadBackupCodes = () => {
+    if (!backupCodes) return;
+    const element = document.createElement("a");
+    const header = "SMARTCHECKIN - CÓDIGOS DE RECUPERACIÓN 2FA\nGuarda estos códigos en un lugar seguro offline. Cada uno solo se puede usar una vez.\n\n";
+    const file = new Blob([header + backupCodes.join("\n")], { type: 'text/plain' });
+    element.href = URL.createObjectURL(file);
+    element.download = "smartcheckin-backup-codes.txt";
+    document.body.appendChild(element);
+    element.click();
+    element.remove();
   };
 
   const handleDisable = async () => {
@@ -63,6 +109,7 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
       setUserData({ ...userData, twoFactorEnabled: false, twoFactorType: null });
       setShowDisablePrompt(false);
       setDisableCode("");
+      setBackupCodes(null);
       toast.success(t('profile.twoFactorDisableSuccess', '2FA desactivado correctamente.'));
     } catch (err) {
       const msg = err.response?.data?.message || t('profile.incorrectCode', 'Código incorrecto.');
@@ -75,6 +122,7 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
   const glassButtonClass = "w-full mt-2 py-3.5 rounded-full font-bold text-slate-900 bg-[#b3c34c]/60 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(179,195,76,0.35)] hover:bg-[#b3c34c]/80 hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.55)] transition duration-300 active:scale-95 flex justify-center items-center gap-2";
   const glassButtonDangerClass = "w-full py-3 rounded-2xl font-bold text-white bg-red-500/80 backdrop-blur-md border border-red-400/50 shadow-[0_8px_25px_0_rgba(239,68,68,0.35)] hover:bg-red-600/90 hover:shadow-[0_8px_30px_0_rgba(239,68,68,0.55)] transition duration-300 active:scale-95 flex justify-center items-center gap-2";
   const glassButtonSecondaryClass = "w-full py-3 rounded-2xl font-bold text-slate-700 bg-slate-200/60 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(148,163,184,0.25)] hover:bg-slate-300/80 hover:shadow-[0_8px_30px_0_rgba(148,163,184,0.45)] transition duration-300 active:scale-95 flex justify-center items-center gap-2";
+  const glassButtonPrimarySmallClass = "py-2.5 px-4 rounded-xl font-bold text-slate-900 bg-[#b3c34c]/70 hover:bg-[#b3c34c]/90 border border-white/50 shadow-sm transition flex items-center justify-center gap-2 text-sm";
 
   const renderActiveState = () => (
     <div className="flex flex-col gap-4">
@@ -82,6 +130,27 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
         <p className="text-green-700 font-bold text-sm m-0">
           {t('profile.twoFactorActive', 'El doble factor está actualmente activado en tu cuenta.')} 
           ({userData.twoFactorType === 'EMAIL' ? 'Correo Electrónico' : 'App de Autenticación'})
+        </p>
+      </div>
+
+      <div className="bg-white/40 border border-white/60 rounded-2xl p-4 flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-slate-800 font-bold text-sm">
+            <FaKey className="text-[#8a9e29]" />
+            <span>Códigos de Recuperación Offline</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleRegenerateBackupCodes}
+            disabled={loading2FA}
+            className="text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white/70 hover:bg-white border border-slate-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition"
+          >
+            <FaRedo className={`text-xs ${loading2FA ? 'animate-spin' : ''}`} />
+            Regenerar
+          </button>
+        </div>
+        <p className="text-xs text-slate-600 m-0">
+          Si pierdes acceso a tu dispositivo, puedes usar uno de tus códigos de recuperación de un solo uso para iniciar sesión.
         </p>
       </div>
       
@@ -223,7 +292,62 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
     </div>
   );
 
+  const renderBackupCodesView = () => (
+    <div className="flex flex-col gap-4 text-center">
+      <div className="bg-amber-50/80 border border-amber-200/80 rounded-2xl p-4 text-start">
+        <p className="font-bold text-amber-800 text-sm flex items-center gap-2 m-0 mb-1">
+          <FaShieldAlt className="text-amber-600" />
+          Guarda tus códigos de recuperación
+        </p>
+        <p className="text-xs text-amber-700 m-0">
+          Si pierdes acceso a tu aplicación o correo de autenticación, estos códigos te permitirán acceder a tu cuenta. Cada código es de un solo uso.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2.5 p-3 bg-white/70 backdrop-blur-md rounded-2xl border border-white/60 shadow-inner">
+        {backupCodes.map((code) => (
+          <div 
+            key={code} 
+            className="font-mono text-sm tracking-wider font-bold py-2 px-3 bg-slate-100/90 text-slate-800 rounded-xl border border-slate-200/60 select-all"
+          >
+            {code}
+          </div>
+        ))}
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={handleCopyBackupCodes}
+          className={`${glassButtonPrimarySmallClass} flex-1`}
+        >
+          {copiedCodes ? <FaCheckCircle className="text-green-700" /> : <FaCopy />}
+          {copiedCodes ? 'Copiados' : 'Copiar todos'}
+        </button>
+        <button
+          type="button"
+          onClick={handleDownloadBackupCodes}
+          className={`${glassButtonSecondaryClass} !py-2.5 !px-4 !rounded-xl !text-sm flex-1`}
+        >
+          <FaDownload />
+          Descargar .txt
+        </button>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setBackupCodes(null)}
+        className={`${glassButtonClass} !mt-2`}
+      >
+        He guardado mis códigos
+      </button>
+    </div>
+  );
+
   const renderContent = () => {
+    if (backupCodes && backupCodes.length > 0) {
+      return renderBackupCodesView();
+    }
     if (userData?.twoFactorEnabled) {
       return renderActiveState();
     }
