@@ -57,6 +57,9 @@
     "guestWelcomeSub": "Acceso rápido y seguro a convocatorias, control de asistencia QR y firma digital."
   },
   "login": {
+    "passkeyBtn": "Acceder con Llave de Acceso (Biometría)",
+    "passkeySuccess": "¡Acceso biométrico verificado con éxito!",
+    "passkeyError": "Error al verificar la llave de acceso.",
     "title": "Iniciar Sesión",
     "success": "Inicio de sesión exitoso",
     "error": "Intento de inicio de sesión inválido",
@@ -698,5 +701,24 @@
     "sec5Item4Desc": "Puede consultar a la administración de la empresa o delegado de protección de datos el alcance de los tratamientos efectuados.",
     "sec6Text": "El tratamiento de los datos se fundamenta en el cumplimiento de las obligaciones legales en materia de registro de jornada y prevención de riesgos laborales (Art. 6.1.c RGPD), en la ejecución de la relación laboral y planes de formación corporativa (Art. 6.1.b RGPD), y en el interés legítimo de la organización para salvaguardar la seguridad de sus sistemas e instalaciones (Art. 6.1.f RGPD).",
     "footerNotice": "Al utilizar Distribution Academy Smart Check-in System, usted reconoce haber leído y comprendido esta Política de Privacidad, consintiendo el tratamiento conforme a las finalidades indicadas."
+  },
+  "passkeys": {
+    "title": "Llaves de Acceso (Passkeys & Biometría)",
+    "subtitle": "Acceso seguro sin contraseñas mediante Face ID, Touch ID o Windows Hello.",
+    "unsupported": "Tu navegador o dispositivo actual no admite el estándar FIDO2 / WebAuthn.",
+    "empty": "No tienes ninguna llave de acceso vinculada a tu cuenta.",
+    "emptySub": "Vincula este dispositivo para iniciar sesión en un solo toque.",
+    "created": "Vinculada:",
+    "addBtn": "Vincular este dispositivo (Passkey)",
+    "modalTitle": "Vincular Llave de Acceso",
+    "modalSubtitle": "Introduce un nombre descriptivo para identificar este dispositivo.",
+    "nicknameLabel": "Nombre de la Llave / Dispositivo",
+    "modalPrompt": "Al pulsar en continuar, tu navegador te pedirá verificar tu identidad mediante Touch ID, Face ID, Windows Hello o PIN del dispositivo.",
+    "registering": "Verificando...",
+    "registerSuccess": "¡Llave de acceso vinculada con éxito!",
+    "registerError": "Error al registrar la llave de acceso.",
+    "deleteConfirm": "¿Seguro que deseas desvincular esta llave?",
+    "deleteSuccess": "Llave de acceso desvinculada correctamente.",
+    "deleteError": "No se pudo eliminar la llave de acceso."
   }
 }

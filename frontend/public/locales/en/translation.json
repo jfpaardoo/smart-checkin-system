@@ -57,6 +57,9 @@
     "guestWelcomeSub": "Quick and secure access to calls, QR attendance control, and digital signature."
   },
   "login": {
+    "passkeyBtn": "Sign in with Passkey (Biometrics)",
+    "passkeySuccess": "Biometric access verified successfully!",
+    "passkeyError": "Failed to verify passkey.",
     "title": "Login",
     "success": "Login successful",
     "error": "Invalid login attempt",
@@ -698,5 +701,24 @@
     "sec5Item4Desc": "You may consult corporate administration or the data protection officer regarding the scope of processing.",
     "sec6Text": "Data processing is based on compliance with legal obligations regarding working time tracking and workplace safety (Art. 6.1.c GDPR), performance of the employment relationship and training plans (Art. 6.1.b GDPR), and legitimate interest in ensuring the security of company systems and premises (Art. 6.1.f GDPR).",
     "footerNotice": "By using the Distribution Academy Smart Check-in System, you acknowledge that you have read and understood this Privacy Policy, consenting to the processing described herein."
+  },
+  "passkeys": {
+    "title": "Passkeys & Biometrics (FIDO2)",
+    "subtitle": "Secure passwordless login using Face ID, Touch ID, or Windows Hello.",
+    "unsupported": "Your current browser or device does not support FIDO2 / WebAuthn.",
+    "empty": "You have no passkeys linked to your account.",
+    "emptySub": "Link this device to sign in with a single tap.",
+    "created": "Linked:",
+    "addBtn": "Link this device (Passkey)",
+    "modalTitle": "Link Passkey",
+    "modalSubtitle": "Enter a friendly name to identify this device.",
+    "nicknameLabel": "Passkey / Device Name",
+    "modalPrompt": "When you click continue, your browser will prompt you to verify your identity with Touch ID, Face ID, Windows Hello, or device PIN.",
+    "registering": "Verifying...",
+    "registerSuccess": "Passkey linked successfully!",
+    "registerError": "Failed to register passkey.",
+    "deleteConfirm": "Are you sure you want to unlink this passkey?",
+    "deleteSuccess": "Passkey unlinked successfully.",
+    "deleteError": "Failed to delete passkey."
   }
 }

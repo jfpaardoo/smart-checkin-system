@@ -57,6 +57,9 @@
     "guestWelcomeSub": "Accès rapide et sécurisé aux convocations, contrôle de présence QR et signature numérique."
   },
   "login": {
+    "passkeyBtn": "Connexion par Clé d'Accès (Biométrie)",
+    "passkeySuccess": "Accès biométrique validé avec succès !",
+    "passkeyError": "Échec de la validation de la clé d'accès.",
     "title": "Connexion",
     "success": "Connexion réussie",
     "error": "Tentative de connexion invalide",
@@ -698,5 +701,24 @@
     "sec5Item4Desc": "Possibilité de consulter l'administrateur ou le délégué à la protection des données.",
     "sec6Text": "Le traitement repose sur le respect des obligations légales en matière de temps de travail et sécurité (Art. 6.1.c RGPD), l'exécution du contrat de travail et du plan de formation (Art. 6.1.b RGPD) et l'intérêt légitime de sécurité de l'entreprise (Art. 6.1.f RGPD).",
     "footerNotice": "En utilisant Distribution Academy, vous confirmez avoir pris connaissance de la présente Politique de Confidentialité."
+  },
+  "passkeys": {
+    "title": "Clés d'Accès (Passkeys & Biométrie)",
+    "subtitle": "Accès sécurisé sans mot de passe via Face ID, Touch ID ou Windows Hello.",
+    "unsupported": "Votre navigateur ou appareil ne prend pas en charge FIDO2 / WebAuthn.",
+    "empty": "Aucune clé d'accès n'est associée à votre compte.",
+    "emptySub": "Associez cet appareil pour vous connecter en un clic.",
+    "created": "Associée :",
+    "addBtn": "Associer cet appareil (Passkey)",
+    "modalTitle": "Associer une Clé d'Accès",
+    "modalSubtitle": "Entrez un nom pour identifier cet appareil.",
+    "nicknameLabel": "Nom de la Clé / Appareil",
+    "modalPrompt": "En cliquant sur continuer, votre navigateur vous demandera de confirmer votre identité.",
+    "registering": "Vérification...",
+    "registerSuccess": "Clé d'accès associée avec succès !",
+    "registerError": "Erreur lors de l'enregistrement de la clé.",
+    "deleteConfirm": "Voulez-vous vraiment dissocier cette clé d'accès ?",
+    "deleteSuccess": "Clé d'accès dissociée avec succès.",
+    "deleteError": "Impossible de supprimer la clé d'accès."
   }
 }

@@ -57,6 +57,9 @@
     "guestWelcomeSub": "Szybki i bezpieczny dostęp do wezwań, kontroli obecności QR oraz podpisu cyfrowego."
   },
   "login": {
+    "passkeyBtn": "Zaloguj się kluczem dostępu (Passkey)",
+    "passkeySuccess": "Biometryczna weryfikacja zakończona sukcesem!",
+    "passkeyError": "Błąd weryfikacji klucza dostępu.",
     "title": "Zaloguj się",
     "success": "Pomyślnie zalogowano",
     "error": "Niepoprawna próba logowania",
@@ -698,5 +701,24 @@
     "sec5Item4Desc": "Prawo kontaktu z administratorem lub inspektorem ochrony danych.",
     "sec6Text": "Przetwarzanie opiera się na wypełnianiu obowiązków prawnych w zakresie ewidencji czasu pracy (Art. 6 ust. 1 lit. c RODO), realizacji umowy o pracę i szkoleń (Art. 6 ust. 1 lit. b RODO) oraz prawnie uzasadnionym interesie bezpieczeństwa firmy (Art. 6 ust. 1 lit. f RODO).",
     "footerNotice": "Korzystając z Distribution Academy, potwierdzasz zapoznanie się z niniejszą Polityką Prywatności."
+  },
+  "passkeys": {
+    "title": "Klucze Dostępu (Passkeys & Biometria)",
+    "subtitle": "Bezpieczne logowanie bez haseł za pomocą Face ID, Touch ID lub Windows Hello.",
+    "unsupported": "Twoja przeglądarka lub urządzenie nie obsługuje standardu FIDO2 / WebAuthn.",
+    "empty": "Brak powiązanych kluczy dostępu z Twoim kontem.",
+    "emptySub": "Powiąż to urządzenie, aby logować się jednym kliknięciem.",
+    "created": "Powiązano:",
+    "addBtn": "Powiąż to urządzenie (Passkey)",
+    "modalTitle": "Powiąż Klucz Dostępu",
+    "modalSubtitle": "Wprowadź nazwę identyfikującą to urządzenie.",
+    "nicknameLabel": "Nazwa Klucza / Urządzenia",
+    "modalPrompt": "Po kliknięciu przycisku przeglądarka poprosi o weryfikację tożsamości.",
+    "registering": "Weryfikacja...",
+    "registerSuccess": "Klucz dostępu został pomyślnie powiązany!",
+    "registerError": "Błąd rejestracji klucza dostępu.",
+    "deleteConfirm": "Czy na pewno chcesz odłączyć ten klucz dostępu?",
+    "deleteSuccess": "Klucz dostępu został pomyślnie odłączony.",
+    "deleteError": "Nie udało się usunąć klucza dostępu."
   }
 }

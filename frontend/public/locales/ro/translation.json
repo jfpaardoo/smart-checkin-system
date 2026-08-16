@@ -57,6 +57,9 @@
     "guestWelcomeSub": "Acces rapid și sigur la convocări, control prezență QR și semnătură digitală."
   },
   "login": {
+    "passkeyBtn": "Autentificare cu Cheie de Acces (Biometrie)",
+    "passkeySuccess": "Acces biometric verificat cu succes!",
+    "passkeyError": "Eroare la verificarea cheii de acces.",
     "title": "Autentificare",
     "success": "Autentificare reușită",
     "error": "Tentativă de autentificare nevalidă",
@@ -698,5 +701,24 @@
     "sec5Item4Desc": "Dreptul de a consulta conducerea sau responsabilul cu protecția datelor.",
     "sec6Text": "Prelucrarea se bazează pe îndeplinirea obligațiilor legale de evidență a timpului de muncă și securitate (Art. 6.1.c GDPR), executarea contractului de muncă și a planurilor de instruire (Art. 6.1.b GDPR) și interesul legitim privind securitatea sistemelor (Art. 6.1.f GDPR).",
     "footerNotice": "Prin utilizarea Distribution Academy, confirmați că ați citit și ați înțeles această Politică de Confidențialitate."
+  },
+  "passkeys": {
+    "title": "Chei de Acces (Passkeys & Biometrie)",
+    "subtitle": "Autentificare securizată fără parole prin Face ID, Touch ID sau Windows Hello.",
+    "unsupported": "Browserul sau dispozitivul dvs. nu acceptă FIDO2 / WebAuthn.",
+    "empty": "Nu aveți nicio cheie de acces conectată la contul dvs.",
+    "emptySub": "Conectați acest dispozitiv pentru autentificare rapidă cu o singură atingere.",
+    "created": "Conectată:",
+    "addBtn": "Conectați acest dispozitiv (Passkey)",
+    "modalTitle": "Conectare Cheie de Acces",
+    "modalSubtitle": "Introduceți un nume pentru a identifica acest dispozitiv.",
+    "nicknameLabel": "Numele Cheii / Dispozitivului",
+    "modalPrompt": "Browserul vă va solicita confirmarea identității prin date biometrice sau PIN.",
+    "registering": "Se verifică...",
+    "registerSuccess": "Cheie de acces conectată cu succes!",
+    "registerError": "Eroare la înregistrarea cheii de acces.",
+    "deleteConfirm": "Sunteți sigur că doriți să deconectați această cheie?",
+    "deleteSuccess": "Cheie de acces deconectată cu succes.",
+    "deleteError": "Nu s-a putut șterge cheia de acces."
   }
 }

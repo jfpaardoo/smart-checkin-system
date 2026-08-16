@@ -57,6 +57,9 @@
     "guestWelcomeSub": "Schneller und sicherer Zugriff auf Aufrufe, QR-Anwesenheitskontrolle und digitale Unterschrift."
   },
   "login": {
+    "passkeyBtn": "Mit Passkey anmelden (Biometrie)",
+    "passkeySuccess": "Biometrischer Zugriff erfolgreich bestätigt!",
+    "passkeyError": "Passkey-Verifizierung fehlgeschlagen.",
     "title": "Anmelden",
     "success": "Anmeldung erfolgreich",
     "error": "Ungültiger Anmeldeversuch",
@@ -698,5 +701,24 @@
     "sec5Item4Desc": "Möglichkeit zur Kontaktaufnahme mit dem Datenschutzbeauftragten.",
     "sec6Text": "Die Verarbeitung erfolgt zur Erfüllung gesetzlicher Pflichten zur Arbeitszeiterfassung (Art. 6 Abs. 1 lit. c DSGVO), zur Durchführung des Arbeitsvertrages und von Schulungen (Art. 6 Abs. 1 lit. b DSGVO) sowie aus berechtigtem Interesse an der Systemsicherheit (Art. 6 Abs. 1 lit. f DSGVO).",
     "footerNotice": "Mit der Nutzung von Distribution Academy bestätigen Sie die Kenntnisnahme dieser Datenschutzrichtlinie."
+  },
+  "passkeys": {
+    "title": "Passkeys & Biometrie (FIDO2)",
+    "subtitle": "Sichere Anmeldung ohne Passwort mit Face ID, Touch ID oder Windows Hello.",
+    "unsupported": "Ihr Browser oder Gerät unterstützt den FIDO2 / WebAuthn-Standard nicht.",
+    "empty": "Keine Passkeys mit Ihrem Konto verknüpft.",
+    "emptySub": "Verknüpfen Sie dieses Gerät für den Login mit nur einem Klick.",
+    "created": "Verknüpft:",
+    "addBtn": "Dieses Gerät verknüpfen (Passkey)",
+    "modalTitle": "Passkey verknüpfen",
+    "modalSubtitle": "Geben Sie einen Namen zur Identifikation dieses Geräts ein.",
+    "nicknameLabel": "Passkey- / Gerätename",
+    "modalPrompt": "Ihr Browser fordert Sie nun auf, Ihre Identität biometrisch oder per PIN zu bestätigen.",
+    "registering": "Wird verifiziert...",
+    "registerSuccess": "Passkey erfolgreich verknüpft!",
+    "registerError": "Fehler beim Registrieren des Passkeys.",
+    "deleteConfirm": "Möchten Sie diesen Passkey wirklich trennen?",
+    "deleteSuccess": "Passkey erfolgreich getrennt.",
+    "deleteError": "Passkey konnte nicht gelöscht werden."
   }
 }
