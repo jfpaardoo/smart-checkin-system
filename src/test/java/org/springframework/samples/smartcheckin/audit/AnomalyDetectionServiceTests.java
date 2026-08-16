@@ -5,7 +5,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,9 +24,29 @@ class AnomalyDetectionServiceTests {
     @InjectMocks
     private AnomalyDetectionService anomalyDetectionService;
 
-    @BeforeEach
-    void setUp() {
-        // No setup required since @InjectMocks handles it
+    @Test
+    void testRecordSuccessfulLogin() {
+        anomalyDetectionService.recordSuccessfulLogin("john", "192.168.1.50", "PASSWORD");
+        verify(auditService, times(1)).recordAuditLog(any(AuditLog.class));
+    }
+
+    @Test
+    void testRecordLogoutDefault() {
+        anomalyDetectionService.recordLogout("john", "192.168.1.50");
+        verify(auditService, times(1)).recordAuditLog(any(AuditLog.class));
+    }
+
+    @Test
+    void testRecordLogoutWithNullOrBlankReason() {
+        anomalyDetectionService.recordLogout("john", "192.168.1.50", null);
+        anomalyDetectionService.recordLogout("john", "192.168.1.50", "   ");
+        verify(auditService, times(2)).recordAuditLog(any(AuditLog.class));
+    }
+
+    @Test
+    void testRecordLogoutWithExplicitReason() {
+        anomalyDetectionService.recordLogout("john", "192.168.1.50", "Session expired");
+        verify(auditService, times(1)).recordAuditLog(any(AuditLog.class));
     }
 
     @Test
@@ -38,7 +57,6 @@ class AnomalyDetectionServiceTests {
 
         anomalyDetectionService.recordFailedLogin(username, ipAddress, currentAttempts);
 
-        // Verify the normal failed login was saved
         verify(auditService, times(1)).recordAuditLog(any(AuditLog.class));
         verifyNoInteractions(messagingTemplate);
     }
@@ -51,10 +69,15 @@ class AnomalyDetectionServiceTests {
 
         anomalyDetectionService.recordFailedLogin(username, ipAddress, currentAttempts);
 
-        // Verify that 2 audit logs were saved (one for LOGIN_FAILED, one for SECURITY_ANOMALY)
         verify(auditService, times(2)).recordAuditLog(any(AuditLog.class));
-        
-        // Verify the alert was sent
         verify(messagingTemplate, times(1)).convertAndSend("/topic/alerts", "Alerta de Seguridad: Multiple failed login attempts (>= 5) detected for user: " + username);
+    }
+
+    @Test
+    void testRecordFailedLogin_withoutMessagingTemplate() {
+        AnomalyDetectionService serviceWithoutMessaging = new AnomalyDetectionService(auditService, null);
+        serviceWithoutMessaging.recordFailedLogin("user2", "127.0.0.1", 6);
+
+        verify(auditService, times(2)).recordAuditLog(any(AuditLog.class));
     }
 }

@@ -36,7 +36,8 @@ jobs:
 
       - name: Upload Trivy Image Scan SARIF
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        continue-on-error: true
+        if: success() || failure()
         with:
           sarif_file: 'trivy-image-results.sarif'
           category: 'trivy-image'
@@ -53,7 +54,8 @@ jobs:
 
       - name: Upload Trivy Filesystem Scan SARIF
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        continue-on-error: true
+        if: success() || failure()
         with:
           sarif_file: 'trivy-fs-results.sarif'
           category: 'trivy-fs'
