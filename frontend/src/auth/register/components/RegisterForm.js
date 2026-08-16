@@ -207,7 +207,7 @@ export default function RegisterForm({ form, companies = [], handleChange, handl
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors cursor-pointer"
             tabIndex="-1"
-            aria-label={showPassword ? t('register.hidePassword', 'Ocultar contraseña') : t('register.showPassword', 'Mostrar contraseña')}
+            aria-label={showPassword ? t('register.hidePasswordVisibility', 'Ocultar contraseña') : t('register.showPasswordVisibility', 'Mostrar contraseña')}
           >
             {showPassword ? <FaEyeSlash /> : <FaEye />}
           </button>
@@ -238,7 +238,7 @@ export default function RegisterForm({ form, companies = [], handleChange, handl
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors cursor-pointer"
             tabIndex="-1"
-            aria-label={showConfirmPassword ? t('register.hidePassword', 'Ocultar contraseña') : t('register.showPassword', 'Mostrar contraseña')}
+            aria-label={showConfirmPassword ? t('register.hidePasswordVisibility', 'Ocultar contraseña') : t('register.showPasswordVisibility', 'Mostrar contraseña')}
           >
             {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
           </button>

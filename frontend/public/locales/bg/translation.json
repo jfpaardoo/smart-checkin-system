@@ -394,7 +394,7 @@
     "actions": "Действия",
     "continue": "Продължи",
     "or": "или с идентификационни данни",
-    "togglePassword": "Показване/Скриване на парола",
+    "togglePasswordVisibility": "Показване/Скриване на парола",
     "somethingWentWrong": "Възникна грешка:",
     "tryAgain": "Опитай отново",
     "selectOption": "Избери",
@@ -607,8 +607,8 @@
     "successMessage": "Заявката за регистрация е изпратена успешно. Администраторът ще активира вашия акаунт.",
     "email": "Имейл",
     "captchaRequired": "Моля, завършете проверката за сигурност.",
-    "hidePassword": "Скриване на парола",
-    "showPassword": "Показване на парола"
+    "hidePasswordVisibility": "Скриване на парола",
+    "showPasswordVisibility": "Показване на парола"
   },
   "audit": {
     "filterAll": "Всички събития",

@@ -6,20 +6,27 @@ import useIdleTimeout from '../hooks/useIdleTimeout';
 import tokenService from '../services/token.service';
 import api from '../services/api';
 
+const handleServerLogout = async () => {
+  try {
+    await api.post('/auth/logout?reason=Inactivity+Timeout');
+  } catch {
+    // Ignorar
+  } finally {
+    tokenService.removeUser();
+    window.location.href = '/login?reason=timeout';
+  }
+};
+
+// Formato MM:SS
+const formatTime = (secs) => {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+};
+
 export default function SessionTimeoutModal() {
   const { t } = useTranslation();
   const user = tokenService.getUser();
-
-  const handleServerLogout = async () => {
-    try {
-      await api.post('/auth/logout?reason=Inactivity+Timeout');
-    } catch {
-      // Ignorar
-    } finally {
-      tokenService.removeUser();
-      window.location.href = '/login?reason=timeout';
-    }
-  };
 
   const {
     isWarningModalOpen,
@@ -35,13 +42,6 @@ export default function SessionTimeoutModal() {
   if (!user || !isWarningModalOpen) {
     return null;
   }
-
-  // Formato MM:SS
-  const formatTime = (secs) => {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  };
 
   return (
     <Modal

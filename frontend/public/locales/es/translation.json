@@ -394,7 +394,7 @@
     "actions": "Acciones",
     "continue": "Continuar",
     "or": "o con credenciales",
-    "togglePassword": "Mostrar/Ocultar contraseña",
+    "togglePasswordVisibility": "Mostrar/Ocultar contraseña",
     "somethingWentWrong": "Algo salió mal:",
     "tryAgain": "Reintentar",
     "selectOption": "Seleccionar",
@@ -607,8 +607,8 @@
     "successMessage": "Solicitud de registro enviada con éxito. El administrador activará tu cuenta.",
     "email": "Correo Electrónico",
     "captchaRequired": "Por favor, completa la verificación de seguridad.",
-    "hidePassword": "Ocultar contraseña",
-    "showPassword": "Mostrar contraseña"
+    "hidePasswordVisibility": "Ocultar contraseña",
+    "showPasswordVisibility": "Mostrar contraseña"
   },
   "audit": {
     "filterAll": "Todos los eventos",

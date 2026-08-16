@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -70,7 +69,7 @@ class UserSessionRestControllerTests {
                 .build();
 
         when(jwtUtils.getJwtFromCookies(any())).thenReturn("currentJwt");
-        when(userSessionService.getActiveSessions(eq("sessionUser"), eq("currentJwt"))).thenReturn(List.of(dto));
+        when(userSessionService.getActiveSessions("sessionUser", "currentJwt")).thenReturn(List.of(dto));
 
         mockMvc.perform(get(BASE_URL).with(csrf()))
                 .andExpect(status().isOk())

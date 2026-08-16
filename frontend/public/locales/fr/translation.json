@@ -394,7 +394,7 @@
     "actions": "Actions",
     "continue": "Continuer",
     "or": "ou avec des identifiants",
-    "togglePassword": "Afficher/Masquer le mot de passe",
+    "togglePasswordVisibility": "Afficher/Masquer le mot de passe",
     "somethingWentWrong": "Une erreur s'est produite :",
     "tryAgain": "Réessayer",
     "selectOption": "Sélectionner",
@@ -607,8 +607,8 @@
     "successMessage": "Demande d'inscription envoyée avec succès. L'administrateur activera votre compte.",
     "email": "E-mail",
     "captchaRequired": "Veuillez compléter la vérification de sécurité.",
-    "hidePassword": "Masquer le mot de passe",
-    "showPassword": "Afficher le mot de passe"
+    "hidePasswordVisibility": "Masquer le mot de passe",
+    "showPasswordVisibility": "Afficher le mot de passe"
   },
   "audit": {
     "filterAll": "Tous les événements",

@@ -18,7 +18,7 @@ export default function useIdleTimeout({
   onTimeout
 }) {
   const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
-  const [remainingSeconds, setRemainingSeconds] = useState(Math.round(warningTime / 1000));
+  const [remainingSeconds, setRemainingSeconds] = useState(() => Math.round(warningTime / 1000));
   const isLogged = !!tokenService.getUser();
 
   const handleLogout = useCallback(() => {

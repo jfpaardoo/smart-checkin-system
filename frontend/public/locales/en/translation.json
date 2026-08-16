@@ -394,7 +394,7 @@
     "actions": "Actions",
     "continue": "Continue",
     "or": "or with credentials",
-    "togglePassword": "Show/Hide password",
+    "togglePasswordVisibility": "Show/Hide password",
     "somethingWentWrong": "Something went wrong:",
     "tryAgain": "Try again",
     "selectOption": "Select",
@@ -607,8 +607,8 @@
     "successMessage": "Registration request sent successfully. The administrator will activate your account.",
     "email": "Email",
     "captchaRequired": "Please complete the security verification.",
-    "hidePassword": "Hide password",
-    "showPassword": "Show password"
+    "hidePasswordVisibility": "Hide password",
+    "showPasswordVisibility": "Show password"
   },
   "audit": {
     "filterAll": "All events",

@@ -55,7 +55,7 @@ export default function PasswordChangeCard({
               type="button"
               className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#b3c34c] transition-colors p-1"
               onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-              aria-label={t('common.togglePassword', 'Mostrar/Ocultar contraseña')}
+              aria-label={t('common.togglePasswordVisibility', 'Mostrar/Ocultar contraseña')}
             >
               {showCurrentPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
             </button>
@@ -82,7 +82,7 @@ export default function PasswordChangeCard({
               type="button"
               className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#b3c34c] transition-colors p-1"
               onClick={() => setShowNewPassword(!showNewPassword)}
-              aria-label={t('common.togglePassword', 'Mostrar/Ocultar contraseña')}
+              aria-label={t('common.togglePasswordVisibility', 'Mostrar/Ocultar contraseña')}
             >
               {showNewPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
             </button>
@@ -109,7 +109,7 @@ export default function PasswordChangeCard({
               type="button"
               className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#b3c34c] transition-colors p-1"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              aria-label={t('common.togglePassword', 'Mostrar/Ocultar contraseña')}
+              aria-label={t('common.togglePasswordVisibility', 'Mostrar/Ocultar contraseña')}
             >
               {showConfirmPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
             </button>

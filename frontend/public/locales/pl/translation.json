@@ -394,7 +394,7 @@
     "actions": "Działania",
     "continue": "Kontynuuj",
     "or": "lub przy użyciu danych logowania",
-    "togglePassword": "Pokaż/Ukryj hasło",
+    "togglePasswordVisibility": "Pokaż/Ukryj hasło",
     "somethingWentWrong": "Coś poszło nie tak:",
     "tryAgain": "Spróbuj ponownie",
     "selectOption": "Wybierz",
@@ -607,8 +607,8 @@
     "successMessage": "Żądanie rejestracji zostało wysłane pomyślnie. Administrator aktywuje Twoje konto.",
     "email": "E-mail",
     "captchaRequired": "Proszę ukończyć weryfikację bezpieczeństwa.",
-    "hidePassword": "Ukryj hasło",
-    "showPassword": "Pokaż hasło"
+    "hidePasswordVisibility": "Ukryj hasło",
+    "showPasswordVisibility": "Pokaż hasło"
   },
   "audit": {
     "filterAll": "Wszystkie zdarzenia",

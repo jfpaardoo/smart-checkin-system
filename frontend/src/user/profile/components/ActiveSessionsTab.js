@@ -2,6 +2,27 @@ import React, { useState, useEffect, useCallback } from "react";
 import { FaDesktop, FaMobileAlt, FaLaptop, FaSignOutAlt, FaShieldAlt, FaSyncAlt } from "react-icons/fa";
 import api from "../../../services/api";
 
+const getDeviceIcon = (deviceInfo, userAgent) => {
+  const info = (deviceInfo || userAgent || "").toLowerCase();
+  if (info.includes("ios") || info.includes("android") || info.includes("iphone") || info.includes("mobile")) {
+    return <FaMobileAlt className="text-xl text-[#8a9e29]" />;
+  }
+  if (info.includes("macos") || info.includes("macintosh") || info.includes("laptop")) {
+    return <FaLaptop className="text-xl text-[#8a9e29]" />;
+  }
+  return <FaDesktop className="text-xl text-[#8a9e29]" />;
+};
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return "";
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleString();
+  } catch {
+    return dateStr;
+  }
+};
+
 export default function ActiveSessionsTab({ t, toast }) {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +47,7 @@ export default function ActiveSessionsTab({ t, toast }) {
   }, [fetchSessions]);
 
   const handleRevokeSession = async (sessionId) => {
+    if (revokingId) return;
     try {
       setRevokingId(sessionId);
       await api.delete(`/users/me/sessions/${sessionId}`);
@@ -40,6 +62,7 @@ export default function ActiveSessionsTab({ t, toast }) {
   };
 
   const handleRevokeOtherSessions = async () => {
+    if (revokingAll) return;
     if (!window.confirm(t("profile.confirmRevokeOthers", "¿Estás seguro de que deseas cerrar sesión en todos los demás dispositivos?"))) {
       return;
     }
@@ -53,27 +76,6 @@ export default function ActiveSessionsTab({ t, toast }) {
       toast.error(t("profile.otherSessionsRevokeError", "Error al cerrar las demás sesiones."));
     } finally {
       setRevokingAll(false);
-    }
-  };
-
-  const getDeviceIcon = (deviceInfo, userAgent) => {
-    const info = (deviceInfo || userAgent || "").toLowerCase();
-    if (info.includes("ios") || info.includes("android") || info.includes("iphone") || info.includes("mobile")) {
-      return <FaMobileAlt className="text-xl text-[#8a9e29]" />;
-    }
-    if (info.includes("macos") || info.includes("macintosh") || info.includes("laptop")) {
-      return <FaLaptop className="text-xl text-[#8a9e29]" />;
-    }
-    return <FaDesktop className="text-xl text-[#8a9e29]" />;
-  };
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "";
-    try {
-      const d = new Date(dateStr);
-      return d.toLocaleString();
-    } catch {
-      return dateStr;
     }
   };
 

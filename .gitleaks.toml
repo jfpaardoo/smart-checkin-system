@@ -1,0 +1,6 @@
+[allowlist]
+description = "Ignore translation files and mock test secrets"
+paths = [
+  '''frontend/public/locales/''',
+  '''src/test/'''
+]

@@ -394,7 +394,7 @@
     "actions": "Acțiuni",
     "continue": "Continuă",
     "or": "sau cu date de conectare",
-    "togglePassword": "Arată/Ascunde parola",
+    "togglePasswordVisibility": "Arată/Ascunde parola",
     "somethingWentWrong": "Ceva nu a funcționat corect:",
     "tryAgain": "Încearcă din nou",
     "selectOption": "Selectează",
@@ -607,8 +607,8 @@
     "successMessage": "Solicitarea de înregistrare a fost trimisă cu succes. Administratorul vă va activa contul.",
     "email": "E-mail",
     "captchaRequired": "Vă rugăm să finalizați verificarea de securitate.",
-    "hidePassword": "Ascunde parola",
-    "showPassword": "Arată parola"
+    "hidePasswordVisibility": "Ascunde parola",
+    "showPasswordVisibility": "Arată parola"
   },
   "audit": {
     "filterAll": "Toate evenimentele",

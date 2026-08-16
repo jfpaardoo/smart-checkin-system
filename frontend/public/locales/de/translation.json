@@ -394,7 +394,7 @@
     "actions": "Aktionen",
     "continue": "Fortfahren",
     "or": "oder mit Anmeldedaten",
-    "togglePassword": "Passwort anzeigen/verbergen",
+    "togglePasswordVisibility": "Passwort anzeigen/verbergen",
     "somethingWentWrong": "Etwas ist schiefgelaufen:",
     "tryAgain": "Erneut versuchen",
     "selectOption": "Auswählen",
@@ -607,8 +607,8 @@
     "successMessage": "Registrierungsanfrage erfolgreich gesendet. Der Administrator wird Ihr Konto aktivieren.",
     "email": "E-Mail",
     "captchaRequired": "Bitte schließen Sie die Sicherheitsüberprüfung ab.",
-    "hidePassword": "Passwort verbergen",
-    "showPassword": "Passwort anzeigen"
+    "hidePasswordVisibility": "Passwort verbergen",
+    "showPasswordVisibility": "Passwort anzeigen"
   },
   "audit": {
     "filterAll": "Alle Ereignisse",
