@@ -17,15 +17,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 class UserServiceTests {
 
+    private static final String ORIGINAL = "original";
+    private static final String OLDPASS = "oldpass";
+
     private UserRepository userRepository;
-    private SignatureStorageService signatureStorageService;
     private UserService userService;
     private AuditLogRepository auditLogRepository;
 
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
-        signatureStorageService = mock(SignatureStorageService.class);
+        SignatureStorageService signatureStorageService = mock(SignatureStorageService.class);
         auditLogRepository = mock(AuditLogRepository.class);
         userService = new UserService(userRepository, signatureStorageService, auditLogRepository);
     }
@@ -181,19 +183,19 @@ class UserServiceTests {
     void testDeleteUser() {
         User user = new User();
         user.setId(1);
-        user.setUsername("original");
+        user.setUsername(ORIGINAL);
         
         AuditLog log1 = new AuditLog();
-        log1.setUsername("original");
-        log1.setDetails("{\"user\":\"original\"}");
+        log1.setUsername(ORIGINAL);
+        log1.setDetails("{\"user\":\"" + ORIGINAL + "\"}");
 
         AuditLog log2 = new AuditLog();
         log2.setUsername("admin");
-        log2.setDetails("{\"target\":\"original\"}");
+        log2.setDetails("{\"target\":\"" + ORIGINAL + "\"}");
 
         when(userRepository.findById(1)).thenReturn(Optional.of(user));
-        when(auditLogRepository.findByUsername("original")).thenReturn(List.of(log1));
-        when(auditLogRepository.findByDetailsContaining("original")).thenReturn(List.of(log2));
+        when(auditLogRepository.findByUsername(ORIGINAL)).thenReturn(List.of(log1));
+        when(auditLogRepository.findByDetailsContaining(ORIGINAL)).thenReturn(List.of(log2));
 
         userService.deleteUser(1);
         
@@ -208,8 +210,8 @@ class UserServiceTests {
 
         // Verificamos sanitización de auditoría
         assertTrue(log1.getUsername().startsWith("GDPR_DEL_"));
-        assertFalse(log1.getDetails().contains("original"));
-        assertFalse(log2.getDetails().contains("original"));
+        assertFalse(log1.getDetails().contains(ORIGINAL));
+        assertFalse(log2.getDetails().contains(ORIGINAL));
     }
 
     @Test
@@ -239,7 +241,7 @@ class UserServiceTests {
     void testUpdateUserWithNullOrEmptyPasswordPreservesOld() {
         User existing = new User();
         existing.setId(1);
-        existing.setPassword("oldpass");
+        existing.setPassword(OLDPASS);
 
         User updatedInfo = new User();
         updatedInfo.setUsername("newuser");
@@ -248,10 +250,10 @@ class UserServiceTests {
         when(userRepository.findById(1)).thenReturn(Optional.of(existing));
 
         User updated = userService.updateUser(updatedInfo, 1);
-        assertEquals("oldpass", updated.getPassword());
+        assertEquals(OLDPASS, updated.getPassword());
 
         updatedInfo.setPassword("");
         User updatedAgain = userService.updateUser(updatedInfo, 1);
-        assertEquals("oldpass", updatedAgain.getPassword());
+        assertEquals(OLDPASS, updatedAgain.getPassword());
     }
 }

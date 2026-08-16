@@ -37,4 +37,8 @@ public class SignupRequest {
 
     @NotBlank(message = "El token del captcha es obligatorio")
     private String captchaToken;
+
+    private Integer companyId;
+
+    private String locator;
 }

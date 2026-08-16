@@ -44,6 +44,7 @@ class OneDriveAdapterImplTests {
     private static final String ONEDRIVE_LINK_BACKUP = "http://onedrive.link/backup";
     private static final String DRIVE_ITEM_URL = "https://graph.microsoft.com/v1.0/me/drive/items/{fileId}";
     private static final String TEST_DATA = "test data";
+    private static final String ERROR_ITEM = "errorItem";
 
     private CloudSettingsService cloudSettingsService;
     private RestTemplate restTemplate;
@@ -293,10 +294,10 @@ class OneDriveAdapterImplTests {
                 eq(HttpMethod.DELETE),
                 any(HttpEntity.class),
                 org.mockito.ArgumentMatchers.<Class<Void>>eq(Void.class),
-                (Object) eq("errorItem")
+                (Object) eq(ERROR_ITEM)
         )).thenThrow(new RestClientException("Graph API Error"));
 
-        assertDoesNotThrow(() -> oneDriveAdapterImpl.deleteFile("errorItem"));
+        assertDoesNotThrow(() -> oneDriveAdapterImpl.deleteFile(ERROR_ITEM));
     }
 
     @Test
@@ -327,10 +328,10 @@ class OneDriveAdapterImplTests {
                 eq(HttpMethod.GET),
                 any(HttpEntity.class),
                 eq(byte[].class),
-                (Object) eq("item123")
+                (Object) eq(ITEM_123)
         )).thenReturn(downloadEntity);
 
-        byte[] result = oneDriveAdapterImpl.downloadFile("item123");
+        byte[] result = oneDriveAdapterImpl.downloadFile(ITEM_123);
         assertArrayEquals(expectedBytes, result);
     }
 
@@ -359,10 +360,10 @@ class OneDriveAdapterImplTests {
                 eq(HttpMethod.GET),
                 any(HttpEntity.class),
                 eq(byte[].class),
-                (Object) eq("errorItem")
+                (Object) eq(ERROR_ITEM)
         )).thenThrow(new RestClientException("Download failed"));
 
-        byte[] result = oneDriveAdapterImpl.downloadFile("errorItem");
+        byte[] result = oneDriveAdapterImpl.downloadFile(ERROR_ITEM);
         assertNotNull(result);
         assertEquals(0, result.length);
     }

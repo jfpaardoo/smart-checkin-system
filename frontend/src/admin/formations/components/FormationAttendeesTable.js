@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Table, Button, Form, FormGroup } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -6,13 +6,15 @@ import { faEye, faFilePdf, faTrash } from "@fortawesome/free-solid-svg-icons";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import GlassDropdown from "../../../components/GlassDropdown";
+import GlassSearchBar from "../../../components/GlassSearchBar";
+import GlassPagination from "../../../components/GlassPagination";
 
 dayjs.extend(utc);
 
 // Estilo común para que los 3 botones tengan el mismo ancho y alineación
 const actionButtonStyle = { 
-  width: '100px', // Ancho fijo para los 3 botones
-  height: '34px', // Altura fija
+  width: '100px',
+  height: '34px',
   padding: '0', 
   display: 'inline-flex',
   alignItems: 'center',
@@ -31,6 +33,13 @@ export default function FormationAttendeesTable({
   onDownloadPdf
 }) {
   const { t } = useTranslation();
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const renderAttendanceBadge = (att) => {
     if (att.checkOutDate) return <span className="badge-glass-success text-xs">{t('formationDetails.statusCompleted')}</span>;
@@ -41,8 +50,6 @@ export default function FormationAttendeesTable({
   const attendeeIds = new Set(formation.attendances ? formation.attendances.map(a => a.user.id) : []);
   const availableUsers = allUsers.filter(u => !attendeeIds.has(u.id));
 
-  const [selectedUserId, setSelectedUserId] = React.useState("");
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (await handleAddUser(selectedUserId)) {
@@ -50,11 +57,42 @@ export default function FormationAttendeesTable({
     }
   };
 
-  const attendees = formation.attendances || [];
+  const attendees = useMemo(() => formation.attendances || [], [formation.attendances]);
+
+  // Filtrado
+  const filteredAttendees = useMemo(() => {
+    return attendees.filter((att) => {
+      const u = att.user;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const match = (
+          (u?.firstName?.toLowerCase()?.includes(q)) ||
+          (u?.lastName?.toLowerCase()?.includes(q)) ||
+          (u?.username?.toLowerCase()?.includes(q)) ||
+          (u?.personalCode?.toLowerCase()?.includes(q))
+        );
+        if (!match) return false;
+      }
+
+      if (statusFilter !== 'ALL') {
+        if (statusFilter === 'COMPLETED' && !att.checkOutDate) return false;
+        if (statusFilter === 'IN_PROGRESS' && (!att.checkInDate || att.checkOutDate)) return false;
+        if (statusFilter === 'PENDING' && (att.checkInDate || att.checkOutDate)) return false;
+      }
+
+      return true;
+    });
+  }, [attendees, searchQuery, statusFilter]);
+
+  // Paginación
+  const paginatedAttendees = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredAttendees.slice(start, start + pageSize);
+  }, [filteredAttendees, currentPage, pageSize]);
 
   return (
     <>
-      <div className="da-card-header pt-3">
+      <div className="da-card-header pt-3 flex flex-col md:flex-row justify-between items-center gap-3">
         <h3>{t('formationDetails.attendeesSection')}</h3>
         <Form className="formation-add-form d-flex gap-2 align-items-stretch" style={{ height: '42px' }} onSubmit={handleSubmit}>
           <FormGroup className="mb-0 h-100" style={{ minWidth: '280px', flex: 1, maxWidth: '400px' }}>
@@ -81,7 +119,31 @@ export default function FormationAttendeesTable({
         </div>
       ) : (
         <div className="w-full">
-          {/* 1. VISTA ESCRITORIO (Botones uniformes y armonizados) */}
+          {/* Barra de Filtro y Búsqueda de Asistentes */}
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-3 mt-2 items-center">
+            <div className="sm:col-span-8">
+              <GlassSearchBar
+                placeholder={t('formationDetails.searchAttendee', 'Buscar asistente por nombre, usuario o código...')}
+                onSearch={(q) => { setSearchQuery(q); setCurrentPage(1); }}
+              />
+            </div>
+            <div className="sm:col-span-4">
+              <GlassDropdown
+                options={[
+                  { value: 'ALL', label: t('formationDetails.filterAllStatus', 'Todos los estados') },
+                  { value: 'COMPLETED', label: t('formationDetails.statusCompleted', 'Completada') },
+                  { value: 'IN_PROGRESS', label: t('formationDetails.statusInProgress', 'En progreso') },
+                  { value: 'PENDING', label: t('formationDetails.statusPending', 'Pendiente') }
+                ]}
+                value={statusFilter}
+                onChange={(val) => { setStatusFilter(val); setCurrentPage(1); }}
+                placeholder={t('formationDetails.filterStatus', 'Filtrar estado')}
+                className="w-full"
+              />
+            </div>
+          </div>
+
+          {/* 1. VISTA ESCRITORIO */}
           <div className="hidden lg:block overflow-x-auto pb-2">
             <Table responsive hover className="da-table align-middle" style={{ minWidth: '700px', width: '100%' }}>
               <thead>
@@ -96,7 +158,7 @@ export default function FormationAttendeesTable({
                 </tr>
               </thead>
               <tbody>
-                {attendees.map((att) => {
+                {paginatedAttendees.map((att) => {
                   const user = att.user;
                   const isCompleted = !!att.checkOutDate;
                   const hasCheckedIn = !!att.checkInDate;
@@ -110,19 +172,19 @@ export default function FormationAttendeesTable({
                       <td>{renderAttendanceBadge(att)}</td>
                       <td className="text-center" style={{ paddingRight: '1rem' }}>
                         <div className="flex justify-center gap-2 items-center w-full">
-                          {/* Botón 1: Detalles (Texto corto para cuadrar tamaño) */}
+                          {/* Botón 1: Detalles */}
                           <Button
                             size="sm"
                             className="da-btn-primary fw-bold shadow-sm"
                             style={actionButtonStyle}
                             onClick={() => onViewSignature(att)}
-                            title={t('formationDetails.viewSignature')} // Tooltip con el texto completo
+                            title={t('formationDetails.viewSignature')}
                           >
                             <FontAwesomeIcon icon={faEye} size="lg" />
                             <span>{t('common.details', 'Detalles')}</span>
                           </Button>
 
-                          {/* Botón 2: PDF (Visible si hay firma) */}
+                          {/* Botón 2: PDF */}
                           {att.signature && (
                             <Button
                               size="sm"
@@ -136,7 +198,7 @@ export default function FormationAttendeesTable({
                             </Button>
                           )}
                           
-                          {/* Espaciador si no hay PDF para mantener la alineación */}
+                          {/* Espaciador */}
                           {!att.signature && <div style={actionButtonStyle} />}
 
                           {/* Botón 3: Eliminar */}
@@ -159,66 +221,73 @@ export default function FormationAttendeesTable({
             </Table>
           </div>
 
-          {/* 2. VISTA MÓVIL / TABLET COMPRIMIDA (Sin cambios, diseño previo aprobado) */}
-          <div className="lg:hidden flex flex-col gap-4 mt-2">
-            {attendees.map((att) => {
+          {/* 2. VISTA MÓVIL */}
+          <div className="lg:hidden flex flex-col gap-3 mt-2">
+            {paginatedAttendees.map((att) => {
               const user = att.user;
               const isCompleted = !!att.checkOutDate;
               const hasCheckedIn = !!att.checkInDate;
               return (
-                <div key={att.id || user.id} className="bg-white/70 backdrop-blur-md shadow-sm rounded-[20px] p-5 border border-white/40 flex flex-col gap-3">
-                  <div className="flex justify-between items-start gap-3">
+                <div key={att.id || user.id} className="bg-white/70 backdrop-blur-md shadow-sm rounded-[16px] p-4 border border-white/50 flex flex-col gap-3">
+                  <div className="flex justify-between items-start">
                     <div>
-                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Código: {user.personalCode}</span>
-                      <h3 className="font-bold text-slate-800 m-0 text-base">{user.firstName} {user.lastName}</h3>
-                      <p className="text-xs text-slate-400 m-0">@{user.username}</p>
+                      <h4 className="font-bold text-slate-800 m-0 text-base">{user.firstName} {user.lastName}</h4>
+                      <p className="text-xs text-slate-500 m-0 mt-0.5">@{user.username} • Cód: {user.personalCode}</p>
                     </div>
-                    <div>
-                      {renderAttendanceBadge(att)}
-                    </div>
+                    <div>{renderAttendanceBadge(att)}</div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 border-t border-slate-200/50 pt-3 text-xs text-slate-600">
-                    <div><span className="font-semibold text-slate-500">Check-in:</span> {hasCheckedIn ? dayjs.utc(att.checkInDate).local().format('HH:mm:ss') : '-'}</div>
-                    <div><span className="font-semibold text-slate-500">Check-out:</span> {isCompleted ? dayjs.utc(att.checkOutDate).local().format('HH:mm:ss') : '-'}</div>
+                  <div className="flex justify-between text-xs text-slate-600 bg-white/40 p-2.5 rounded-xl border border-white/40">
+                    <span><strong>Entrada:</strong> {hasCheckedIn ? dayjs.utc(att.checkInDate).local().format('HH:mm:ss') : '-'}</span>
+                    <span><strong>Salida:</strong> {isCompleted ? dayjs.utc(att.checkOutDate).local().format('HH:mm:ss') : '-'}</span>
                   </div>
 
-                  {/* Botones móviles ordenados en grid simétrica (Mismo diseño previo) */}
-                  <div className="border-t border-slate-200/50 pt-3 grid grid-cols-2 gap-2">
+                  <div className="flex gap-2 justify-end pt-2 border-t border-slate-200/50">
                     <Button
                       size="sm"
-                      className="da-btn-primary fw-bold shadow-sm !rounded-full py-2.5 inline-flex items-center justify-center gap-1.5 text-xs col-span-2"
+                      className="da-btn-primary flex-1 d-flex items-center justify-center gap-1.5 py-2 font-bold shadow-xs text-xs"
                       onClick={() => onViewSignature(att)}
-                      title={t('formationDetails.viewSignature')}
                     >
-                      <FontAwesomeIcon icon={faEye} size="lg" />
-                      <span>{t('formationDetails.viewSignature')}</span>
+                      <FontAwesomeIcon icon={faEye} />
+                      {t('common.details', 'Detalles')}
                     </Button>
 
-                    {att.signature ? (
+                    {att.signature && (
                       <Button
                         size="sm"
-                        className="da-btn-blue fw-bold shadow-sm !rounded-full py-2 inline-flex items-center justify-center gap-1.5 text-xs"
+                        className="da-btn-blue flex-1 d-flex items-center justify-center gap-1.5 py-2 font-bold shadow-xs text-xs"
                         onClick={() => onDownloadPdf(att.id)}
                       >
-                        <FontAwesomeIcon icon={faFilePdf} size="lg" />
-                        <span>PDF</span>
+                        <FontAwesomeIcon icon={faFilePdf} />
+                        PDF
                       </Button>
-                    ) : <div />}
+                    )}
 
                     <Button
                       size="sm"
-                      className="da-btn-danger fw-bold shadow-sm !rounded-full py-2 inline-flex items-center justify-center gap-1.5 text-xs"
+                      className="da-btn-danger flex-1 d-flex items-center justify-center gap-1.5 py-2 font-bold shadow-xs text-xs"
                       onClick={() => handleRemoveUser(user.id)}
                     >
-                      <FontAwesomeIcon icon={faTrash} size="lg" />
-                      <span>{t('formations.delete', 'Eliminar')}</span>
+                      <FontAwesomeIcon icon={faTrash} />
+                      {t('formations.delete', 'Eliminar')}
                     </Button>
                   </div>
                 </div>
               );
             })}
           </div>
+
+          {/* Paginación Liquid Glass */}
+          {filteredAttendees.length > 0 && (
+            <GlassPagination
+              currentPage={currentPage}
+              totalItems={filteredAttendees.length}
+              pageSize={pageSize}
+              onPageChange={(p) => setCurrentPage(p)}
+              onPageSizeChange={(s) => setPageSize(s)}
+              pageSizeOptions={[5, 10, 20, 50]}
+            />
+          )}
         </div>
       )}
     </>

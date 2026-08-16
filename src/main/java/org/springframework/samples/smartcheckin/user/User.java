@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.samples.smartcheckin.checkin.Checkin;
+import org.springframework.samples.smartcheckin.company.Company;
 import org.springframework.samples.smartcheckin.configuration.StringCryptoConverter;
 
 import java.time.LocalDateTime;
@@ -62,6 +63,9 @@ public class User extends BaseEntity implements OrganizationalUnit {
     @Size(min = 4, max = 4)
     @Column(unique = true, length = 4)
     private String personalCode;
+
+    @Column(name = "locator", length = 10)
+    private String locator;
 
     @NotBlank
     @Size(max = 255)
@@ -166,6 +170,10 @@ public class User extends BaseEntity implements OrganizationalUnit {
     @JoinColumn(name = "department_id")
     @JsonIgnore
     private Department department;
+
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
 
     @Override
     @Transient

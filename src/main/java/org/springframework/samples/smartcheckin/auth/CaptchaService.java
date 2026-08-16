@@ -21,7 +21,8 @@ public class CaptchaService {
 
     private final RestTemplate restTemplate;
 
-    // Inyectamos un único RestTemplate reutilizable en lugar de crear uno por petición
+    // Inyectamos un único RestTemplate reutilizable en lugar de crear uno por
+    // petición
     public CaptchaService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
@@ -39,7 +40,8 @@ public class CaptchaService {
             CaptchaResponse response = restTemplate.postForObject(VERIFY_URL, body, CaptchaResponse.class);
             return response != null && response.isSuccess();
         } catch (RestClientException e) {
-            // Fail-closed: si Cloudflare no responde o hay un error de red, denegamos la petición
+            // Fail-closed: si Cloudflare no responde o hay un error de red, denegamos la
+            // petición
             // en lugar de dejar pasar al usuario o reventar con un 500.
             logger.error("Error al validar el captcha con Cloudflare Turnstile: {}", e.getMessage());
             return false;
@@ -53,6 +55,7 @@ public class CaptchaService {
         public boolean isSuccess() {
             return success;
         }
+
         public void setSuccess(boolean success) {
             this.success = success;
         }

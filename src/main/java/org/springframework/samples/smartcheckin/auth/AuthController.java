@@ -19,6 +19,8 @@ import org.springframework.samples.smartcheckin.configuration.jwt.JwtBlacklistSe
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsServiceImpl;
+import org.springframework.samples.smartcheckin.company.Company;
+import org.springframework.samples.smartcheckin.company.CompanyService;
 import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
@@ -59,6 +61,7 @@ import org.springframework.beans.factory.annotation.Value;
 @RestController
 @RequestMapping("/api/v1/auth")
 @Tag(name = "Authentication", description = "The Authentication API based on JWT")
+@SuppressWarnings("null")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -77,6 +80,7 @@ public class AuthController {
     private final PasswordResetService passwordResetService;
     private final JavaMailSender javaMailSender;
     private final CaptchaService captchaService;
+    private final CompanyService companyService;
     private static final String CAPTCHA_SUCCESS_MESSAGE = "Error: Verificación de seguridad (Captcha) fallida.";
 
     @Value("${app.frontend.url:http://localhost:3000}")
@@ -89,7 +93,7 @@ public class AuthController {
             AnomalyDetectionService anomalyDetectionService, HttpServletRequest request,
             JwtBlacklistService jwtBlacklistService, EmailNotificationSender emailNotificationSender, PushNotificationSender pushNotificationSender,
             PasswordResetService passwordResetService, JavaMailSender javaMailSender,
-            CaptchaService captchaService) { // <-- Parámetro de Captcha añadido
+            CaptchaService captchaService, CompanyService companyService) {
         
         this.userService = userService;
         this.authoritiesService = authoritiesService;
@@ -107,7 +111,8 @@ public class AuthController {
         
         this.passwordResetService = passwordResetService;
         this.javaMailSender = javaMailSender;
-        this.captchaService = captchaService; // <-- Asignación de Captcha añadida
+        this.captchaService = captchaService;
+        this.companyService = companyService;
     }
 
     @PostMapping("/logout")
@@ -261,6 +266,19 @@ public class AuthController {
         }
 
         user.setAuthority(authority);
+
+        if (signupRequest.getCompanyId() != null) {
+            try {
+                Company company = companyService.findById(signupRequest.getCompanyId());
+                user.setCompany(company);
+            } catch (ResourceNotFoundException e) {
+                // Ignore if company does not exist
+            }
+        }
+
+        if (signupRequest.getLocator() != null && !signupRequest.getLocator().isBlank()) {
+            user.setLocator(signupRequest.getLocator().toUpperCase().trim());
+        }
 
         userService.saveUser(user);
         messagingTemplate.convertAndSend("/topic/users", "update");

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../components/ToastProvider';
 import { Turnstile } from '@marsidev/react-turnstile';
@@ -17,12 +17,22 @@ export default function Register() {
     firstName: '',
     lastName: '',
     email: '',
-    personalCode: ''
+    personalCode: '',
+    companyId: '',
+    locator: ''
   });
 
+  const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
   const [captchaToken, setCaptchaToken] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/v1/companies')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setCompanies(Array.isArray(data) ? data : []))
+      .catch(() => setCompanies([]));
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,6 +41,8 @@ export default function Register() {
       if (numeric.length <= 4) {
         setForm({ ...form, personalCode: numeric });
       }
+    } else if (name === 'locator') {
+      setForm({ ...form, locator: value.toUpperCase().slice(0, 10) });
     } else {
       setForm({ ...form, [name]: value });
     }
@@ -73,6 +85,7 @@ export default function Register() {
           lastName: form.lastName.trim(),
           email: form.email.trim(),
           personalCode: form.personalCode.trim(),
+          companyId: form.companyId ? Number.parseInt(form.companyId, 10) : null,
           captchaToken: captchaToken
         })
       });
@@ -124,11 +137,13 @@ export default function Register() {
         ) : (
           <RegisterForm
             form={form}
+            companies={companies}
             handleChange={handleChange}
             handleSubmit={handleSubmit}
-            loading={loading || !captchaToken} 
+            loading={loading} 
+            isCaptchaValid={Boolean(captchaToken)}
             t={t}
-            captchaComponent={captchaWidget} // Le pasamos el widget inyectado
+            captchaComponent={captchaWidget}
           />
         )}
 

@@ -2,8 +2,13 @@ import React, { useState } from 'react';
 import { FaEye, FaEyeSlash, FaUserPlus } from 'react-icons/fa';
 import { Spinner } from 'reactstrap';
 import { Link } from 'react-router-dom';
+import GlassDropdown from '../../../components/GlassDropdown';
 
-export default function RegisterForm({ form, handleChange, handleSubmit, loading, t, captchaComponent }) {
+const PREDEFINED_LOCATORS = [
+  "AV", "MG", "VF", "LE", "VN", "SI", "JE", "SO", "PV", "BU", "OR", "MX"
+];
+
+export default function RegisterForm({ form, companies = [], handleChange, handleSubmit, loading, isCaptchaValid, t, captchaComponent }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
@@ -34,6 +39,7 @@ export default function RegisterForm({ form, handleChange, handleSubmit, loading
             id="email"
             name="email"
             placeholder="Correo Electrónico"
+            autoComplete="email"
             value={form.email}
             onChange={handleChange}
             required
@@ -54,6 +60,7 @@ export default function RegisterForm({ form, handleChange, handleSubmit, loading
             id="firstName"
             name="firstName"
             placeholder="Nombre"
+            autoComplete="given-name"
             value={form.firstName}
             onChange={handleChange}
             required
@@ -74,6 +81,7 @@ export default function RegisterForm({ form, handleChange, handleSubmit, loading
             id="lastName"
             name="lastName"
             placeholder="Apellidos"
+            autoComplete="family-name"
             value={form.lastName}
             onChange={handleChange}
             required
@@ -115,6 +123,7 @@ export default function RegisterForm({ form, handleChange, handleSubmit, loading
             id="personalCode"
             name="personalCode"
             placeholder="Código Personal"
+            autoComplete="off"
             maxLength={4}
             value={form.personalCode}
             onChange={handleChange}
@@ -126,6 +135,51 @@ export default function RegisterForm({ form, handleChange, handleSubmit, loading
           >
             {t('register.personalCode', 'Código Personal (4 dígitos)')}
           </label>
+        </div>
+
+        {/* Empresa */}
+        <div className="relative md:col-span-1">
+          <label 
+            htmlFor="companyId" 
+            className="block text-[11px] font-semibold text-slate-500 mb-1.5 ms-1"
+          >
+            {t('register.company', 'Empresa / Centro de Trabajo')}
+          </label>
+          <GlassDropdown
+            options={[
+              { value: '', label: t('register.selectCompany', '-- Selecciona tu Empresa --') },
+              ...companies.map((comp) => ({
+                value: comp.id,
+                label: comp.name
+              }))
+            ]}
+            value={form.companyId || ''}
+            onChange={(val) => handleChange({ target: { name: 'companyId', value: val } })}
+            placeholder={t('register.selectCompany', '-- Selecciona tu Empresa --')}
+            searchable={companies.length > 3}
+            className="w-full"
+          />
+        </div>
+
+        {/* Localizador del Usuario */}
+        <div className="relative md:col-span-1">
+          <label 
+            htmlFor="locator" 
+            className="block text-[11px] font-semibold text-slate-500 mb-1.5 ms-1"
+          >
+            {t('register.locator', 'Localizador / Sede')}
+          </label>
+          <GlassDropdown
+            options={[
+              { value: '', label: t('register.noLocator', '-- Sin Localizador --') },
+              ...PREDEFINED_LOCATORS.map((loc) => ({ value: loc, label: `Sede ${loc}` }))
+            ]}
+            value={form.locator || ''}
+            onChange={(val) => handleChange({ target: { name: 'locator', value: val } })}
+            placeholder={t('register.selectLocator', '-- Selecciona tu Localizador --')}
+            searchable={true}
+            className="w-full"
+          />
         </div>
 
         {/* Contraseña */}
@@ -150,22 +204,23 @@ export default function RegisterForm({ form, handleChange, handleSubmit, loading
           </label>
           <button
             type="button"
-            className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 focus:outline-none"
             onClick={() => setShowPassword(!showPassword)}
-            aria-label={t('common.togglePassword', 'Mostrar/Ocultar contraseña')}
+            className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 focus:outline-none transition cursor-pointer"
+            tabIndex="-1"
           >
-            {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
           </button>
         </div>
 
-        {/* Repetir Contraseña */}
+        {/* Confirmar Contraseña */}
         <div className="relative">
           <input
             className="w-full bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl px-4 pt-5 pb-2 pe-12 text-sm text-slate-800 outline-none focus:border-[#b3c34c] focus:bg-white/70 transition shadow-sm placeholder-transparent peer"
             type={showConfirmPassword ? 'text' : 'password'}
             id="confirmPassword"
             name="confirmPassword"
-            placeholder="Repetir Contraseña"
+            placeholder="Confirmar Contraseña"
+            autoComplete="new-password"
             value={form.confirmPassword}
             onChange={handleChange}
             required
@@ -175,44 +230,45 @@ export default function RegisterForm({ form, handleChange, handleSubmit, loading
             htmlFor="confirmPassword" 
             className="absolute left-4 top-1.5 text-[10px] font-semibold text-slate-500 transition peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-400 peer-focus:top-1.5 peer-focus:text-[10px] peer-focus:text-[#8fa228] pointer-events-none"
           >
-            {t('register.confirmPassword', 'Repetir Contraseña')}
+            {t('register.confirmPassword', 'Confirmar Contraseña')}
           </label>
           <button
             type="button"
-            className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 focus:outline-none"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            aria-label={t('common.togglePassword', 'Mostrar/Ocultar contraseña')}
+            className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 focus:outline-none transition cursor-pointer"
+            tabIndex="-1"
           >
-            {showConfirmPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+            {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
           </button>
         </div>
 
-        {/* CAPTCHA: Se inyecta aquí ocupando 2 columnas */}
-        <div className="md:col-span-2 mt-1 mb-1">
+        {/* Cloudflare Turnstile Captcha */}
+        <div className="md:col-span-2 flex flex-col items-center justify-center my-2 p-2 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/40">
           {captchaComponent}
         </div>
 
-        {/* Contenedor del Botón (Ocupa 2 columnas en PC) */}
+        {/* Botón de Envío */}
         <div className="md:col-span-2 mt-2">
           <button
             type="submit"
-            disabled={loading}
-            className="w-full inline-flex items-center justify-center py-3.5 px-6 rounded-full font-semibold text-slate-900 bg-[#b3c34c]/60 hover:bg-[#b3c34c]/80 border border-white/80 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),0_8px_20px_rgba(179,195,76,0.3)] transition duration-300 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50"
+            disabled={loading || !isCaptchaValid}
+            className="w-full da-btn-primary py-3.5 rounded-2xl font-bold shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? <Spinner size="sm" className="me-2" /> : <FaUserPlus className="me-2" />}
-            {t('register.submitBtn', 'Enviar Solicitud de Registro')}
+            {loading ? <Spinner size="sm" /> : <FaUserPlus />}
+            <span>{loading ? t('register.sending', 'Enviando...') : t('register.submit', 'Solicitar Registro')}</span>
           </button>
         </div>
 
-        {/* Enlace para ir al Login */}
-        <div className="text-center md:col-span-2">
-          <span className="text-xs text-slate-500">{t('register.alreadyHaveAccount', '¿Ya tienes cuenta activa?')} </span>
-          <Link to="/login" className="text-xs font-bold text-slate-700 hover:text-slate-900 underline decoration-[#b3c34c] decoration-2 underline-offset-4">
-            {t('register.loginHere', 'Iniciar Sesión')}
-          </Link>
-        </div>
-
       </form>
+
+      <div className="text-center mt-6 pt-4 border-t border-white/40">
+        <p className="text-xs text-slate-500 mb-0">
+          {t('register.alreadyHaveAccount', '¿Ya tienes una cuenta activada?')}{' '}
+          <Link to="/login" className="font-bold text-[#8fa228] hover:underline">
+            {t('register.loginLink', 'Inicia Sesión')}
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

@@ -21,6 +21,7 @@ export default function AnalyticsDashboard() {
   const [statistics, setStatistics] = useState([]);
   const [userAnalyticsList, setUserAnalyticsList] = useState([]);
   const [formationAnalyticsList, setFormationAnalyticsList] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [selectedUserAnalytics, setSelectedUserAnalytics] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [startDate, setStartDate] = useState('');
@@ -58,12 +59,14 @@ export default function AnalyticsDashboard() {
     Promise.all([
       api.get(statsUrl),
       api.get('/analytics/users'),
-      api.get('/analytics/formations')
-    ]).then(([statsRes, usersRes, formationsRes]) => {
+      api.get('/analytics/formations'),
+      api.get('/companies')
+    ]).then(([statsRes, usersRes, formationsRes, companiesRes]) => {
       if (isMounted) {
         setStatistics(Array.isArray(statsRes.data) ? statsRes.data : []);
         setUserAnalyticsList(Array.isArray(usersRes.data) ? usersRes.data : []);
         setFormationAnalyticsList(Array.isArray(formationsRes.data) ? formationsRes.data : []);
+        setCompanies(Array.isArray(companiesRes.data) ? companiesRes.data : []);
       }
     }).catch(error => {
       console.error("Failed to load analytics concurrently", error);
@@ -127,7 +130,7 @@ export default function AnalyticsDashboard() {
           </h2>
         </div>
 
-        <div className="flex flex-col xl:flex-row justify-between items-center w-full gap-4 mb-6">
+        <div className="flex flex-col xl:flex-row justify-between items-center w-full gap-4 mb-6 relative z-50">
           <div className="w-full sm:w-auto" style={{ minWidth: '280px' }}>
             <GlassDropdown
               value={activeTab}
@@ -177,7 +180,7 @@ export default function AnalyticsDashboard() {
                   </div>
                 </div>
             )}
-            <div className="w-full sm:w-auto">
+            <div className="w-full sm:w-auto flex justify-center">
               <AnalyticsExportMenu />
             </div>
           </div>
@@ -190,7 +193,7 @@ export default function AnalyticsDashboard() {
         {activeTab === 'employees' && (
           <AnalyticsEmployeesTab 
             userAnalyticsList={userAnalyticsList} 
-            onSearch={fetchUserAnalytics} 
+            companies={companies}
             onOpenUserDetail={handleOpenUserDetail} 
           />
         )}

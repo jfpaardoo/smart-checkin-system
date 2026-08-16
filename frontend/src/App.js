@@ -16,6 +16,8 @@ import UserEditAdmin from "./admin/users/UserEditAdmin";
 import FormationListAdmin from "./admin/formations/FormationListAdmin";
 import FormationEditAdmin from "./admin/formations/FormationEditAdmin";
 import FormationDetailsAdmin from "./admin/formations/FormationDetailsAdmin";
+import CompanyListAdmin from "./admin/companies/CompanyListAdmin";
+import CompanyEditAdmin from "./admin/companies/CompanyEditAdmin";
 import QRGeneratorAdmin from "./admin/qr/QRGeneratorAdmin";
 import AnalyticsDashboard from "./admin/analytics/AnalyticsDashboard";
 import AuditDashboard from "./admin/audit/AuditDashboard";
@@ -56,6 +58,8 @@ function App() {
         <>
           <Route path="/users" exact={true} element={<PrivateRoute><UserListAdmin /></PrivateRoute>} />
           <Route path="/users/:id" exact={true} element={<PrivateRoute><UserEditAdmin /></PrivateRoute>} />
+          <Route path="/companies" exact={true} element={<PrivateRoute><CompanyListAdmin /></PrivateRoute>} />
+          <Route path="/companies/:id" exact={true} element={<PrivateRoute><CompanyEditAdmin /></PrivateRoute>} />
           <Route path="/formations" exact={true} element={<PrivateRoute><FormationListAdmin /></PrivateRoute>} />
           <Route path="/formations/:id" exact={true} element={<PrivateRoute><FormationEditAdmin /></PrivateRoute>} />
           <Route path="/formations/:id/details" exact={true} element={<PrivateRoute><FormationDetailsAdmin /></PrivateRoute>} />

@@ -101,6 +101,8 @@ public class UserService {
         toUpdate.setIsWorking(user.getIsWorking());
         toUpdate.setAuthority(user.getAuthority());
         toUpdate.setEmail(user.getEmail());
+        toUpdate.setCompany(user.getCompany());
+        toUpdate.setLocator(user.getLocator());
         toUpdate.setTwoFactorType(user.getTwoFactorType());
         toUpdate.setEmailNotificationsEnabled(user.getEmailNotificationsEnabled());
         toUpdate.setPushNotificationsEnabled(user.getPushNotificationsEnabled());
@@ -120,23 +122,7 @@ public class UserService {
         String oldUsername = toAnonymize.getUsername();
         
         // 1. Borrado físico de las firmas digitales (OneDrive/Disco)
-        if (toAnonymize.getCheckins() != null) {
-            toAnonymize.getCheckins().forEach(checkin -> {
-                if (checkin.getSignature() != null) {
-                    signatureStorageService.deleteSignature(checkin.getSignature());
-                    checkin.setSignature(null);
-                }
-            });
-        }
-
-        if (toAnonymize.getFormationAttendances() != null) {
-            toAnonymize.getFormationAttendances().forEach(attendance -> {
-                if (attendance.getSignature() != null) {
-                    signatureStorageService.deleteSignature(attendance.getSignature());
-                    attendance.setSignature(null);
-                }
-            });
-        }
+        cleanupSignatures(toAnonymize);
 
         // 2. Generamos strings aleatorios para evitar colisiones de constraints UNIQUE
         String randomUUID = UUID.randomUUID().toString().replace("-", "");
@@ -145,6 +131,51 @@ public class UserService {
         String anonymizedUsername = "GDPR_DEL_" + randomSuffix;
 
         // 3. Anonimizar logs de auditoría antiguos (en username y en el JSON details)
+        anonymizeAuditLogs(oldUsername, anonymizedUsername);
+        
+        // 4. Anonimización física de los PII (Identificadores Personales)
+        toAnonymize.setUsername(anonymizedUsername);
+        toAnonymize.setEmail("deleted_" + randomSuffix + "@anonymized.local");
+        toAnonymize.setFirstName("Anonymized");
+        toAnonymize.setLastName("User");
+        toAnonymize.setPersonalCode(randomCode); 
+        toAnonymize.setPassword("DELETED_GDPR_INVALID_PASSWORD_HASH");
+        toAnonymize.setTwoFactorSecret(null);
+        toAnonymize.setTwoFactorType(null);
+        toAnonymize.setLocator(null);
+        toAnonymize.setCompany(null);
+        
+        // 5. Revocar permisos y desactivar notificaciones
+        toAnonymize.setIsWorking(false);
+        toAnonymize.setIsApproved(false);
+        toAnonymize.setEmailNotificationsEnabled(false);
+        toAnonymize.setPushNotificationsEnabled(false);
+        
+        // Guardamos los cambios sin destruir las Foreign Keys de la base de datos
+        userRepository.save(toAnonymize);
+    }
+
+    private void cleanupSignatures(User user) {
+        if (user.getCheckins() != null) {
+            user.getCheckins().forEach(checkin -> {
+                if (checkin.getSignature() != null) {
+                    signatureStorageService.deleteSignature(checkin.getSignature());
+                    checkin.setSignature(null);
+                }
+            });
+        }
+
+        if (user.getFormationAttendances() != null) {
+            user.getFormationAttendances().forEach(attendance -> {
+                if (attendance.getSignature() != null) {
+                    signatureStorageService.deleteSignature(attendance.getSignature());
+                    attendance.setSignature(null);
+                }
+            });
+        }
+    }
+
+    private void anonymizeAuditLogs(String oldUsername, String anonymizedUsername) {
         List<AuditLog> userLogs = auditLogRepository.findByUsername(oldUsername);
         if (userLogs != null && !userLogs.isEmpty()) {
             userLogs.forEach(log -> {
@@ -165,24 +196,5 @@ public class UserService {
             });
             auditLogRepository.saveAll(logsWithDetails);
         }
-        
-        // 4. Anonimización física de los PII (Identificadores Personales)
-        toAnonymize.setUsername(anonymizedUsername);
-        toAnonymize.setEmail("deleted_" + randomSuffix + "@anonymized.local");
-        toAnonymize.setFirstName("Anonymized");
-        toAnonymize.setLastName("User");
-        toAnonymize.setPersonalCode(randomCode); 
-        toAnonymize.setPassword("DELETED_GDPR_INVALID_PASSWORD_HASH");
-        toAnonymize.setTwoFactorSecret(null);
-        toAnonymize.setTwoFactorType(null);
-        
-        // 5. Revocar permisos y desactivar notificaciones
-        toAnonymize.setIsWorking(false);
-        toAnonymize.setIsApproved(false);
-        toAnonymize.setEmailNotificationsEnabled(false);
-        toAnonymize.setPushNotificationsEnabled(false);
-        
-        // Guardamos los cambios sin destruir las Foreign Keys de la base de datos
-        userRepository.save(toAnonymize);
     }
 }

@@ -17,6 +17,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class DepartmentServiceTests {
 
+    private static final String ENGINEERING = "Engineering";
+
     @Mock
     private DepartmentRepository departmentRepository;
 
@@ -29,7 +31,7 @@ class DepartmentServiceTests {
     void setUp() {
         dept = new Department();
         dept.setId(1);
-        dept.setName("Engineering");
+        dept.setName(ENGINEERING);
     }
 
     // ─── getAllDepartments ────────────────────────────────────────────────────
@@ -39,7 +41,7 @@ class DepartmentServiceTests {
         when(departmentRepository.findAll()).thenReturn(List.of(dept));
         List<Department> result = departmentService.getAllDepartments();
         assertEquals(1, result.size());
-        assertEquals("Engineering", result.get(0).getName());
+        assertEquals(ENGINEERING, result.get(0).getName());
     }
 
     @Test
@@ -71,7 +73,7 @@ class DepartmentServiceTests {
         when(departmentRepository.findById(1)).thenReturn(Optional.of(dept));
         Optional<Department> result = departmentService.getDepartmentById(1);
         assertTrue(result.isPresent());
-        assertEquals("Engineering", result.get().getName());
+        assertEquals(ENGINEERING, result.get().getName());
     }
 
     @Test
