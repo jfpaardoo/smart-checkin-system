@@ -37,7 +37,7 @@ jobs:
           exit-code: '0'
 
       - name: Upload Trivy Image Scan SARIF
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         continue-on-error: true
         if: always()
         with:
@@ -58,7 +58,7 @@ jobs:
           exit-code: '0'
 
       - name: Upload Trivy Filesystem Scan SARIF
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         continue-on-error: true
         if: always()
         with:
