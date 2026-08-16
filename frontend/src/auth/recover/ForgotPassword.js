@@ -53,8 +53,8 @@ export default function ForgotPassword() {
     const glassButtonClass = "w-full mt-2 h-[52px] rounded-full font-bold text-slate-900 bg-[#b3c34c]/80 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(179,195,76,0.35)] hover:bg-[#b3c34c] hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.55)] transition-colors duration-200 active:scale-95 flex justify-center items-center gap-2 box-border cursor-pointer";
     
     // Clases para la animación del Floating Label
-    const inputClass = "block w-full px-4 pt-6 pb-2 rounded-2xl border border-white/50 bg-white/50 backdrop-blur-sm focus:border-[#b3c34c] focus:bg-white/80 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition text-slate-800 shadow-inner peer";
-    const labelClass = "absolute text-sm font-semibold text-slate-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-focus:text-[#b3c34c] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 cursor-text pointer-events-none";
+    const inputClass = "block w-full px-4 pt-6 pb-2 rounded-2xl border border-white/50 bg-white/50 backdrop-blur-sm focus:border-[#b3c34c] focus:bg-white/80 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition-colors duration-200 text-slate-800 shadow-inner peer";
+    const labelClass = "absolute text-sm font-semibold text-slate-500 transition-transform transition-colors duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-focus:text-[#b3c34c] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 cursor-text pointer-events-none";
 
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-80px)] w-full px-4 overflow-hidden">
