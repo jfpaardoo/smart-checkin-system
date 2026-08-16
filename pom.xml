@@ -27,7 +27,7 @@
 		<mapstruct.version>1.5.5.Final</mapstruct.version>
 
 		<jacoco.version>0.8.15</jacoco.version>
-		<allure.version>2.29.1</allure.version>
+		<allure.version>2.35.4</allure.version>
 		<aspectj.version>1.9.21</aspectj.version>
 		<spring-format.version>0.0.19</spring-format.version>
 
