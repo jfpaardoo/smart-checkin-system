@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import { useToast } from "../../components/ToastProvider";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import api from "../../services/api";
-import "../../App.css";
 
 export default function CompanyEditAdmin() {
   const { id } = useParams();

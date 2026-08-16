@@ -5,7 +5,6 @@ import { Turnstile } from '@marsidev/react-turnstile';
 import RegisterSuccess from './components/RegisterSuccess';
 import RegisterForm from './components/RegisterForm';
 import { useCaptchaSiteKey } from '../../hooks/useCaptchaSiteKey';
-import '../../App.css';
 
 export default function Register() {
   const { t } = useTranslation();

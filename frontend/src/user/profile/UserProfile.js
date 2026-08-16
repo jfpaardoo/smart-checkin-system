@@ -11,8 +11,6 @@ import PasswordSecurityTab from "./components/PasswordSecurityTab";
 import { useUserProfileData } from "./hooks/useUserProfileData";
 import { usePasswordSecurity } from "./hooks/usePasswordSecurity";
 import api from "../../services/api";
-import "../../App.css";
-import "../../components/formGenerator/css/formGenerator.css";
 
 export default function UserProfile() {
   const { t } = useTranslation();

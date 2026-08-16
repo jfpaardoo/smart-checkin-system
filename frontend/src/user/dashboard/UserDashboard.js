@@ -9,8 +9,6 @@ import api from '../../services/api';
 import UserFormationsTable from './components/UserFormationsTable';
 import CheckoutModal from './components/CheckoutModal';
 import FormationDetailsModal from './components/FormationDetailsModal';
-import '../../App.css';
-import '../../static/css/admin/adminPage.css';
 
 export default function UserDashboard() {
   const { t } = useTranslation();

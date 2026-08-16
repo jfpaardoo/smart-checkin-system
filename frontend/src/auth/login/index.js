@@ -7,7 +7,6 @@ import tokenService from "../../services/token.service";
 import { FaSignInAlt, FaShieldAlt, FaKey, FaFingerprint } from "react-icons/fa";
 import { isWebAuthnSupported, loginWithPasskey } from "../../util/webauthnUtil";
 import { useCaptchaSiteKey } from "../../hooks/useCaptchaSiteKey";
-import "../../App.css";
 
 export default function Login() {
   const { t } = useTranslation();

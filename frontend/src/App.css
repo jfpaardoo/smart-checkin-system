@@ -12,18 +12,14 @@
 /* 3. Layout Components (Floating Capsule Navbar & Glass Dropdowns) */
 @import './static/css/layout/navbar.css';
 
-/* 4. Authentication Pages & Form Containers */
-@import './static/css/auth/authPage.css';
-@import './static/css/auth/authButton.css';
-
-/* 5. Feature Components (QR Camera Scanner & Generator) */
+/* 4. Feature Components (QR Camera Scanner & Generator) */
 @import './static/css/components/qrScanner.css';
 
-/* 6. Admin Views & Analytics */
+/* 5. Admin Views & Analytics */
 @import './static/css/admin/adminPage.css';
 @import './static/css/admin/analyticsDashboard.css';
 
-/* 7. Responsive Breakpoints (Mobile, Tablet, Desktop) */
+/* 6. Responsive Breakpoints (Mobile, Tablet, Desktop) */
 @import './static/css/responsive/responsive.css';
 
 body {

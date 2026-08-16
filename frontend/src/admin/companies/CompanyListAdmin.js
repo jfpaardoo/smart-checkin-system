@@ -8,8 +8,6 @@ import GlassSearchBar from "../../components/GlassSearchBar";
 import GlassPagination from "../../components/GlassPagination";
 import { TableGhostLoader } from "../../components/GhostLoader";
 import api from "../../services/api";
-import "../../App.css";
-import "../../static/css/admin/adminPage.css";
 
 export default function CompanyListAdmin() {
   const { t } = useTranslation();

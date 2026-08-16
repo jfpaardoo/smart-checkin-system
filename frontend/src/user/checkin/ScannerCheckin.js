@@ -9,8 +9,6 @@ import GlassDropdown from '../../components/GlassDropdown';
 import { useQrScanner } from '../../hooks/useQrScanner';
 import ManualCheckinForm from './components/ManualCheckinForm';
 import SignatureStep from './components/SignatureStep';
-import '../../App.css';
-import '../../static/css/admin/adminPage.css';
 
 const parseRawInput = (rawInput) => {
   try {

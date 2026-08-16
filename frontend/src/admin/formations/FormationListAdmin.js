@@ -4,8 +4,6 @@ import { Button } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faGraduationCap } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
-import "../../App.css";
-import "../../static/css/admin/adminPage.css";
 import GlassSearchBar from "../../components/GlassSearchBar";
 import GlassDropdown from "../../components/GlassDropdown";
 import GlassPagination from "../../components/GlassPagination";

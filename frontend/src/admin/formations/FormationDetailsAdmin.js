@@ -13,9 +13,6 @@ import { useFormationDetails } from "./hooks/useFormationDetails";
 import FormationAttendeesTable from "./components/FormationAttendeesTable";
 import { DocumentPreviewModal, AttendanceDetailsModal } from "./components/FormationModals";
 
-import "../../App.css";
-import "../../static/css/admin/adminPage.css";
-
 export default function FormationDetailsAdmin() {
   const id = getIdFromUrl(2);
   const { t } = useTranslation();
