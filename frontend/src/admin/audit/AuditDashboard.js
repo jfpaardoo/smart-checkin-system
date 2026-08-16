@@ -159,15 +159,19 @@ export default function AuditDashboard() {
       <div className="da-card">
         
         {/* Cabecera con botones de exportación */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4 border-0">
-          <div>
-            <h2 className="flex items-center text-2xl font-bold text-slate-800 m-0 text-center sm:text-left gap-2">
-              <FaShieldAlt style={{ color: "var(--da-primary)" }} className="shrink-0" />
-              {t('audit.title', 'Registro de Auditoría y Seguridad')}
-            </h2>
-            <p className="text-xs text-slate-500 m-0 mt-0.5 text-center sm:text-left">
-              {t('audit.subtitle', 'Trazabilidad en tiempo real de accesos, eventos y acciones del sistema')}
-            </p>
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4 border-0 text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 w-full sm:w-auto">
+            <div className="p-3.5 rounded-2xl bg-[#b3c34c]/20 border border-[#b3c34c]/40 text-[#73841e] text-2xl flex-shrink-0 flex items-center justify-center shadow-xs mb-1 sm:mb-0">
+              <FaShieldAlt />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-slate-800 m-0">
+                {t('audit.title', 'Registro de Auditoría y Seguridad')}
+              </h2>
+              <p className="text-xs text-slate-500 m-0 mt-0.5">
+                {t('audit.subtitle', 'Trazabilidad en tiempo real de accesos, eventos y acciones del sistema')}
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto justify-center">

@@ -8,12 +8,13 @@ export default function ForgotPassword() {
     const [message, setMessage] = useState({ text: '', type: '' });
     const [loading, setLoading] = useState(false);
     const [captchaToken, setCaptchaToken] = useState(null);
+    const [captchaKey, setCaptchaKey] = useState(0);
 
     React.useEffect(() => {
         if (typeof window !== 'undefined' && (window.navigator.webdriver || window.__PLAYWRIGHT__)) {
             setCaptchaToken('1x00000000000000000000AA');
         }
-    }, []);
+    }, [captchaKey]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -34,10 +35,12 @@ export default function ForgotPassword() {
             });
             setEmail('');
             setCaptchaToken(null);
+            setCaptchaKey((k) => k + 1);
         } catch (error) {
             const resMessage = error.response?.data?.message || 'Ocurrió un error. Inténtalo más tarde.';
             setMessage({ text: resMessage, type: 'error' });
             setCaptchaToken(null);
+            setCaptchaKey((k) => k + 1);
         } finally {
             setLoading(false);
         }
@@ -83,6 +86,7 @@ export default function ForgotPassword() {
             {/* Contenedor Glassmorphism para Cloudflare */}
             <div className="flex justify-center items-center mt-2 p-3 rounded-2xl bg-white/30 backdrop-blur-md border border-white/40 shadow-inner">
                 <Turnstile 
+                    key={captchaKey}
                     siteKey={process.env.REACT_APP_CAPTCHA_SITE_KEY || '1x00000000000000000000AA'} 
                     onSuccess={(token) => setCaptchaToken(token)}
                     onError={() => setCaptchaToken(null)}

@@ -82,6 +82,7 @@ public class AuthController {
     private final CaptchaService captchaService;
     private final CompanyService companyService;
     private static final String CAPTCHA_SUCCESS_MESSAGE = "Error: Verificación de seguridad (Captcha) fallida.";
+    private static final String HEADER = "X-Forwarded-For";
 
     @Value("${app.frontend.url:http://localhost:3000}")
     private String frontendUrl;
@@ -119,7 +120,15 @@ public class AuthController {
     public ResponseEntity<MessageResponse> logoutUser() {
         String jwt = jwtUtils.getJwtFromCookies(request);
         if (jwt != null) {
+            String currentUsername = null;
+            try {
+                currentUsername = jwtUtils.getUserNameFromJwtToken(jwt);
+            } catch (Exception e) {
+                // Ignore if expired
+            }
+            String clientIp = request.getHeader(HEADER) != null ? request.getHeader(HEADER).split(",")[0].trim() : request.getRemoteAddr();
             jwtBlacklistService.blacklistToken(jwt);
+            anomalyDetectionService.recordLogout(currentUsername != null ? currentUsername : "anonymous", clientIp);
             ResponseCookie cleanCookie = jwtUtils.getCleanJwtCookie();
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, cleanCookie.toString())
@@ -179,9 +188,12 @@ public class AuthController {
                 userService.saveUser(user);
             }
 
+            String clientIp = request.getHeader(HEADER) != null ? request.getHeader(HEADER).split(",")[0].trim() : request.getRemoteAddr();
+            anomalyDetectionService.recordSuccessfulLogin(userDetails.getUsername(), clientIp, "Password");
+
             // Enviar notificación Push de éxito de inicio de sesión
             if (user != null) {
-                Notification authNotif = new AuthNotification(pushNotificationSender, "IP: " + request.getRemoteAddr());
+                Notification authNotif = new AuthNotification(pushNotificationSender, "IP: " + clientIp);
                 authNotif.notify(user.getUsername());
             }
 
@@ -189,7 +201,7 @@ public class AuthController {
                 .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
                 .body(new JwtResponse(null, userDetails.getId(), userDetails.getUsername(), roles));
         }catch(BadCredentialsException exception){
-            String ipAddress = request.getRemoteAddr();
+            String ipAddress = request.getHeader(HEADER) != null ? request.getHeader(HEADER).split(",")[0].trim() : request.getRemoteAddr();
             handleFailedLogin(user, loginRequest.getUsername(), ipAddress);
             return ResponseEntity.badRequest().body(new MessageResponse("Bad Credentials!"));
         }
@@ -225,6 +237,9 @@ public class AuthController {
             user.setFailedLoginAttempts(0);
             userService.saveUser(user);
         }
+
+        String clientIp = this.request.getHeader(HEADER) != null ? this.request.getHeader(HEADER).split(",")[0].trim() : this.request.getRemoteAddr();
+        anomalyDetectionService.recordSuccessfulLogin(user.getUsername(), clientIp, "2FA TOTP");
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())

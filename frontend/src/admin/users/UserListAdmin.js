@@ -178,15 +178,19 @@ export default function UserListAdmin() {
       <div className="da-card">
         
         {/* Cabecera Liquid Glass */}
-        <div className="da-card-header da-admin-header border-0 flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
-            <div>
-              <h2 className="flex items-center gap-2 mb-1 text-2xl font-bold text-slate-800">
-                <FontAwesomeIcon icon={faUsers} style={{ color: 'var(--da-primary)' }} /> 
-                {t('users.title', 'Gestión de Empleados y Usuarios')}
-              </h2>
-              <p className="text-xs text-slate-500 mb-0">
-                {t('users.subtitle', 'Administra los roles, centros asociados, estado de actividad y solicitudes de registro')}
-              </p>
+        <div className="da-card-header da-admin-header border-0 flex flex-col md:flex-row justify-between items-center gap-4 mb-4 text-center sm:text-left">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 w-full md:w-auto">
+              <div className="p-3.5 rounded-2xl bg-[#b3c34c]/20 border border-[#b3c34c]/40 text-[#73841e] text-2xl flex-shrink-0 flex items-center justify-center shadow-xs">
+                <FontAwesomeIcon icon={faUsers} />
+              </div>
+              <div>
+                <h2 className="mb-1 text-2xl font-bold text-slate-800">
+                  {t('users.title', 'Gestión de Empleados y Usuarios')}
+                </h2>
+                <p className="text-xs text-slate-500 mb-0">
+                  {t('users.subtitle', 'Administra los roles, centros asociados, estado de actividad y solicitudes de registro')}
+                </p>
+              </div>
             </div>
             
             <div className="da-admin-header-actions flex flex-wrap gap-2 w-full md:w-auto justify-end">

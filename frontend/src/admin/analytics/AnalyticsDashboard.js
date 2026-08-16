@@ -123,11 +123,18 @@ export default function AnalyticsDashboard() {
     <div className="da-container">
       <div className="da-card">
         {/* Header with Navigation Tabs & Export Menu */}
-        <div className="da-card-header da-admin-header border-0">
-          <h2>
-            <FontAwesomeIcon icon={faChartLine} style={{ color: 'var(--da-primary)' }} className="me-2" />
-            {t('analytics.title', 'Analytics & HR Control')}
-          </h2>
+        <div className="da-card-header da-admin-header border-0 flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-3 mb-4">
+          <div className="p-3.5 rounded-2xl bg-[#b3c34c]/20 border border-[#b3c34c]/40 text-[#73841e] text-2xl flex-shrink-0 flex items-center justify-center shadow-xs mb-1 sm:mb-0">
+            <FontAwesomeIcon icon={faChartLine} />
+          </div>
+          <div>
+            <h2 className="mb-1 text-2xl font-bold text-slate-800">
+              {t('analytics.title', 'Analytics & HR Control')}
+            </h2>
+            <p className="text-xs text-slate-500 mb-0">
+              {t('analytics.subtitle', 'Métricas de productividad, control horario y seguimiento de formación')}
+            </p>
+          </div>
         </div>
 
         <div className="flex flex-col xl:flex-row justify-between items-center w-full gap-4 mb-6 relative z-50">

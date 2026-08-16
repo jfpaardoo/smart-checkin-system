@@ -61,9 +61,11 @@ public class SecurityConfiguration {
                         // 2. Recursos estáticos, consolas, Service Worker y rutas del frontend/errores
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                         .requestMatchers(
-                                "/", "/oups", "/index.html", "/manifest.json", "/favicon.ico", "/*.png",
-                                "/static/**", "/locales/**", "/error", "/login", "/sw.js",
-                                "/admin/**", "/qr-generator")
+                                "/", "/oups", "/index.html", "/manifest.json", "/favicon.ico", "/*.png", "/*.jpg", "/*.svg", "/*.json",
+                                "/static/**", "/locales/**", "/error", "/login", "/register", "/forgot-password", "/reset-password", "/sw.js",
+                                "/admin", "/admin/**", "/qr-generator", "/users", "/users/**", "/formations", "/formations/**",
+                                "/companies", "/companies/**", "/analytics", "/analytics/**", "/audit", "/audit/**", "/profile", "/profile/**",
+                                "/cloud-settings", "/cloud-settings/**")
                         .permitAll()
 
                         // 3. Swagger / OpenAPI (solo ADMIN)

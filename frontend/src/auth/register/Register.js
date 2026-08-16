@@ -26,6 +26,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
   const [captchaToken, setCaptchaToken] = useState(null);
+  const [captchaKey, setCaptchaKey] = useState(0);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && (window.navigator.webdriver || window.__PLAYWRIGHT__)) {
@@ -35,7 +36,7 @@ export default function Register() {
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => setCompanies(Array.isArray(data) ? data : []))
       .catch(() => setCompanies([]));
-  }, []);
+  }, [captchaKey]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -97,6 +98,7 @@ export default function Register() {
 
       if (!response.ok) {
         setCaptchaToken(null); 
+        setCaptchaKey((k) => k + 1);
         let errorMsg = data.message || t('register.genericError', 'Error al procesar la solicitud de registro.');
         
         if (errorMsg.includes('duplicate key value') || errorMsg.includes('uk5v7b31bxs6tcvinhg22i2v029') || errorMsg.includes('personal_code')) {
@@ -121,6 +123,7 @@ export default function Register() {
   const captchaWidget = (
     <div className="flex justify-center items-center p-3 rounded-2xl bg-white/30 backdrop-blur-md border border-white/40 shadow-inner w-fit mx-auto">
       <Turnstile 
+        key={captchaKey}
         siteKey={process.env.REACT_APP_CAPTCHA_SITE_KEY || '1x00000000000000000000AA'} 
         onSuccess={(token) => setCaptchaToken(token)}
         onError={() => setCaptchaToken(null)}

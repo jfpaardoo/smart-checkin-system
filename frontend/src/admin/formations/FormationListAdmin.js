@@ -78,15 +78,19 @@ export default function FormationListAdmin() {
   return (
     <div className="da-container">
       <div className="da-card">
-        <div className="da-card-header da-admin-header border-0 flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
-          <div>
-            <h2 className="flex items-center gap-2 mb-1 text-2xl font-bold text-slate-800">
-              <FontAwesomeIcon icon={faGraduationCap} style={{ color: 'var(--da-primary)' }} />
-              {t('formations.title', 'Gestión de Formaciones')}
-            </h2>
-            <p className="text-xs text-slate-500 mb-0">
-              {t('formations.subtitle', 'Programa sesiones de formación, gestiona asistencias y material didáctico')}
-            </p>
+        <div className="da-card-header da-admin-header border-0 flex flex-col sm:flex-row justify-between items-center gap-4 mb-4 text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 w-full sm:w-auto">
+            <div className="p-3.5 rounded-2xl bg-[#b3c34c]/20 border border-[#b3c34c]/40 text-[#73841e] text-2xl flex-shrink-0 flex items-center justify-center shadow-xs mb-1 sm:mb-0">
+              <FontAwesomeIcon icon={faGraduationCap} />
+            </div>
+            <div>
+              <h2 className="mb-1 text-2xl font-bold text-slate-800">
+                {t('formations.title', 'Gestión de Formaciones')}
+              </h2>
+              <p className="text-xs text-slate-500 mb-0">
+                {t('formations.subtitle', 'Programa sesiones de formación, gestiona asistencias y material didáctico')}
+              </p>
+            </div>
           </div>
           <div className="da-admin-header-actions w-full sm:w-auto">
             <Button className="da-btn-primary d-flex items-center justify-center gap-2 w-full sm:w-auto shadow-md" tag={Link} to="/formations/new">
