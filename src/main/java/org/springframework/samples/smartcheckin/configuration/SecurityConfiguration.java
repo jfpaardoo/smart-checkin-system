@@ -63,6 +63,7 @@ public class SecurityConfiguration {
                         .requestMatchers(
                                 "/", "/oups", "/index.html", "/manifest.json", "/favicon.ico", "/*.png", "/*.jpg", "/*.svg", "/*.json",
                                 "/static/**", "/locales/**", "/error", "/login", "/register", "/forgot-password", "/reset-password", "/sw.js",
+                                "/.well-known/**", "/security.txt",
                                 "/admin", "/admin/**", "/qr-generator", "/users", "/users/**", "/formations", "/formations/**",
                                 "/companies", "/companies/**", "/analytics", "/analytics/**", "/audit", "/audit/**", "/profile", "/profile/**",
                                 "/cloud-settings", "/cloud-settings/**")

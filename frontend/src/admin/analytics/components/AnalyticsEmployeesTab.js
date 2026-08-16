@@ -341,9 +341,9 @@ export default function AnalyticsEmployeesTab({ userAnalyticsList = DEFAULT_ARRA
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 border-t border-slate-200/50 pt-2.5 text-xs text-slate-600">
-                  <div><span className="font-semibold text-slate-500">Asistencia:</span> <span className={getAttendanceColorClass(user.attendancePercentage)}>{user.attendancePercentage}%</span></div>
-                  <div><span className="font-semibold text-slate-500">T. Formación:</span> {formatDuration(user.totalFormationMinutes)}</div>
-                  <div className="col-span-2"><span className="font-semibold text-slate-500">Formaciones (Asist/Asign):</span> {user.formationsAttended} / {user.formationsAssigned}</div>
+                  <div><span className="font-semibold text-slate-500">{t('analytics.statAttendance', 'Asistencia:')}</span> <span className={getAttendanceColorClass(user.attendancePercentage)}>{user.attendancePercentage}%</span></div>
+                  <div><span className="font-semibold text-slate-500">{t('analytics.statTrainingTime', 'T. Formación:')}</span> {formatDuration(user.totalFormationMinutes)}</div>
+                  <div className="col-span-2"><span className="font-semibold text-slate-500">{t('analytics.statFormationsCount', 'Formaciones (Asist/Asign):')}</span> {user.formationsAttended} / {user.formationsAssigned}</div>
                 </div>
 
                 <div className="border-t border-slate-200/50 pt-3 flex justify-end">

@@ -26,6 +26,9 @@ class AuditControllerTests {
 	@MockitoBean
 	private AuditLogRepository auditLogRepository;
 
+	@MockitoBean
+	private AuditService auditService;
+
 	@Autowired
 	private MockMvc mockMvc;
 
@@ -36,6 +39,14 @@ class AuditControllerTests {
 		when(auditLogRepository.findAllByOrderByTimestampDesc()).thenReturn(List.of(log));
 
 		mockMvc.perform(get(BASE_URL)).andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser(authorities = {"ADMIN"})
+	void testVerifyIntegrity() throws Exception {
+		when(auditService.verifyIntegrity()).thenReturn(new AuditIntegrityResult(true, null, "All logs verified", 5));
+
+		mockMvc.perform(get(BASE_URL + "/verify-integrity")).andExpect(status().isOk());
 	}
 
 	@Test

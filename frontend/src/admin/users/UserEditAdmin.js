@@ -271,7 +271,7 @@ export default function UserEditAdmin() {
                       name="locator"
                       id="customLocator"
                       maxLength="10"
-                      placeholder="Escribe el localizador (Ej: MAD, BCN, PT...)"
+                      placeholder={t('users.locatorPlaceholder', 'Escribe el localizador (Ej: MAD, BCN, PT...)')}
                       value={user.locator || ""}
                       onChange={handleChange}
                       className="uppercase mt-1"

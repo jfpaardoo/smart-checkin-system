@@ -13,7 +13,8 @@
     "profile": "Profilul Meu",
     "register": "Solicitare Înregistrare",
     "audit": "Jurnal de Audit",
-    "cloudSettings": "Setări Cloud"
+    "cloudSettings": "Setări Cloud",
+    "toggleMenu": "Comutare navigare"
   },
   "home": {
     "welcome": "Bine ați venit la Distribution Academy",
@@ -69,7 +70,14 @@
     "badCredentials": "Nume de utilizator sau parolă incorecte",
     "accountLocked": "Contul este blocat din cauza a prea multe încercări eșuate. Încercați din nou mai târziu.",
     "usernameOrEmail": "Utilizator sau e-mail",
-    "2faInfo": "Introduceți codul aplicației dvs. de autentificare (2FA)."
+    "2faInfo": "Introduceți codul aplicației dvs. de autentificare (2FA).",
+    "captchaRequired": "Vă rugăm să finalizați verificarea de securitate.",
+    "twoFactorHeader": "Verificare în doi pași",
+    "twoFactorPrompt": "Autentificare în doi pași (2FA) necesară pentru",
+    "totpCodeLabel": "Cod din 6 cifre",
+    "verifyAndEnter": "Verifică și Intră",
+    "forgotPassword": "Ați uitat parola?",
+    "privacyPolicy": "Politică de Confidențialitate"
   },
   "users": {
     "allActive": "Toți cei Activi",
@@ -136,7 +144,11 @@
     "noPendingUsers": "Nu există cereri de înregistrare în așteptare",
     "approve": "Aproba",
     "reject": "Declin",
-    "email": "E-mail"
+    "email": "E-mail",
+    "allStates": "Toate stările",
+    "pendingFilterHint": "Se afișează solicitările în așteptarea validării",
+    "subtitle": "Gestionați rolurile, centrele asociate, starea de activitate și cererile de înregistrare",
+    "locatorPlaceholder": "Introduceți codul de localizare (Ex: MAD, BCN, PT...)"
   },
   "formations": {
     "filterAll": "Toate datele",
@@ -187,7 +199,11 @@
     "removeFile": "Ștergeți fișierul",
     "dragDropFiles": "Trageți fișierele aici sau faceți clic pentru a încărca",
     "acceptedFormats": "Formate acceptate: PDF, Word, Excel, PowerPoint, Imagini",
-    "filesSelected": "fișiere selectate"
+    "filesSelected": "fișiere selectate",
+    "editSubtitle": "Modifică detaliile, programul și documentația instruirii",
+    "filterTime": "Filtrează după dată",
+    "newSubtitle": "Creează o nouă sesiune de instruire și încarcă materialele",
+    "subtitle": "Programează sesiuni de instruire, gestionează prezența și materialele didactice"
   },
   "formationDetails": {
     "title": "Detalii Formare",
@@ -232,7 +248,12 @@
     "previewNotAvailable": "Previzualizarea nu este disponibilă",
     "cspMessage": "Din cauza politicilor de securitate Microsoft OneDrive, acest document nu poate fi încorporat direct aici.",
     "cloudDocDescription": "Acest document este stocat în siguranță în cloud. Faceți clic pe butonul de mai jos pentru a-l deschide.",
-    "downloadPdfError": "Eroare la descărcarea PDF-ului."
+    "downloadPdfError": "Eroare la descărcarea PDF-ului.",
+    "filterAllStatus": "Toate stările",
+    "filterStatus": "Filtrează starea",
+    "searchAttendee": "Caută participant după nume, utilizator sau cod...",
+    "checkinTime": "Intrare:",
+    "checkoutTime": "Ieșire:"
   },
   "qr": {
     "title": "QR Formare",
@@ -283,7 +304,9 @@
     "checkoutSuccess": "Checkout completat cu succes.",
     "checkoutError": "Eroare la înregistrarea ieșirii",
     "camera": "Cameră",
-    "viewDocumentation": "Vizualizare Documentație"
+    "viewDocumentation": "Vizualizare Documentație",
+    "filterAllFormations": "Toate instruirile",
+    "filterStatus": "Filtrează starea"
   },
   "checkin": {
     "title": "Scanner de Înregistrare",
@@ -356,7 +379,15 @@
     "search": "Caută...",
     "camera": "Camera foto",
     "unknownError": "A apărut o eroare necunoscută.",
-    "duplicateConflict": "Eroare de conflict: înregistrarea există deja."
+    "duplicateConflict": "Eroare de conflict: înregistrarea există deja.",
+    "actions": "Acțiuni",
+    "continue": "Continuă",
+    "or": "sau cu date de conectare",
+    "togglePassword": "Arată/Ascunde parola",
+    "somethingWentWrong": "Ceva nu a funcționat corect:",
+    "tryAgain": "Încearcă din nou",
+    "selectOption": "Selectează",
+    "clearSearch": "Șterge căutarea"
   },
   "lang": {
     "es": "Español",
@@ -424,7 +455,16 @@
     "noFormationsUser": "Fără formări atribuite acestui angajat.",
     "noEmployees": "Nu au fost găsiți angajați.",
     "workCheckins": "Înregistrări",
-    "workTime": "T. Munca"
+    "workTime": "T. Munca",
+    "filterPerf": "Prezență",
+    "formationDate": "Dată",
+    "noFormations": "Nu există date de instruire care să corespundă filtrelor.",
+    "subtitle": "Metrici de productivitate, pontaj și monitorizarea instruirilor",
+    "totalAttended": "Participanți",
+    "totalExpected": "Așteptați",
+    "statAttendance": "Prezență:",
+    "statTrainingTime": "Timp instruire:",
+    "statFormationsCount": "Instruiri (Participat/Alocat):"
   },
   "profile": {
     "myProfileTitle": "Profilul Meu",
@@ -485,7 +525,29 @@
     "deleteConfirmTitle": "Ștergeți permanent contul",
     "areYouSure": "Ești complet sigur?",
     "deleteWarningText": "Această acțiune va șterge definitiv toate datele dvs.",
-    "deleteConfirmBtn": "Șterge contul"
+    "deleteConfirmBtn": "Șterge contul",
+    "deleteAccountDesc": "Ștergerea contului este ireversibilă. Toate datele personale, istoricul de pontaj și instruirile vor fi șterse definitiv.",
+    "deleteConfirmationAria": "Scrieți ȘTERGE pentru a confirma",
+    "deletePlaceholder": "ȘTERGE",
+    "exportDataDesc": "Aveți dreptul de a solicita o copie a tuturor datelor personale stocate în sistemul nostru într-un format structurat.",
+    "privacyPolicyPrompt": "Aveți întrebări despre modul în care gestionăm datele, semnăturile și pontajele dvs.?",
+    "readPrivacyPolicy": "Citiți Politica de Confidențialitate",
+    "passkeyNamePlaceholder": "Ex. iPhone-ul meu, Laptop de serviciu...",
+    "notifyEmailDesc": "Primiți notificări în căsuța de e-mail",
+    "notifyPushDesc": "Primiți notificări pe dispozitivul dvs.",
+    "twoFactorMethod": "Metodă de verificare",
+    "twoFactorMethodSelect": "Selectați metoda",
+    "notificationPreferences": "Preferințe de Notificare",
+    "emailNotifications": "Notificări prin E-mail",
+    "pushNotifications": "Notificări Push",
+    "toggleEmailAria": "Comutare notificări prin e-mail",
+    "togglePushAria": "Comutare notificări push",
+    "twoFactorProtectPrompt": "Protejați-vă contul prin activarea verificării în doi pași.",
+    "twoFactorAppOption": "Aplicație de autentificare (Google Auth, Authy)",
+    "twoFactorEmailOption": "Adresă de e-mail",
+    "twoFactorCheckInbox": "Verificați căsuța de e-mail",
+    "twoFactorCodeSentEmail": "Am trimis un cod de verificare din 6 cifre pe adresa dvs. de e-mail.",
+    "twoFactorEnterCode": "Introduceți codul din 6 cifre:"
   },
   "register": {
     "company": "Companie / Loc de Muncă",
@@ -515,7 +577,10 @@
     "loginHere": "Autentificare",
     "genericError": "Eroare la procesarea cererii de înregistrare.",
     "successMessage": "Solicitarea de înregistrare a fost trimisă cu succes. Administratorul vă va activa contul.",
-    "email": "E-mail"
+    "email": "E-mail",
+    "captchaRequired": "Vă rugăm să finalizați verificarea de securitate.",
+    "hidePassword": "Ascunde parola",
+    "showPassword": "Arată parola"
   },
   "audit": {
     "filterAll": "Toate evenimentele",
@@ -568,7 +633,15 @@
       "userSavedNoName": "Utilizator salvat/actualizat",
       "formationSavedNoName": "Formare creată/actualizată"
     },
-    "exportPDF": "Exportați în PDF"
+    "exportPDF": "Exportați în PDF",
+    "fetchError": "Eroare la încărcarea jurnalelor de audit",
+    "integrityTampered": "Alertă! S-a detectat o manipulare a înregistrărilor de audit",
+    "integrityTamperedAlert": "Lanț Modificat",
+    "integrityValid": "Integritate SHA-256 verificată cu succes",
+    "integrityVerified": "Lanț Integru",
+    "verifyChain": "Verifică Integritatea",
+    "verifying": "Verificare SHA-256...",
+    "verifyChainTooltip": "Verifică integritatea criptografică SHA-256 a tuturor înregistrărilor de audit"
   },
   "cloudSettings": {
     "saveSuccess": "Setările cloud au fost salvate cu succes",
@@ -588,7 +661,16 @@
     "clientSecretLabel": "Client Secret",
     "refreshTokenLabel": "Refresh Token (Durată lungă)",
     "refreshTokenHelp": "Acest token va fi utilizat pentru a obține automat Access Tokens de la API-ul Graph fără intervenția utilizatorului.",
-    "saveBtn": "Salvează Setările"
+    "saveBtn": "Salvează Setările",
+    "connectBtn": "Conectare la Microsoft OneDrive",
+    "connectError": "A apărut o problemă la conectarea cu Microsoft.",
+    "connectSuccess": "OneDrive s-a conectat cu succes!",
+    "disconnectBtn": "Deconectare cont OneDrive",
+    "disconnectError": "Eroare la deconectarea contului.",
+    "disconnectSuccess": "Contul OneDrive a fost deconectat cu succes.",
+    "oauthInitError": "Eroare la inițierea conexiunii cu OneDrive.",
+    "statusConnected": "OneDrive Conectat",
+    "statusDisconnected": "OneDrive Neconectat"
   },
   "formations/csv": "signature_formations.csv",
   "formations/excel": "semnătură_formații.xlsx",
@@ -628,7 +710,9 @@
     "deletedSuccess": "Companie ștearsă cu succes.",
     "fetchError": "Eroare la încărcarea companiilor.",
     "saveError": "Eroare la salvarea companiei.",
-    "deleteError": "Compania nu a putut fi ștearsă."
+    "deleteError": "Compania nu a putut fi ștearsă.",
+    "namePlaceholder": "Ex. BA Glass Spain SAU",
+    "descriptionPlaceholder": "Informații suplimentare despre activitatea sau locația centrului..."
   },
   "privacy": {
     "secNotCollectedTitle": "2. Date pe care NU le colectăm și Garanții de Non-Intruziune",
@@ -700,7 +784,9 @@
     "sec5Item4Title": "Opoziție și Restricționare:",
     "sec5Item4Desc": "Dreptul de a consulta conducerea sau responsabilul cu protecția datelor.",
     "sec6Text": "Prelucrarea se bazează pe îndeplinirea obligațiilor legale de evidență a timpului de muncă și securitate (Art. 6.1.c GDPR), executarea contractului de muncă și a planurilor de instruire (Art. 6.1.b GDPR) și interesul legitim privind securitatea sistemelor (Art. 6.1.f GDPR).",
-    "footerNotice": "Prin utilizarea Distribution Academy, confirmați că ați citit și ați înțeles această Politică de Confidențialitate."
+    "footerNotice": "Prin utilizarea Distribution Academy, confirmați că ați citit și ați înțeles această Politică de Confidențialitate.",
+    "sec3ItemPasskeyDesc": "Autentificare asimetrică rezistentă la phishing bazată pe criptografie pe curbe eliptice (secp256r1/ED25519) fără parole.",
+    "sec3ItemPasskeyTitle": "Chei de acces Passkeys (FIDO2 / WebAuthn):"
   },
   "passkeys": {
     "title": "Chei de Acces (Passkeys & Biometrie)",
@@ -720,5 +806,49 @@
     "deleteConfirm": "Sunteți sigur că doriți să deconectați această cheie?",
     "deleteSuccess": "Cheie de acces deconectată cu succes.",
     "deleteError": "Nu s-a putut șterge cheia de acces."
+  },
+  "pagination": {
+    "first": "Prima pagină",
+    "last": "Ultima pagină",
+    "next": "Pagina următoare",
+    "of": "din",
+    "perPage": "Pe pagină:",
+    "prev": "Pagina anterioară",
+    "showing": "Se afișează"
+  },
+  "recover": {
+    "invalidLink": "Link invalid",
+    "noTokenFound": "Nu a fost găsit niciun token de recuperare în URL.",
+    "forgotTitle": "Recuperare parolă",
+    "forgotSubtitle": "Introduceți adresa de e-mail și vă vom trimite un link pentru resetarea parolei.",
+    "emailLabel": "Adresă de e-mail",
+    "sendLink": "Trimite linkul",
+    "sending": "Se trimite...",
+    "successMessage": "Dacă adresa de e-mail este înregistrată, veți primi un link de resetare.",
+    "defaultError": "A apărut o eroare. Vă rugăm să încercați din nou mai târziu.",
+    "backToLogin": "Înapoi la conectare",
+    "resetTitle": "Resetare parolă",
+    "newPassword": "Parolă nouă",
+    "confirmPassword": "Confirmă parola",
+    "passwordsDontMatch": "Parolele nu se potrivesc",
+    "resetSuccess": "Parola a fost resetată cu succes.",
+    "updating": "Se actualizează...",
+    "saveNewPassword": "Salvează noua parolă",
+    "backToHome": "Înapoi la pagina principală",
+    "enterNewPassword": "Introduceți noua parolă de acces.",
+    "changePassword": "Schimbă parola",
+    "saving": "Se salvează..."
+  },
+  "session": {
+    "logoutNow": "Deconectare",
+    "multiTabLogoutNotice": "V-ați deconectat într-o altă filă.",
+    "stayLoggedIn": "Rămâneți conectat",
+    "timeoutDesc": "Din motive de securitate, sesiunea dvs. se va închide automat din cauza inactivității în",
+    "timeoutNotice": "Sesiunea dvs. a fost închisă automat din cauza inactivității.",
+    "timeoutTitle": "Mai sunteți acolo?"
+  },
+  "signature": {
+    "loading": "Se încarcă semnătura...",
+    "loadError": "Eroare la încărcarea semnăturii"
   }
 }

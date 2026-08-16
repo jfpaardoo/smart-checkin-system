@@ -12,9 +12,11 @@ export default function UserTable({
   activeTab,
   loading,
   onApprove,
+  onReject,
   onDelete,
   openDeleteModal
 }) {
+  const handleDeleteAction = onDelete || openDeleteModal;
   const { t } = useTranslation();
 
   if (loading) {
@@ -89,7 +91,7 @@ export default function UserTable({
                         size="sm"
                         className="da-btn-danger w-100 fw-bold shadow-sm"
                         style={{ borderRadius: '20px' }}
-                        onClick={() => openDeleteModal(user.id)}
+                        onClick={() => handleDeleteAction?.(user.id)}
                       >
                         <FontAwesomeIcon icon={faTrash} className="me-1" /> {t('users.delete', 'Eliminar')}
                       </Button>
@@ -154,7 +156,7 @@ export default function UserTable({
             </div>
 
             <div className="flex items-center justify-between border-t border-slate-200/50 pt-2.5">
-              <span className="text-xs text-slate-500">Estado:</span>
+              <span className="text-xs text-slate-500">{t('users.status', 'Estado')}:</span>
               {activeTab === 'approved' || activeTab === 'admins' || activeTab === 'employees' ? (
                 <span className={`da-badge ${user.isWorking ? 'da-badge-active' : 'da-badge-inactive'}`}>
                   {user.isWorking ? t('users.statusWorking', 'Trabajando') : t('users.statusResting', 'Descansando')}
@@ -180,7 +182,7 @@ export default function UserTable({
                     size="sm"
                     className="da-btn-danger flex-1 fw-bold shadow-sm"
                     style={{ borderRadius: '20px' }}
-                    onClick={() => openDeleteModal(user.id)}
+                    onClick={() => handleDeleteAction?.(user.id)}
                   >
                     <FontAwesomeIcon icon={faTrash} className="me-1" /> {t('users.delete', 'Eliminar')}
                   </Button>

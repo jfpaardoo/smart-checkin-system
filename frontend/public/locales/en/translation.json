@@ -13,7 +13,8 @@
     "profile": "My Profile",
     "register": "Request Registration",
     "audit": "Audit Log",
-    "cloudSettings": "Cloud Settings"
+    "cloudSettings": "Cloud Settings",
+    "toggleMenu": "Toggle navigation"
   },
   "home": {
     "welcome": "Welcome to Distribution Academy",
@@ -69,7 +70,14 @@
     "badCredentials": "Incorrect username or password",
     "accountLocked": "Account is locked due to too many failed attempts. Try again later.",
     "usernameOrEmail": "User or Email",
-    "2faInfo": "Enter your authenticator app (2FA) code."
+    "2faInfo": "Enter your authenticator app (2FA) code.",
+    "captchaRequired": "Please complete the security verification.",
+    "twoFactorHeader": "Two-Factor Verification",
+    "twoFactorPrompt": "Two-Factor Authentication (2FA) required for",
+    "totpCodeLabel": "6-digit code",
+    "verifyAndEnter": "Verify & Enter",
+    "forgotPassword": "Forgot your password?",
+    "privacyPolicy": "Privacy Policy"
   },
   "users": {
     "allActive": "All Active",
@@ -136,7 +144,11 @@
     "noPendingUsers": "There are no pending registration requests",
     "approve": "Approve",
     "reject": "Decline",
-    "email": "Email"
+    "email": "Email",
+    "allStates": "All statuses",
+    "pendingFilterHint": "Showing requests pending validation",
+    "subtitle": "Manage roles, associated facilities, activity status and registration requests",
+    "locatorPlaceholder": "Enter locator code (E.g. MAD, BCN, PT...)"
   },
   "formations": {
     "filterAll": "All dates",
@@ -187,7 +199,11 @@
     "removeFile": "Delete file",
     "dragDropFiles": "Drag files here or click to upload",
     "acceptedFormats": "Accepted formats: PDF, Word, Excel, PowerPoint, Images",
-    "filesSelected": "selected file(s)"
+    "filesSelected": "selected file(s)",
+    "editSubtitle": "Modify training details, schedule and documentation",
+    "filterTime": "Filter by date",
+    "newSubtitle": "Create a new training session and upload materials",
+    "subtitle": "Schedule training sessions, manage attendances and teaching materials"
   },
   "formationDetails": {
     "title": "Formation Details",
@@ -232,7 +248,12 @@
     "previewNotAvailable": "Preview not available",
     "cspMessage": "Due to Microsoft OneDrive security policies, this document cannot be directly embedded here.",
     "cloudDocDescription": "This document is stored securely in the cloud. Click the button below to open it.",
-    "downloadPdfError": "Error downloading the PDF."
+    "downloadPdfError": "Error downloading the PDF.",
+    "filterAllStatus": "All statuses",
+    "filterStatus": "Filter status",
+    "searchAttendee": "Search attendee by name, username or code...",
+    "checkinTime": "Check-in:",
+    "checkoutTime": "Check-out:"
   },
   "qr": {
     "title": "Formation QR",
@@ -283,7 +304,9 @@
     "checkoutSuccess": "Check-out completed successfully.",
     "checkoutError": "Error recording check-out",
     "camera": "Camera",
-    "viewDocumentation": "View Documentation"
+    "viewDocumentation": "View Documentation",
+    "filterAllFormations": "All trainings",
+    "filterStatus": "Filter status"
   },
   "checkin": {
     "title": "Check-in Scanner",
@@ -356,7 +379,15 @@
     "search": "Look for...",
     "camera": "Camera",
     "unknownError": "An unknown error occurred.",
-    "duplicateConflict": "Conflict error: Record already exists."
+    "duplicateConflict": "Conflict error: Record already exists.",
+    "actions": "Actions",
+    "continue": "Continue",
+    "or": "or with credentials",
+    "togglePassword": "Show/Hide password",
+    "somethingWentWrong": "Something went wrong:",
+    "tryAgain": "Try again",
+    "selectOption": "Select",
+    "clearSearch": "Clear search"
   },
   "lang": {
     "es": "Español",
@@ -424,7 +455,16 @@
     "noFormationsUser": "No formations assigned to this employee.",
     "noEmployees": "No employees were found.",
     "workCheckins": "Check-ins",
-    "workTime": "T. Work"
+    "workTime": "T. Work",
+    "filterPerf": "Attendance",
+    "formationDate": "Date",
+    "noFormations": "No training data matches the selected filters.",
+    "subtitle": "Productivity metrics, time tracking and training analytics",
+    "totalAttended": "Attendees",
+    "totalExpected": "Expected",
+    "statAttendance": "Attendance:",
+    "statTrainingTime": "Training Time:",
+    "statFormationsCount": "Trainings (Attended/Assigned):"
   },
   "profile": {
     "myProfileTitle": "My Profile",
@@ -485,7 +525,29 @@
     "deleteConfirmTitle": "Delete Account Permanently",
     "areYouSure": "Are you completely sure?",
     "deleteWarningText": "This action will permanently delete all your data.",
-    "deleteConfirmBtn": "Delete Account"
+    "deleteConfirmBtn": "Delete Account",
+    "deleteAccountDesc": "Deleting your account is irreversible. All your personal data, check-in history and trainings will be permanently removed from our servers.",
+    "deleteConfirmationAria": "Type DELETE to confirm",
+    "deletePlaceholder": "DELETE",
+    "exportDataDesc": "You have the right to request a copy of all personal data stored in our system, including your check-in and training history, in a structured, readable format.",
+    "privacyPolicyPrompt": "Do you have questions about how we manage your data, signatures, and check-ins?",
+    "readPrivacyPolicy": "Read Privacy Policy",
+    "passkeyNamePlaceholder": "E.g. My iPhone, Work Laptop...",
+    "notifyEmailDesc": "Receive notifications in your email inbox",
+    "notifyPushDesc": "Receive notifications on your device",
+    "twoFactorMethod": "Verification Method",
+    "twoFactorMethodSelect": "Select Method",
+    "notificationPreferences": "Notification Preferences",
+    "emailNotifications": "Email Notifications",
+    "pushNotifications": "Push Notifications",
+    "toggleEmailAria": "Toggle email notifications",
+    "togglePushAria": "Toggle push notifications",
+    "twoFactorProtectPrompt": "Protect your account by enabling two-step verification.",
+    "twoFactorAppOption": "Authenticator App (Google Auth, Authy)",
+    "twoFactorEmailOption": "Email Address",
+    "twoFactorCheckInbox": "Check your email inbox",
+    "twoFactorCodeSentEmail": "We have sent a 6-digit verification code to your email address.",
+    "twoFactorEnterCode": "Enter the 6-digit code:"
   },
   "register": {
     "company": "Company / Workspace",
@@ -515,7 +577,10 @@
     "loginHere": "Login here",
     "genericError": "Error processing registration request.",
     "successMessage": "Registration request sent successfully. The administrator will activate your account.",
-    "email": "Email"
+    "email": "Email",
+    "captchaRequired": "Please complete the security verification.",
+    "hidePassword": "Hide password",
+    "showPassword": "Show password"
   },
   "audit": {
     "filterAll": "All events",
@@ -568,7 +633,15 @@
       "userSavedNoName": "User saved/updated",
       "formationSavedNoName": "Formation created/updated"
     },
-    "exportPDF": "Export to PDF"
+    "exportPDF": "Export to PDF",
+    "fetchError": "Error loading audit logs",
+    "integrityTampered": "Alert! Tampering detected in the audit records",
+    "integrityTamperedAlert": "Tampered Chain",
+    "integrityValid": "SHA-256 integrity verified successfully",
+    "integrityVerified": "Chain Verified",
+    "verifyChain": "Verify Integrity",
+    "verifying": "Verifying SHA-256...",
+    "verifyChainTooltip": "Verify SHA-256 cryptographic integrity of all audit records"
   },
   "cloudSettings": {
     "saveSuccess": "Cloud settings saved successfully",
@@ -588,7 +661,16 @@
     "clientSecretLabel": "Client Secret",
     "refreshTokenLabel": "Refresh Token (Long-lived)",
     "refreshTokenHelp": "This token will be used to automatically obtain Access Tokens from the Graph API without user intervention.",
-    "saveBtn": "Save Settings"
+    "saveBtn": "Save Settings",
+    "connectBtn": "Connect to Microsoft OneDrive",
+    "connectError": "There was an issue connecting to Microsoft.",
+    "connectSuccess": "OneDrive connected successfully!",
+    "disconnectBtn": "Disconnect OneDrive account",
+    "disconnectError": "Error disconnecting the account.",
+    "disconnectSuccess": "OneDrive account disconnected successfully.",
+    "oauthInitError": "Error initiating OneDrive connection.",
+    "statusConnected": "OneDrive Connected",
+    "statusDisconnected": "OneDrive Not Connected"
   },
   "formations/csv": "signature_formations.csv",
   "formations/excel": "signature_formations.xlsx",
@@ -628,7 +710,9 @@
     "deletedSuccess": "Company deleted successfully.",
     "fetchError": "Failed to load companies.",
     "saveError": "Failed to save company.",
-    "deleteError": "Failed to delete company."
+    "deleteError": "Failed to delete company.",
+    "namePlaceholder": "E.g. BA Glass Spain SAU",
+    "descriptionPlaceholder": "Additional information about the facility activity or location..."
   },
   "privacy": {
     "secNotCollectedTitle": "2. Data We Do NOT Collect & Non-Intrusion Guarantees",
@@ -700,7 +784,9 @@
     "sec5Item4Title": "Right to Restriction & Object:",
     "sec5Item4Desc": "You may consult corporate administration or the data protection officer regarding the scope of processing.",
     "sec6Text": "Data processing is based on compliance with legal obligations regarding working time tracking and workplace safety (Art. 6.1.c GDPR), performance of the employment relationship and training plans (Art. 6.1.b GDPR), and legitimate interest in ensuring the security of company systems and premises (Art. 6.1.f GDPR).",
-    "footerNotice": "By using the Distribution Academy Smart Check-in System, you acknowledge that you have read and understood this Privacy Policy, consenting to the processing described herein."
+    "footerNotice": "By using the Distribution Academy Smart Check-in System, you acknowledge that you have read and understood this Privacy Policy, consenting to the processing described herein.",
+    "sec3ItemPasskeyDesc": "Phishing-resistant asymmetric authentication based on elliptic curve cryptography (secp256r1/ED25519) without passwords.",
+    "sec3ItemPasskeyTitle": "Passkeys (FIDO2 / WebAuthn):"
   },
   "passkeys": {
     "title": "Passkeys & Biometrics (FIDO2)",
@@ -720,5 +806,49 @@
     "deleteConfirm": "Are you sure you want to unlink this passkey?",
     "deleteSuccess": "Passkey unlinked successfully.",
     "deleteError": "Failed to delete passkey."
+  },
+  "pagination": {
+    "first": "First page",
+    "last": "Last page",
+    "next": "Next page",
+    "of": "of",
+    "perPage": "Per page:",
+    "prev": "Previous page",
+    "showing": "Showing"
+  },
+  "recover": {
+    "invalidLink": "Invalid link",
+    "noTokenFound": "No password recovery token was found in the URL.",
+    "forgotTitle": "Recover Password",
+    "forgotSubtitle": "Enter your email address and we'll send you a link to reset your password.",
+    "emailLabel": "Email Address",
+    "sendLink": "Send link",
+    "sending": "Sending...",
+    "successMessage": "If the email is registered, you will receive a password reset link.",
+    "defaultError": "An error occurred. Please try again later.",
+    "backToLogin": "Back to login",
+    "resetTitle": "Reset Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "passwordsDontMatch": "Passwords do not match",
+    "resetSuccess": "Password reset successfully.",
+    "updating": "Updating...",
+    "saveNewPassword": "Save new password",
+    "backToHome": "Back to home",
+    "enterNewPassword": "Enter your new access password.",
+    "changePassword": "Change Password",
+    "saving": "Saving..."
+  },
+  "session": {
+    "logoutNow": "Log Out",
+    "multiTabLogoutNotice": "You have logged out in another tab.",
+    "stayLoggedIn": "Stay Logged In",
+    "timeoutDesc": "For security reasons, your session will automatically close due to inactivity in",
+    "timeoutNotice": "Your session was automatically closed due to inactivity.",
+    "timeoutTitle": "Are you still there?"
+  },
+  "signature": {
+    "loading": "Loading signature...",
+    "loadError": "Error loading signature"
   }
 }

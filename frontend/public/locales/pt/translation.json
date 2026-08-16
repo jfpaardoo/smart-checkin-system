@@ -13,7 +13,8 @@
     "profile": "Meu Perfil",
     "register": "Solicitar Registo",
     "audit": "Auditoria",
-    "cloudSettings": "Definições de Nuvem"
+    "cloudSettings": "Definições de Nuvem",
+    "toggleMenu": "Alternar navegação"
   },
   "home": {
     "welcome": "Bem-vindo ao Distribution Academy",
@@ -69,7 +70,14 @@
     "badCredentials": "Nome de utilizador ou palavra-passe incorretos",
     "accountLocked": "A conta está bloqueada devido a muitas tentativas falhas. Tente novamente mais tarde.",
     "usernameOrEmail": "Usuário ou e-mail",
-    "2faInfo": "Insira o código do seu aplicativo autenticador (2FA)."
+    "2faInfo": "Insira o código do seu aplicativo autenticador (2FA).",
+    "captchaRequired": "Por favor, complete a verificação de segurança.",
+    "twoFactorHeader": "Verificação em duas etapas",
+    "twoFactorPrompt": "Autenticação de Dois Fatores (2FA) necessária para",
+    "totpCodeLabel": "Código de 6 dígitos",
+    "verifyAndEnter": "Verificar e Entrar",
+    "forgotPassword": "Esqueceu sua senha?",
+    "privacyPolicy": "Política de Privacidade"
   },
   "users": {
     "allActive": "Todos os Ativos",
@@ -136,7 +144,11 @@
     "noPendingUsers": "Não há solicitações de registro pendentes",
     "approve": "Aprovar",
     "reject": "Declínio",
-    "email": "E-mail"
+    "email": "E-mail",
+    "allStates": "Todos os estados",
+    "pendingFilterHint": "Mostrando solicitações aguardando validação",
+    "subtitle": "Gerencie funções, centros associados, status de atividade e solicitações de registro",
+    "locatorPlaceholder": "Digite o localizador (Ex: MAD, BCN, PT...)"
   },
   "formations": {
     "filterAll": "Todas as datas",
@@ -187,7 +199,11 @@
     "removeFile": "Excluir arquivo",
     "dragDropFiles": "Arraste os arquivos aqui ou clique para fazer upload",
     "acceptedFormats": "Formatos aceitos: PDF, Word, Excel, PowerPoint, Imagens",
-    "filesSelected": "arquivo(s) selecionado(s)"
+    "filesSelected": "arquivo(s) selecionado(s)",
+    "editSubtitle": "Modifique os dados, horário e documentação da formação",
+    "filterTime": "Filtrar por data",
+    "newSubtitle": "Crie uma nova sessão de formação e envie o material",
+    "subtitle": "Agende sessões de formação, gira presenças e material didático"
   },
   "formationDetails": {
     "title": "Detalhes da Formação",
@@ -232,7 +248,12 @@
     "previewNotAvailable": "Pré-visualização não disponível",
     "cspMessage": "Devido às políticas de segurança do Microsoft OneDrive, este documento não pode ser incorporado diretamente aqui.",
     "cloudDocDescription": "Este documento é armazenado com segurança na nuvem. Clique no botão abaixo para abri-lo.",
-    "downloadPdfError": "Erro ao baixar o PDF."
+    "downloadPdfError": "Erro ao baixar o PDF.",
+    "filterAllStatus": "Todos os estados",
+    "filterStatus": "Filtrar estado",
+    "searchAttendee": "Buscar participante por nome, usuário ou código...",
+    "checkinTime": "Entrada:",
+    "checkoutTime": "Saída:"
   },
   "qr": {
     "title": "QR de Formação",
@@ -283,7 +304,9 @@
     "checkoutSuccess": "Saída registrada com sucesso.",
     "checkoutError": "Erro ao registrar saída",
     "camera": "Câmara",
-    "viewDocumentation": "Ver Documentação"
+    "viewDocumentation": "Ver Documentação",
+    "filterAllFormations": "Todas as formações",
+    "filterStatus": "Filtrar estado"
   },
   "checkin": {
     "title": "Scanner de Registro",
@@ -334,7 +357,7 @@
     "delete": "Eliminar",
     "edit": "Editar",
     "close": "Fechar",
-    "loading": "A carregar...",
+    "loading": "Carregando...",
     "noData": "Sem dados disponíveis",
     "confirm": "Confirmar",
     "yes": "Sim",
@@ -356,7 +379,15 @@
     "search": "Procurar...",
     "camera": "Câmera",
     "unknownError": "Ocorreu um erro desconhecido.",
-    "duplicateConflict": "Erro de conflito: o registro já existe."
+    "duplicateConflict": "Erro de conflito: o registro já existe.",
+    "actions": "Ações",
+    "continue": "Continuar",
+    "or": "ou com credenciais",
+    "togglePassword": "Mostrar/Ocultar senha",
+    "somethingWentWrong": "Algo correu mal:",
+    "tryAgain": "Tentar novamente",
+    "selectOption": "Selecionar",
+    "clearSearch": "Limpar pesquisa"
   },
   "lang": {
     "es": "Español",
@@ -424,7 +455,16 @@
     "noFormationsUser": "Sem formações atribuídas a este funcionário.",
     "noEmployees": "Nenhum funcionário foi encontrado.",
     "workCheckins": "Check-ins",
-    "workTime": "T. Trabalho"
+    "workTime": "T. Trabalho",
+    "filterPerf": "Presença",
+    "formationDate": "Data",
+    "noFormations": "Não há dados de formação correspondentes aos filtros.",
+    "subtitle": "Métricas de produtividade, controle de horário e acompanhamento de formação",
+    "totalAttended": "Participantes",
+    "totalExpected": "Esperados",
+    "statAttendance": "Presença:",
+    "statTrainingTime": "T. Formação:",
+    "statFormationsCount": "Formações (Assistidas/Atribuídas):"
   },
   "profile": {
     "myProfileTitle": "Meu Perfil",
@@ -485,7 +525,29 @@
     "deleteConfirmTitle": "Excluir conta permanentemente",
     "areYouSure": "Você tem certeza absoluta?",
     "deleteWarningText": "Esta ação excluirá permanentemente todos os seus dados.",
-    "deleteConfirmBtn": "Excluir conta"
+    "deleteConfirmBtn": "Excluir conta",
+    "deleteAccountDesc": "Excluir sua conta é uma ação irreversível. Todos os seus dados pessoais, histórico de registros e formações serão eliminados permanentemente.",
+    "deleteConfirmationAria": "Digite ELIMINAR para confirmar",
+    "deletePlaceholder": "ELIMINAR",
+    "exportDataDesc": "Você tem o direito de solicitar uma cópia de todos os seus dados pessoais armazenados em nosso sistema em um formato estruturado.",
+    "privacyPolicyPrompt": "Tem dúvidas sobre como gerenciamos seus dados, assinaturas e registros?",
+    "readPrivacyPolicy": "Ler Política de Privacidade",
+    "passkeyNamePlaceholder": "Ex. Meu iPhone, Portátil do Trabalho...",
+    "notifyEmailDesc": "Receber notificações na sua caixa de entrada",
+    "notifyPushDesc": "Receber notificações no seu dispositivo",
+    "twoFactorMethod": "Método de Verificação",
+    "twoFactorMethodSelect": "Selecionar Método",
+    "notificationPreferences": "Preferências de Notificação",
+    "emailNotifications": "Notificações por E-mail",
+    "pushNotifications": "Notificações Push",
+    "toggleEmailAria": "Alternar notificações por e-mail",
+    "togglePushAria": "Alternar notificações push",
+    "twoFactorProtectPrompt": "Proteja sua conta ativando a verificação em duas etapas.",
+    "twoFactorAppOption": "Aplicativo Autenticador (Google Auth, Authy)",
+    "twoFactorEmailOption": "E-mail",
+    "twoFactorCheckInbox": "Verifique sua caixa de entrada",
+    "twoFactorCodeSentEmail": "Enviamos um código de verificação de 6 dígitos para o seu e-mail.",
+    "twoFactorEnterCode": "Digite o código de 6 dígitos:"
   },
   "register": {
     "company": "Empresa / Centro de Trabalho",
@@ -515,7 +577,10 @@
     "loginHere": "Iniciar sessão aqui",
     "genericError": "Erro ao processar solicitação de registro.",
     "successMessage": "Solicitação de registro enviada com sucesso. O administrador ativará sua conta.",
-    "email": "E-mail"
+    "email": "E-mail",
+    "captchaRequired": "Por favor, complete a verificação de segurança.",
+    "hidePassword": "Ocultar senha",
+    "showPassword": "Mostrar senha"
   },
   "audit": {
     "filterAll": "Todos os eventos",
@@ -568,7 +633,15 @@
       "userSavedNoName": "Utilizador guardado/atualizado",
       "formationSavedNoName": "Formação criada/atualizada"
     },
-    "exportPDF": "Exportar para PDF"
+    "exportPDF": "Exportar para PDF",
+    "fetchError": "Erro ao carregar os registros de auditoria",
+    "integrityTampered": "Alerta! Adulteração detectada nos registros de auditoria",
+    "integrityTamperedAlert": "Cadeia Adulterada",
+    "integrityValid": "Integridade SHA-256 verificada com sucesso",
+    "integrityVerified": "Cadeia Íntegra",
+    "verifyChain": "Verificar Integridade",
+    "verifying": "Verificando SHA-256...",
+    "verifyChainTooltip": "Verificar integridade criptográfica SHA-256 de todos os registros de auditoria"
   },
   "cloudSettings": {
     "saveSuccess": "Definições de nuvem guardadas com sucesso",
@@ -588,7 +661,16 @@
     "clientSecretLabel": "Client Secret",
     "refreshTokenLabel": "Refresh Token (Longa duração)",
     "refreshTokenHelp": "Este token será utilizado para obter Access Tokens automaticamente a partir da API Graph sem intervenção do utilizador.",
-    "saveBtn": "Guardar Definições"
+    "saveBtn": "Guardar Definições",
+    "connectBtn": "Conectar ao Microsoft OneDrive",
+    "connectError": "Ocorreu um problema ao conectar com a Microsoft.",
+    "connectSuccess": "OneDrive conectado com sucesso!",
+    "disconnectBtn": "Desconectar conta do OneDrive",
+    "disconnectError": "Erro ao desconectar a conta.",
+    "disconnectSuccess": "Conta do OneDrive desconectada com sucesso.",
+    "oauthInitError": "Erro ao iniciar a conexão com o OneDrive.",
+    "statusConnected": "OneDrive Conectado",
+    "statusDisconnected": "OneDrive Não Conectado"
   },
   "formations/csv": "assinatura_formações.csv",
   "formations/excel": "assinatura_formações.xlsx",
@@ -628,7 +710,9 @@
     "deletedSuccess": "Empresa excluída com sucesso.",
     "fetchError": "Erro ao carregar empresas.",
     "saveError": "Erro ao guardar empresa.",
-    "deleteError": "Não foi possível excluir a empresa."
+    "deleteError": "Não foi possível excluir a empresa.",
+    "namePlaceholder": "Ex. BA Glass Spain SAU",
+    "descriptionPlaceholder": "Informações adicionais sobre a atividade ou localização do centro..."
   },
   "privacy": {
     "secNotCollectedTitle": "2. Dados que NÃO Recolhemos e Garantias de Não Intrusão",
@@ -700,7 +784,9 @@
     "sec5Item4Title": "Oposição e Limitação:",
     "sec5Item4Desc": "Pode consultar a administração sobre o âmbito do tratamento efetuado.",
     "sec6Text": "O tratamento fundamenta-se no cumprimento de obrigações legais de controlo horário e segurança no trabalho (Art. 6.1.c RGPD), na execução do contrato de trabalho e planos formativos (Art. 6.1.b RGPD) e no interesse legítimo de segurança da organização (Art. 6.1.f RGPD).",
-    "footerNotice": "Ao utilizar a plataforma Distribution Academy, confirma que leu e compreendeu esta Política de Privacidade."
+    "footerNotice": "Ao utilizar a plataforma Distribution Academy, confirma que leu e compreendeu esta Política de Privacidade.",
+    "sec3ItemPasskeyDesc": "Autenticação assimétrica resistente a phishing baseada em criptografia de curva elíptica (secp256r1/ED25519) sem senhas.",
+    "sec3ItemPasskeyTitle": "Chaves de Acesso Passkeys (FIDO2 / WebAuthn):"
   },
   "passkeys": {
     "title": "Chaves de Acesso (Passkeys & Biometria)",
@@ -720,5 +806,49 @@
     "deleteConfirm": "Tem a certeza de que deseja desassociar esta chave?",
     "deleteSuccess": "Chave de acesso desassociada com sucesso.",
     "deleteError": "Não foi possível eliminar a chave de acesso."
+  },
+  "pagination": {
+    "first": "Primeira página",
+    "last": "Última página",
+    "next": "Próxima página",
+    "of": "de",
+    "perPage": "Por pág:",
+    "prev": "Página anterior",
+    "showing": "Mostrando"
+  },
+  "recover": {
+    "invalidLink": "Link inválido",
+    "noTokenFound": "Nenhum token de recuperação foi encontrado na URL.",
+    "forgotTitle": "Recuperar Senha",
+    "forgotSubtitle": "Digite seu e-mail e enviaremos um link para redefinir sua senha.",
+    "emailLabel": "E-mail",
+    "sendLink": "Enviar link",
+    "sending": "Enviando...",
+    "successMessage": "Se o e-mail estiver cadastrado, você receberá um link de recuperação.",
+    "defaultError": "Ocorreu um erro. Tente novamente mais tarde.",
+    "backToLogin": "Voltar ao login",
+    "resetTitle": "Redefinir Senha",
+    "newPassword": "Nova Senha",
+    "confirmPassword": "Confirmar Senha",
+    "passwordsDontMatch": "As senhas não coincidem",
+    "resetSuccess": "Senha redefinida com sucesso.",
+    "updating": "Atualizando...",
+    "saveNewPassword": "Salvar nova senha",
+    "backToHome": "Voltar ao início",
+    "enterNewPassword": "Digite sua nova senha de acesso.",
+    "changePassword": "Alterar Senha",
+    "saving": "Salvando..."
+  },
+  "session": {
+    "logoutNow": "Encerrar Sessão",
+    "multiTabLogoutNotice": "Você encerrou a sessão em outra aba.",
+    "stayLoggedIn": "Permanecer Conectado",
+    "timeoutDesc": "Por motivos de segurança, sua sessão será encerrada automaticamente por inatividade em",
+    "timeoutNotice": "Sua sessão foi encerrada automaticamente por inatividade.",
+    "timeoutTitle": "Ainda está aí?"
+  },
+  "signature": {
+    "loading": "Carregando assinatura...",
+    "loadError": "Erro ao carregar assinatura"
   }
 }

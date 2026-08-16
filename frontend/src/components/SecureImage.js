@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 
 const SecureImage = ({ src, alt, style, className }) => {
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [blob, setBlob] = useState(null);
@@ -62,11 +64,11 @@ const SecureImage = ({ src, alt, style, className }) => {
     const finalSrc = src?.startsWith('data:image') ? src : objectUrl;
 
     if (loading) {
-        return <div className="text-muted small" style={style}>Cargando firma...</div>;
+        return <div className="text-muted small" style={style}>{t('signature.loading', 'Cargando firma...')}</div>;
     }
 
     if (error || !finalSrc) {
-        return <div className="text-danger small" style={style}>Error al cargar firma</div>;
+        return <div className="text-danger small" style={style}>{t('signature.loadError', 'Error al cargar firma')}</div>;
     }
 
     return <img src={finalSrc} alt={alt} style={style} className={className} />;

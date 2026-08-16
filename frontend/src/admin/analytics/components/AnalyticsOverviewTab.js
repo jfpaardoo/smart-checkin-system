@@ -107,7 +107,7 @@ export default function AnalyticsOverviewTab({ statistics }) {
                       ) : (
                           <div className="d-flex justify-content-center align-items-center h-100">
                               <output className="spinner-border text-primary">
-                                  <span className="visually-hidden">Loading...</span>
+                                  <span className="visually-hidden">{t('common.loading', 'Cargando...')}</span>
                               </output>
                           </div>
                       )}
@@ -139,7 +139,7 @@ export default function AnalyticsOverviewTab({ statistics }) {
                       ) : (
                           <div className="d-flex justify-content-center align-items-center h-100">
                               <output className="spinner-border text-primary">
-                                  <span className="visually-hidden">Loading...</span>
+                                  <span className="visually-hidden">{t('common.loading', 'Cargando...')}</span>
                               </output>
                           </div>
                       )}

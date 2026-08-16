@@ -21,16 +21,18 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 @SuppressWarnings("null")
 public class AuditAspect {
 
-    private final AuditLogRepository auditLogRepository;
+    private final AuditService auditService;
     private final HttpServletRequest request;
-    private final SimpMessagingTemplate messagingTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    public AuditAspect(AuditLogRepository auditLogRepository, HttpServletRequest request, SimpMessagingTemplate messagingTemplate) {
-        this.auditLogRepository = auditLogRepository;
+    public AuditAspect(AuditService auditService, HttpServletRequest request) {
+        this.auditService = auditService;
         this.request = request;
-        this.messagingTemplate = messagingTemplate;
+    }
+
+    public AuditAspect(AuditLogRepository auditLogRepository, HttpServletRequest request, SimpMessagingTemplate messagingTemplate) {
+        this(new AuditService(auditLogRepository, messagingTemplate), request);
     }
 
     private static final String DEFAULT_IP = "127.0.0.1";
@@ -62,8 +64,7 @@ public class AuditAspect {
                 .ipAddress(ipAddress)
                 .timestamp(java.time.LocalDateTime.now(java.time.ZoneId.systemDefault()))
                 .build();
-        auditLogRepository.save(log);
-        messagingTemplate.convertAndSend("/topic/audit", "NEW_LOG");
+        auditService.recordAuditLog(log);
     }
 
     @AfterReturning(pointcut = "@annotation(auditable)", returning = "result")

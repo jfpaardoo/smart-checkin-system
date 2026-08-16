@@ -10,8 +10,6 @@ import org.springframework.samples.smartcheckin.statistics.events.CheckinEvent;
 import org.springframework.samples.smartcheckin.checkin.CheckinService;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import org.springframework.samples.smartcheckin.notifications.EmailNotificationSender;
 import org.springframework.samples.smartcheckin.notifications.AlertNotification;
 import org.springframework.samples.smartcheckin.notifications.Notification;
@@ -22,13 +20,13 @@ import org.springframework.samples.smartcheckin.notifications.Notification;
 public class CheckinAnomalyObserver {
 
     private static final Logger logger = LoggerFactory.getLogger(CheckinAnomalyObserver.class);
-    private final AuditLogRepository auditLogRepository;
+    private final AuditService auditService;
     private final CheckinRepository checkinRepository;
     private final EmailNotificationSender emailNotificationSender;
 
     @Autowired
-    public CheckinAnomalyObserver(AuditLogRepository auditLogRepository, CheckinRepository checkinRepository, EmailNotificationSender emailNotificationSender) {
-        this.auditLogRepository = auditLogRepository;
+    public CheckinAnomalyObserver(AuditService auditService, CheckinRepository checkinRepository, EmailNotificationSender emailNotificationSender) {
+        this.auditService = auditService;
         this.checkinRepository = checkinRepository;
         this.emailNotificationSender = emailNotificationSender;
     }
@@ -57,14 +55,8 @@ public class CheckinAnomalyObserver {
     }
 
     private void logAnomaly(String details) {
-        AuditLog log = AuditLog.builder()
-                .action("SECURITY_ANOMALY")
-                .username("system")
-                .details(details)
-                .ipAddress("127.0.0.1")
-                .timestamp(LocalDateTime.now(ZoneId.systemDefault()))
-                .build();
-        auditLogRepository.save(log);
+        AuditLog log = new AuditLog("SECURITY_ANOMALY", "system", details, "127.0.0.1");
+        auditService.recordAuditLog(log);
         logger.warn("Security Anomaly Logged: {}", details);
 
         // Enviar notificación al administrador usando el patrón Bridge

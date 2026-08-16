@@ -131,19 +131,21 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
   const renderSetupStart = () => (
     <div className="flex flex-col gap-4">
       <p className="text-slate-600 text-sm mb-2">
-        Protege tu cuenta activando la verificación en dos pasos.
+        {t('profile.twoFactorProtectPrompt', 'Protege tu cuenta activando la verificación en dos pasos.')}
       </p>
       
       <div className="flex flex-col gap-2 mb-2">
-        <label htmlFor="verificationType" className="text-sm font-semibold text-slate-700 ml-1">Método de Verificación</label>
+        <label htmlFor="verificationType" className="text-sm font-semibold text-slate-700 ml-1">
+          {t('profile.twoFactorMethod', 'Método de Verificación')}
+        </label>
         <GlassDropdown
           options={[
-            { value: "APP", label: "App de Autenticación (Google Auth, Authy)" },
-            { value: "EMAIL", label: "Correo Electrónico" }
+            { value: "APP", label: t('profile.twoFactorAppOption', 'App de Autenticación (Google Auth, Authy)') },
+            { value: "EMAIL", label: t('profile.twoFactorEmailOption', 'Correo Electrónico') }
           ]}
           value={selectedType}
           onChange={(val) => setSelectedType(val)}
-          placeholder="Seleccionar Método"
+          placeholder={t('profile.twoFactorMethodSelect', 'Seleccionar Método')}
           className="w-full text-slate-700"
         />
       </div>
@@ -176,10 +178,10 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
       ) : (
         <>
           <p className="font-bold text-sm text-slate-700">
-            Revisa tu bandeja de entrada
+            {t('profile.twoFactorCheckInbox', 'Revisa tu bandeja de entrada')}
           </p>
           <p className="text-slate-500 text-xs">
-            Hemos enviado un código de verificación de 6 dígitos a tu correo electrónico.
+            {t('profile.twoFactorCodeSentEmail', 'Hemos enviado un código de verificación de 6 dígitos a tu correo electrónico.')}
           </p>
         </>
       )}
@@ -187,7 +189,7 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
       <form onSubmit={handleConfirmEnable} className="mx-auto w-full mt-2">
         <div className="mb-4 text-start flex flex-col gap-2">
           <label htmlFor="verificationCode" className="text-sm font-semibold text-slate-700 ml-1">
-            {setupData.type === 'APP' ? '2.' : ''} Introduce el código de 6 dígitos:
+            {setupData.type === 'APP' ? '2. ' : ''}{t('profile.twoFactorEnterCode', 'Introduce el código de 6 dígitos:')}
           </label>
           <input
             type="text"

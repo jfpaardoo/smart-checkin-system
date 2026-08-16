@@ -23,15 +23,15 @@ public class LoginFailureListener implements ApplicationListener<AuthenticationF
     private static final int MAX_FAILED_ATTEMPTS = 3;
 
     private final SimpMessagingTemplate messagingTemplate;
-    private final AuditLogRepository auditLogRepository;
+    private final AuditService auditService;
     
     // In-memory cache to track failures (In production, consider Redis or DB)
     private final ConcurrentHashMap<String, AtomicInteger> failedAttempts = new ConcurrentHashMap<>();
 
     @Autowired
-    public LoginFailureListener(SimpMessagingTemplate messagingTemplate, AuditLogRepository auditLogRepository) {
+    public LoginFailureListener(SimpMessagingTemplate messagingTemplate, AuditService auditService) {
         this.messagingTemplate = messagingTemplate;
-        this.auditLogRepository = auditLogRepository;
+        this.auditService = auditService;
     }
 
     @Override
@@ -51,9 +51,9 @@ public class LoginFailureListener implements ApplicationListener<AuthenticationF
             // 1. Send WebSocket Alert
             messagingTemplate.convertAndSend("/topic/alerts", alertMessage);
             
-            // 2. Log in Audit Database
+            // 2. Log in Audit Database with Cryptographic Hash Chain
             AuditLog log = new AuditLog("SECURITY_ALERT_BRUTE_FORCE", "SYSTEM", alertMessage, ipAddress);
-            auditLogRepository.save(log);
+            auditService.recordAuditLog(log);
             
             logger.error("SECURITY ALERT TRIGGERED: {}", alertMessage);
             

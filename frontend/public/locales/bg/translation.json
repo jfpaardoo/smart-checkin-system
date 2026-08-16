@@ -13,7 +13,8 @@
     "profile": "Моят Профил",
     "register": "Заявка за Регистрация",
     "audit": "Одитен Дневник",
-    "cloudSettings": "Облачни Настройки"
+    "cloudSettings": "Облачни Настройки",
+    "toggleMenu": "Превключване на навигацията"
   },
   "home": {
     "welcome": "Добре дошли в Distribution Academy",
@@ -69,7 +70,14 @@
     "badCredentials": "Невалидно потребителско име или парола",
     "accountLocked": "Акаунтът е заключен поради твърде много неуспешни опити. Опитайте отново по-късно.",
     "usernameOrEmail": "Потребител или имейл",
-    "2faInfo": "Въведете кода на вашето приложение за удостоверяване (2FA)."
+    "2faInfo": "Въведете кода на вашето приложение за удостоверяване (2FA).",
+    "captchaRequired": "Моля, завършете проверката за сигурност.",
+    "twoFactorHeader": "Двуфакторна автентикация",
+    "twoFactorPrompt": "Изисква се двуфакторна автентикация (2FA) за",
+    "totpCodeLabel": "6-цифрен код",
+    "verifyAndEnter": "Потвърди и Влез",
+    "forgotPassword": "Забравена парола?",
+    "privacyPolicy": "Политика за поверителност"
   },
   "users": {
     "allActive": "Всички Активни",
@@ -136,7 +144,11 @@
     "noPendingUsers": "Няма чакащи заявки за регистрация",
     "approve": "Одобряване",
     "reject": "Откажи",
-    "email": "Имейл"
+    "email": "Имейл",
+    "allStates": "Всички статуси",
+    "pendingFilterHint": "Показване на заявки, чакащи потвърждение",
+    "subtitle": "Управлявайте роли, свързани центрове, статус на активност и заявки за регистрация",
+    "locatorPlaceholder": "Въведете локатор (Напр. MAD, BCN, PT...)"
   },
   "formations": {
     "filterAll": "Всички дати",
@@ -187,7 +199,11 @@
     "removeFile": "Изтриване на файл",
     "dragDropFiles": "Плъзнете файлове тук или щракнете, за да качите",
     "acceptedFormats": "Допустими формати: PDF, Word, Excel, PowerPoint, изображения",
-    "filesSelected": "избран файл(ове)"
+    "filesSelected": "избран файл(ове)",
+    "editSubtitle": "Промяна на данни, график и документация за обучението",
+    "filterTime": "Филтриране по дата",
+    "newSubtitle": "Създайте нова сесия за обучение и качете материали",
+    "subtitle": "Планирайте обучения, управлявайте присъствието и учебните материали"
   },
   "formationDetails": {
     "title": "Детайли за Обучението",
@@ -232,7 +248,12 @@
     "previewNotAvailable": "Прегледът не е наличен",
     "cspMessage": "Поради правилата за сигурност на Microsoft OneDrive, този документ не може да бъде директно вграден тук.",
     "cloudDocDescription": "Този документ се съхранява сигурно в облака. Щракнете върху бутона по-долу, за да го отворите.",
-    "downloadPdfError": "Грешка при изтеглянето на PDF."
+    "downloadPdfError": "Грешка при изтеглянето на PDF.",
+    "filterAllStatus": "Всички статуси",
+    "filterStatus": "Филтриране по статус",
+    "searchAttendee": "Търсене на участник по име, потребител или код...",
+    "checkinTime": "Вход:",
+    "checkoutTime": "Изход:"
   },
   "qr": {
     "title": "QR на Обучение",
@@ -283,7 +304,9 @@
     "checkoutSuccess": "Изходът е регистриран успешно.",
     "checkoutError": "Грешка при регистриране на изхода",
     "camera": "Камера",
-    "viewDocumentation": "Преглед на Документацията"
+    "viewDocumentation": "Преглед на Документацията",
+    "filterAllFormations": "Всички обучения",
+    "filterStatus": "Филтриране по статус"
   },
   "checkin": {
     "title": "Сканер за Отчитане",
@@ -356,7 +379,15 @@
     "search": "Търсете...",
     "camera": "Камера",
     "unknownError": "Възникна неизвестна грешка.",
-    "duplicateConflict": "Грешка при конфликт: Записът вече съществува."
+    "duplicateConflict": "Грешка при конфликт: Записът вече съществува.",
+    "actions": "Действия",
+    "continue": "Продължи",
+    "or": "или с идентификационни данни",
+    "togglePassword": "Показване/Скриване на парола",
+    "somethingWentWrong": "Възникна грешка:",
+    "tryAgain": "Опитай отново",
+    "selectOption": "Избери",
+    "clearSearch": "Изчисти търсенето"
   },
   "lang": {
     "es": "Español",
@@ -424,7 +455,16 @@
     "noFormationsUser": "Няма назначени обучения за този служител.",
     "noEmployees": "Не са открити служители.",
     "workCheckins": "Настанявания",
-    "workTime": "Т. Работа"
+    "workTime": "Т. Работа",
+    "filterPerf": "Присъствие",
+    "formationDate": "Дата",
+    "noFormations": "Няма данни за обучения, съответстващи на филтрите.",
+    "subtitle": "Метрики за производителност, контрол на работното време и обучения",
+    "totalAttended": "Присъстващи",
+    "totalExpected": "Очаквани",
+    "statAttendance": "Присъствие:",
+    "statTrainingTime": "Време за обучение:",
+    "statFormationsCount": "Обучения (Посетени/Възложени):"
   },
   "profile": {
     "myProfileTitle": "Моят Профил",
@@ -485,7 +525,29 @@
     "deleteConfirmTitle": "Изтриване на акаунта за постоянно",
     "areYouSure": "Сигурен ли си напълно?",
     "deleteWarningText": "Това действие ще изтрие завинаги всички ваши данни.",
-    "deleteConfirmBtn": "Изтриване на акаунт"
+    "deleteConfirmBtn": "Изтриване на акаунт",
+    "deleteAccountDesc": "Изтриването на вашия акаунт е необратимо действие. Всички ваши лични данни и история ще бъдат премахнати за постоянно.",
+    "deleteConfirmationAria": "Въведете ИЗТРИЙ за потвърждение",
+    "deletePlaceholder": "ИЗТРИЙ",
+    "exportDataDesc": "Имате право да поискате копие от всички ваши лични данни, съхранявани в нашата система, в структуриран формат.",
+    "privacyPolicyPrompt": "Имате ли въпроси относно управлението на вашите данни, подписи и проверки?",
+    "readPrivacyPolicy": "Прочетете Политиката за поверителност",
+    "passkeyNamePlaceholder": "Напр. Моят iPhone, Работен лаптоп...",
+    "notifyEmailDesc": "Получавайте известия във вашата пощенска кутия",
+    "notifyPushDesc": "Получавайте известия на вашето устройство",
+    "twoFactorMethod": "Метод за проверка",
+    "twoFactorMethodSelect": "Изберете метод",
+    "notificationPreferences": "Предпочитания за известия",
+    "emailNotifications": "Имейл известия",
+    "pushNotifications": "Push известия",
+    "toggleEmailAria": "Превключване на имейл известия",
+    "togglePushAria": "Превключване на push известия",
+    "twoFactorProtectPrompt": "Защитете профила си, като активирате двуфакторна автентикация.",
+    "twoFactorAppOption": "Приложение за автентикация (Google Auth, Authy)",
+    "twoFactorEmailOption": "Имейл адрес",
+    "twoFactorCheckInbox": "Проверете пощенската си кутия",
+    "twoFactorCodeSentEmail": "Изпратихме 6-цифрен код за потвърждение на вашия имейл адрес.",
+    "twoFactorEnterCode": "Въведете 6-цифрения код:"
   },
   "register": {
     "company": "Компания / Работно Място",
@@ -515,7 +577,10 @@
     "loginHere": "Вход",
     "genericError": "Грешка при обработката на заявката за регистрация.",
     "successMessage": "Заявката за регистрация е изпратена успешно. Администраторът ще активира вашия акаунт.",
-    "email": "Имейл"
+    "email": "Имейл",
+    "captchaRequired": "Моля, завършете проверката за сигурност.",
+    "hidePassword": "Скриване на парола",
+    "showPassword": "Показване на парола"
   },
   "audit": {
     "filterAll": "Всички събития",
@@ -568,7 +633,15 @@
       "userSavedNoName": "Запазен/Актуализиран потребител",
       "formationSavedNoName": "Създадено/Актуализирано обучение"
     },
-    "exportPDF": "Експортиране в PDF"
+    "exportPDF": "Експортиране в PDF",
+    "fetchError": "Грешка при зареждане на одитните записи",
+    "integrityTampered": "Внимание! Открита е манипулация в одитните записи",
+    "integrityTamperedAlert": "Манипулирана Верига",
+    "integrityValid": "SHA-256 целостта е потвърдена успешно",
+    "integrityVerified": "Непокътната Верига",
+    "verifyChain": "Провери Целостта",
+    "verifying": "Проверка на SHA-256...",
+    "verifyChainTooltip": "Проверете криптографската цялост на SHA-256 за всички одитни записи"
   },
   "cloudSettings": {
     "saveSuccess": "Облачните настройки са запазени успешно",
@@ -588,7 +661,16 @@
     "clientSecretLabel": "Client Secret",
     "refreshTokenLabel": "Refresh Token (Дълготраен)",
     "refreshTokenHelp": "Този токен ще се използва за автоматично получаване на Access Tokens от Graph API без намеса на потребителя.",
-    "saveBtn": "Запази Настройките"
+    "saveBtn": "Запази Настройките",
+    "connectBtn": "Свързване с Microsoft OneDrive",
+    "connectError": "Възникна проблем при свързване с Microsoft.",
+    "connectSuccess": "OneDrive е свързан успешно!",
+    "disconnectBtn": "Прекъсване на връзката с OneDrive",
+    "disconnectError": "Грешка при прекъсване на връзката с акаунта.",
+    "disconnectSuccess": "Акаунтът в OneDrive е прекъснат успешно.",
+    "oauthInitError": "Грешка при стартиране на връзката с OneDrive.",
+    "statusConnected": "OneDrive е Свързан",
+    "statusDisconnected": "OneDrive не е свързан"
   },
   "formations/csv": "signature_formations.csv",
   "formations/excel": "signature_formations.xlsx",
@@ -628,7 +710,9 @@
     "deletedSuccess": "Компанията е изтрита успешно.",
     "fetchError": "Грешка при зареждане на компаниите.",
     "saveError": "Грешка при запазване на компанията.",
-    "deleteError": "Компанията не може да бъде изтрита."
+    "deleteError": "Компанията не може да бъде изтрита.",
+    "namePlaceholder": "Напр. BA Glass Spain SAU",
+    "descriptionPlaceholder": "Допълнителна информация за дейността или местоположението..."
   },
   "privacy": {
     "secNotCollectedTitle": "2. Данни, които НЕ събираме и Гаранции за Ненамеса",
@@ -700,7 +784,9 @@
     "sec5Item4Title": "Възражение и Ограничаване:",
     "sec5Item4Desc": "Право на запитване към администратора или отговорника по защита на данните.",
     "sec6Text": "Обработването се основава на законови задължения за отчитане на работното време (чл. 6, ал. 1, б. в от GDPR), изпълнение на трудовия договор и обучения (чл. 6, ал. 1, б. б от GDPR) и легитимен интерес за сигурност (чл. 6, ал. 1, б. е от GDPR).",
-    "footerNotice": "С използването на Distribution Academy вие потвърждавате, че сте прочели и разбрали тази Политика за Поверителност."
+    "footerNotice": "С използването на Distribution Academy вие потвърждавате, че сте прочели и разбрали тази Политика за Поверителност.",
+    "sec3ItemPasskeyDesc": "Устойчива на фишинг асиметрична автентикация, базирана на криптография с елиптични криви (secp256r1/ED25519) без пароли.",
+    "sec3ItemPasskeyTitle": "Ключове за достъп Passkeys (FIDO2 / WebAuthn):"
   },
   "passkeys": {
     "title": "Ключове за Достъп (Passkeys & Биометрия)",
@@ -720,5 +806,49 @@
     "deleteConfirm": "Сигурни ли сте, че искате да премахнете този ключ?",
     "deleteSuccess": "Ключът за достъп е премахнат успешно.",
     "deleteError": "Ключът за достъп не можа да бъде премахнат."
+  },
+  "pagination": {
+    "first": "Първа страница",
+    "last": "Последна страница",
+    "next": "Следваща страница",
+    "of": "от",
+    "perPage": "На страница:",
+    "prev": "Предишна страница",
+    "showing": "Показване на"
+  },
+  "recover": {
+    "invalidLink": "Невалидна връзка",
+    "noTokenFound": "В URL адреса не е намерен токен за възстановяване.",
+    "forgotTitle": "Възстановяване на парола",
+    "forgotSubtitle": "Въведете вашия имейл и ние ще ви изпратим линк за възстановяване на паролата.",
+    "emailLabel": "Имейл адрес",
+    "sendLink": "Изпращане на линк",
+    "sending": "Изпраща се...",
+    "successMessage": "Ако имейлът е регистриран, ще получите линк за възстановяване.",
+    "defaultError": "Възникна грешка. Моля, опитайте отново по-късно.",
+    "backToLogin": "Обратно към входа",
+    "resetTitle": "Нулиране на парола",
+    "newPassword": "Нова парола",
+    "confirmPassword": "Потвърдете паролата",
+    "passwordsDontMatch": "Паролите не съвпадат",
+    "resetSuccess": "Паролата е нулирана успешно.",
+    "updating": "Обновяване...",
+    "saveNewPassword": "Запазване на новата парола",
+    "backToHome": "Обратно към началото",
+    "enterNewPassword": "Въведете новата си парола за достъп.",
+    "changePassword": "Смяна на парола",
+    "saving": "Запазване..."
+  },
+  "session": {
+    "logoutNow": "Изход",
+    "multiTabLogoutNotice": "Излязохте от профила си в друг раздел.",
+    "stayLoggedIn": "Останете вписани",
+    "timeoutDesc": "От съображения за сигурност сесията ви ще се затвори автоматично поради неактивност след",
+    "timeoutNotice": "Сесията ви беше автоматично прекратена поради неактивност.",
+    "timeoutTitle": "Все още ли сте тук?"
+  },
+  "signature": {
+    "loading": "Зареждане на подпис...",
+    "loadError": "Грешка при зареждане на подпис"
   }
 }
