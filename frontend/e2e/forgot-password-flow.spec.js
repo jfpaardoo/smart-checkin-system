@@ -28,8 +28,10 @@ test.describe('Flujo de Recuperación de Contraseña (Forgot Password E2E)', () 
     // 4. Rellenar el formulario
     await page.locator('input#email').fill('empleado@example.com');
 
-    // 5. Enviar el formulario
-    await page.getByRole('button', { name: /Enviar enlace/i }).click();
+    // 5. Esperar a que el captcha de Turnstile habilite el botón y enviar
+    const sendButton = page.getByRole('button', { name: /Enviar enlace/i });
+    await expect(sendButton).toBeEnabled({ timeout: 15000 });
+    await sendButton.click();
 
     // 6. Verificar el mensaje de éxito del servidor
     await expect(page.getByText(/recibirás un enlace de recuperación/i)).toBeVisible();
@@ -49,16 +51,17 @@ test.describe('Flujo de Recuperación de Contraseña (Forgot Password E2E)', () 
     // 1. Navegar con un token simulado
     await page.goto('/reset-password?token=mocked-valid-token-123');
 
-    await expect(page.getByRole('heading', { name: /Crear nueva contraseña/i })).toBeVisible();
+    // 2. Comprobar encabezado real
+    await expect(page.getByRole('heading', { name: /Restablecer Contraseña|Reset Password/i })).toBeVisible();
 
-    // 2. Rellenar con contraseñas distintas
+    // 3. Rellenar con contraseñas distintas
     await page.locator('input#newPassword').fill('SecurePass123!');
     await page.locator('input#confirmPassword').fill('DifferentPass456!');
 
-    // 3. Enviar
+    // 4. Enviar
     await page.getByRole('button', { name: /Cambiar Contraseña/i }).click();
 
-    // 4. Verificar error de validación en el frontend sin llamar a la API
+    // 5. Verificar error de validación en el frontend sin llamar a la API
     await expect(page.getByText(/Las contraseñas no coinciden/i)).toBeVisible();
   });
 
@@ -91,7 +94,6 @@ test.describe('Flujo de Recuperación de Contraseña (Forgot Password E2E)', () 
     await expect(page.getByText(/Contraseña restablecida con éxito/i)).toBeVisible();
 
     // 5. Esperar a que el setTimeout(3000) nos redirija automáticamente al login
-    // Ponemos un timeout de 5000ms en el test para darle margen
     await page.waitForURL('**/login', { timeout: 5000 });
   });
 

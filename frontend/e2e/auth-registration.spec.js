@@ -28,7 +28,9 @@ test.describe('Flujo de Autorregistro de Usuario (User Self-Registration E2E)', 
     await page.fill('input#confirmPassword', 'securePass123');
 
     // Submit form
-    await page.click('button[type="submit"]');
+    const submitButton = page.locator('button[type="submit"]');
+    await expect(submitButton).toBeEnabled({ timeout: 5000 });
+    await submitButton.click();
 
     // Verify Success Screen
     await expect(page.getByRole('heading', { name: /¡Solicitud Enviada!|Request Sent!|Request Submitted!/i })).toBeVisible();
@@ -45,7 +47,9 @@ test.describe('Flujo de Autorregistro de Usuario (User Self-Registration E2E)', 
     await page.fill('input#password', 'securePass123');
     await page.fill('input#confirmPassword', 'differentPass');
 
-    await page.click('button[type="submit"]');
+    const submitButton = page.locator('button[type="submit"]');
+    await expect(submitButton).toBeEnabled({ timeout: 5000 });
+    await submitButton.click();
 
     // Confirm that submission did not navigate away
     await expect(page.getByRole('heading', { name: /Solicitud de Registro|Registration Request/i })).toBeVisible();
