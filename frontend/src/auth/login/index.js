@@ -18,6 +18,7 @@ export default function Login() {
   const [totpCode, setTotpCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState(null);
+  const [captchaKey, setCaptchaKey] = useState(0);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -28,7 +29,7 @@ export default function Login() {
     if (typeof window !== 'undefined' && (window.navigator.webdriver || window.__PLAYWRIGHT__)) {
       setCaptchaToken('1x00000000000000000000AA');
     }
-  }, []);
+  }, [captchaKey]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -63,12 +64,15 @@ export default function Login() {
         }
       } else if (data.message === "Bad Credentials!") {
         setCaptchaToken(null);
+        setCaptchaKey((k) => k + 1);
         throw new Error(t('login.badCredentials', 'Usuario o contraseña incorrectos'));
       } else if (data.message?.includes("Account is locked")) {
         setCaptchaToken(null);
+        setCaptchaKey((k) => k + 1);
         throw new Error(t('login.accountLocked', 'La cuenta está bloqueada por demasiados intentos. Inténtalo más tarde.'));
       } else {
         setCaptchaToken(null);
+        setCaptchaKey((k) => k + 1);
         throw new Error(data.message || t('login.error', 'Error al iniciar sesión'));
       }
     } catch (error) {
@@ -152,11 +156,13 @@ export default function Login() {
                   type="button"
                   onClick={handlePasskeyLogin}
                   disabled={loading}
-                  className="w-full h-[52px] rounded-full font-bold text-slate-800 bg-white/80 backdrop-blur-md border border-white shadow-[0_8px_25px_0_rgba(0,0,0,0.06)] hover:bg-white hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.35)] transition-colors duration-200 active:scale-95 flex justify-center items-center gap-2.5 box-border cursor-pointer text-sm"
+                  className="w-full min-h-[52px] py-2.5 px-4 rounded-full font-bold text-slate-800 bg-white/80 backdrop-blur-md border border-white shadow-[0_8px_25px_0_rgba(0,0,0,0.06)] hover:bg-white hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.35)] transition-colors duration-200 active:scale-95 flex items-center justify-center gap-2.5 box-border cursor-pointer text-xs sm:text-sm text-center"
                 >
-                  <FaFingerprint className="text-[#73841e] text-lg" />
-                  <FaKey className="text-[#8fa228] text-sm" />
-                  <span>{t('login.passkeyBtn', 'Acceder con Llave de Acceso (Biometría)')}</span>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <FaFingerprint className="text-[#73841e] text-base sm:text-lg" />
+                    <FaKey className="text-[#8fa228] text-xs sm:text-sm" />
+                  </div>
+                  <span className="leading-snug">{t('login.passkeyBtn', 'Acceder con Llave de Acceso (Biometría)')}</span>
                 </button>
 
                 <div className="flex items-center gap-3 my-2">
@@ -208,6 +214,7 @@ export default function Login() {
 
               <div className="flex justify-center items-center mt-2 p-3 rounded-2xl bg-white/30 backdrop-blur-md border border-white/40 shadow-inner">
                 <Turnstile 
+                  key={captchaKey}
                   siteKey={process.env.REACT_APP_CAPTCHA_SITE_KEY || '1x00000000000000000000AA'} 
                   onSuccess={(token) => setCaptchaToken(token)}
                   onError={() => setCaptchaToken(null)}

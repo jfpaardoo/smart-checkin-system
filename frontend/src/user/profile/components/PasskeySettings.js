@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { FaKey, FaFingerprint, FaTrash, FaPlus, FaLaptop, FaMobileAlt, FaShieldAlt } from 'react-icons/fa';
 import api from '../../../services/api';
 import { 
@@ -179,10 +180,10 @@ export default function PasskeySettings({ t, toast }) {
         </div>
       )}
 
-      {/* Modal / Diálogo para asignar nombre a la Passkey */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white/90 backdrop-blur-2xl rounded-[28px] p-6 max-w-md w-full border border-white shadow-2xl animate-fade-in">
+      {/* Modal / Diálogo para asignar nombre a la Passkey (montado en document.body mediante Portal) */}
+      {showModal && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-[28px] p-6 max-w-md w-full border border-white/80 shadow-2xl animate-fade-in">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-2xl bg-[#b3c34c]/20 border border-[#b3c34c]/40 flex items-center justify-center flex-shrink-0">
                 <FaFingerprint size={20} className="text-[#73841e]" />
@@ -239,7 +240,8 @@ export default function PasskeySettings({ t, toast }) {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

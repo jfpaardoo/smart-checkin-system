@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 public class AnomalyDetectionService {
 
     private static final Logger logger = LoggerFactory.getLogger(AnomalyDetectionService.class);
+    private static final String AUDIT_TOPIC = "/topic/audit";
+    private static final String LOG_UPDATE = "NEW_LOG";
 
     private final AuditLogRepository auditLogRepository;
     private final SimpMessagingTemplate messagingTemplate;
@@ -21,11 +23,24 @@ public class AnomalyDetectionService {
         this.messagingTemplate = messagingTemplate;
     }
 
+    public void recordSuccessfulLogin(String username, String ipAddress, String authMethod) {
+        String details = "User logged in successfully (" + authMethod + ")";
+        AuditLog log = new AuditLog("LOGIN_SUCCESS", username, details, ipAddress);
+        auditLogRepository.save(log);
+        messagingTemplate.convertAndSend(AUDIT_TOPIC, LOG_UPDATE);
+    }
+
+    public void recordLogout(String username, String ipAddress) {
+        AuditLog log = new AuditLog("LOGOUT", username, "User logged out", ipAddress);
+        auditLogRepository.save(log);
+        messagingTemplate.convertAndSend(AUDIT_TOPIC, LOG_UPDATE);
+    }
+
     public void recordFailedLogin(String username, String ipAddress, int currentAttempts) {
         // Record the failed attempt in audit
         AuditLog log = new AuditLog("LOGIN_FAILED", username, "Failed login attempt for user: " + username, ipAddress);
         auditLogRepository.save(log);
-        messagingTemplate.convertAndSend("/topic/audit", "NEW_LOG");
+        messagingTemplate.convertAndSend(AUDIT_TOPIC, LOG_UPDATE);
 
         if (currentAttempts >= 5) {
             triggerSecurityAnomaly(username, ipAddress, "Multiple failed login attempts (>= 5) detected for user: " + username);
@@ -38,7 +53,7 @@ public class AnomalyDetectionService {
         auditLogRepository.save(anomalyLog);
         
         // Notify clients to refresh audit log
-        messagingTemplate.convertAndSend("/topic/audit", "NEW_LOG");
+        messagingTemplate.convertAndSend(AUDIT_TOPIC, LOG_UPDATE);
         // Also send a real-time alert via WebSocket for admins
         messagingTemplate.convertAndSend("/topic/alerts", "Alerta de Seguridad: " + reason);
     }
