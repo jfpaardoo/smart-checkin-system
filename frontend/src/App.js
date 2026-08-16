@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import "./App.css";
 import { Route, Routes, useLocation } from "react-router-dom";
 
@@ -10,29 +10,29 @@ import Login from "./auth/login";
 import Logout from "./auth/logout";
 import Register from "./auth/register/Register";
 import tokenService from "./services/token.service";
-import SwaggerDocs from "./public/swagger";
-import UserListAdmin from "./admin/users/UserListAdmin";
-import UserEditAdmin from "./admin/users/UserEditAdmin";
-import FormationListAdmin from "./admin/formations/FormationListAdmin";
-import FormationEditAdmin from "./admin/formations/FormationEditAdmin";
-import FormationDetailsAdmin from "./admin/formations/FormationDetailsAdmin";
-import CompanyListAdmin from "./admin/companies/CompanyListAdmin";
-import CompanyEditAdmin from "./admin/companies/CompanyEditAdmin";
-import QRGeneratorAdmin from "./admin/qr/QRGeneratorAdmin";
-import AnalyticsDashboard from "./admin/analytics/AnalyticsDashboard";
-import AuditDashboard from "./admin/audit/AuditDashboard";
 import ScannerCheckin from "./user/checkin/ScannerCheckin";
 import UserDashboard from "./user/dashboard/UserDashboard";
-import UserProfile from "./user/profile/UserProfile";
 import { ToastProvider } from "./components/ToastProvider";
-import CloudSettingsAdmin from "./admin/settings/CloudSettingsAdmin";
-import PrivacyPolicy from "./legal/PrivacyPolicy";
-import ForgotPassword from "./auth/recover/ForgotPassword";
-import ResetPassword from "./auth/recover/ResetPassword";
-
 import SessionTimeoutModal from "./components/SessionTimeoutModal";
-
 import { useTranslation } from "react-i18next";
+
+// Lazy-loaded Views (Code-Splitting for lighter initial bundle)
+const UserProfile = lazy(() => import("./user/profile/UserProfile"));
+const SwaggerDocs = lazy(() => import("./public/swagger"));
+const UserListAdmin = lazy(() => import("./admin/users/UserListAdmin"));
+const UserEditAdmin = lazy(() => import("./admin/users/UserEditAdmin"));
+const FormationListAdmin = lazy(() => import("./admin/formations/FormationListAdmin"));
+const FormationEditAdmin = lazy(() => import("./admin/formations/FormationEditAdmin"));
+const FormationDetailsAdmin = lazy(() => import("./admin/formations/FormationDetailsAdmin"));
+const CompanyListAdmin = lazy(() => import("./admin/companies/CompanyListAdmin"));
+const CompanyEditAdmin = lazy(() => import("./admin/companies/CompanyEditAdmin"));
+const QRGeneratorAdmin = lazy(() => import("./admin/qr/QRGeneratorAdmin"));
+const AnalyticsDashboard = lazy(() => import("./admin/analytics/AnalyticsDashboard"));
+const AuditDashboard = lazy(() => import("./admin/audit/AuditDashboard"));
+const CloudSettingsAdmin = lazy(() => import("./admin/settings/CloudSettingsAdmin"));
+const PrivacyPolicy = lazy(() => import("./legal/PrivacyPolicy"));
+const ForgotPassword = lazy(() => import("./auth/recover/ForgotPassword"));
+const ResetPassword = lazy(() => import("./auth/recover/ResetPassword"));
 
 function ErrorFallback({ error, resetErrorBoundary }) {
   const { t } = useTranslation();
@@ -43,6 +43,15 @@ function ErrorFallback({ error, resetErrorBoundary }) {
       <button type="button" className="btn btn-primary mt-2" onClick={resetErrorBoundary}>
         {t('common.tryAgain', 'Reintentar')}
       </button>
+    </div>
+  );
+}
+
+function PageLoadingFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-[350px] text-slate-500 text-sm font-medium">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lime-600 mr-3"></div>
+      Cargando contenido...
     </div>
   );
 }
@@ -104,15 +113,17 @@ function App() {
       <ErrorBoundary FallbackComponent={ErrorFallback} >
         <AppNavbar />
         <SessionTimeoutModal />
-        <Routes>
-          <Route path="/" exact={true} element={<Home />} />
-          <Route path="/privacy-policy" exact={true} element={<PrivacyPolicy />} />
-          <Route path="/forgot-password" exact={true} element={<ForgotPassword />} />
-          <Route path="/reset-password" exact={true} element={<ResetPassword />} />
-          {publicRoutes}
-          {userRoutes}
-          {adminRoutes}
-        </Routes>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <Routes>
+            <Route path="/" exact={true} element={<Home />} />
+            <Route path="/privacy-policy" exact={true} element={<PrivacyPolicy />} />
+            <Route path="/forgot-password" exact={true} element={<ForgotPassword />} />
+            <Route path="/reset-password" exact={true} element={<ResetPassword />} />
+            {publicRoutes}
+            {userRoutes}
+            {adminRoutes}
+          </Routes>
+        </Suspense>
       </ErrorBoundary>
     </ToastProvider>
   );

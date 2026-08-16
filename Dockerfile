@@ -42,9 +42,9 @@ USER appuser
 # Expose HTTP port
 EXPOSE 8080
 
-# Environment variables with sensible defaults
+# Environment variables with sensible defaults (optimized for low-RAM / 512MB hosting)
 ENV SPRING_PROFILES_ACTIVE=prod \
-    JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC"
+    JAVA_OPTS="-Xms128m -Xmx320m -XX:+UseSerialGC -XX:+UseStringDeduplication -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError"
 
 # Healthcheck to monitor app status
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
