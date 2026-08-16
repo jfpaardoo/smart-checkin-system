@@ -55,7 +55,17 @@
     "viewFormationsBtn": "Zobacz Szkolenia →",
     "welcomeDesc": "Inteligentne zarządzanie obecnością na szkoleniach za pomocą kodu QR i podpisu cyfrowego.",
     "guestWelcomeTitle": "Portal Obecności i Szkoleń",
-    "guestWelcomeSub": "Szybki i bezpieczny dostęp do wezwań, kontroli obecności QR oraz podpisu cyfrowego."
+    "guestWelcomeSub": "Szybki i bezpieczny dostęp do wezwań, kontroli obecności QR oraz podpisu cyfrowego.",
+    "generalDepartment": "Operacje i Logistyka",
+    "digitalId": "Cyfrowy Identyfikator",
+    "employeePortal": "Portal Pracownika",
+    "showPersonalQr": "Pokaż mój kod QR",
+    "myQrCode": "Mój Kod QR",
+    "employeeId": "ID Pracownika",
+    "department": "Dział",
+    "role": "Rola",
+    "personalQrTitle": "Osobisty Kod QR Identyfikacji",
+    "personalQrDesc": "Pokaż ten kod instruktorowi lub przełożonemu, aby się zidentyfikować."
   },
   "login": {
     "passkeyBtn": "Zaloguj się kluczem dostępu (Passkey)",
@@ -345,7 +355,8 @@
     "successTitle": "Proces zakończony!",
     "formationLabel": "Szkolenie",
     "dateLabel": "Data",
-    "close": "Zamknąć"
+    "close": "Zamknąć",
+    "switchCamera": "Przełącz kamerę"
   },
   "common": {
     "clearFilters": "Wyczyść filtry",

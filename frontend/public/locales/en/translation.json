@@ -55,7 +55,17 @@
     "viewFormationsBtn": "View Formations →",
     "welcomeDesc": "Smart attendance management for trainings via QR code and digital signature.",
     "guestWelcomeTitle": "Attendance & Formation Portal",
-    "guestWelcomeSub": "Quick and secure access to calls, QR attendance control, and digital signature."
+    "guestWelcomeSub": "Quick and secure access to calls, QR attendance control, and digital signature.",
+    "generalDepartment": "Operations & Logistics",
+    "digitalId": "Digital ID",
+    "employeePortal": "Employee Portal",
+    "showPersonalQr": "Show my QR code",
+    "myQrCode": "My QR Code",
+    "employeeId": "Employee ID",
+    "department": "Department",
+    "role": "Role",
+    "personalQrTitle": "Personal Identification QR",
+    "personalQrDesc": "Present this code to the trainer or supervisor to identify yourself."
   },
   "login": {
     "passkeyBtn": "Sign in with Passkey (Biometrics)",
@@ -345,7 +355,8 @@
     "successTitle": "Process Completed!",
     "formationLabel": "Training",
     "dateLabel": "Date",
-    "close": "Close"
+    "close": "Close",
+    "switchCamera": "Switch Camera"
   },
   "common": {
     "clearFilters": "Clear filters",

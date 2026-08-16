@@ -136,75 +136,93 @@ export default function Home() {
           </div>
         )}
 
-        {/* LOGGED IN - EMPLOYEE USER HUB */}
+        {/* LOGGED IN - EMPLOYEE HUB (LIQUID GLASS) */}
         {jwt && !isAdmin && (
-          <div>
-            <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 text-start">
-              <h5 className="fw-bold m-0 text-dark d-flex align-items-center gap-2">
-                <FaUser style={{ color: 'var(--da-primary)' }} /> {t('home.employeeQuickAccess', 'Acceso Rápido del Empleado')}
-              </h5>
-              <div className="d-flex align-items-center gap-2">
-                <span className="text-muted small">{t('home.statusLabel', 'Tu estado actual:')}</span>
-                <span className={`da-badge ${userData?.isWorking ? 'da-badge-active' : 'da-badge-inactive'} fs-6 py-1 px-3`}>
-                  {userData?.isWorking ? t('users.working', 'En formación') : t('users.offDuty', 'Fuera de formación')}
+          <div className="w-full text-start">
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-3 pb-3 border-b border-slate-200/70">
+              <div>
+                <h5 className="font-bold text-slate-800 flex items-center gap-2 text-xl mb-1">
+                  <FaUser className="text-[#8a9e29]" /> {t('home.employeeQuickAccess', 'Acceso Rápido')}
+                </h5>
+                <span className="text-xs text-slate-500 font-semibold">
+                  {t('home.sessionStartedAs', 'Sesión iniciada como:')} <strong className="text-slate-700">@{user?.username}</strong>
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-500 font-medium">{t('home.statusLabel', 'Estado:')}</span>
+                <span
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold shadow-xs ${
+                    userData?.isWorking
+                      ? 'bg-emerald-500/15 text-emerald-700 border border-emerald-300'
+                      : 'bg-slate-200/70 text-slate-600 border border-slate-300'
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${userData?.isWorking ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                  {userData?.isWorking ? t('users.working', 'En formación / Activo') : t('users.offDuty', 'Fuera de formación')}
                 </span>
               </div>
             </div>
 
-            <div className="da-home-grid-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {/* Card 1: Fichaje Directo QR */}
-              <div>
-                <Link to="/checkin" className="text-decoration-none d-block h-100">
-                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
-                    <div className="d-flex flex-column align-items-center">
-                      <div className="da-action-icon-wrapper">
-                        <FaQrcode size={30} />
-                      </div>
-                      <h6 className="fw-bold text-dark mb-1">{t('home.directQRCheckin', 'Fichaje Directo QR')}</h6>
-                      <p className="small text-muted mb-0">{t('home.directQRCheckinDesc', 'Escanea el código QR del aula para registrar asistencia')}</p>
+              <Link to="/checkin" className="no-underline group">
+                <div className="h-full p-6 rounded-[28px] bg-white/60 hover:bg-white/90 backdrop-blur-2xl border border-white/80 shadow-[0_8px_32px_0_rgba(31,38,135,0.06)] hover:shadow-[0_16px_40px_0_rgba(138,158,41,0.18)] transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between text-center">
+                  <div className="flex flex-col items-center">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#8a9e29]/20 to-[#b3c34c]/30 text-[#8a9e29] flex items-center justify-center text-2xl mb-4 group-hover:scale-110 group-hover:bg-[#8a9e29] group-hover:text-white transition-all duration-300 shadow-xs">
+                      <FaQrcode />
                     </div>
-                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
-                      {t('home.scanQRBtn', 'Escanear QR →')}
-                    </span>
+                    <h6 className="font-bold text-slate-800 text-base mb-1 group-hover:text-[#8a9e29] transition">
+                      {t('home.directQRCheckin', 'Fichaje Directo QR')}
+                    </h6>
+                    <p className="text-xs text-slate-500 mb-0">
+                      {t('home.directQRCheckinDesc', 'Escanea el código QR del aula para registrar tu entrada o salida')}
+                    </p>
                   </div>
-                </Link>
-              </div>
+                  <span className="w-full mt-5 py-2.5 px-4 rounded-xl bg-white/80 group-hover:bg-[#8a9e29] text-slate-800 group-hover:text-white border border-slate-200 font-bold text-xs shadow-xs transition-all duration-300">
+                    {t('home.scanQRBtn', 'Escanear QR →')}
+                  </span>
+                </div>
+              </Link>
 
-              {/* Card 2: Mi Perfil */}
-              <div>
-                <Link to="/profile" className="text-decoration-none d-block h-100">
-                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
-                    <div className="d-flex flex-column align-items-center">
-                      <div className="da-action-icon-wrapper">
-                        <FaUser size={30} />
-                      </div>
-                      <h6 className="fw-bold text-dark mb-1">{t('home.myProfileBtn', 'Ver Mi Perfil')}</h6>
-                      <p className="small text-muted mb-0">{t('home.myProfileDesc', 'Consultar datos personales y cambiar contraseña')}</p>
+              {/* Card 2: Mis Formaciones */}
+              <Link to="/dashboard" className="no-underline group">
+                <div className="h-full p-6 rounded-[28px] bg-white/60 hover:bg-white/90 backdrop-blur-2xl border border-white/80 shadow-[0_8px_32px_0_rgba(31,38,135,0.06)] hover:shadow-[0_16px_40px_0_rgba(138,158,41,0.18)] transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between text-center">
+                  <div className="flex flex-col items-center">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#8a9e29]/20 to-[#b3c34c]/30 text-[#8a9e29] flex items-center justify-center text-2xl mb-4 group-hover:scale-110 group-hover:bg-[#8a9e29] group-hover:text-white transition-all duration-300 shadow-xs">
+                      <FaGraduationCap />
                     </div>
-                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
-                      {t('home.goToProfileBtn', 'Ir a Mi Perfil →')}
-                    </span>
+                    <h6 className="font-bold text-slate-800 text-base mb-1 group-hover:text-[#8a9e29] transition">
+                      {t('home.myFormationsBtn', 'Mis Formaciones')}
+                    </h6>
+                    <p className="text-xs text-slate-500 mb-0">
+                      {t('home.myFormationsDesc', 'Consulta el estado de asistencia, firmas y convocatorias asignadas')}
+                    </p>
                   </div>
-                </Link>
-              </div>
+                  <span className="w-full mt-5 py-2.5 px-4 rounded-xl bg-white/80 group-hover:bg-[#8a9e29] text-slate-800 group-hover:text-white border border-slate-200 font-bold text-xs shadow-xs transition-all duration-300">
+                    {t('home.viewFormationsBtn', 'Ver Formaciones →')}
+                  </span>
+                </div>
+              </Link>
 
-              {/* Card 3: Mis Formaciones */}
-              <div>
-                <Link to="/dashboard" className="text-decoration-none d-block h-100">
-                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
-                    <div className="d-flex flex-column align-items-center">
-                      <div className="da-action-icon-wrapper">
-                        <FaGraduationCap size={30} />
-                      </div>
-                      <h6 className="fw-bold text-dark mb-1">{t('home.myFormationsBtn', 'Ver Mis Formaciones')}</h6>
-                      <p className="small text-muted mb-0">{t('home.myFormationsDesc', 'Historial y estado de tus capacitaciones')}</p>
+              {/* Card 3: Mi Perfil & Seguridad */}
+              <Link to="/profile" className="no-underline group">
+                <div className="h-full p-6 rounded-[28px] bg-white/60 hover:bg-white/90 backdrop-blur-2xl border border-white/80 shadow-[0_8px_32px_0_rgba(31,38,135,0.06)] hover:shadow-[0_16px_40px_0_rgba(138,158,41,0.18)] transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between text-center">
+                  <div className="flex flex-col items-center">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#8a9e29]/20 to-[#b3c34c]/30 text-[#8a9e29] flex items-center justify-center text-2xl mb-4 group-hover:scale-110 group-hover:bg-[#8a9e29] group-hover:text-white transition-all duration-300 shadow-xs">
+                      <FaUser />
                     </div>
-                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
-                      {t('home.viewFormationsBtn', 'Ver Formaciones →')}
-                    </span>
+                    <h6 className="font-bold text-slate-800 text-base mb-1 group-hover:text-[#8a9e29] transition">
+                      {t('home.myProfileBtn', 'Mi Perfil & Seguridad')}
+                    </h6>
+                    <p className="text-xs text-slate-500 mb-0">
+                      {t('home.myProfileDesc', 'Gestiona tus Passkeys biométricas, 2FA y sesiones activas')}
+                    </p>
                   </div>
-                </Link>
-              </div>
+                  <span className="w-full mt-5 py-2.5 px-4 rounded-xl bg-white/80 group-hover:bg-[#8a9e29] text-slate-800 group-hover:text-white border border-slate-200 font-bold text-xs shadow-xs transition-all duration-300">
+                    {t('home.goToProfileBtn', 'Ir a Mi Perfil →')}
+                  </span>
+                </div>
+              </Link>
             </div>
           </div>
         )}

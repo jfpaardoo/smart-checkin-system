@@ -55,7 +55,17 @@
     "viewFormationsBtn": "Vezi Cursuri →",
     "welcomeDesc": "Gestionare inteligentă a prezenței la cursuri prin cod QR și semnătură digitală.",
     "guestWelcomeTitle": "Portal de Prezență și Cursuri",
-    "guestWelcomeSub": "Acces rapid și sigur la convocări, control prezență QR și semnătură digitală."
+    "guestWelcomeSub": "Acces rapid și sigur la convocări, control prezență QR și semnătură digitală.",
+    "generalDepartment": "Operațiuni și Logistică",
+    "digitalId": "Legitimație Digitală",
+    "employeePortal": "Portalul Angajatului",
+    "showPersonalQr": "Arată codul meu QR",
+    "myQrCode": "Codul Meu QR",
+    "employeeId": "ID Angajat",
+    "department": "Departament",
+    "role": "Rol",
+    "personalQrTitle": "Cod QR Personal de Identificare",
+    "personalQrDesc": "Prezentați acest cod instructorului sau supervizorului pentru identificare."
   },
   "login": {
     "passkeyBtn": "Autentificare cu Cheie de Acces (Biometrie)",
@@ -345,7 +355,8 @@
     "successTitle": "Proces finalizat!",
     "formationLabel": "Antrenamentul",
     "dateLabel": "Data",
-    "close": "Aproape"
+    "close": "Aproape",
+    "switchCamera": "Schimbă Camera"
   },
   "common": {
     "clearFilters": "Șterge filtrele",

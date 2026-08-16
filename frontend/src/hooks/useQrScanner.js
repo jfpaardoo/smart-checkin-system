@@ -2,6 +2,45 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { useTranslation } from 'react-i18next';
 
+/**
+ * Emite una vibración háptica suave y un chime de confirmación
+ */
+function triggerHapticAndAudio() {
+  // 1. Vibración háptica en móviles
+  try {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate([80, 40, 80]);
+    }
+  } catch (e) {
+    console.debug('Haptic feedback not supported', e);
+  }
+
+  // 2. Chime de confirmación auditivo
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (AudioContext) {
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime); // Nota A5
+      osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.12); // Nota A6
+
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.16);
+    }
+  } catch (e) {
+    console.debug('Audio chime failed', e);
+  }
+}
+
 export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
   const { t } = useTranslation();
   const [cameras, setCameras] = useState([]);
@@ -9,11 +48,11 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
   const [isScannerReady, setIsScannerReady] = useState(false);
   const html5QrcodeRef = useRef(null);
   const scannedRef = useRef(false);
-  // Store callback in a ref so the effect doesn't re-run when the callback changes
+
   const onScanSuccessRef = useRef(onScanSuccess);
   useEffect(() => { onScanSuccessRef.current = onScanSuccess; }, [onScanSuccess]);
 
-  // Stop scanner safely, clearing leftover DOM nodes to prevent removeChild errors
+  // Stop scanner safely, clearing leftover DOM nodes
   const stopScannerSafely = useCallback(async (scanner, containerId) => {
     if (!scanner) return;
     try {
@@ -28,7 +67,6 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     } catch (err) {
       console.debug('Safe scanner stop suppressed exception', err);
     }
-    // Clear any leftover library DOM nodes so React doesn't choke on removeChild
     try {
       if (containerId) {
         const el = document.getElementById(containerId);
@@ -64,7 +102,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     return () => { isMounted = false; };
   }, [t]);
 
-  // Handle scanner lifecycle — NO dependency on onScanSuccess (uses ref)
+  // Handle scanner lifecycle
   useEffect(() => {
     if (!isScanningEnabled || !selectedCameraId || !elementId) return;
 
@@ -74,11 +112,11 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     const handleSuccess = (decodedText) => {
       if (scannedRef.current || cancelled) return;
       scannedRef.current = true;
+      triggerHapticAndAudio();
       stopScannerSafely(html5QrcodeRef.current, elementId);
       onScanSuccessRef.current?.(decodedText);
     };
 
-    // Small delay to let React commit the container div to the real DOM
     const timerId = setTimeout(() => {
       if (cancelled) return;
       const container = document.getElementById(elementId);
@@ -111,12 +149,21 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     scannedRef.current = false;
   }, []);
 
+  const toggleCamera = useCallback(() => {
+    if (cameras.length <= 1) return;
+    const currentIndex = cameras.findIndex(c => c.value === selectedCameraId);
+    const nextIndex = (currentIndex + 1) % cameras.length;
+    setSelectedCameraId(cameras[nextIndex].value);
+  }, [cameras, selectedCameraId]);
+
   return {
     cameras,
     selectedCameraId,
     setSelectedCameraId,
     isScannerReady,
     resetScannerState,
+    toggleCamera,
+    hasMultipleCameras: cameras.length > 1,
     stopScannerSafely: () => stopScannerSafely(html5QrcodeRef.current, elementId)
   };
 }

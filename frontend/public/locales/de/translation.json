@@ -55,7 +55,17 @@
     "viewFormationsBtn": "Schulungen Anzeigen →",
     "welcomeDesc": "Intelligente Schulungs-Anwesenheitsverwaltung per QR-Code und digitaler Unterschrift.",
     "guestWelcomeTitle": "Anwesenheits- & Schulungsportal",
-    "guestWelcomeSub": "Schneller und sicherer Zugriff auf Aufrufe, QR-Anwesenheitskontrolle und digitale Unterschrift."
+    "guestWelcomeSub": "Schneller und sicherer Zugriff auf Aufrufe, QR-Anwesenheitskontrolle und digitale Unterschrift.",
+    "generalDepartment": "Betrieb & Logistik",
+    "digitalId": "Digitaler Ausweis",
+    "employeePortal": "Mitarbeiterportal",
+    "showPersonalQr": "Meinen QR-Code anzeigen",
+    "myQrCode": "Mein QR-Code",
+    "employeeId": "Mitarbeiter-ID",
+    "department": "Abteilung",
+    "role": "Rolle",
+    "personalQrTitle": "Persönlicher Identifikations-QR",
+    "personalQrDesc": "Zeigen Sie diesen Code dem Ausbilder oder Vorgesetzten zur Identifikation."
   },
   "login": {
     "passkeyBtn": "Mit Passkey anmelden (Biometrie)",
@@ -345,7 +355,8 @@
     "successTitle": "Vorgang abgeschlossen!",
     "formationLabel": "Ausbildung",
     "dateLabel": "Datum",
-    "close": "Schließen"
+    "close": "Schließen",
+    "switchCamera": "Kamera wechseln"
   },
   "common": {
     "clearFilters": "Filter zurücksetzen",

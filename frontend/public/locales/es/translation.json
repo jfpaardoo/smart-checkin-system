@@ -55,7 +55,17 @@
     "viewFormationsBtn": "Ver Formaciones →",
     "welcomeDesc": "Gestión inteligente de asistencia a formaciones mediante código QR y firma digital.",
     "guestWelcomeTitle": "Portal de Asistencia y Formaciones",
-    "guestWelcomeSub": "Acceso rápido y seguro a convocatorias, control de asistencia QR y firma digital."
+    "guestWelcomeSub": "Acceso rápido y seguro a convocatorias, control de asistencia QR y firma digital.",
+    "generalDepartment": "Operaciones & Logística",
+    "digitalId": "Carnet Digital",
+    "employeePortal": "Portal del Empleado",
+    "showPersonalQr": "Mostrar mi código QR",
+    "myQrCode": "Mi Código QR",
+    "employeeId": "ID Empleado",
+    "department": "Departamento",
+    "role": "Rol",
+    "personalQrTitle": "Código QR de Identificación",
+    "personalQrDesc": "Presenta este código al instructor o supervisor para identificarte."
   },
   "login": {
     "passkeyBtn": "Acceder con Llave de Acceso (Biometría)",
@@ -345,7 +355,8 @@
     "successTitle": "¡Proceso Completado!",
     "formationLabel": "Formación",
     "dateLabel": "Fecha",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "switchCamera": "Alternar Cámara"
   },
   "common": {
     "clearFilters": "Limpiar filtros",
