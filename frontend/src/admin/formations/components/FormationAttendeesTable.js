@@ -238,8 +238,8 @@ export default function FormationAttendeesTable({
                   </div>
 
                   <div className="flex justify-between text-xs text-slate-600 bg-white/40 p-2.5 rounded-xl border border-white/40">
-                    <span><strong>Entrada:</strong> {hasCheckedIn ? dayjs.utc(att.checkInDate).local().format('HH:mm:ss') : '-'}</span>
-                    <span><strong>Salida:</strong> {isCompleted ? dayjs.utc(att.checkOutDate).local().format('HH:mm:ss') : '-'}</span>
+                    <span><strong>{t('formationDetails.checkinTime', 'Entrada:')}</strong> {hasCheckedIn ? dayjs.utc(att.checkInDate).local().format('HH:mm:ss') : '-'}</span>
+                    <span><strong>{t('formationDetails.checkoutTime', 'Salida:')}</strong> {isCompleted ? dayjs.utc(att.checkOutDate).local().format('HH:mm:ss') : '-'}</span>
                   </div>
 
                   <div className="flex gap-2 justify-end pt-2 border-t border-slate-200/50">

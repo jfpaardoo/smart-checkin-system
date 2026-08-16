@@ -7,7 +7,6 @@ import useFetchState from "../../util/useFetchState";
 import { useToast } from "../../components/ToastProvider";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import api from "../../services/api";
-import "../../static/css/admin/adminPage.css";
 import { FaCloudUploadAlt, FaDatabase, FaCheckCircle, FaExclamationTriangle, FaUnlink, FaWindows } from "react-icons/fa";
 
 export default function CloudSettingsAdmin() {

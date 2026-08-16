@@ -1,0 +1,140 @@
+package org.springframework.samples.smartcheckin.auth.session;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+@SuppressWarnings("null")
+public class UserSessionService {
+
+    private final UserSessionRepository userSessionRepository;
+
+    @Transactional
+    public void registerOrUpdateSession(String username, String token, String ipAddress, String userAgent) {
+        if (username == null || token == null) return;
+        String tokenHash = hashToken(token);
+
+        Optional<UserSession> existing = userSessionRepository.findByTokenHash(tokenHash);
+        if (existing.isPresent()) {
+            UserSession session = existing.get();
+            session.setLastActivityAt(LocalDateTime.now(java.time.ZoneId.systemDefault()));
+            session.setIpAddress(ipAddress);
+            session.setActive(true);
+            userSessionRepository.save(session);
+        } else {
+            UserSession newSession = UserSession.builder()
+                    .username(username)
+                    .tokenHash(tokenHash)
+                    .ipAddress(ipAddress)
+                    .userAgent(userAgent != null ? userAgent.substring(0, Math.min(userAgent.length(), 500)) : "Desconocido")
+                    .deviceInfo(parseDeviceInfo(userAgent))
+                    .lastActivityAt(LocalDateTime.now(java.time.ZoneId.systemDefault()))
+                    .active(true)
+                    .build();
+            userSessionRepository.save(newSession);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserSessionDTO> getActiveSessions(String username, String currentToken) {
+        String currentTokenHash = currentToken != null ? hashToken(currentToken) : "";
+        List<UserSession> sessions = userSessionRepository.findAllByUsernameAndActiveTrueOrderByLastActivityAtDesc(username);
+
+        return sessions.stream().map(s -> UserSessionDTO.builder()
+                .id(s.getId())
+                .ipAddress(s.getIpAddress())
+                .userAgent(s.getUserAgent())
+                .deviceInfo(s.getDeviceInfo())
+                .createdAt(s.getCreatedAt())
+                .lastActivityAt(s.getLastActivityAt())
+                .isCurrent(s.getTokenHash().equals(currentTokenHash))
+                .build()
+        ).toList();
+    }
+
+    @Transactional
+    public boolean revokeSession(String username, Integer sessionId) {
+        Optional<UserSession> opt = userSessionRepository.findByIdAndUsername(sessionId, username);
+        if (opt.isPresent()) {
+            UserSession session = opt.get();
+            session.setActive(false);
+            userSessionRepository.save(session);
+            return true;
+        }
+        return false;
+    }
+
+    @Transactional
+    public int revokeOtherSessions(String username, String currentToken) {
+        String currentTokenHash = currentToken != null ? hashToken(currentToken) : "";
+        List<UserSession> sessions = userSessionRepository.findAllByUsernameAndActiveTrueOrderByLastActivityAtDesc(username);
+        int revokedCount = 0;
+
+        for (UserSession s : sessions) {
+            if (!s.getTokenHash().equals(currentTokenHash)) {
+                s.setActive(false);
+                userSessionRepository.save(s);
+                revokedCount++;
+            }
+        }
+        return revokedCount;
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isSessionActive(String token) {
+        if (token == null) return false;
+        String tokenHash = hashToken(token);
+        return userSessionRepository.findByTokenHash(tokenHash)
+                .map(UserSession::isActive)
+                .orElse(true); // default true if session record not yet migrated
+    }
+
+    public static String hashToken(String token) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] digest = md.digest(token.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : digest) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            return String.valueOf(token.hashCode());
+        }
+    }
+
+    public static String parseDeviceInfo(String userAgent) {
+        if (userAgent == null || userAgent.isBlank()) return "Dispositivo Desconocido";
+        String ua = userAgent.toLowerCase();
+        return String.format("%s en %s", detectBrowser(ua), detectOs(ua));
+    }
+
+    private static String detectBrowser(String ua) {
+        if (ua.contains("edg/")) return "Microsoft Edge";
+        if (ua.contains("chrome/")) return "Google Chrome";
+        if (ua.contains("safari/")) return "Safari";
+        if (ua.contains("firefox/")) return "Mozilla Firefox";
+        return "Navegador";
+    }
+
+    private static String detectOs(String ua) {
+        if (ua.contains("windows nt 10.0")) return "Windows 10/11";
+        if (ua.contains("windows")) return "Windows";
+        if (ua.contains("iphone") || ua.contains("ipad")) return "iOS";
+        if (ua.contains("android")) return "Android";
+        if (ua.contains("macintosh") || ua.contains("mac os x")) return "macOS";
+        if (ua.contains("linux")) return "Linux";
+        return "SO";
+    }
+}

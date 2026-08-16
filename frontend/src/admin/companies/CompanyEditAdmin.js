@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import { useToast } from "../../components/ToastProvider";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import api from "../../services/api";
-import "../../App.css";
 
 export default function CompanyEditAdmin() {
   const { id } = useParams();
@@ -116,7 +115,7 @@ export default function CompanyEditAdmin() {
               type="text"
               name="name"
               id="name"
-              placeholder="Ej. BA Glass Spain SAU"
+              placeholder={t("companies.namePlaceholder", "Ej. BA Glass Spain SAU")}
               value={company.name || ""}
               onChange={handleChange}
               required
@@ -134,7 +133,7 @@ export default function CompanyEditAdmin() {
               rows={3}
               name="description"
               id="description"
-              placeholder="Información adicional sobre la actividad o localización del centro..."
+              placeholder={t("companies.descriptionPlaceholder", "Información adicional sobre la actividad o localización del centro...")}
               value={company.description || ""}
               onChange={handleChange}
               className="w-full bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl p-3 text-sm text-slate-800 outline-none focus:border-[#b3c34c] focus:bg-white/70 transition shadow-sm resize-none"

@@ -42,7 +42,7 @@ import org.springframework.test.context.ContextConfiguration;
 
 import org.springframework.context.annotation.Import;
 
-@SuppressWarnings("null")
+@SuppressWarnings({"null", "java:S6813"})
 @WebMvcTest(controllers = FormationRestController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebSecurityConfigurer.class), excludeAutoConfiguration = SecurityConfiguration.class)
 @ContextConfiguration(classes = SmartcheckinApplication.class)
 @Import(FormationCheckinFacade.class)

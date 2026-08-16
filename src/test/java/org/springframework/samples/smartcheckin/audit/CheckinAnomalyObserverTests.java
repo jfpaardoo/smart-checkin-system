@@ -16,12 +16,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-@SuppressWarnings("null")
 @ExtendWith(MockitoExtension.class)
 class CheckinAnomalyObserverTests {
 
     @Mock
-    private AuditLogRepository auditLogRepository;
+    private AuditService auditService;
 
     @Mock
     private CheckinRepository checkinRepository;
@@ -46,7 +45,7 @@ class CheckinAnomalyObserverTests {
 
         observer.onCheckinEvent(event);
 
-        verifyNoInteractions(checkinRepository, auditLogRepository, emailNotificationSender);
+        verifyNoInteractions(checkinRepository, auditService, emailNotificationSender);
     }
 
     @Test
@@ -57,7 +56,7 @@ class CheckinAnomalyObserverTests {
         observer.onCheckinEvent(event);
 
         verify(checkinRepository).count();
-        verifyNoInteractions(auditLogRepository, emailNotificationSender);
+        verifyNoInteractions(auditService, emailNotificationSender);
     }
 
     @Test
@@ -68,7 +67,7 @@ class CheckinAnomalyObserverTests {
         observer.onCheckinEvent(event);
 
         verify(checkinRepository).count();
-        verify(auditLogRepository).save(any(AuditLog.class));
+        verify(auditService).recordAuditLog(any(AuditLog.class));
         verify(emailNotificationSender).send(eq("admin@smartcheckin.com"), anyString(), anyString());
     }
 
@@ -80,6 +79,6 @@ class CheckinAnomalyObserverTests {
         observer.onCheckinEvent(event);
 
         verify(checkinRepository).count();
-        verifyNoInteractions(auditLogRepository, emailNotificationSender);
+        verifyNoInteractions(auditService, emailNotificationSender);
     }
 }

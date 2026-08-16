@@ -117,7 +117,7 @@ export default function PersonalDataTab({ loadingUser, userData, setUserData, t 
 
       <h5 className="text-xl font-bold mb-4 flex items-center text-slate-800 drop-shadow-sm">
         <FaBell className="mr-3 text-[#8a9e29] text-2xl" /> 
-        Preferencias de Notificación
+        {t('profile.notificationPreferences', 'Preferencias de Notificación')}
       </h5>
       
       <div className="row g-3">
@@ -125,14 +125,14 @@ export default function PersonalDataTab({ loadingUser, userData, setUserData, t 
           <div className="p-3 da-glass-panel d-flex items-center justify-content-between h-100">
             <div>
               <div className="fw-bold text-dark d-flex align-items-center gap-2 mb-1">
-                <FaEnvelope className="text-[#8a9e29]" /> Notificaciones por Correo
+                <FaEnvelope className="text-[#8a9e29]" /> {t('profile.emailNotifications', 'Notificaciones por Correo')}
               </div>
-              <div className="text-muted small">Recibir avisos en tu bandeja de entrada</div>
+              <div className="text-muted small">{t('profile.notifyEmailDesc', 'Recibir avisos en tu bandeja de entrada')}</div>
             </div>
             <button type="button"
               onClick={() => handleToggleNotification('emailNotificationsEnabled')}
               disabled={updating}
-              aria-label="Toggle email notifications"
+              aria-label={t('profile.toggleEmailAria', 'Alternar notificaciones por correo')}
               className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${userData?.emailNotificationsEnabled ? 'bg-[#b3c34c]' : 'bg-slate-300'}`}
             >
               <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${userData?.emailNotificationsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -144,14 +144,14 @@ export default function PersonalDataTab({ loadingUser, userData, setUserData, t 
           <div className="p-3 da-glass-panel d-flex items-center justify-content-between h-100">
             <div>
               <div className="fw-bold text-dark d-flex align-items-center gap-2 mb-1">
-                <FaMobileAlt className="text-[#8a9e29]" /> Notificaciones Push
+                <FaMobileAlt className="text-[#8a9e29]" /> {t('profile.pushNotifications', 'Notificaciones Push')}
               </div>
-              <div className="text-muted small">Recibir avisos en tu dispositivo</div>
+              <div className="text-muted small">{t('profile.notifyPushDesc', 'Recibir avisos en tu dispositivo')}</div>
             </div>
             <button type="button"
               onClick={() => handleToggleNotification('pushNotificationsEnabled')}
               disabled={updating}
-              aria-label="Toggle push notifications"
+              aria-label={t('profile.togglePushAria', 'Alternar notificaciones push')}
               className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${userData?.pushNotificationsEnabled ? 'bg-[#b3c34c]' : 'bg-slate-300'}`}
             >
               <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${userData?.pushNotificationsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />

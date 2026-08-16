@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -120,7 +121,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<MessageResponse> logoutUser() {
+    public ResponseEntity<MessageResponse> logoutUser(@RequestParam(required = false) String reason) {
         String jwt = jwtUtils.getJwtFromCookies(request);
         if (jwt != null) {
             String currentUsername = null;
@@ -131,7 +132,7 @@ public class AuthController {
             }
             String clientIp = request.getHeader(HEADER) != null ? request.getHeader(HEADER).split(",")[0].trim() : request.getRemoteAddr();
             jwtBlacklistService.blacklistToken(jwt);
-            anomalyDetectionService.recordLogout(currentUsername != null ? currentUsername : "anonymous", clientIp);
+            anomalyDetectionService.recordLogout(currentUsername != null ? currentUsername : "anonymous", clientIp, reason != null ? reason : "Manual");
             ResponseCookie cleanCookie = jwtUtils.getCleanJwtCookie();
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, cleanCookie.toString())

@@ -5,7 +5,6 @@ import { FaQrcode, FaChartBar, FaUsers, FaGraduationCap, FaUser, FaSignInAlt, Fa
 import { useTranslation } from 'react-i18next';
 import tokenService from '../services/token.service';
 import { CardGhostLoader } from '../components/GhostLoader';
-import '../App.css';
 
 const fetcher = (url) => fetch(url, { credentials: 'include' }).then((r) => r.ok ? r.json() : null);
 
@@ -14,7 +13,7 @@ export default function Home() {
   const jwt = tokenService.getUser();
   const user = tokenService.getUser();
 
-  const { data: userData, isLoading: isSWRloading } = useSWR(
+  const { isLoading: isSWRloading } = useSWR(
     jwt ? "/api/v1/users/me" : null,
     fetcher
   );
@@ -136,23 +135,19 @@ export default function Home() {
           </div>
         )}
 
-        {/* LOGGED IN - EMPLOYEE USER HUB */}
+        {/* LOGGED IN - EMPLOYEE HUB */}
         {jwt && !isAdmin && (
           <div>
             <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 text-start">
               <h5 className="fw-bold m-0 text-dark d-flex align-items-center gap-2">
-                <FaUser style={{ color: 'var(--da-primary)' }} /> {t('home.employeeQuickAccess', 'Acceso Rápido del Empleado')}
+                <FaUser style={{ color: 'var(--da-primary)' }} /> {t('home.employeeQuickAccess', 'Acceso Rápido')}
               </h5>
-              <div className="d-flex align-items-center gap-2">
-                <span className="text-muted small">{t('home.statusLabel', 'Tu estado actual:')}</span>
-                <span className={`da-badge ${userData?.isWorking ? 'da-badge-active' : 'da-badge-inactive'} fs-6 py-1 px-3`}>
-                  {userData?.isWorking ? t('users.working', 'En formación') : t('users.offDuty', 'Fuera de formación')}
-                </span>
-              </div>
+              <span className="text-muted small">
+                {t('home.sessionStartedAs', 'Sesión iniciada como:')} <strong className="text-dark">@{user?.username}</strong>
+              </span>
             </div>
 
             <div className="da-home-grid-3">
-              {/* Card 1: Fichaje Directo QR */}
               <div>
                 <Link to="/checkin" className="text-decoration-none d-block h-100">
                   <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
@@ -161,7 +156,7 @@ export default function Home() {
                         <FaQrcode size={30} />
                       </div>
                       <h6 className="fw-bold text-dark mb-1">{t('home.directQRCheckin', 'Fichaje Directo QR')}</h6>
-                      <p className="small text-muted mb-0">{t('home.directQRCheckinDesc', 'Escanea el código QR del aula para registrar asistencia')}</p>
+                      <p className="small text-muted mb-0">{t('home.directQRCheckinDesc', 'Escanear el código QR del aula para registrar asistencia')}</p>
                     </div>
                     <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
                       {t('home.scanQRBtn', 'Escanear QR →')}
@@ -170,25 +165,6 @@ export default function Home() {
                 </Link>
               </div>
 
-              {/* Card 2: Mi Perfil */}
-              <div>
-                <Link to="/profile" className="text-decoration-none d-block h-100">
-                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
-                    <div className="d-flex flex-column align-items-center">
-                      <div className="da-action-icon-wrapper">
-                        <FaUser size={30} />
-                      </div>
-                      <h6 className="fw-bold text-dark mb-1">{t('home.myProfileBtn', 'Ver Mi Perfil')}</h6>
-                      <p className="small text-muted mb-0">{t('home.myProfileDesc', 'Consultar datos personales y cambiar contraseña')}</p>
-                    </div>
-                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
-                      {t('home.goToProfileBtn', 'Ir a Mi Perfil →')}
-                    </span>
-                  </div>
-                </Link>
-              </div>
-
-              {/* Card 3: Mis Formaciones */}
               <div>
                 <Link to="/dashboard" className="text-decoration-none d-block h-100">
                   <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
@@ -201,6 +177,23 @@ export default function Home() {
                     </div>
                     <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
                       {t('home.viewFormationsBtn', 'Ver Formaciones →')}
+                    </span>
+                  </div>
+                </Link>
+              </div>
+
+              <div>
+                <Link to="/profile" className="text-decoration-none d-block h-100">
+                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
+                    <div className="d-flex flex-column align-items-center">
+                      <div className="da-action-icon-wrapper">
+                        <FaUser size={30} />
+                      </div>
+                      <h6 className="fw-bold text-dark mb-1">{t('home.myProfileBtn', 'Ver Mi Perfil')}</h6>
+                      <p className="small text-muted mb-0">{t('home.myProfileDesc', 'Consultar datos personales y cambiar contraseña')}</p>
+                    </div>
+                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
+                      {t('home.goToProfileBtn', 'Ir a Mi Perfil →')}
                     </span>
                   </div>
                 </Link>

@@ -30,14 +30,21 @@ import PrivacyPolicy from "./legal/PrivacyPolicy";
 import ForgotPassword from "./auth/recover/ForgotPassword";
 import ResetPassword from "./auth/recover/ResetPassword";
 
+import SessionTimeoutModal from "./components/SessionTimeoutModal";
+
+import { useTranslation } from "react-i18next";
+
 function ErrorFallback({ error, resetErrorBoundary }) {
+  const { t } = useTranslation();
   return (
-    <div role="alert">
-      <p>Something went wrong:</p>
-      <pre>{error.message}</pre>
-      <button type="button" onClick={resetErrorBoundary}>Try again</button>
+    <div role="alert" className="p-4 text-center">
+      <p className="fw-bold text-danger">{t('common.somethingWentWrong', 'Algo salió mal:')}</p>
+      <pre className="text-muted">{error.message}</pre>
+      <button type="button" className="btn btn-primary mt-2" onClick={resetErrorBoundary}>
+        {t('common.tryAgain', 'Reintentar')}
+      </button>
     </div>
-  )
+  );
 }
 
 function App() {
@@ -96,6 +103,7 @@ function App() {
     <ToastProvider>
       <ErrorBoundary FallbackComponent={ErrorFallback} >
         <AppNavbar />
+        <SessionTimeoutModal />
         <Routes>
           <Route path="/" exact={true} element={<Home />} />
           <Route path="/privacy-policy" exact={true} element={<PrivacyPolicy />} />

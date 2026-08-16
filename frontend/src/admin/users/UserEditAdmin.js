@@ -5,8 +5,6 @@ import { FaUserEdit, FaUserPlus, FaArrowLeft } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import GlassDropdown from "../../components/GlassDropdown";
-import "../../App.css";
-import "../../static/css/admin/adminPage.css";
 import getIdFromUrl from "../../util/getIdFromUrl";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
@@ -271,7 +269,7 @@ export default function UserEditAdmin() {
                       name="locator"
                       id="customLocator"
                       maxLength="10"
-                      placeholder="Escribe el localizador (Ej: MAD, BCN, PT...)"
+                      placeholder={t('users.locatorPlaceholder', 'Escribe el localizador (Ej: MAD, BCN, PT...)')}
                       value={user.locator || ""}
                       onChange={handleChange}
                       className="uppercase mt-1"

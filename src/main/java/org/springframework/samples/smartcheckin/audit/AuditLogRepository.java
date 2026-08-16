@@ -8,6 +8,10 @@ public interface AuditLogRepository extends CrudRepository<AuditLog, Integer> {
 
     List<AuditLog> findAllByOrderByTimestampDesc();
 
+    List<AuditLog> findAllByOrderByIdAsc();
+
+    java.util.Optional<AuditLog> findTopByOrderByIdDesc();
+
     List<AuditLog> findByUsername(String username);
 
     List<AuditLog> findByDetailsContaining(String keyword);

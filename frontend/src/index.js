@@ -8,8 +8,6 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { CardGhostLoader } from './components/GhostLoader';
-import './static/css/base/variables.css';
-import './static/css/base/common.css';
 import './App.css';
 import { BrowserRouter } from 'react-router-dom';
 import { WebSocketProvider } from './context/WebSocketProvider';

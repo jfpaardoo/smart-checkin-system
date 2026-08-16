@@ -67,4 +67,27 @@ class RateLimitFilterTests {
         verify(filterChain, times(15)).doFilter(request, response);
         verify(response, never()).setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
     }
+
+    @Test
+    void testRateLimit_XForwardedForWithMultipleIPs() throws Exception {
+        when(request.getRequestURI()).thenReturn("/api/v1/checkins/qr-fichaje");
+        when(request.getHeader("X-Forwarded-For")).thenReturn("198.51.100.1, 10.0.0.1");
+
+        rateLimitFilter.doFilterInternal(request, response, filterChain);
+        verify(filterChain, times(1)).doFilter(request, response);
+    }
+
+    @Test
+    void testRateLimit_XForwardedForUnknownOrEmptyFallbackToRemoteAddr() throws Exception {
+        when(request.getRequestURI()).thenReturn("/api/v1/users");
+        when(request.getHeader("X-Forwarded-For")).thenReturn("unknown");
+        when(request.getRemoteAddr()).thenReturn("192.168.1.50");
+
+        rateLimitFilter.doFilterInternal(request, response, filterChain);
+        verify(filterChain, times(1)).doFilter(request, response);
+
+        when(request.getHeader("X-Forwarded-For")).thenReturn("");
+        rateLimitFilter.doFilterInternal(request, response, filterChain);
+        verify(filterChain, times(2)).doFilter(request, response);
+    }
 }

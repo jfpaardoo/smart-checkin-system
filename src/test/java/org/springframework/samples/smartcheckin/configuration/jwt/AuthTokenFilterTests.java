@@ -101,14 +101,9 @@ class AuthTokenFilterTests {
 
         authTokenFilter.doFilterInternal(request, response, filterChain);
 
-        // Al estar en la lista negra, no se debe autenticar al usuario
+        // Al estar en la lista negra, no se debe autenticar al usuario y continúa la cadena como anónimo
         assertNull(SecurityContextHolder.getContext().getAuthentication());
-        
-        // Se debe verificar que se llama al método sendError con código 401
-        verify(response, times(1)).sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has been invalidated (Logged out)");
-        
-        // El filterChain.doFilter NUNCA debe llamarse porque se ejecuta un 'return' temprano
-        verify(filterChain, never()).doFilter(request, response);
+        verify(filterChain, times(1)).doFilter(request, response);
     }
 
     @Test
@@ -137,5 +132,59 @@ class AuthTokenFilterTests {
 
         assertNotNull(SecurityContextHolder.getContext().getAuthentication());
         verify(filterChain, times(1)).doFilter(request, response);
+    }
+
+    @Test
+    void testShouldNotFilterAllPaths() {
+        assertFalse(authTokenFilter.shouldNotFilter(createRequestWithPath(null)));
+        assertTrue(authTokenFilter.shouldNotFilter(createRequestWithPath("/api/v1/auth/signin")));
+        assertTrue(authTokenFilter.shouldNotFilter(createRequestWithPath("/api/v1/auth/signup")));
+        assertTrue(authTokenFilter.shouldNotFilter(createRequestWithPath("/api/v1/auth/verify-2fa")));
+        assertTrue(authTokenFilter.shouldNotFilter(createRequestWithPath("/api/v1/auth/forgot-password")));
+        assertTrue(authTokenFilter.shouldNotFilter(createRequestWithPath("/api/v1/auth/reset-password")));
+        assertTrue(authTokenFilter.shouldNotFilter(createRequestWithPath("/api/v1/auth/webauthn/login/options")));
+        assertTrue(authTokenFilter.shouldNotFilter(createRequestWithPath("/actuator/health")));
+        assertTrue(authTokenFilter.shouldNotFilter(createRequestWithPath("/ws/tracker")));
+        assertFalse(authTokenFilter.shouldNotFilter(createRequestWithPath("/api/v1/users")));
+        assertFalse(authTokenFilter.shouldNotFilter(createRequestWithPath("/api/v1/auth/webauthn/credentials")));
+    }
+
+    @Test
+    void testAuthTokenFilterWithUserSessionServiceActiveAndInactive() throws Exception {
+        org.springframework.samples.smartcheckin.auth.session.UserSessionService sessionService = mock(org.springframework.samples.smartcheckin.auth.session.UserSessionService.class);
+        AuthTokenFilter filterWithSession = new AuthTokenFilter(jwtUtils, userDetailsService, jwtBlacklistService, sessionService);
+
+        // Case 1: Inactive session
+        when(request.getHeader(AUTHORIZATION_HEADER)).thenReturn("Bearer " + VALID_JWT_TOKEN);
+        when(jwtUtils.validateJwtToken(VALID_JWT_TOKEN)).thenReturn(true);
+        when(jwtBlacklistService.isBlacklisted(VALID_JWT_TOKEN)).thenReturn(false);
+        when(sessionService.isSessionActive(VALID_JWT_TOKEN)).thenReturn(false);
+
+        filterWithSession.doFilterInternal(request, response, filterChain);
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+
+        // Case 2: Active session with X-Forwarded-For
+        when(sessionService.isSessionActive(VALID_JWT_TOKEN)).thenReturn(true);
+        when(jwtUtils.getUserNameFromJwtToken(VALID_JWT_TOKEN)).thenReturn("sessionUser");
+        UserDetails userDetails = mock(UserDetails.class);
+        when(userDetailsService.loadUserByUsername("sessionUser")).thenReturn(userDetails);
+        when(request.getHeader("X-Forwarded-For")).thenReturn("203.0.113.195, 70.41.3.18");
+        when(request.getHeader("User-Agent")).thenReturn("Mozilla/5.0");
+
+        filterWithSession.doFilterInternal(request, response, filterChain);
+        assertNotNull(SecurityContextHolder.getContext().getAuthentication());
+        verify(sessionService).registerOrUpdateSession("sessionUser", VALID_JWT_TOKEN, "203.0.113.195", "Mozilla/5.0");
+
+        // Case 3: Active session without X-Forwarded-For (fallback remoteAddr)
+        when(request.getHeader("X-Forwarded-For")).thenReturn(null);
+        when(request.getRemoteAddr()).thenReturn("192.168.1.50");
+        filterWithSession.doFilterInternal(request, response, filterChain);
+        verify(sessionService).registerOrUpdateSession("sessionUser", VALID_JWT_TOKEN, "192.168.1.50", "Mozilla/5.0");
+    }
+
+    private HttpServletRequest createRequestWithPath(String path) {
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        when(req.getServletPath()).thenReturn(path);
+        return req;
     }
 }

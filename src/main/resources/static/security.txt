@@ -1,0 +1,8 @@
+# Distribution Academy / Smart Check-in System Security Policy (RFC 9116)
+Contact: mailto:jfcovi69@gmail.com
+Expires: 2027-12-31T23:59:59.000Z
+Preferred-Languages: es, en
+Canonical: https://smart-checkin-system.onrender.com/.well-known/security.txt
+Policy: https://smart-checkin-system.onrender.com/privacy-policy
+Acknowledgments: https://github.com/jfpaardoo/smart-checkin-system
+Hiring: https://github.com/jfpaardoo

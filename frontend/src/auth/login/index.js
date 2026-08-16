@@ -7,7 +7,6 @@ import tokenService from "../../services/token.service";
 import { FaSignInAlt, FaShieldAlt, FaKey, FaFingerprint } from "react-icons/fa";
 import { isWebAuthnSupported, loginWithPasskey } from "../../util/webauthnUtil";
 import { useCaptchaSiteKey } from "../../hooks/useCaptchaSiteKey";
-import "../../App.css";
 
 export default function Login() {
   const { t } = useTranslation();
@@ -28,10 +27,16 @@ export default function Login() {
 
   useEffect(() => {
     document.body.style.overflow = "auto";
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("reason") === "timeout") {
+      toast.info(t('session.timeoutNotice', 'Tu sesión se ha cerrado automáticamente por inactividad.'));
+    } else if (params.get("reason") === "multi_tab_logout") {
+      toast.info(t('session.multiTabLogoutNotice', 'Has cerrado sesión en otra pestaña.'));
+    }
     if (typeof window !== 'undefined' && (window.navigator.webdriver || window.__PLAYWRIGHT__)) {
       setCaptchaToken('1x00000000000000000000AA');
     }
-  }, [captchaKey]);
+  }, [captchaKey, toast, t]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -231,7 +236,7 @@ export default function Login() {
                 className={`${glassButtonClass} disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <FaSignInAlt />
-                {loading ? "Iniciando..." : t('login.title', 'Iniciar Sesión')}
+                {loading ? t('common.loading', 'Iniciando...') : t('login.title', 'Iniciar Sesión')}
               </button>
             </form>
           </div>
@@ -239,15 +244,15 @@ export default function Login() {
           <form onSubmit={handleVerify2FA} className="flex flex-col gap-5">
             <div className="text-center">
               <FaShieldAlt className="text-4xl text-[#b3c34c] mx-auto mb-3 drop-shadow-sm" />
-              <h2 className="text-xl font-bold text-slate-800 mb-1">Verificación en dos pasos</h2>
+              <h2 className="text-xl font-bold text-slate-800 mb-1">{t('login.twoFactorHeader', 'Verificación en dos pasos')}</h2>
               <p className="text-sm text-slate-600">
-                Autenticación de Doble Factor (2FA) requerida para <strong className="text-slate-800">{username2FA}</strong>
+                {t('login.twoFactorPrompt', 'Autenticación de Doble Factor (2FA) requerida para')} <strong className="text-slate-800">{username2FA}</strong>
               </p>
             </div>
             
             <div className="flex flex-col gap-2">
               <label htmlFor="totpCode" className="text-sm font-semibold text-slate-700 ml-1">
-                Código de 6 dígitos
+                {t('login.totpCodeLabel', 'Código de 6 dígitos')}
               </label>
               <input
                 type="text"
@@ -268,7 +273,7 @@ export default function Login() {
               disabled={loading}
               className={`${glassButtonClass} disabled:opacity-50`}
             >
-              {loading ? "Verificando..." : "Verificar y Acceder"}
+              {loading ? t('common.loading', 'Verificando...') : t('login.verifyAndEnter', 'Verificar y Acceder')}
             </button>
           </form>
         )}
@@ -280,7 +285,7 @@ export default function Login() {
             to="/forgot-password" 
             className="font-bold text-slate-600 hover:text-[#b3c34c] transition-colors duration-300"
           >
-            ¿Has olvidado tu contraseña?
+            {t('login.forgotPassword', '¿Has olvidado tu contraseña?')}
           </Link>
         </div>
         <div>
@@ -289,7 +294,7 @@ export default function Login() {
             to="/privacy-policy" 
             className="font-bold text-slate-600 hover:text-[#b3c34c] transition-colors duration-300"
           >
-            Política de Privacidad
+            {t('login.privacyPolicy', 'Política de Privacidad')}
           </Link>
         </div>
       </div>

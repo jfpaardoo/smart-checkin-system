@@ -28,7 +28,7 @@ class LoginFailureListenerTests {
     private SimpMessagingTemplate messagingTemplate;
 
     @Mock
-    private AuditLogRepository auditLogRepository;
+    private AuditService auditService;
 
     @InjectMocks
     private LoginFailureListener loginFailureListener;
@@ -56,7 +56,7 @@ class LoginFailureListenerTests {
         // Third attempt
         loginFailureListener.onApplicationEvent(event);
         verify(messagingTemplate, times(1)).convertAndSend(eq("/topic/alerts"), contains("Múltiples intentos fallidos de login"));
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
+        verify(auditService, times(1)).recordAuditLog(any(AuditLog.class));
     }
 
     @Test

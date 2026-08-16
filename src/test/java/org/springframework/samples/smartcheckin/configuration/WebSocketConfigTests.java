@@ -69,7 +69,8 @@ class WebSocketConfigTests {
         Message<?> result = interceptor.preSend(message, messageChannel);
         assertNotNull(result);
         
-        StompHeaderAccessor accessor = StompHeaderAccessor.getAccessor(result, StompHeaderAccessor.class);
+        StompHeaderAccessor accessor = org.springframework.messaging.support.MessageHeaderAccessor.getAccessor(result, StompHeaderAccessor.class);
+        assertNotNull(accessor);
         assertNotNull(accessor.getUser());
         assertEquals("testuser", accessor.getUser().getName());
     }

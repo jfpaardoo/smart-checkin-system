@@ -37,6 +37,7 @@ public class WebAuthnRestController {
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtUtils jwtUtils;
     private final org.springframework.samples.smartcheckin.audit.AnomalyDetectionService anomalyDetectionService;
+    private final org.springframework.samples.smartcheckin.metrics.AppMetricsService metricsService;
     private final jakarta.servlet.http.HttpServletRequest servletRequest;
 
     @Operation(summary = "Genera las opciones de desafío para registrar una nueva Passkey")
@@ -52,6 +53,9 @@ public class WebAuthnRestController {
     public ResponseEntity<PasskeyDTO> verifyRegister(@Valid @RequestBody RegistrationVerifyRequest request) {
         User currentUser = userService.findCurrentUser();
         PasskeyDTO dto = webAuthnService.verifyAndSaveRegistration(currentUser, request);
+        if (metricsService != null) {
+            metricsService.incrementPasskeyRegistration();
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
@@ -87,6 +91,9 @@ public class WebAuthnRestController {
 
             String clientIp = servletRequest.getHeader("X-Forwarded-For") != null ? servletRequest.getHeader("X-Forwarded-For").split(",")[0].trim() : servletRequest.getRemoteAddr();
             anomalyDetectionService.recordSuccessfulLogin(user.getUsername(), clientIp, "Passkey / FIDO2");
+            if (metricsService != null) {
+                metricsService.incrementPasskeyAuthentication();
+            }
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())

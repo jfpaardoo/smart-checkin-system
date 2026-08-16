@@ -16,16 +16,25 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 public class AuditController {
 
     private final AuditLogRepository auditLogRepository;
+    private final AuditService auditService;
 
     @Autowired
-    public AuditController(AuditLogRepository auditLogRepository) {
+    public AuditController(AuditLogRepository auditLogRepository, AuditService auditService) {
         this.auditLogRepository = auditLogRepository;
+        this.auditService = auditService;
     }
 
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN')")
     public List<AuditLog> getAuditLogs() {
         return auditLogRepository.findAllByOrderByTimestampDesc();
+    }
+
+    @GetMapping("/verify-integrity")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public org.springframework.http.ResponseEntity<AuditIntegrityResult> verifyIntegrity() {
+        AuditIntegrityResult result = auditService.verifyIntegrity();
+        return org.springframework.http.ResponseEntity.ok(result);
     }
 
     @GetMapping("/csv")

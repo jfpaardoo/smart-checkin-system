@@ -9,8 +9,36 @@ import GlassDropdown from '../../components/GlassDropdown';
 import { useQrScanner } from '../../hooks/useQrScanner';
 import ManualCheckinForm from './components/ManualCheckinForm';
 import SignatureStep from './components/SignatureStep';
-import '../../App.css';
-import '../../static/css/admin/adminPage.css';
+
+const parseRawInput = (rawInput) => {
+  try {
+    const parsed = JSON.parse(rawInput);
+    return {
+      token: parsed.token || rawInput,
+      ...(parsed.formationId && { formationId: parsed.formationId }),
+      ...(parsed.adminLat && { adminLat: parsed.adminLat }),
+      ...(parsed.adminLng && { adminLng: parsed.adminLng }),
+    };
+  } catch {
+    return { token: rawInput };
+  }
+};
+
+const getUserGeolocation = async () => {
+  if (typeof navigator === 'undefined' || !("geolocation" in navigator)) return {};
+  try {
+    const pos = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 5000 });
+    });
+    return {
+      userLat: pos.coords.latitude,
+      userLng: pos.coords.longitude
+    };
+  } catch (err) {
+    console.warn("Geolocalización del usuario fallida", err);
+    return {};
+  }
+};
 
 export default function ScannerCheckin() {
   const { t } = useTranslation();
@@ -32,7 +60,9 @@ export default function ScannerCheckin() {
     selectedCameraId,
     setSelectedCameraId,
     isScannerReady,
-    resetScannerState
+    resetScannerState,
+    toggleCamera,
+    hasMultipleCameras
   } = useQrScanner('qr-reader', !isManualInput && !needsSignature && !successModal, (decodedText) => {
     toast.success(t('checkin.qrDetected', 'Código QR detectado.'));
     handleCheckinExecution(decodedText);
@@ -54,38 +84,23 @@ export default function ScannerCheckin() {
   const handleCheckinExecution = async (rawInput, signature = null) => {
     setLoading(true);
     try {
-      let payload = { token: rawInput };
-      
-      try {
-        const parsed = JSON.parse(rawInput);
-        if (parsed.token) payload.token = parsed.token;
-        if (parsed.formationId) payload.formationId = parsed.formationId;
-        if (parsed.adminLat) payload.adminLat = parsed.adminLat;
-        if (parsed.adminLng) payload.adminLng = parsed.adminLng;
-      } catch {
-        payload.token = rawInput;
-      }
+      const basePayload = parseRawInput(rawInput);
+      const coords = await getUserGeolocation();
+      const payload = {
+        ...basePayload,
+        ...coords,
+        ...(signature ? { signature } : {})
+      };
 
-      if (signature) payload.signature = signature;
-
-      if ("geolocation" in navigator) {
-        try {
-          const pos = await new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 5000 });
-          });
-          payload.userLat = pos.coords.latitude;
-          payload.userLng = pos.coords.longitude;
-        } catch (err) {
-          console.warn("Geolocalización del usuario fallida", err);
-        }
-      }
-
-      const response = await fetch('/api/v1/checkins/qr-fichaje', { credentials: 'include', method: 'POST',
+      const response = await fetch('/api/v1/checkins/qr-fichaje', {
+        credentials: 'include',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          },
-        body: JSON.stringify(payload) });
+        },
+        body: JSON.stringify(payload)
+      });
 
       if (response.status === 202) {
         const data = await response.json();
@@ -99,24 +114,22 @@ export default function ScannerCheckin() {
       }
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || t('checkin.processError', 'Error al procesar la solicitud'));
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.message || t('checkin.processError', 'Error al procesar la solicitud'));
       }
 
       const data = await response.json();
-      setLoading(false);
-      
       setFormationDetails({
-        name: data.formationName || t('formations.title', 'Formación'),
-        description: data.checkin?.type === 'ENTRADA' ? t('checkin.checkinRecorded', 'Entrada registrada') : t('checkin.checkoutRecorded', 'Salida registrada'),
-        formationDate: data.formationDate || data.checkin?.timestamp || new Date().toISOString(),
+        name: data.formationName || data.formation?.name || t('formations.title', 'Formación'),
+        description: data.checkin?.type === 'ENTRADA' ? t('checkin.checkinRecorded', 'Entrada registrada con éxito') : t('checkin.checkoutRecorded', 'Salida registrada con éxito'),
+        formationDate: data.formationDate || data.formation?.formationDate || data.checkin?.timestamp || new Date().toISOString(),
         type: data.checkin?.type || 'ENTRADA'
       });
       setSuccessModal(true);
-      resetScanner();
+      setLoading(false);
     } catch (error) {
       setLoading(false);
-      resetScannerState(); // Allow scan again if error
+      resetScanner();
       toast.error(error.message || t('checkin.processError', 'Error al procesar la solicitud'));
     }
   };
@@ -150,14 +163,25 @@ export default function ScannerCheckin() {
           </div>
 
           <div className="scanner-section text-center">
-            {cameras.length > 1 && (
-              <div className="mb-4" style={{ maxWidth: '300px', margin: '0 auto' }}>
-                <GlassDropdown
-                  options={cameras}
-                  value={selectedCameraId}
-                  onChange={(camId) => setSelectedCameraId(camId)}
-                  placeholder={t('dashboard.selectCamera')}
-                />
+            {hasMultipleCameras && (
+              <div className="flex justify-center items-center gap-3 mb-4 mx-auto max-w-[340px]">
+                <div className="flex-1">
+                  <GlassDropdown
+                    options={cameras}
+                    value={selectedCameraId}
+                    onChange={(camId) => setSelectedCameraId(camId)}
+                    placeholder={t('dashboard.selectCamera')}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={toggleCamera}
+                  className="px-3.5 py-2 rounded-2xl bg-white/70 hover:bg-white text-slate-700 hover:text-[#8a9e29] border border-white/80 shadow-xs transition hover:scale-105 cursor-pointer flex items-center gap-1.5 text-xs font-bold"
+                  title={t('checkin.switchCamera', 'Alternar Cámara')}
+                >
+                  <FontAwesomeIcon icon={faCamera} className="text-sm text-[#8a9e29]" />
+                  <span className="hidden sm:inline">{t('checkin.switchCamera', 'Alternar')}</span>
+                </button>
               </div>
             )}
 

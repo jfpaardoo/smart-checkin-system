@@ -1,12 +1,10 @@
 package org.springframework.samples.smartcheckin.audit;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,12 +12,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-@SuppressWarnings("null")
 @ExtendWith(MockitoExtension.class)
 class AnomalyDetectionServiceTests {
 
     @Mock
-    private AuditLogRepository auditLogRepository;
+    private AuditService auditService;
 
     @Mock
     private SimpMessagingTemplate messagingTemplate;
@@ -27,9 +24,29 @@ class AnomalyDetectionServiceTests {
     @InjectMocks
     private AnomalyDetectionService anomalyDetectionService;
 
-    @BeforeEach
-    void setUp() {
-        // No setup required since @InjectMocks handles it
+    @Test
+    void testRecordSuccessfulLogin() {
+        anomalyDetectionService.recordSuccessfulLogin("john", "192.168.1.50", "PASSWORD");
+        verify(auditService, times(1)).recordAuditLog(any(AuditLog.class));
+    }
+
+    @Test
+    void testRecordLogoutDefault() {
+        anomalyDetectionService.recordLogout("john", "192.168.1.50");
+        verify(auditService, times(1)).recordAuditLog(any(AuditLog.class));
+    }
+
+    @Test
+    void testRecordLogoutWithNullOrBlankReason() {
+        anomalyDetectionService.recordLogout("john", "192.168.1.50", null);
+        anomalyDetectionService.recordLogout("john", "192.168.1.50", "   ");
+        verify(auditService, times(2)).recordAuditLog(any(AuditLog.class));
+    }
+
+    @Test
+    void testRecordLogoutWithExplicitReason() {
+        anomalyDetectionService.recordLogout("john", "192.168.1.50", "Session expired");
+        verify(auditService, times(1)).recordAuditLog(any(AuditLog.class));
     }
 
     @Test
@@ -40,12 +57,8 @@ class AnomalyDetectionServiceTests {
 
         anomalyDetectionService.recordFailedLogin(username, ipAddress, currentAttempts);
 
-        // Verify the normal failed login was saved
-        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
-        verify(messagingTemplate, times(1)).convertAndSend("/topic/audit", "NEW_LOG");
-        
-        // Verify no security anomaly was triggered (which would mean 2 saves and 2 websocket messages to /topic/audit + 1 to alerts)
-        verify(messagingTemplate, times(0)).convertAndSend(eq("/topic/alerts"), anyString());
+        verify(auditService, times(1)).recordAuditLog(any(AuditLog.class));
+        verifyNoInteractions(messagingTemplate);
     }
 
     @Test
@@ -56,13 +69,15 @@ class AnomalyDetectionServiceTests {
 
         anomalyDetectionService.recordFailedLogin(username, ipAddress, currentAttempts);
 
-        // Verify that 2 audit logs were saved (one for LOGIN_FAILED, one for SECURITY_ANOMALY)
-        verify(auditLogRepository, times(2)).save(any(AuditLog.class));
-        
-        // Verify /topic/audit got pinged twice
-        verify(messagingTemplate, times(2)).convertAndSend("/topic/audit", "NEW_LOG");
-        
-        // Verify the alert was sent
+        verify(auditService, times(2)).recordAuditLog(any(AuditLog.class));
         verify(messagingTemplate, times(1)).convertAndSend("/topic/alerts", "Alerta de Seguridad: Multiple failed login attempts (>= 5) detected for user: " + username);
+    }
+
+    @Test
+    void testRecordFailedLogin_withoutMessagingTemplate() {
+        AnomalyDetectionService serviceWithoutMessaging = new AnomalyDetectionService(auditService, null);
+        serviceWithoutMessaging.recordFailedLogin("user2", "127.0.0.1", 6);
+
+        verify(auditService, times(2)).recordAuditLog(any(AuditLog.class));
     }
 }

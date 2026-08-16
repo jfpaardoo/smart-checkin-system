@@ -2,7 +2,9 @@ import { useEffect, useRef } from 'react';
 import { useWebSocket } from '../context/WebSocketProvider';
 
 export const useSubscription = (destination, callback) => {
-    const { stompClient, isConnected } = useWebSocket();
+    const ws = useWebSocket();
+    const stompClient = ws?.stompClient;
+    const isConnected = ws?.isConnected;
     const callbackRef = useRef(callback);
     useEffect(() => { callbackRef.current = callback; }, [callback]);
     

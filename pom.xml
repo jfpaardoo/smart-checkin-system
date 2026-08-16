@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.springframework.samples</groupId>
 	<artifactId>smartcheckin</artifactId>
@@ -17,22 +19,23 @@
 		<!-- Generic properties -->
 		<java.version>21</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
-    	<maven.compiler.target>${java.version}</maven.compiler.target>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<lombok.version>1.18.38</lombok.version>
 		<mapstruct.version>1.5.5.Final</mapstruct.version>
 
-        <jacoco.version>0.8.13</jacoco.version>
+		<jacoco.version>0.8.13</jacoco.version>
 		<allure.version>2.29.1</allure.version>
-        <aspectj.version>1.9.21</aspectj.version>
+		<aspectj.version>1.9.21</aspectj.version>
 		<spring-format.version>0.0.19</spring-format.version>
 
 		<frontend-maven-plugin.version>1.6</frontend-maven-plugin.version>
 		<node.version>v20.12.2</node.version>
 		<npm.version>8.19.2</npm.version>
 		<frontend-src-dir>${project.basedir}/frontend</frontend-src-dir>
+		<sonar.exclusions>**/.github/**,**/node_modules/**,**/build/**,**/dist/**</sonar.exclusions>
 
 	</properties>
 
@@ -88,6 +91,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+		</dependency>
 		<!-- Databases - Use H2 by default -->
 		<dependency>
 			<groupId>com.h2database</groupId>
@@ -125,11 +132,11 @@
 			<artifactId>junit</artifactId>
 			<groupId>junit</groupId>
 		</dependency>
-        <dependency>
-            <groupId>io.qameta.allure</groupId>
-            <artifactId>allure-junit5</artifactId>
-            <scope>test</scope>
-          </dependency>
+		<dependency>
+			<groupId>io.qameta.allure</groupId>
+			<artifactId>allure-junit5</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<!-- Development tools -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -177,9 +184,9 @@
 		</dependency>
 		<!-- Swagger -->
 		<dependency>
-    		<groupId>org.springdoc</groupId>
-    		<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-    		<version>2.9.0</version>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>2.9.0</version>
 		</dependency>
 		<!-- Exporting (Excel) -->
 		<dependency>
@@ -213,19 +220,19 @@
 		</dependency>
 		<!-- Other J2EE required libraries -->
 		<dependency>
-        	<groupId>javax.xml.bind</groupId>
-        	<artifactId>jaxb-api</artifactId>
-        	<version>2.4.0-b180830.0359</version>
-    	</dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>2.4.0-b180830.0359</version>
+		</dependency>
 		<dependency>
-        	<groupId>com.sun.xml.bind</groupId>
-        	<artifactId>jaxb-impl</artifactId>
-        	<version>2.4.0-b180830.0438</version>
-    	</dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-impl</artifactId>
+			<version>2.4.0-b180830.0438</version>
+		</dependency>
 		<dependency>
-  			<groupId>org.apache.maven</groupId>
-  			<artifactId>maven-model</artifactId>
-  			<version>3.10.0-rc-1</version>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-model</artifactId>
+			<version>3.10.0-rc-1</version>
 		</dependency>
 		<!-- Web Push Notifications -->
 		<dependency>
@@ -248,7 +255,7 @@
 			<artifactId>bcprov-jdk15on</artifactId>
 			<version>1.70</version>
 		</dependency>
- </dependencies>
+	</dependencies>
 
 	<build>
 		<plugins>
@@ -257,7 +264,8 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<executions>
 					<execution>
-						<!-- Spring Boot Actuator displays build-related information if a META-INF/build-info.properties
+						<!-- Spring Boot Actuator displays build-related information if a
+						META-INF/build-info.properties
                         file is present -->
 						<goals>
 							<goal>build-info</goal>
@@ -274,25 +282,25 @@
 					</execution>
 				</executions>
 			</plugin>
-            <!-- Automated generation of basic tests traceability matrix -->
-            <plugin>
-                <groupId>io.qameta.allure</groupId>
-                <artifactId>allure-maven</artifactId>
-                <version>2.15.2</version>
-                <configuration>
-                    <singleFile>true</singleFile>
-                    <reportDirectory>${project.build.directory}/site/test-status</reportDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>allure-report</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+			<!-- Automated generation of basic tests traceability matrix -->
+			<plugin>
+				<groupId>io.qameta.allure</groupId>
+				<artifactId>allure-maven</artifactId>
+				<version>2.15.2</version>
+				<configuration>
+					<singleFile>true</singleFile>
+					<reportDirectory>${project.build.directory}/site/test-status</reportDirectory>
+				</configuration>
+				<executions>
+					<execution>
+						<id>allure-report</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<!-- Automated frontend installation validation and build -->
 			<plugin>
 				<groupId>com.github.eirslett</groupId>
@@ -385,9 +393,9 @@
 							<resources>
 								<resource>
 									<directory>${project.build.directory}/site/jacoco</directory>
-										<includes>
-          									<include>jacoco.xml</include>
-          								</includes>
+									<includes>
+										<include>jacoco.xml</include>
+									</includes>
 									<filtering>false</filtering>
 								</resource>
 							</resources>
@@ -428,50 +436,51 @@
 					<dateFormat>yyyy-MM-dd'T'HH:mm:ssZ</dateFormat>
 					<generateGitPropertiesFile>true</generateGitPropertiesFile>
 					<generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties
-                    </generateGitPropertiesFilename>
+					</generateGitPropertiesFilename>
 					<failOnNoGitDirectory>false</failOnNoGitDirectory>
 				</configuration>
 			</plugin>
 
 
 			<plugin>
-            	<groupId>org.apache.maven.plugins</groupId>
-            	<artifactId>maven-compiler-plugin</artifactId>
-            	<configuration>
-                	<annotationProcessorPaths>
-                    	<path>
-                        	<groupId>org.mapstruct</groupId>
-                        	<artifactId>mapstruct-processor</artifactId>
-                        	<version>${mapstruct.version}</version>
-                    	</path>
-                    	<path>
-                        	<groupId>org.projectlombok</groupId>
-                        	<artifactId>lombok</artifactId>
-                        	<version>${lombok.version}</version>
-                    	</path>
-                    	<path>
-                        	<groupId>org.projectlombok</groupId>
-                        	<artifactId>lombok-mapstruct-binding</artifactId>
-                        	<version>0.2.0</version>
-                    	</path>
-                	</annotationProcessorPaths>
-            	</configuration>
-        	</plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>${mapstruct.version}</version>
+						</path>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok-mapstruct-binding</artifactId>
+							<version>0.2.0</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
-    <!-- Add allure-bom to dependency management to ensure correct versions of all the dependencies are used -->
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>io.qameta.allure</groupId>
-                <artifactId>allure-bom</artifactId>
-                <version>${allure.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+	<!-- Add allure-bom to dependency management to ensure correct versions of all the dependencies
+	are used -->
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>io.qameta.allure</groupId>
+				<artifactId>allure-bom</artifactId>
+				<version>${allure.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 
 	<!-- Apache 2 license -->

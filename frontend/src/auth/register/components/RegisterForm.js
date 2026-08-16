@@ -38,7 +38,7 @@ export default function RegisterForm({ form, companies = [], handleChange, handl
             type="email"
             id="email"
             name="email"
-            placeholder="Correo Electrónico"
+            placeholder=" "
             autoComplete="email"
             value={form.email}
             onChange={handleChange}
@@ -59,7 +59,7 @@ export default function RegisterForm({ form, companies = [], handleChange, handl
             type="text"
             id="firstName"
             name="firstName"
-            placeholder="Nombre"
+            placeholder=" "
             autoComplete="given-name"
             value={form.firstName}
             onChange={handleChange}
@@ -80,7 +80,7 @@ export default function RegisterForm({ form, companies = [], handleChange, handl
             type="text"
             id="lastName"
             name="lastName"
-            placeholder="Apellidos"
+            placeholder=" "
             autoComplete="family-name"
             value={form.lastName}
             onChange={handleChange}
@@ -101,7 +101,7 @@ export default function RegisterForm({ form, companies = [], handleChange, handl
             type="text"
             id="username"
             name="username"
-            placeholder="Nombre de Usuario"
+            placeholder=" "
             autoComplete="username"
             value={form.username}
             onChange={handleChange}
@@ -122,7 +122,7 @@ export default function RegisterForm({ form, companies = [], handleChange, handl
             type="text"
             id="personalCode"
             name="personalCode"
-            placeholder="Código Personal"
+            placeholder=" "
             autoComplete="off"
             maxLength={4}
             value={form.personalCode}
@@ -189,7 +189,7 @@ export default function RegisterForm({ form, companies = [], handleChange, handl
             type={showPassword ? 'text' : 'password'}
             id="password"
             name="password"
-            placeholder="Contraseña"
+            placeholder=" "
             autoComplete="new-password"
             value={form.password}
             onChange={handleChange}
@@ -207,7 +207,7 @@ export default function RegisterForm({ form, companies = [], handleChange, handl
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors cursor-pointer"
             tabIndex="-1"
-            aria-label={showPassword ? t('register.hidePassword', 'Ocultar contraseña') : t('register.showPassword', 'Mostrar contraseña')}
+            aria-label={showPassword ? t('register.hidePasswordVisibility', 'Ocultar contraseña') : t('register.showPasswordVisibility', 'Mostrar contraseña')}
           >
             {showPassword ? <FaEyeSlash /> : <FaEye />}
           </button>
@@ -220,7 +220,7 @@ export default function RegisterForm({ form, companies = [], handleChange, handl
             type={showConfirmPassword ? 'text' : 'password'}
             id="confirmPassword"
             name="confirmPassword"
-            placeholder="Confirmar Contraseña"
+            placeholder=" "
             autoComplete="new-password"
             value={form.confirmPassword}
             onChange={handleChange}
@@ -238,7 +238,7 @@ export default function RegisterForm({ form, companies = [], handleChange, handl
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors cursor-pointer"
             tabIndex="-1"
-            aria-label={showConfirmPassword ? t('register.hidePassword', 'Ocultar contraseña') : t('register.showPassword', 'Mostrar contraseña')}
+            aria-label={showConfirmPassword ? t('register.hidePasswordVisibility', 'Ocultar contraseña') : t('register.showPasswordVisibility', 'Mostrar contraseña')}
           >
             {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
           </button>

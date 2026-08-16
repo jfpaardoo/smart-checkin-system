@@ -22,8 +22,10 @@ export default function deleteFromList(url, id, [state, setState], toast, option
         ? (options.confirmMessage || t(`common.deleteConfirm`, { defaultValue: `¿Estás seguro de que quieres eliminar: ${entityName}?`, entity: entityName }))
         : (options.confirmMessage || `¿Estás seguro de que quieres eliminar: ${entityName}?`);
 
+    const normalizedUrl = url.startsWith('/api/v1') ? url.replace(/^\/api\/v1/, '') : url;
+
     toast.confirm(confirmMsg, () => {
-        api.delete(url)
+        api.delete(normalizedUrl)
             .then((response) => {
                 if (response.status === 200 || response.status === 204) {
                     if (options.filtered && options.setFiltered) {

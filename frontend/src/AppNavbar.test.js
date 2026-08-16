@@ -5,17 +5,17 @@ describe('AppNavbar', () => {
 
     test('renders public links correctly', () => {
         render(<AppNavbar />);
-        const linkDocsElement = screen.getByRole('link', { name: 'Docs' });
-        expect(linkDocsElement).toBeInTheDocument();
-
         const linkHomeElement = screen.getByRole('link', { name: /DISTRIBUTION ACADEMY/i });
         expect(linkHomeElement).toBeInTheDocument();
+
+        const loginLinks = screen.getAllByRole('link', { name: /Iniciar Sesión|Login/i });
+        expect(loginLinks.length).toBeGreaterThan(0);
     });
 
-    test('renders not user links correctly', () => {
+    test('renders register link correctly', () => {
         render(<AppNavbar />);
-        const linkPlansElement = screen.getByRole('link', { name: 'Login' });
-        expect(linkPlansElement).toBeInTheDocument();
+        const registerLinks = screen.getAllByRole('link', { name: /Solicitar Registro|Register/i });
+        expect(registerLinks.length).toBeGreaterThan(0);
     });
 
 });

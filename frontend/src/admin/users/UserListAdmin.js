@@ -118,7 +118,7 @@ export default function UserListAdmin() {
 
   const handleReject = async (id) => {
     deleteFromList(
-      `/api/v1/users/${id}`,
+      `/users/${id}`,
       id,
       [pendingUsers, setPendingUsers],
       toast,
@@ -128,7 +128,7 @@ export default function UserListAdmin() {
 
   const handleDelete = async (id) => {
     deleteFromList(
-      `/api/v1/users/${id}`,
+      `/users/${id}`,
       id,
       [users, setUsers],
       toast,

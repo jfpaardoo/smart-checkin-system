@@ -97,7 +97,7 @@ export default function PrivacyPolicy() {
                 <strong>{t('privacy.secNotCollectedItem3Title', 'Sin Acceso a Sensores Privados:')}</strong> {t('privacy.secNotCollectedItem3Desc', 'La plataforma no accede a micrófonos, contactos, registros telefónicos ni archivos personales del dispositivo.')}
               </li>
               <li>
-                <strong>{t('privacy.secNotCollectedItem4Title', 'Sin Datos Sensibles de Salud o Biometría Facial:')}</strong> {t('privacy.secNotCollectedItem4Desc', 'No se tratan categorías especiales de datos del Art. 9 RGPD (salud, huellas dactilares o reconocimiento facial).')}
+                <strong>{t('privacy.secNotCollectedItem4Title', 'Garantía Cero Biometría en Servidor (Passkeys / WebAuthn):')}</strong> {t('privacy.secNotCollectedItem4Desc', 'El sistema soporta inicio de sesión con Llaves de Acceso (Passkeys FIDO2). La verificación biométrica (huella dactilar, Face ID o Windows Hello) se ejecuta exclusivamente en el chip de seguridad local de su propio dispositivo (Secure Enclave / TPM). El servidor NUNCA recibe, procesa ni almacena datos biométricos (conforme al Art. 9 del RGPD), custodiando únicamente la clave pública criptográfica.')}
               </li>
               <li>
                 <strong>{t('privacy.secNotCollectedItem5Title', 'Sin Rastreo Comercial ni Cesión a Terceros:')}</strong> {t('privacy.secNotCollectedItem5Desc', 'No se monitoriza la actividad del usuario fuera de la aplicación ni se comercializan datos con anunciantes o redes publicitarias.')}
@@ -169,16 +169,19 @@ export default function PrivacyPolicy() {
             </p>
             <ul className="text-muted ps-3 space-y-2">
               <li>
-                <strong>{t('privacy.sec3Item1Title', 'Cifrado de Credenciales:')}</strong> {t('privacy.sec3Item1Desc', 'Las contraseñas se almacenan mediante el algoritmo de hash unidireccional BCrypt con sal única. Las claves secretas de 2FA (TOTP) se encriptan en base de datos mediante AES-256.')}
+                <strong>{t('privacy.sec3Item1Title', 'Cifrado de Credenciales y 2FA:')}</strong> {t('privacy.sec3Item1Desc', 'Las contraseñas se almacenan mediante hash unidireccional BCrypt con sal única. Las claves de autenticación en dos factores (TOTP) se encriptan en base de datos mediante AES-256-GCM.')}
               </li>
               <li>
-                <strong>{t('privacy.sec3Item2Title', 'Protección contra Fuerza Bruta y Bots:')}</strong> {t('privacy.sec3Item2Desc', 'Mecanismos de bloqueo temporal automático tras reiterados intentos fallidos de acceso y verificación por Captcha dinámico SVG.')}
+                <strong>{t('privacy.sec3ItemPasskeyTitle', 'Llaves de Acceso Passkeys (FIDO2 / WebAuthn):')}</strong> {t('privacy.sec3ItemPasskeyDesc', 'Autenticación asimétrica resistente al phishing basada en criptografía de curva elíptica (secp256r1/ED25519) sin contraseñas.')}
               </li>
               <li>
-                <strong>{t('privacy.sec3Item3Title', 'Gestión de Sesiones (JWT & Blacklist):')}</strong> {t('privacy.sec3Item3Desc', 'Uso de tokens criptográficos JSON Web Tokens firmados. Al cerrar sesión o eliminar la cuenta, los tokens se incorporan a una lista negra inmediata de revocación.')}
+                <strong>{t('privacy.sec3Item2Title', 'Protección contra Fuerza Bruta y Bots:')}</strong> {t('privacy.sec3Item2Desc', 'Bloqueo temporal automático de cuentas ante reiterados accesos fallidos y verificación con Cloudflare Turnstile.')}
               </li>
               <li>
-                <strong>{t('privacy.sec3Item4Title', 'Comunicaciones Seguras:')}</strong> {t('privacy.sec3Item4Desc', 'Todo el tráfico entre su navegador y el servidor se canaliza bajo protocolos cifrados TLS/HTTPS y WebSockets seguros (WSS).')}
+                <strong>{t('privacy.sec3Item3Title', 'Gestión de Sesiones, Revocación y Timeout:')}</strong> {t('privacy.sec3Item3Desc', 'Tokens JWT firmados con revocación inmediata (Blacklist) en logout y cierre de sesión automático por inactividad (15 min) para proteger terminales desatendidos.')}
+              </li>
+              <li>
+                <strong>{t('privacy.sec3Item4Title', 'Comunicaciones Seguras:')}</strong> {t('privacy.sec3Item4Desc', 'Todo el tráfico cliente-servidor se canaliza bajo protocolos cifrados TLS 1.3 / HTTPS y WebSockets seguros (WSS).')}
               </li>
             </ul>
           </div>
@@ -189,17 +192,17 @@ export default function PrivacyPolicy() {
               <span className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0" style={{ width: '34px', height: '34px', backgroundColor: '#f1f5f9' }}>
                 <FaCloudUploadAlt size={16} style={{ color: '#88982a' }} />
               </span>
-              <span>{t('privacy.sec4Title', '6. Trazabilidad, Auditoría y Almacenamiento en la Nube')}</span>
+              <span>{t('privacy.sec4Title', '6. Trazabilidad Forense, Auditoría y Almacenamiento en la Nube')}</span>
             </h4>
             <p className="text-muted mb-2">
-              {t('privacy.sec4Text', 'Para garantizar la transparencia organizativa y la disponibilidad de la información:')}
+              {t('privacy.sec4Text', 'Para garantizar la transparencia organizativa, integridad y disponibilidad:')}
             </p>
             <ul className="text-muted ps-3 space-y-2">
               <li>
-                <strong>{t('privacy.sec4Item1Title', 'Auditoría Continua (AOP):')}</strong> {t('privacy.sec4Item1Desc', 'Las operaciones críticas del sistema generan registros inmutables de auditoría (hora UTC, acción, usuario e IP) accesibles únicamente por administradores autorizados.')}
+                <strong>{t('privacy.sec4Item1Title', 'Auditoría Inmutable con Hash-Chain (SHA-256):')}</strong> {t('privacy.sec4Item1Desc', 'Los eventos del sistema se encadenan criptográficamente con SHA-256 enlazando cada registro con el anterior, garantizando la detección inmediata de cualquier manipulación o alteración de datos.')}
               </li>
               <li>
-                <strong>{t('privacy.sec4Item2Title', 'Copias de Seguridad e Integración OneDrive:')}</strong> {t('privacy.sec4Item2Desc', 'Los respaldos de la base de datos y la documentación complementaria de formaciones se sincronizan en repositorios seguros de Microsoft OneDrive mediante la API oficial Microsoft Graph (OAuth 2.0).')}
+                <strong>{t('privacy.sec4Item2Title', 'Copias de Seguridad e Integración OneDrive:')}</strong> {t('privacy.sec4Item2Desc', 'Los respaldos y la documentación complementaria se sincronizan en repositorios de Microsoft OneDrive mediante la API oficial Microsoft Graph (OAuth 2.0).')}
               </li>
             </ul>
           </div>

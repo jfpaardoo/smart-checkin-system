@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Input } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { useTranslation } from 'react-i18next';
 
 /**
  * GlassSearchBar - Reusable Liquid Glass Capsule Search Bar
@@ -11,11 +12,13 @@ import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
 export default function GlassSearchBar({ 
     value = '', 
     onSearch, 
-    placeholder = 'Search...', 
+    placeholder, 
     className = '', 
     debounceMs = 350,
     style = {} 
 }) {
+    const { t } = useTranslation();
+    const effectivePlaceholder = placeholder || t('common.search', 'Buscar...');
     const [searchTerm, setSearchTerm] = useState(value);
     const [prevValueProp, setPrevValueProp] = useState(value);
 
@@ -62,7 +65,7 @@ export default function GlassSearchBar({
             <Input
                 type="text"
                 className="da-glass-search-input"
-                placeholder={placeholder}
+                placeholder={effectivePlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -71,7 +74,7 @@ export default function GlassSearchBar({
                     type="button" 
                     className="da-search-clear-btn" 
                     onClick={handleClear}
-                    title="Clear search"
+                    title={t('common.clearSearch', 'Limpiar búsqueda')}
                 >
                     <FontAwesomeIcon icon={faTimes} />
                 </button>

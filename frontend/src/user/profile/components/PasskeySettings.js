@@ -211,7 +211,7 @@ export default function PasskeySettings({ t, toast }) {
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 bg-white/80 focus:border-[#b3c34c] focus:ring-2 focus:ring-[#b3c34c]/20 outline-none text-xs font-semibold text-slate-800"
-                  placeholder="Ej. Mi iPhone, Portátil Trabajo..."
+                  placeholder={t('profile.passkeyNamePlaceholder', 'Ej. Mi iPhone, Portátil Trabajo...')}
                   aria-label={t('passkeys.nicknameLabel', 'Nombre de la Llave / Dispositivo')}
                 />
               </div>
