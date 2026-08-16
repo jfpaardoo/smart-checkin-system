@@ -59,7 +59,7 @@ public class StringCryptoConverter implements AttributeConverter<String, String>
         try {
             String[] parts = dbData.split(":");
             if (parts.length != 2) {
-                // Compatibility fallback
+                // Compatibility fallback for unencrypted / legacy data
                 return dbData;
             }
             byte[] iv = Base64.getDecoder().decode(parts[0]);
@@ -71,7 +71,8 @@ public class StringCryptoConverter implements AttributeConverter<String, String>
             
             return new String(cipher.doFinal(encrypted), StandardCharsets.UTF_8);
         } catch (Exception e) {
-            throw new RuntimeException("Error decrypting data", e);
+            // Graceful fallback for legacy plaintext data or different key
+            return dbData;
         }
     }
 }
