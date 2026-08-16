@@ -10,5 +10,7 @@ public interface AuditLogRepository extends CrudRepository<AuditLog, Integer> {
 
     List<AuditLog> findByUsername(String username);
 
+    List<AuditLog> findByDetailsContaining(String keyword);
+
     void deleteByTimestampBefore(LocalDateTime cutoffDate);
 }

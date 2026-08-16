@@ -1,5 +1,6 @@
 package org.springframework.samples.smartcheckin.audit;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -140,5 +141,21 @@ class AuditAspectTests {
         throwingAspect.logAuditableAction(joinPoint, auditable, null);
         
         verify(auditLogRepository, times(1)).save(any(AuditLog.class));
+    }
+
+    @Test
+    void testLogAuditableActionWithXForwardedForHeader() {
+        HttpServletRequest proxyRequest = mock(HttpServletRequest.class);
+        when(proxyRequest.getHeader("X-Forwarded-For")).thenReturn("203.0.113.195, 70.41.3.18, 150.172.238.178");
+        
+        AuditAspect proxyAspect = new AuditAspect(auditLogRepository, proxyRequest, mock(SimpMessagingTemplate.class));
+        JoinPoint joinPoint = mock(JoinPoint.class);
+        Auditable auditable = createAuditable("TEST_ACTION", "Proxy Action");
+        
+        proxyAspect.logAuditableAction(joinPoint, auditable, null);
+        
+        org.mockito.ArgumentCaptor<AuditLog> captor = org.mockito.ArgumentCaptor.forClass(AuditLog.class);
+        verify(auditLogRepository, times(1)).save(captor.capture());
+        assertEquals("203.0.113.195", captor.getValue().getIpAddress());
     }
 }

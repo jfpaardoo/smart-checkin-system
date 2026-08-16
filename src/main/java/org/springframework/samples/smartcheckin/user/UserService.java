@@ -144,11 +144,26 @@ public class UserService {
         String randomCode = randomUUID.substring(8, 12);
         String anonymizedUsername = "GDPR_DEL_" + randomSuffix;
 
-        // 3. Anonimizar logs de auditoría antiguos
+        // 3. Anonimizar logs de auditoría antiguos (en username y en el JSON details)
         List<AuditLog> userLogs = auditLogRepository.findByUsername(oldUsername);
         if (userLogs != null && !userLogs.isEmpty()) {
-            userLogs.forEach(log -> log.setUsername(anonymizedUsername));
+            userLogs.forEach(log -> {
+                log.setUsername(anonymizedUsername);
+                if (log.getDetails() != null && log.getDetails().contains(oldUsername)) {
+                    log.setDetails(log.getDetails().replace(oldUsername, anonymizedUsername));
+                }
+            });
             auditLogRepository.saveAll(userLogs);
+        }
+
+        List<AuditLog> logsWithDetails = auditLogRepository.findByDetailsContaining(oldUsername);
+        if (logsWithDetails != null && !logsWithDetails.isEmpty()) {
+            logsWithDetails.forEach(log -> {
+                if (log.getDetails() != null) {
+                    log.setDetails(log.getDetails().replace(oldUsername, anonymizedUsername));
+                }
+            });
+            auditLogRepository.saveAll(logsWithDetails);
         }
         
         // 4. Anonimización física de los PII (Identificadores Personales)

@@ -33,17 +33,27 @@ public class AuditAspect {
         this.messagingTemplate = messagingTemplate;
     }
 
+    private static final String DEFAULT_IP = "127.0.0.1";
+
+    private String getClientIP(HttpServletRequest req) {
+        if (req == null) {
+            return DEFAULT_IP;
+        }
+        try {
+            String xfHeader = req.getHeader("X-Forwarded-For");
+            if (xfHeader == null || xfHeader.isEmpty() || "unknown".equalsIgnoreCase(xfHeader)) {
+                return req.getRemoteAddr() != null ? req.getRemoteAddr() : DEFAULT_IP;
+            }
+            return xfHeader.split(",")[0].trim();
+        } catch (Exception e) {
+            return DEFAULT_IP;
+        }
+    }
+
     private void logAudit(String action, String details) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = (auth != null && auth.getName() != null) ? auth.getName() : "anonymous";
-        String ipAddress = "127.0.0.1";
-        try {
-            if (request != null && request.getRemoteAddr() != null) {
-                ipAddress = request.getRemoteAddr();
-            }
-        } catch (Exception e) {
-            // Request scope not active
-        }
+        String ipAddress = getClientIP(request);
 
         AuditLog log = AuditLog.builder()
                 .action(action)

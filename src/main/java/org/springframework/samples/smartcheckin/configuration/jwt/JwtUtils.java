@@ -38,8 +38,7 @@ public class JwtUtils {
     @Value("${badistributionacademy.app.jwtExpirationMs:${smartcheckin.app.jwtExpirationMs:86400000}}")
     private int jwtExpirationMs;
 
-    // Aquí inyectamos el secreto que viene de tu .env
-    @Value("${app.security.jwt.secret:${JWT_SECRET}}")
+    @Value("${badistributionacademy.app.jwtSecret:${JWT_SECRET}}")
     private String jwtSecret;
 
     private SecretKey getSigningKey() {

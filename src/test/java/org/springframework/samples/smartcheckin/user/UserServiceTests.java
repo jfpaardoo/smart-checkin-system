@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.audit.AuditLogRepository;
 import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
 import org.springframework.samples.smartcheckin.storage.SignatureStorageService;
@@ -182,7 +183,17 @@ class UserServiceTests {
         user.setId(1);
         user.setUsername("original");
         
+        AuditLog log1 = new AuditLog();
+        log1.setUsername("original");
+        log1.setDetails("{\"user\":\"original\"}");
+
+        AuditLog log2 = new AuditLog();
+        log2.setUsername("admin");
+        log2.setDetails("{\"target\":\"original\"}");
+
         when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(auditLogRepository.findByUsername("original")).thenReturn(List.of(log1));
+        when(auditLogRepository.findByDetailsContaining("original")).thenReturn(List.of(log2));
 
         userService.deleteUser(1);
         
@@ -194,6 +205,11 @@ class UserServiceTests {
         assertTrue(user.getUsername().startsWith("GDPR_DEL_"));
         assertEquals("Anonymized", user.getFirstName());
         assertFalse(user.getIsApproved());
+
+        // Verificamos sanitización de auditoría
+        assertTrue(log1.getUsername().startsWith("GDPR_DEL_"));
+        assertFalse(log1.getDetails().contains("original"));
+        assertFalse(log2.getDetails().contains("original"));
     }
 
     @Test

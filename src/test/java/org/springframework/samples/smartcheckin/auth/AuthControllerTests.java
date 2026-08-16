@@ -98,6 +98,12 @@ class AuthControllerTests {
 	private JwtBlacklistService jwtBlacklistService;
 
 	@MockitoBean
+	private PasswordResetService passwordResetService;
+
+	@MockitoBean
+	private CaptchaService captchaService;
+
+	@MockitoBean
 	private JavaMailSender javaMailSender;
 
 	@MockitoBean
@@ -134,12 +140,15 @@ class AuthControllerTests {
 		loginRequest = new LoginRequest();
 		loginRequest.setUsername("owner");
 		loginRequest.setPassword(PASSWORD);
+		loginRequest.setCaptchaToken("dummy-captcha-token");
 
 		userDetails = new UserDetailsImpl(1, loginRequest.getUsername(), loginRequest.getPassword(),
 				List.of(new SimpleGrantedAuthority("OWNER")));
 
 		token = "JWT_TOKEN";
 		jwtCookie = ResponseCookie.from("jwt", token).path("/api").maxAge(24 * 60 * 60).httpOnly(true).build();
+		
+		when(this.captchaService.validateCaptcha(any())).thenReturn(true);
 	}
 
 	@Test
@@ -262,6 +271,7 @@ class AuthControllerTests {
 		signup.setFirstName("New");
 		signup.setLastName("User");
 		signup.setEmail("newuser@example.com");
+		signup.setCaptchaToken("dummy-captcha-token");
 
 		when(userService.findUser(newUser)).thenThrow(new ResourceNotFoundException("User", "username", newUser));
 		when(authoritiesService.findByAuthority("EMPLOYEE")).thenReturn(new Authorities());
@@ -301,6 +311,7 @@ class AuthControllerTests {
 		signup.setFirstName("New");
 		signup.setLastName("User");
 		signup.setEmail("existinguser@example.com");
+		signup.setCaptchaToken("dummy-captcha-token");
 
 		User existing = new User();
 		existing.setUsername(existingUser);
@@ -395,6 +406,7 @@ class AuthControllerTests {
         signup.setFirstName("New");
         signup.setLastName("User");
         signup.setEmail("newUser2@example.com");
+        signup.setCaptchaToken("dummy-captcha-token");
 
         when(userService.findUser(NEW_USER_2)).thenThrow(new ResourceNotFoundException("User", "username", NEW_USER_2));
         when(authoritiesService.findByAuthority("EMPLOYEE")).thenThrow(new ResourceNotFoundException("Authority not found"));

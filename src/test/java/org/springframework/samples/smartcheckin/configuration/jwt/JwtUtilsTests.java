@@ -3,7 +3,6 @@ package org.springframework.samples.smartcheckin.configuration.jwt;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.security.KeyPair;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
@@ -20,7 +19,7 @@ import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
-@SuppressWarnings("java:S6466")
+@SuppressWarnings({ "java:S6466", "null" })
 class JwtUtilsTests {
 
 	private JwtUtils jwtUtils;
@@ -29,6 +28,7 @@ class JwtUtilsTests {
 	void setUp() {
 		jwtUtils = new JwtUtils();
 		ReflectionTestUtils.setField(jwtUtils, "jwtExpirationMs", 86400000);
+		ReflectionTestUtils.setField(jwtUtils, "jwtSecret", "unSecretoFalsoParaTestMuyLargo123456789");
 	}
 
 	@Test
@@ -63,24 +63,20 @@ class JwtUtilsTests {
 
 	@Test
 	void testSignatureException() {
-		KeyPair otherKeyPair = Jwts.SIG.RS256.keyPair().build();
 		String token = Jwts.builder()
 				.subject("test")
-				.signWith(otherKeyPair.getPrivate())
+				.signWith(io.jsonwebtoken.security.Keys.hmacShaKeyFor("otroSecretoFalsoParaTestMuyLargo123456789".getBytes(java.nio.charset.StandardCharsets.UTF_8)))
 				.compact();
 		assertFalse(jwtUtils.validateJwtToken(token));
 	}
 
 	@Test
-	@SuppressWarnings("null")
 	void testExpiredJwtException() {
-		KeyPair keyPair = (KeyPair) ReflectionTestUtils.getField(jwtUtils, "rsaKeyPair");
-		assertNotNull(keyPair);
 		String token = io.jsonwebtoken.Jwts.builder()
 				.subject("test")
 				.issuedAt(Date.from(Instant.now().minusMillis(10000)))
 				.expiration(Date.from(Instant.now().minusMillis(5000)))
-				.signWith(keyPair.getPrivate())
+				.signWith(io.jsonwebtoken.security.Keys.hmacShaKeyFor("unSecretoFalsoParaTestMuyLargo123456789".getBytes(java.nio.charset.StandardCharsets.UTF_8)))
 				.compact();
 		assertFalse(jwtUtils.validateJwtToken(token));
 	}

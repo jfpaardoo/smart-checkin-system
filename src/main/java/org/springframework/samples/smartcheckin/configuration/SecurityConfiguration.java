@@ -75,7 +75,7 @@ public class SecurityConfiguration {
                         .hasAuthority(ADMIN)
 
                         // 4. Endpoints públicos
-                        .requestMatchers("/api/v1/auth/**", "/ws/**", "/api/v1/cloud-settings/oauth/callback")
+                        .requestMatchers("/api/v1/auth/**", "/ws/**", "/api/v1/cloud-settings/oauth/callback", "/actuator/health", "/actuator/info")
                         .permitAll()
 
                         // 5. Perfil personal del usuario y configuración de 2FA
