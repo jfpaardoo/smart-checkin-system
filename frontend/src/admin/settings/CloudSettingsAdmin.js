@@ -131,7 +131,7 @@ export default function CloudSettingsAdmin() {
               <Button 
                 onClick={handleDisconnect}
                 className="btn btn-outline-danger px-4 py-2 rounded-pill fw-bold shadow-sm d-inline-flex align-items-center gap-2"
-                style={{ fontSize: '1rem', transition: 'all 0.2s ease' }}
+                style={{ fontSize: '1rem', transition: 'color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease' }}
               >
                 <FaUnlink />
                 {t('cloudSettings.disconnectBtn', 'Desconectar cuenta de OneDrive')}

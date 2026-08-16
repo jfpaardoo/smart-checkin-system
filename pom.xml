@@ -198,7 +198,7 @@
 		<dependency>
 			<groupId>com.github.librepdf</groupId>
 			<artifactId>openpdf</artifactId>
-			<version>1.4.2</version>
+			<version>3.0.5</version>
 		</dependency>
 		<!-- AOP for Audit Trail -->
 		<dependency>
@@ -210,7 +210,7 @@
 		<dependency>
 			<groupId>org.knowm.xchart</groupId>
 			<artifactId>xchart</artifactId>
-			<version>3.9.0</version>
+			<version>4.0.4</version>
 		</dependency>
 		<!-- jpatterns -->
 		<dependency>
@@ -232,7 +232,7 @@
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-model</artifactId>
-			<version>3.10.0-rc-1</version>
+			<version>4.0.0-rc-6</version>
 		</dependency>
 		<!-- Web Push Notifications -->
 		<dependency>
@@ -423,7 +423,7 @@
 			<plugin>
 				<groupId>io.github.git-commit-id</groupId>
 				<artifactId>git-commit-id-maven-plugin</artifactId>
-				<version>6.0.0</version>
+				<version>10.0.0</version>
 				<executions>
 					<execution>
 						<goals>
