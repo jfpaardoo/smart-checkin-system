@@ -1,4 +1,3 @@
-/* eslint-disable testing-library/prefer-screen-queries */
 const { test, expect } = require('@playwright/test');
 
 test.describe('Flujo de Recuperación de Contraseña (Forgot Password E2E)', () => {
