@@ -127,7 +127,7 @@ export default function Login() {
     }
   }
 
-  const glassButtonClass = "w-full mt-2 h-[52px] rounded-full font-bold text-slate-900 bg-[#b3c34c]/60 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(179,195,76,0.35)] hover:bg-[#b3c34c]/80 hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.55)] transition-all duration-300 active:scale-95 flex justify-center items-center gap-2 box-border cursor-pointer";
+  const glassButtonClass = "w-full mt-2 h-[52px] rounded-full font-bold text-slate-900 bg-[#b3c34c]/60 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(179,195,76,0.35)] hover:bg-[#b3c34c]/80 hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.55)] transition-colors duration-200 active:scale-95 flex justify-center items-center gap-2 box-border cursor-pointer";
   
   // Clases modificadas para dejar espacio extra arriba (pt-6) para la animación
   const inputClass = "block w-full px-4 pt-6 pb-2 rounded-2xl border border-white/50 bg-white/50 backdrop-blur-sm focus:border-[#b3c34c] focus:bg-white/80 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition text-slate-800 shadow-inner peer";
@@ -152,7 +152,7 @@ export default function Login() {
                   type="button"
                   onClick={handlePasskeyLogin}
                   disabled={loading}
-                  className="w-full h-[52px] rounded-full font-bold text-slate-800 bg-white/80 backdrop-blur-md border border-white shadow-[0_8px_25px_0_rgba(0,0,0,0.06)] hover:bg-white hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.35)] transition-all duration-300 active:scale-95 flex justify-center items-center gap-2.5 box-border cursor-pointer text-sm"
+                  className="w-full h-[52px] rounded-full font-bold text-slate-800 bg-white/80 backdrop-blur-md border border-white shadow-[0_8px_25px_0_rgba(0,0,0,0.06)] hover:bg-white hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.35)] transition-colors duration-200 active:scale-95 flex justify-center items-center gap-2.5 box-border cursor-pointer text-sm"
                 >
                   <FaFingerprint className="text-[#73841e] text-lg" />
                   <FaKey className="text-[#8fa228] text-sm" />

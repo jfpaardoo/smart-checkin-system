@@ -205,8 +205,9 @@ export default function RegisterForm({ form, companies = [], handleChange, handl
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 focus:outline-none transition cursor-pointer"
+            className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors cursor-pointer"
             tabIndex="-1"
+            aria-label={showPassword ? t('register.hidePassword', 'Ocultar contraseña') : t('register.showPassword', 'Mostrar contraseña')}
           >
             {showPassword ? <FaEyeSlash /> : <FaEye />}
           </button>
@@ -235,8 +236,9 @@ export default function RegisterForm({ form, companies = [], handleChange, handl
           <button
             type="button"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 focus:outline-none transition cursor-pointer"
+            className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors cursor-pointer"
             tabIndex="-1"
+            aria-label={showConfirmPassword ? t('register.hidePassword', 'Ocultar contraseña') : t('register.showPassword', 'Mostrar contraseña')}
           >
             {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
           </button>
@@ -252,7 +254,7 @@ export default function RegisterForm({ form, companies = [], handleChange, handl
           <button
             type="submit"
             disabled={loading || !isCaptchaValid}
-            className="w-full da-btn-primary py-3.5 rounded-2xl font-bold shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full da-btn-primary py-3.5 rounded-2xl font-bold shadow-md hover:shadow-lg transition-colors duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? <Spinner size="sm" /> : <FaUserPlus />}
             <span>{loading ? t('register.sending', 'Enviando...') : t('register.submit', 'Solicitar Registro')}</span>

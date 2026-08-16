@@ -70,7 +70,9 @@ const FormationTableRow = ({ formation, t }) => {
   );
 };
 
-export default function AnalyticsFormationsTab({ formations = [] }) {
+const DEFAULT_ARRAY = [];
+
+export default function AnalyticsFormationsTab({ formations = DEFAULT_ARRAY }) {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState('ALL');

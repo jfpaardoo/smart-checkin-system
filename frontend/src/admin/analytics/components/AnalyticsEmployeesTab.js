@@ -64,7 +64,9 @@ const matchesWorkStatus = (user, selectedStatus) => {
   return true;
 };
 
-export default function AnalyticsEmployeesTab({ userAnalyticsList = [], companies = [], onOpenUserDetail }) {
+const DEFAULT_ARRAY = [];
+
+export default function AnalyticsEmployeesTab({ userAnalyticsList = DEFAULT_ARRAY, companies = DEFAULT_ARRAY, onOpenUserDetail }) {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCompany, setSelectedCompany] = useState('');
