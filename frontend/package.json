@@ -34,7 +34,7 @@
     "reactstrap": "^9.1.6",
     "recharts": "^3.10.1",
     "sockjs-client": "^1.6.1",
-    "swagger-ui-react": "5.19.0",
+    "swagger-ui-react": "5.32.13",
     "swr": "^2.2.5",
     "web-vitals": "^6.1.0"
   },
