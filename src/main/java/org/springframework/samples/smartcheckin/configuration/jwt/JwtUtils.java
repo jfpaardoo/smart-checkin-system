@@ -3,18 +3,14 @@ package org.springframework.samples.smartcheckin.configuration.jwt;
 import java.util.HashMap;
 import java.util.Map;
 import java.time.Instant;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPublicKey;
-import java.util.Base64;
+import java.nio.charset.StandardCharsets;
+
+import javax.crypto.SecretKey;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.util.WebUtils;
-
-import jakarta.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +24,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 
 import org.jpatterns.gof.SingletonPattern;
@@ -36,44 +33,38 @@ import org.jpatterns.gof.SingletonPattern;
 @SingletonPattern.Singleton
 @SuppressWarnings({ "java:S6466", "null" })
 public class JwtUtils {
-	private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
-	@Value("${badistributionacademy.app.jwtExpirationMs:${smartcheckin.app.jwtExpirationMs:86400000}}")
-	private int jwtExpirationMs;
+    @Value("${badistributionacademy.app.jwtExpirationMs:${smartcheckin.app.jwtExpirationMs:86400000}}")
+    private int jwtExpirationMs;
 
-	private KeyPair rsaKeyPair;
+    @Value("${badistributionacademy.app.jwtSecret:${JWT_SECRET}}")
+    private String jwtSecret;
 
-	@PostConstruct
-	public void initKeys() {
-		try {
-			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-			keyPairGenerator.initialize(2048);
-			this.rsaKeyPair = keyPairGenerator.generateKeyPair();
-			logger.info("RSA Key Pair generated successfully for JWT signing.");
-		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException("Failed to generate RSA Key Pair", e);
-		}
-	}
+    private SecretKey getSigningKey() {
+        if (jwtSecret == null || jwtSecret.length() < 32) {
+            throw new IllegalStateException("CRÍTICO: JWT_SECRET debe tener al menos 32 caracteres (256 bits) para HS256.");
+        }
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    }
 
-	public String getPublicKeyBase64() {
-		RSAPublicKey publicKey = (RSAPublicKey) rsaKeyPair.getPublic();
-		return Base64.getEncoder().encodeToString(publicKey.getEncoded());
-	}
+    public String generateJwtToken(Authentication authentication) {
+        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("authorities",
+                userPrincipal.getAuthorities().stream().map(auth -> auth.getAuthority()).toList());
 
-	public String generateJwtToken(Authentication authentication) {
+        Instant now = Instant.now();
+        return Jwts.builder()
+                .claims(claims)
+                .subject(userPrincipal.getUsername())
+                .issuedAt(java.util.Date.from(now))
+                .expiration(java.util.Date.from(now.plusMillis(jwtExpirationMs)))
+                .signWith(getSigningKey())
+                .compact();
+    }
 
-		UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
-		Map<String, Object> claims = new HashMap<>();
-		claims.put("authorities",
-				userPrincipal.getAuthorities().stream().map(auth -> auth.getAuthority()).toList());
-
-		Instant now = Instant.now();
-		return Jwts.builder().claims(claims).subject(userPrincipal.getUsername()).issuedAt(java.util.Date.from(now))
-				.expiration(java.util.Date.from(now.plusMillis(jwtExpirationMs)))
-				.signWith(rsaKeyPair.getPrivate()).compact();
-	}
-
-	public ResponseCookie generateJwtCookie(Authentication authentication) {
+    public ResponseCookie generateJwtCookie(Authentication authentication) {
         String jwt = generateJwtToken(authentication);
         return ResponseCookie.from("jwt", jwt)
                 .path("/")
@@ -94,49 +85,65 @@ public class JwtUtils {
                 .build();
     }
 
-	public String getJwtFromCookies(HttpServletRequest request) {
-		Cookie cookie = WebUtils.getCookie(request, "jwt");
-		if (cookie != null) {
-			return cookie.getValue();
-		} else {
-			return null;
-		}
-	}
+    public String getJwtFromCookies(HttpServletRequest request) {
+        Cookie cookie = WebUtils.getCookie(request, "jwt");
+        if (cookie != null) {
+            return cookie.getValue();
+        } else {
+            return null;
+        }
+    }
 
+    public String generateTokenFromUsername(String username, Authorities authority) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("authorities", authority.getAuthority());
+        Instant now = Instant.now();
+        return Jwts.builder()
+                .claims(claims)
+                .subject(username)
+                .issuedAt(java.util.Date.from(now))
+                .expiration(java.util.Date.from(now.plusMillis(jwtExpirationMs)))
+                .signWith(getSigningKey())
+                .compact();
+    }
 
-	public String generateTokenFromUsername(String username, Authorities authority) {
-		Map<String, Object> claims = new HashMap<>();
-		claims.put("authorities", authority.getAuthority());
-		Instant now = Instant.now();
-		return Jwts.builder().claims(claims).subject(username).issuedAt(java.util.Date.from(now))
-				.expiration(java.util.Date.from(now.plusMillis(jwtExpirationMs)))
-				.signWith(rsaKeyPair.getPrivate()).compact();
-	}
-	public String getUserNameFromJwtToken(String token) {
-		return Jwts.parser().verifyWith(rsaKeyPair.getPublic()).build().parseSignedClaims(token).getPayload().getSubject();
-	}
+    public String getUserNameFromJwtToken(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
+    }
 
-	public Instant getExpirationDateFromJwtToken(String token) {
-		return Jwts.parser().verifyWith(rsaKeyPair.getPublic()).build().parseSignedClaims(token).getPayload().getExpiration().toInstant();
-	}
-	public boolean validateJwtToken(String authToken) {
-		try {
-			Jwts.parser().verifyWith(rsaKeyPair.getPublic()).build().parseSignedClaims(authToken);
-			return true;
-		} catch (SignatureException e) {
-			logger.error("Invalid JWT signature: {}", e.getMessage());
-		} catch (MalformedJwtException e) {
-			logger.error("Invalid JWT token: {}", e.getMessage());
-		} catch (ExpiredJwtException e) {
-			logger.error("JWT token is expired: {}", e.getMessage());
-		} catch (UnsupportedJwtException e) {
-			logger.error("JWT token is unsupported: {}", e.getMessage());
-		} catch (IllegalArgumentException e) {
-			logger.error("JWT claims string is empty: {}", e.getMessage());
-		} catch (Exception e) {
-			logger.error("Unexpected error validating JWT token: {}", e.getMessage());
-		}
+    public Instant getExpirationDateFromJwtToken(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getExpiration()
+                .toInstant();
+    }
 
-		return false;
-	}
+    public boolean validateJwtToken(String authToken) {
+        try {
+            Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(authToken);
+            return true;
+        } catch (SignatureException e) {
+            logger.error("Invalid JWT signature: {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            logger.error("Invalid JWT token: {}", e.getMessage());
+        } catch (ExpiredJwtException e) {
+            logger.error("JWT token is expired: {}", e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            logger.error("JWT token is unsupported: {}", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            logger.error("JWT claims string is empty: {}", e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error validating JWT token: {}", e.getMessage());
+        }
+
+        return false;
+    }
 }

@@ -18,6 +18,9 @@ public class UserAnalyticsDTO {
     private String lastName;
     private String personalCode;
     private String authority;
+    private Integer companyId;
+    private String companyName;
+    private String locator;
     private Boolean isWorking;
     private Integer totalCheckins;
     private Long totalWorkMinutes;

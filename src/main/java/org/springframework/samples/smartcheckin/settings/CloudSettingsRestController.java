@@ -12,7 +12,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 
@@ -80,9 +79,9 @@ public class CloudSettingsRestController {
 
     @GetMapping("/oauth/authorize-url")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Map<String, String>> getAuthUrl(HttpServletRequest request) {
+    public ResponseEntity<Map<String, String>> getAuthUrl() {
         String state = UUID.randomUUID().toString();
-        String redirectUri = getDynamicRedirectUri(request);
+        String redirectUri = getDynamicRedirectUri();
         
         String url = "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize" +
                 "?client_id=" + azureClientId +
@@ -97,13 +96,13 @@ public class CloudSettingsRestController {
 
     @GetMapping("/oauth/callback")
     public void oauthCallback(@RequestParam String code, @RequestParam String state, 
-                              HttpServletRequest request, HttpServletResponse response) throws IOException {
+                              HttpServletResponse response) throws IOException {
         
         RestTemplate restTemplate = new RestTemplate();
         String tokenUrl = "https://login.microsoftonline.com/consumers/oauth2/v2.0/token";
         
-        String redirectUri = getDynamicRedirectUri(request);
-        String frontendSettingsUrl = getDynamicFrontendUrl(request);
+        String redirectUri = getDynamicRedirectUri();
+        String frontendSettingsUrl = getDynamicFrontendUrl();
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -149,23 +148,12 @@ public class CloudSettingsRestController {
         }
     }
 
-    private String getDynamicRedirectUri(HttpServletRequest request) {
-        String serverName = request.getServerName();
-        if (serverName.contains("localhost") || serverName.contains("127.0.0.1")) {
-            return "http://localhost:8080/api/v1/cloud-settings/oauth/callback";
-        }
+    private String getDynamicRedirectUri() {
         return backendUrl + "/api/v1/cloud-settings/oauth/callback";
     }
 
-    private String getDynamicFrontendUrl(HttpServletRequest request) {
-        String serverName = request.getServerName();
-        // Ruta exacta configurada en App.js de React
-        String cloudSettingsPath = "/admin/cloud-settings"; 
-        
-        if (serverName.contains("localhost") || serverName.contains("127.0.0.1")) {
-            return "http://localhost:3000" + cloudSettingsPath; 
-        }
-        return frontendUrl + cloudSettingsPath;
+    private String getDynamicFrontendUrl() {
+        return frontendUrl + "/admin/cloud-settings";
     }
 
     @DeleteMapping("/disconnect")

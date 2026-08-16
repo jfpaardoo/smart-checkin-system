@@ -3,15 +3,11 @@ package org.springframework.samples.smartcheckin.configuration.jwt;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import org.springframework.http.ResponseCookie;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
 import org.springframework.samples.smartcheckin.user.Authorities;
@@ -23,7 +19,7 @@ import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
-@SuppressWarnings("java:S6466")
+@SuppressWarnings({ "java:S6466", "null" })
 class JwtUtilsTests {
 
 	private JwtUtils jwtUtils;
@@ -32,14 +28,7 @@ class JwtUtilsTests {
 	void setUp() {
 		jwtUtils = new JwtUtils();
 		ReflectionTestUtils.setField(jwtUtils, "jwtExpirationMs", 86400000);
-		jwtUtils.initKeys();
-	}
-
-	@Test
-	void testGetPublicKeyBase64() {
-		String pubKey = jwtUtils.getPublicKeyBase64();
-		assertNotNull(pubKey);
-		assertFalse(pubKey.isEmpty());
+		ReflectionTestUtils.setField(jwtUtils, "jwtSecret", "unSecretoFalsoParaTestMuyLargo123456789");
 	}
 
 	@Test
@@ -74,24 +63,20 @@ class JwtUtilsTests {
 
 	@Test
 	void testSignatureException() {
-		KeyPair otherKeyPair = Jwts.SIG.RS256.keyPair().build();
 		String token = Jwts.builder()
 				.subject("test")
-				.signWith(otherKeyPair.getPrivate())
+				.signWith(io.jsonwebtoken.security.Keys.hmacShaKeyFor("otroSecretoFalsoParaTestMuyLargo123456789".getBytes(java.nio.charset.StandardCharsets.UTF_8)))
 				.compact();
 		assertFalse(jwtUtils.validateJwtToken(token));
 	}
 
 	@Test
-	@SuppressWarnings("null")
 	void testExpiredJwtException() {
-		KeyPair keyPair = (KeyPair) ReflectionTestUtils.getField(jwtUtils, "rsaKeyPair");
-		assertNotNull(keyPair);
 		String token = io.jsonwebtoken.Jwts.builder()
 				.subject("test")
 				.issuedAt(Date.from(Instant.now().minusMillis(10000)))
 				.expiration(Date.from(Instant.now().minusMillis(5000)))
-				.signWith(keyPair.getPrivate())
+				.signWith(io.jsonwebtoken.security.Keys.hmacShaKeyFor("unSecretoFalsoParaTestMuyLargo123456789".getBytes(java.nio.charset.StandardCharsets.UTF_8)))
 				.compact();
 		assertFalse(jwtUtils.validateJwtToken(token));
 	}
@@ -104,17 +89,6 @@ class JwtUtilsTests {
 				.subject("test")
 				.compact();
 		assertFalse(jwtUtils.validateJwtToken(token));
-	}
-
-	@Test
-	void testInitKeysNoSuchAlgorithmException() {
-		try (MockedStatic<KeyPairGenerator> mockedStatic = mockStatic(KeyPairGenerator.class)) {
-			mockedStatic.when(() -> KeyPairGenerator.getInstance("RSA"))
-					.thenThrow(new NoSuchAlgorithmException("RSA not found"));
-			
-			RuntimeException exception = assertThrows(RuntimeException.class, () -> jwtUtils.initKeys());
-			assertTrue(exception.getMessage().contains("Failed to generate RSA Key Pair"));
-		}
 	}
 
 	@Test

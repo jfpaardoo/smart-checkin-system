@@ -83,7 +83,7 @@ class ExcelExportStrategyTests {
     }
 
     @Test
-    void getFileExtension_returnsXlsx() {
+    void testGetFileExtensionReturnsXlsx() {
         assertEquals("xlsx", strategy.getFileExtension());
     }
 
@@ -92,7 +92,7 @@ class ExcelExportStrategyTests {
     // ══════════════════════════════════════════════════════════════════════════
 
     @Test
-    void exportUsers_emptyList_returnsWorkbookWithHeaderOnly() throws Exception {
+    void testExportUsersReturnsWorkbookWithHeaderOnly() throws Exception {
         byte[] bytes = strategy.exportUsers(Collections.emptyList());
         assertNotNull(bytes);
         assertTrue(bytes.length > 0);

@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +26,13 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FormationCheckinFacadeTests {
+
+    private static final String EMP_001 = "EMP-001";
+    private static final String JAVA_101 = "Java 101";
+    private static final String NEW_NAME = "New Name";
+    private static final String FILES_PARAM = "files";
+    private static final String APPLICATION_PDF = "application/pdf";
+    private static final String DOC2_URL = "http://doc2.pdf";
 
     @Mock
     private FormationService formationService;
@@ -48,7 +56,7 @@ class FormationCheckinFacadeTests {
         sampleUser = new User();
         sampleUser.setId(1);
         sampleUser.setUsername("testuser");
-        sampleUser.setPersonalCode("EMP-001");
+        sampleUser.setPersonalCode(EMP_001);
     }
 
     @Test
@@ -59,17 +67,17 @@ class FormationCheckinFacadeTests {
     }
 
     @Test
-    void createFormation_withFiles_success() throws Exception {
+    void testCreateFormationWithFilesSuccess() throws Exception {
         FormationRequest req = new FormationRequest();
-        req.setName("Java 101");
+        req.setName(JAVA_101);
         req.setDescription("Learn Java");
-        req.setFormationDate(LocalDateTime.now());
+        req.setFormationDate(LocalDateTime.now(ZoneId.of("Europe/Madrid")));
 
-        MockMultipartFile validFile = new MockMultipartFile("files", "doc.pdf", "application/pdf", "content".getBytes());
-        MockMultipartFile emptyFile = new MockMultipartFile("files", "empty.txt", "text/plain", new byte[0]);
+        MockMultipartFile validFile = new MockMultipartFile(FILES_PARAM, "doc.pdf", APPLICATION_PDF, "content".getBytes());
+        MockMultipartFile emptyFile = new MockMultipartFile(FILES_PARAM, "empty.txt", "text/plain", new byte[0]);
         List<MultipartFile> files = List.of(validFile, emptyFile);
 
-        when(cloudStorageAdapter.uploadFile(validFile, "Java 101")).thenReturn("http://onedrive/doc.pdf");
+        when(cloudStorageAdapter.uploadFile(validFile, JAVA_101)).thenReturn("http://onedrive/doc.pdf");
         
         Formation savedFormation = new Formation();
         savedFormation.setId(100);
@@ -79,15 +87,15 @@ class FormationCheckinFacadeTests {
 
         assertNotNull(result);
         assertEquals(100, result.getId());
-        verify(cloudStorageAdapter, times(1)).uploadFile(validFile, "Java 101");
+        verify(cloudStorageAdapter, times(1)).uploadFile(validFile, JAVA_101);
     }
 
     @Test
-    void createFormation_fileUploadException_throwsException() throws Exception {
+    void createFormationFileUploadExceptionThrowsException() throws Exception {
         FormationRequest req = new FormationRequest();
-        req.setName("Java 101");
+        req.setName(JAVA_101);
 
-        MockMultipartFile file = new MockMultipartFile("files", "doc.pdf", "application/pdf", "content".getBytes());
+        MockMultipartFile file = new MockMultipartFile(FILES_PARAM, "doc.pdf", APPLICATION_PDF, "content".getBytes());
         when(cloudStorageAdapter.uploadFile(any(), anyString())).thenThrow(new IOException("Upload failed"));
 
         List<MultipartFile> files = List.of(file);
@@ -98,7 +106,7 @@ class FormationCheckinFacadeTests {
     }
 
     @Test
-    void updateFormation_notFound_throwsException() {
+    void testUpdateFormationNotFoundThrowsException() {
         FormationRequest req = new FormationRequest();
         when(formationService.findById(1)).thenReturn(Optional.empty());
 
@@ -106,21 +114,21 @@ class FormationCheckinFacadeTests {
     }
 
     @Test
-    void updateFormation_removesAndAddsFiles_success() throws Exception {
+    void testUpdateFormationRemovesAndAddsFilesSuccess() throws Exception {
         Formation existing = new Formation();
         existing.setId(1);
         existing.setName("Old Name");
-        existing.setDocumentUrls(new ArrayList<>(List.of("http://doc1.pdf", "http://doc2.pdf")));
+        existing.setDocumentUrls(new ArrayList<>(List.of("http://doc1.pdf", DOC2_URL)));
 
         when(formationService.findById(1)).thenReturn(Optional.of(existing));
 
         FormationRequest req = new FormationRequest();
-        req.setName("New Name");
+        req.setName(NEW_NAME);
         req.setExistingDocumentUrls(List.of("http://doc1.pdf"));
 
-        MockMultipartFile newFile = new MockMultipartFile("files", "new.pdf", "application/pdf", "data".getBytes());
-        when(cloudStorageAdapter.uploadFile(newFile, "New Name")).thenReturn("http://new.pdf");
-        doThrow(new RuntimeException("Delete error")).when(cloudStorageAdapter).deleteFile("http://doc2.pdf");
+        MockMultipartFile newFile = new MockMultipartFile(FILES_PARAM, "new.pdf", APPLICATION_PDF, "data".getBytes());
+        when(cloudStorageAdapter.uploadFile(newFile, NEW_NAME)).thenReturn("http://new.pdf");
+        doThrow(new RuntimeException("Delete error")).when(cloudStorageAdapter).deleteFile(DOC2_URL);
 
         Formation updated = new Formation();
         updated.setId(1);
@@ -129,16 +137,16 @@ class FormationCheckinFacadeTests {
         Formation result = facade.updateFormation(1, req, List.of(newFile));
 
         assertNotNull(result);
-        verify(cloudStorageAdapter).deleteFile("http://doc2.pdf");
-        verify(cloudStorageAdapter).uploadFile(newFile, "New Name");
+        verify(cloudStorageAdapter).deleteFile(DOC2_URL);
+        verify(cloudStorageAdapter).uploadFile(newFile, NEW_NAME);
     }
 
     @Test
-    void registerAttendance_withNullPersonalCode_usesCurrentUserCode() {
+    void testRegisterAttendanceWithNullPersonalCodeUsesCurrentUserCode() {
         when(userService.findCurrentUser()).thenReturn(sampleUser);
         Formation formation = new Formation();
         formation.setId(5);
-        when(formationService.registerAttendance(5, "EMP-001")).thenReturn(formation);
+        when(formationService.registerAttendance(5, EMP_001)).thenReturn(formation);
 
         Formation result = facade.registerAttendance(5, null);
         assertNotNull(result);
@@ -146,18 +154,18 @@ class FormationCheckinFacadeTests {
     }
 
     @Test
-    void checkoutAttendance_success() {
+    void testCheckoutAttendanceSuccess() {
         when(userService.findCurrentUser()).thenReturn(sampleUser);
         Formation formation = new Formation();
         formation.setId(5);
-        when(formationService.checkoutAttendance(5, "EMP-001", "signatureBase64")).thenReturn(formation);
+        when(formationService.checkoutAttendance(5, EMP_001, "signatureBase64")).thenReturn(formation);
 
         Formation result = facade.checkoutAttendance(5, "signatureBase64");
         assertNotNull(result);
     }
 
     @Test
-    void addRemoveAndDeleteAttendeeMethods_success() {
+    void testAddRemoveAndDeleteAttendeeMethodsSuccess() {
         facade.addAttendee(1, 10);
         verify(formationService).addAttendee(1, 10);
 

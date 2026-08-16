@@ -22,9 +22,11 @@ public class StringCryptoConverter implements AttributeConverter<String, String>
 
     private byte[] getKey() {
         String secret = EncryptionConfig.getSecret();
+        
         if (secret == null || secret.length() < 16) {
-            secret = "SuperSecretKey12345678901234567890";
+            throw new IllegalStateException("CRÍTICO: Clave de cifrado ausente o inválida en StringCryptoConverter.");
         }
+        
         byte[] key = new byte[16];
         System.arraycopy(secret.getBytes(StandardCharsets.UTF_8), 0, key, 0, 16);
         return key;

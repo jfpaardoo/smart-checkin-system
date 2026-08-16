@@ -1,4 +1,3 @@
-/* eslint-disable testing-library/prefer-screen-queries */
 const { test, expect } = require('@playwright/test');
 
 test.describe('Flujo de Activación de 2FA y Verificación TOTP (2FA Setup E2E)', () => {

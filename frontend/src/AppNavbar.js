@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaUsers, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen, FaChartLine, FaIdCard, FaUserPlus, FaSignInAlt, FaShieldAlt, FaCloudUploadAlt, FaBars, FaTimes, FaBell, FaCheck } from 'react-icons/fa';
+import { FaUsers, FaBuilding, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen, FaChartLine, FaIdCard, FaUserPlus, FaSignInAlt, FaShieldAlt, FaCloudUploadAlt, FaBars, FaTimes, FaBell, FaCheck } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import tokenService from './services/token.service';
 
@@ -80,10 +80,11 @@ export default function AppNavbar() {
                 <div className={`da-nav-dropdown-container left-0 w-[240px] transition-all duration-300 origin-top-left ${isAdminOpen ? 'opacity-100 scale-100 translate-y-0 visible' : 'opacity-0 scale-95 -translate-y-4 invisible pointer-events-none'}`}>
                     <div className="py-1" role="menu">
                         <Link to="/users" className="da-nav-dropdown-item" onClick={closeAll}><FaUsers className="text-white/60"/> {t('nav.manageUsers')}</Link>
+                        <Link to="/companies" className="da-nav-dropdown-item" onClick={closeAll}><FaBuilding className="text-white/60"/> {t('nav.manageCompanies', 'Empresas')}</Link>
                         <Link to="/formations" className="da-nav-dropdown-item" onClick={closeAll}><FaGraduationCap className="text-white/60"/> {t('nav.manageFormations')}</Link>
                         <Link to="/analytics" className="da-nav-dropdown-item" onClick={closeAll}><FaChartLine className="text-white/60"/> {t('nav.analytics')}</Link>
-                        <Link to="/audit" className="da-nav-dropdown-item" onClick={closeAll}><FaShieldAlt className="text-white/60"/> Auditoría</Link>
-                        <Link to="/admin/cloud-settings" className="da-nav-dropdown-item" onClick={closeAll}><FaCloudUploadAlt className="text-white/60"/> Ajustes de Nube</Link>
+                        <Link to="/audit" className="da-nav-dropdown-item" onClick={closeAll}><FaShieldAlt className="text-white/60"/> {t('nav.audit', 'Auditoría')}</Link>
+                        <Link to="/admin/cloud-settings" className="da-nav-dropdown-item" onClick={closeAll}><FaCloudUploadAlt className="text-white/60"/> {t('nav.cloudSettings', 'Ajustes de Nube')}</Link>
                         <div className="border-t border-white/20 my-1 mx-2"></div>
                         <Link to="/qr-generator" className="da-nav-dropdown-item" onClick={closeAll}><FaQrcode className="text-white/60"/> {t('nav.qrGenerator')}</Link>
                         <Link to="/docs" className="da-nav-dropdown-item" onClick={closeAll}><FaBookOpen className="text-white/60"/> {t('nav.docs')}</Link>
@@ -114,9 +115,9 @@ export default function AppNavbar() {
                 </button>
                 <div className={`da-nav-dropdown-container right-0 w-[230px] transition-all duration-300 origin-top-right ${isUserOpen ? 'opacity-100 scale-100 translate-y-0 visible' : 'opacity-0 scale-95 -translate-y-4 invisible pointer-events-none'}`}>
                     <div className="py-1" role="menu">
-                        <Link to="/profile" className="da-nav-dropdown-item" onClick={closeAll}><FaIdCard className="text-white/60"/> Mi Perfil</Link>
+                        <Link to="/profile" className="da-nav-dropdown-item" onClick={closeAll}><FaIdCard className="text-white/60"/> {t('nav.profile', 'Mi Perfil')}</Link>
                         <div className="border-t border-white/20 my-1 mx-2"></div>
-                        <Link to="/logout" className="da-nav-dropdown-item" onClick={closeAll}><FaSignOutAlt className="text-red-400"/> Salir</Link>
+                        <Link to="/logout" className="da-nav-dropdown-item" onClick={closeAll}><FaSignOutAlt className="text-red-400"/> {t('nav.logout', 'Salir')}</Link>
                     </div>
                 </div>
             </div>
@@ -190,10 +191,11 @@ export default function AppNavbar() {
                             <div className="text-[10px] font-extrabold text-white/40 mb-3 uppercase tracking-widest">{t('nav.administration')}</div>
                             <div className="space-y-1">
                                 <Link to="/users" className="da-nav-dropdown-item" onClick={closeAll}><FaUsers className="text-white/60"/> {t('nav.manageUsers')}</Link>
+                                <Link to="/companies" className="da-nav-dropdown-item" onClick={closeAll}><FaBuilding className="text-white/60"/> {t('nav.manageCompanies', 'Empresas')}</Link>
                                 <Link to="/formations" className="da-nav-dropdown-item" onClick={closeAll}><FaGraduationCap className="text-white/60"/> {t('nav.manageFormations')}</Link>
                                 <Link to="/analytics" className="da-nav-dropdown-item" onClick={closeAll}><FaChartLine className="text-white/60"/> {t('nav.analytics')}</Link>
-                                <Link to="/audit" className="da-nav-dropdown-item" onClick={closeAll}><FaShieldAlt className="text-white/60"/> Auditoría</Link>
-                                <Link to="/admin/cloud-settings" className="da-nav-dropdown-item" onClick={closeAll}><FaCloudUploadAlt className="text-white/60"/> Ajustes de Nube</Link>
+                                <Link to="/audit" className="da-nav-dropdown-item" onClick={closeAll}><FaShieldAlt className="text-white/60"/> {t('nav.audit', 'Auditoría')}</Link>
+                                <Link to="/admin/cloud-settings" className="da-nav-dropdown-item" onClick={closeAll}><FaCloudUploadAlt className="text-white/60"/> {t('nav.cloudSettings', 'Ajustes de Nube')}</Link>
                                 <div className="border-t border-white/20 my-1 mx-2"></div>
                                 <Link to="/qr-generator" className="da-nav-dropdown-item" onClick={closeAll}><FaQrcode className="text-white/60"/> {t('nav.qrGenerator')}</Link>
                                 <Link to="/docs" className="da-nav-dropdown-item" onClick={closeAll}><FaBookOpen className="text-white/60"/> {t('nav.docs')}</Link>
@@ -211,8 +213,8 @@ export default function AppNavbar() {
                             <div className="border-t border-white/10 pt-4 mt-2">
                                 <div className="text-[10px] font-extrabold text-white/40 mb-3 uppercase tracking-widest">{username}</div>
                                 <div className="space-y-1">
-                                    <Link to="/profile" className="da-nav-dropdown-item" onClick={closeAll}><FaIdCard className="text-white/60"/> Mi Perfil</Link>
-                                    <Link to="/logout" className="flex items-center gap-3 px-[18px] py-[12px] my-1 text-[1rem] font-bold text-red-400 rounded-2xl hover:bg-white/10 transition-colors" onClick={closeAll}><FaSignOutAlt className="text-red-400"/> Salir</Link>
+                                    <Link to="/profile" className="da-nav-dropdown-item" onClick={closeAll}><FaIdCard className="text-white/60"/> {t('nav.profile', 'Mi Perfil')}</Link>
+                                    <Link to="/logout" className="flex items-center gap-3 px-[18px] py-[12px] my-1 text-[1rem] font-bold text-red-400 rounded-2xl hover:bg-white/10 transition-colors" onClick={closeAll}><FaSignOutAlt className="text-red-400"/> {t('nav.logout', 'Salir')}</Link>
                                 </div>
                             </div>
                         )}

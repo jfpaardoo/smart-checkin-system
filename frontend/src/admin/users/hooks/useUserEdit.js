@@ -10,10 +10,12 @@ const emptyItem = {
   password: "",
   email: "",
   personalCode: "",
+  locator: "",
   firstName: "",
   lastName: "",
   isWorking: false,
   authority: null,
+  company: null,
 };
 
 export const useUserEdit = (id, jwt, toast, t) => {
@@ -28,6 +30,7 @@ export const useUserEdit = (id, jwt, toast, t) => {
   );
   
   const auths = useFetchData(`/api/v1/users/authorities`, jwt);
+  const companies = useFetchData(`/api/v1/companies`, jwt) || [];
   const [isSaving, setIsSaving] = useState(false);
 
   const handleChange = (event) => {
@@ -39,9 +42,16 @@ export const useUserEdit = (id, jwt, toast, t) => {
       value = value.replace(/\D/g, "").slice(0, 4);
     }
 
+    if (name === "locator") {
+      value = value.toUpperCase().slice(0, 10);
+    }
+
     if (name === "authority") {
       const auth = auths.find((a) => a.id === Number(value));
       setUser({ ...user, authority: auth });
+    } else if (name === "company") {
+      const comp = companies.find((c) => c.id === Number(value)) || null;
+      setUser({ ...user, company: comp });
     } else {
       setUser({ ...user, [name]: value });
     }
@@ -78,6 +88,7 @@ export const useUserEdit = (id, jwt, toast, t) => {
   return {
     user,
     auths,
+    companies,
     loading,
     isSaving,
     handleChange,

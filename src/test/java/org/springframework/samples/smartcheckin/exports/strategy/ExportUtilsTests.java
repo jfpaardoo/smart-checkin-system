@@ -28,7 +28,7 @@ class ExportUtilsTests {
     }
 
     @Test
-    void generateVerificationHash_validSignatureAndAllFields_returnsHash() {
+    void generateVerificationHashValidSignatureAndAllFieldsReturnsHash() {
         Formation formation = new Formation();
         formation.setId(10);
         formation.setFormationDate(LocalDateTime.of(2026, Month.MAY, 1, 10, 0));
@@ -51,7 +51,7 @@ class ExportUtilsTests {
     }
 
     @Test
-    void generateVerificationHash_nullSubFields_handlesDefaults() {
+    void testGenerateVerificationHashNullSubFieldsHandlesDefaults() {
         FormationAttendance att = new FormationAttendance();
         att.setSignature("sig");
 

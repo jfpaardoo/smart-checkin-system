@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # ============================================================================
   # 1. Main Spring Boot + React Application Service
@@ -10,18 +8,27 @@ services:
       dockerfile: Dockerfile
     container_name: smart-checkin-app
     restart: always
-    ports:
-      - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/smartcheckin
-      - SPRING_DATASOURCE_USERNAME=checkin_user
-      - SPRING_DATASOURCE_PASSWORD=checkin_secret_pass
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-      - JWT_SECRET=ProductionSecretKeyForBADistributionAcademySystem2026!
-      - TOTP_SECRET=JBSWY3DPEHPK3PXP
-      - ADMIN_USERNAME=admin
-      - ADMIN_PASSWORD=admin
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - JWT_SECRET=${JWT_SECRET}
+      - TOTP_SECRET=${TOTP_SECRET}
+      - ENCRYPTION_SECRET=${ENCRYPTION_SECRET}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_FROM=${MAIL_FROM}
+      - MAIL_HR_REPORT=${MAIL_HR_REPORT}
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}
+      - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
+      - AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
     depends_on:
       db:
         condition: service_healthy
@@ -36,15 +43,13 @@ services:
     container_name: smart-checkin-db
     restart: always
     environment:
-      - POSTGRES_DB=smartcheckin
-      - POSTGRES_USER=checkin_user
-      - POSTGRES_PASSWORD=checkin_secret_pass
-    ports:
-      - "5432:5432"
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U checkin_user -d smartcheckin"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -75,8 +75,9 @@ public class SecurityConfiguration {
                         .hasAuthority(ADMIN)
 
                         // 4. Endpoints públicos
-                        .requestMatchers("/api/v1/auth/**", "/ws/**", "/api/v1/cloud-settings/oauth/callback")
+                        .requestMatchers("/api/v1/auth/**", "/ws/**", "/api/v1/cloud-settings/oauth/callback", "/actuator/health", "/actuator/info")
                         .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/companies").permitAll()
 
                         // 5. Perfil personal del usuario y configuración de 2FA
                         .requestMatchers(
@@ -89,6 +90,7 @@ public class SecurityConfiguration {
                         .authenticated()
 
                         // 6. Administración y HR
+                        .requestMatchers("/api/v1/companies", "/api/v1/companies/**").hasAuthority(ADMIN)
                         .requestMatchers("/api/v1/users/pending", "/api/v1/users/*/approve").hasAuthority(ADMIN)
                         .requestMatchers("/api/v1/users", "/api/v1/users/**").hasAuthority(ADMIN)
                         .requestMatchers("/api/v1/analytics/**").hasAuthority(ADMIN)
@@ -139,7 +141,7 @@ public class SecurityConfiguration {
         return new BCryptPasswordEncoder();
     }
 
-    @Value("${app.cors.allowed-origins}")
+    @Value("${app.cors.allowed-origins:http://localhost:3000}")
     private String[] allowedOrigins;
 
     @Bean

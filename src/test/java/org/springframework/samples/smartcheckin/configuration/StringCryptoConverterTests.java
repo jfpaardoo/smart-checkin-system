@@ -47,20 +47,14 @@ class StringCryptoConverterTests {
     }
 
     @Test
-    void testGetKeyWithNullSecretUsesFallback() {
+    void testSetSecretThrowsOnNull() {
         EncryptionConfig config = new EncryptionConfig();
-        config.setSecret(null);
-        String encrypted = converter.convertToDatabaseColumn("pruebaNulo");
-        assertNotNull(encrypted);
-        assertEquals("pruebaNulo", converter.convertToEntityAttribute(encrypted));
+        assertThrows(IllegalArgumentException.class, () -> config.setSecret(null));
     }
 
     @Test
-    void testGetKeyWithShortSecretUsesFallback() {
+    void testSetSecretThrowsOnShortSecret() {
         EncryptionConfig config = new EncryptionConfig();
-        config.setSecret("corto");
-        String encrypted = converter.convertToDatabaseColumn("pruebaCorto");
-        assertNotNull(encrypted);
-        assertEquals("pruebaCorto", converter.convertToEntityAttribute(encrypted));
+        assertThrows(IllegalArgumentException.class, () -> config.setSecret("corto"));
     }
 }

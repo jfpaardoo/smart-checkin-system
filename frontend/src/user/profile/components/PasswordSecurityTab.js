@@ -1,6 +1,7 @@
 import React from "react";
 import TwoFactorSettings from "./TwoFactorSettings";
 import PasswordChangeCard from "./PasswordChangeCard";
+import PasskeySettings from "./PasskeySettings";
 import PrivacyDataTab from "./PrivacyDataTab";
 
 export default function PasswordSecurityTab({
@@ -21,11 +22,18 @@ export default function PasswordSecurityTab({
   return (
     <div className="w-full">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 items-stretch">
-        {/* Card: 2FA Configuration */}
-        <div><TwoFactorSettings userData={userData} setUserData={setUserData} t={t} toast={toast} /></div>
-
-        {/* Card: Password Change */}
+        {/* Card 1: Passkeys / Biometría (FIDO2) */}
         <div>
+          <PasskeySettings t={t} toast={toast} />
+        </div>
+
+        {/* Card 2: 2FA Configuration (TOTP) */}
+        <div>
+          <TwoFactorSettings userData={userData} setUserData={setUserData} t={t} toast={toast} />
+        </div>
+
+        {/* Card 3: Password Change */}
+        <div className="lg:col-span-2">
           <PasswordChangeCard 
             passwordForm={passwordForm}
             setPasswordForm={setPasswordForm}
@@ -36,7 +44,7 @@ export default function PasswordSecurityTab({
         </div>
       </div>
 
-      {/* Sección de Privacidad y Datos */}
+      {/* Sección de Privacidad y Datos (GDPR) */}
       <div className="mt-6">
         <PrivacyDataTab 
           t={t}

@@ -7,207 +7,241 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.samples.smartcheckin.audit.AuditLog;
+import org.springframework.samples.smartcheckin.audit.AuditLogRepository;
 import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
+import org.springframework.samples.smartcheckin.storage.SignatureStorageService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 class UserServiceTests {
 
-	private UserRepository userRepository;
-	private UserService userService;
+    private static final String ORIGINAL = "original";
+    private static final String OLDPASS = "oldpass";
 
-	@BeforeEach
-	void setUp() {
-		userRepository = mock(UserRepository.class);
-		userService = new UserService(userRepository);
-	}
+    private UserRepository userRepository;
+    private UserService userService;
+    private AuditLogRepository auditLogRepository;
 
-	@Test
-	void testSaveUser() {
-		User user = new User();
-		user.setUsername("john");
+    @BeforeEach
+    void setUp() {
+        userRepository = mock(UserRepository.class);
+        SignatureStorageService signatureStorageService = mock(SignatureStorageService.class);
+        auditLogRepository = mock(AuditLogRepository.class);
+        userService = new UserService(userRepository, signatureStorageService, auditLogRepository);
+    }
 
-		when(userRepository.save(user)).thenReturn(user);
+    @Test
+    void testSaveUser() {
+        User user = new User();
+        user.setUsername("john");
 
-		User saved = userService.saveUser(user);
-		assertNotNull(saved);
-		assertEquals("john", saved.getUsername());
-		verify(userRepository, times(1)).save(user);
-	}
+        when(userRepository.save(user)).thenReturn(user);
 
-	@Test
-	void testFindUserByUsernameFound() {
-		User user = new User();
-		user.setUsername("john");
-		when(userRepository.findByUsernameOrEmail("john", "john")).thenReturn(Optional.of(user));
+        User saved = userService.saveUser(user);
+        assertNotNull(saved);
+        assertEquals("john", saved.getUsername());
+        verify(userRepository, times(1)).save(user);
+    }
 
-		User found = userService.findUser("john");
-		assertEquals("john", found.getUsername());
-	}
+    @Test
+    void testFindUserByUsernameFound() {
+        User user = new User();
+        user.setUsername("john");
+        when(userRepository.findByUsernameOrEmail("john", "john")).thenReturn(Optional.of(user));
 
-	@Test
-	void testFindUserByUsernameNotFound() {
-		when(userRepository.findByUsernameOrEmail("john", "john")).thenReturn(Optional.empty());
-		assertThrows(ResourceNotFoundException.class, () -> userService.findUser("john"));
-	}
+        User found = userService.findUser("john");
+        assertEquals("john", found.getUsername());
+    }
 
-	@Test
-	void testFindUserByIdFound() {
-		User user = new User();
-		user.setId(1);
-		when(userRepository.findById(1)).thenReturn(Optional.of(user));
+    @Test
+    void testFindUserByUsernameNotFound() {
+        when(userRepository.findByUsernameOrEmail("john", "john")).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> userService.findUser("john"));
+    }
 
-		User found = userService.findUser(1);
-		assertEquals(1, found.getId());
-	}
+    @Test
+    void testFindUserByIdFound() {
+        User user = new User();
+        user.setId(1);
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
 
-	@Test
-	void testFindUserByIdNotFound() {
-		when(userRepository.findById(1)).thenReturn(Optional.empty());
-		assertThrows(ResourceNotFoundException.class, () -> userService.findUser(1));
-	}
+        User found = userService.findUser(1);
+        assertEquals(1, found.getId());
+    }
 
-	@Test
-	void testFindByPersonalCodeFound() {
-		User user = new User();
-		user.setPersonalCode("1234");
-		when(userRepository.findByPersonalCode("1234")).thenReturn(Optional.of(user));
+    @Test
+    void testFindUserByIdNotFound() {
+        when(userRepository.findById(1)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> userService.findUser(1));
+    }
 
-		User found = userService.findByPersonalCode("1234");
-		assertEquals("1234", found.getPersonalCode());
-	}
+    @Test
+    void testFindByPersonalCodeFound() {
+        User user = new User();
+        user.setPersonalCode("1234");
+        when(userRepository.findByPersonalCode("1234")).thenReturn(Optional.of(user));
 
-	@Test
-	void testFindByPersonalCodeNotFound() {
-		when(userRepository.findByPersonalCode("1234")).thenReturn(Optional.empty());
-		assertThrows(ResourceNotFoundException.class, () -> userService.findByPersonalCode("1234"));
-	}
+        User found = userService.findByPersonalCode("1234");
+        assertEquals("1234", found.getPersonalCode());
+    }
 
-	@Test
-	void testFindCurrentUserNoAuth() {
-		SecurityContextHolder.clearContext();
-		assertThrows(ResourceNotFoundException.class, () -> userService.findCurrentUser());
-	}
+    @Test
+    void testFindByPersonalCodeNotFound() {
+        when(userRepository.findByPersonalCode("1234")).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> userService.findByPersonalCode("1234"));
+    }
 
-	@Test
-	void testFindCurrentUserAuthenticated() {
-		SecurityContext securityContext = mock(SecurityContext.class);
-		Authentication authentication = mock(Authentication.class);
-		when(authentication.getName()).thenReturn("john");
-		when(securityContext.getAuthentication()).thenReturn(authentication);
-		SecurityContextHolder.setContext(securityContext);
+    @Test
+    void testFindCurrentUserNoAuth() {
+        SecurityContextHolder.clearContext();
+        assertThrows(ResourceNotFoundException.class, () -> userService.findCurrentUser());
+    }
 
-		User user = new User();
-		user.setUsername("john");
-		when(userRepository.findByUsernameOrEmail("john", "john")).thenReturn(Optional.of(user));
+    @Test
+    void testFindCurrentUserAuthenticated() {
+        SecurityContext securityContext = mock(SecurityContext.class);
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn("john");
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
 
-		User current = userService.findCurrentUser();
-		assertEquals("john", current.getUsername());
-		SecurityContextHolder.clearContext();
-	}
+        User user = new User();
+        user.setUsername("john");
+        when(userRepository.findByUsernameOrEmail("john", "john")).thenReturn(Optional.of(user));
 
-	@Test
-	void testExistsUser() {
-		when(userRepository.existsByUsername("john")).thenReturn(true);
-		assertTrue(userService.existsUser("john"));
-	}
+        User current = userService.findCurrentUser();
+        assertEquals("john", current.getUsername());
+        SecurityContextHolder.clearContext();
+    }
 
-	@Test
-	void testFindAll() {
-		User user = new User();
-		when(userRepository.findAll()).thenReturn(List.of(user));
-		Iterable<User> users = userService.findAll();
-		assertNotNull(users.iterator().next());
-	}
+    @Test
+    void testExistsUser() {
+        when(userRepository.existsByUsername("john")).thenReturn(true);
+        assertTrue(userService.existsUser("john"));
+    }
 
-	@Test
-	void testFindAllByAuthority() {
-		User user = new User();
-		when(userRepository.findAllApprovedUsersByAuthority("ADMIN")).thenReturn(List.of(user));
-		Iterable<User> users = userService.findAllByAuthority("ADMIN");
-		assertNotNull(users.iterator().next());
-	}
+    @Test
+    void testFindAll() {
+        User user = new User();
+        when(userRepository.findAll()).thenReturn(List.of(user));
+        Iterable<User> users = userService.findAll();
+        assertNotNull(users.iterator().next());
+    }
 
-	@Test
-	void testFindPendingUsers() {
-		User user = new User();
-		when(userRepository.findAllPendingUsers()).thenReturn(List.of(user));
-		Iterable<User> users = userService.findPendingUsers();
-		assertNotNull(users.iterator().next());
-	}
+    @Test
+    void testFindAllByAuthority() {
+        User user = new User();
+        when(userRepository.findAllApprovedUsersByAuthority("ADMIN")).thenReturn(List.of(user));
+        Iterable<User> users = userService.findAllByAuthority("ADMIN");
+        assertNotNull(users.iterator().next());
+    }
 
-	@Test
-	void testFindApprovedUsers() {
-		User user = new User();
-		when(userRepository.findAllApprovedUsers()).thenReturn(List.of(user));
-		Iterable<User> users = userService.findApprovedUsers();
-		assertNotNull(users.iterator().next());
-	}
+    @Test
+    void testFindPendingUsers() {
+        User user = new User();
+        when(userRepository.findAllPendingUsers()).thenReturn(List.of(user));
+        Iterable<User> users = userService.findPendingUsers();
+        assertNotNull(users.iterator().next());
+    }
 
-	@Test
-	void testUpdateUser() {
-		User existing = new User();
-		existing.setId(1);
-		existing.setUsername("old");
+    @Test
+    void testFindApprovedUsers() {
+        User user = new User();
+        when(userRepository.findAllApprovedUsers()).thenReturn(List.of(user));
+        Iterable<User> users = userService.findApprovedUsers();
+        assertNotNull(users.iterator().next());
+    }
 
-		User updatedInfo = new User();
-		updatedInfo.setUsername("new");
-		updatedInfo.setFirstName("John");
-		updatedInfo.setLastName("Doe");
-		updatedInfo.setPersonalCode("4321");
-		updatedInfo.setIsWorking(true);
-		updatedInfo.setPassword("newpass");
+    @Test
+    void testUpdateUser() {
+        User existing = new User();
+        existing.setId(1);
+        existing.setUsername("old");
 
-		when(userRepository.findById(1)).thenReturn(Optional.of(existing));
+        User updatedInfo = new User();
+        updatedInfo.setUsername("new");
+        updatedInfo.setFirstName("John");
+        updatedInfo.setLastName("Doe");
+        updatedInfo.setPersonalCode("4321");
+        updatedInfo.setIsWorking(true);
+        updatedInfo.setPassword("newpass");
 
-		User updated = userService.updateUser(updatedInfo, 1);
-		assertEquals("new", updated.getUsername());
-		assertEquals("John", updated.getFirstName());
-		assertEquals("Doe", updated.getLastName());
-		assertEquals("4321", updated.getPersonalCode());
-		assertTrue(updated.getIsWorking());
-		assertEquals("newpass", updated.getPassword());
-	}
+        when(userRepository.findById(1)).thenReturn(Optional.of(existing));
 
-	@Test
-	void testDeleteUser() {
-		User user = new User();
-		user.setId(1);
-		when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        User updated = userService.updateUser(updatedInfo, 1);
+        assertEquals("new", updated.getUsername());
+        assertEquals("John", updated.getFirstName());
+        assertEquals("Doe", updated.getLastName());
+        assertEquals("4321", updated.getPersonalCode());
+        assertTrue(updated.getIsWorking());
+        assertEquals("newpass", updated.getPassword());
+    }
 
-		userService.deleteUser(1);
-		verify(userRepository, times(1)).delete(user);
-	}
+    @Test
+    void testDeleteUser() {
+        User user = new User();
+        user.setId(1);
+        user.setUsername(ORIGINAL);
+        
+        AuditLog log1 = new AuditLog();
+        log1.setUsername(ORIGINAL);
+        log1.setDetails("{\"user\":\"" + ORIGINAL + "\"}");
 
-	@Test
-	void testUpdateUserNotFound() {
-		when(userRepository.findById(999)).thenReturn(Optional.empty());
-		User dummy = new User();
-		assertThrows(ResourceNotFoundException.class, () -> userService.updateUser(dummy, 999));
-	}
+        AuditLog log2 = new AuditLog();
+        log2.setUsername("admin");
+        log2.setDetails("{\"target\":\"" + ORIGINAL + "\"}");
 
-	@Test
-	void testDeleteUserNotFound() {
-		when(userRepository.findById(999)).thenReturn(Optional.empty());
-		assertThrows(ResourceNotFoundException.class, () -> userService.deleteUser(999));
-	}
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(auditLogRepository.findByUsername(ORIGINAL)).thenReturn(List.of(log1));
+        when(auditLogRepository.findByDetailsContaining(ORIGINAL)).thenReturn(List.of(log2));
 
-	@Test
-	void testFindCurrentUserNullAuthentication() {
-		SecurityContext securityContext = mock(SecurityContext.class);
-		when(securityContext.getAuthentication()).thenReturn(null);
-		SecurityContextHolder.setContext(securityContext);
+        userService.deleteUser(1);
+        
+        // Verificamos que se llama a save en lugar de delete para la anonimización
+        verify(userRepository, times(1)).save(user);
+        verify(userRepository, never()).delete(user);
+        
+        // Verificamos que la anonimización ha tenido lugar
+        assertTrue(user.getUsername().startsWith("GDPR_DEL_"));
+        assertEquals("Anonymized", user.getFirstName());
+        assertFalse(user.getIsApproved());
 
-		assertThrows(ResourceNotFoundException.class, () -> userService.findCurrentUser());
-		SecurityContextHolder.clearContext();
-	}
+        // Verificamos sanitización de auditoría
+        assertTrue(log1.getUsername().startsWith("GDPR_DEL_"));
+        assertFalse(log1.getDetails().contains(ORIGINAL));
+        assertFalse(log2.getDetails().contains(ORIGINAL));
+    }
 
-	@Test
+    @Test
+    void testUpdateUserNotFound() {
+        when(userRepository.findById(999)).thenReturn(Optional.empty());
+        User dummy = new User();
+        assertThrows(ResourceNotFoundException.class, () -> userService.updateUser(dummy, 999));
+    }
+
+    @Test
+    void testDeleteUserNotFound() {
+        when(userRepository.findById(999)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> userService.deleteUser(999));
+    }
+
+    @Test
+    void testFindCurrentUserNullAuthentication() {
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(null);
+        SecurityContextHolder.setContext(securityContext);
+
+        assertThrows(ResourceNotFoundException.class, () -> userService.findCurrentUser());
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
     void testUpdateUserWithNullOrEmptyPasswordPreservesOld() {
         User existing = new User();
         existing.setId(1);
-        existing.setPassword("oldpass");
+        existing.setPassword(OLDPASS);
 
         User updatedInfo = new User();
         updatedInfo.setUsername("newuser");
@@ -216,10 +250,10 @@ class UserServiceTests {
         when(userRepository.findById(1)).thenReturn(Optional.of(existing));
 
         User updated = userService.updateUser(updatedInfo, 1);
-        assertEquals("oldpass", updated.getPassword());
+        assertEquals(OLDPASS, updated.getPassword());
 
         updatedInfo.setPassword("");
         User updatedAgain = userService.updateUser(updatedInfo, 1);
-        assertEquals("oldpass", updatedAgain.getPassword());
+        assertEquals(OLDPASS, updatedAgain.getPassword());
     }
 }

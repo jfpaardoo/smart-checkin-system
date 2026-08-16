@@ -1,7 +1,8 @@
 import React from "react";
 import { Form, Input, Label, FormGroup, Button } from "reactstrap";
+import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTimes, faUpload } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faTimes, faUpload, faArrowLeft, faGraduationCap } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import "../../App.css";
@@ -40,10 +41,29 @@ export default function FormationEditAdmin() {
 
   return (
     <div className="da-container justify-content-center">
-      <div className="da-card da-card-form my-auto mx-auto">
-        <div className="da-card-header">
-          <h2>{formation.id ? t('formations.editFormation') : t('formations.createNew')}</h2>
+      <div className="da-card da-card-form my-auto mx-auto" style={{ maxWidth: "820px" }}>
+        {/* Cabecera simétrica Liquid Glass con botón atrás y badge centrado */}
+        <div className="relative mb-6 pb-4 border-b border-white/30 text-center">
+          <Link
+            to="/formations"
+            className="absolute left-0 top-0 p-2.5 rounded-2xl bg-white/50 border border-white/70 text-slate-600 hover:text-slate-900 hover:bg-white hover:scale-105 active:scale-95 transition shadow-xs flex items-center justify-center"
+            title={t("common.back", "Volver")}
+          >
+            <FontAwesomeIcon icon={faArrowLeft} />
+          </Link>
+          <div className="inline-flex items-center justify-center p-3.5 rounded-2xl bg-[#b3c34c]/20 text-[#8fa228] shadow-xs mb-2">
+            <FontAwesomeIcon icon={faGraduationCap} size="lg" />
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mb-1">
+            {formation.id ? t('formations.editFormation', 'Editar Formación') : t('formations.createNew', 'Nueva Formación')}
+          </h2>
+          <p className="text-xs text-slate-500 mb-0">
+            {formation.id 
+              ? t('formations.editSubtitle', 'Modifica los datos, horario y documentación de la formación')
+              : t('formations.newSubtitle', 'Crea una nueva sesión formativa y sube el material')}
+          </p>
         </div>
+
         <Form onSubmit={handleSubmit}>
           <div className="da-form-row-2">
               <FormGroup>

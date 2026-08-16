@@ -17,6 +17,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class DepartmentServiceTests {
 
+    private static final String ENGINEERING = "Engineering";
+
     @Mock
     private DepartmentRepository departmentRepository;
 
@@ -29,17 +31,17 @@ class DepartmentServiceTests {
     void setUp() {
         dept = new Department();
         dept.setId(1);
-        dept.setName("Engineering");
+        dept.setName(ENGINEERING);
     }
 
     // ─── getAllDepartments ────────────────────────────────────────────────────
 
     @Test
-    void getAllDepartments_returnsAllDepartments() {
+    void testGetAllDepartmentsReturnsAllDepartments() {
         when(departmentRepository.findAll()).thenReturn(List.of(dept));
         List<Department> result = departmentService.getAllDepartments();
         assertEquals(1, result.size());
-        assertEquals("Engineering", result.get(0).getName());
+        assertEquals(ENGINEERING, result.get(0).getName());
     }
 
     @Test
@@ -67,15 +69,15 @@ class DepartmentServiceTests {
     // ─── getDepartmentById ────────────────────────────────────────────────────
 
     @Test
-    void getDepartmentById_existing_returnsPresent() {
+    void testGetDepartmentByIdExistingReturnsPresent() {
         when(departmentRepository.findById(1)).thenReturn(Optional.of(dept));
         Optional<Department> result = departmentService.getDepartmentById(1);
         assertTrue(result.isPresent());
-        assertEquals("Engineering", result.get().getName());
+        assertEquals(ENGINEERING, result.get().getName());
     }
 
     @Test
-    void getDepartmentById_notFound_returnsEmpty() {
+    void testGetDepartmentByIdNotFoundReturnsEmpty() {
         when(departmentRepository.findById(99)).thenReturn(Optional.empty());
         assertTrue(departmentService.getDepartmentById(99).isEmpty());
     }
@@ -83,7 +85,7 @@ class DepartmentServiceTests {
     // ─── saveDepartment ───────────────────────────────────────────────────────
 
     @Test
-    void saveDepartment_persistsAndReturns() {
+    void testSaveDepartmentPersistsAndReturns() {
         when(departmentRepository.save(dept)).thenReturn(dept);
         Department saved = departmentService.saveDepartment(dept);
         assertSame(dept, saved);
@@ -93,7 +95,7 @@ class DepartmentServiceTests {
     // ─── deleteDepartment ─────────────────────────────────────────────────────
 
     @Test
-    void deleteDepartment_callsRepositoryDelete() {
+    void testDeleteDepartmentCallsRepositoryDelete() {
         departmentService.deleteDepartment(1);
         verify(departmentRepository).deleteById(1);
     }

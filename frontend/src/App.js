@@ -16,6 +16,8 @@ import UserEditAdmin from "./admin/users/UserEditAdmin";
 import FormationListAdmin from "./admin/formations/FormationListAdmin";
 import FormationEditAdmin from "./admin/formations/FormationEditAdmin";
 import FormationDetailsAdmin from "./admin/formations/FormationDetailsAdmin";
+import CompanyListAdmin from "./admin/companies/CompanyListAdmin";
+import CompanyEditAdmin from "./admin/companies/CompanyEditAdmin";
 import QRGeneratorAdmin from "./admin/qr/QRGeneratorAdmin";
 import AnalyticsDashboard from "./admin/analytics/AnalyticsDashboard";
 import AuditDashboard from "./admin/audit/AuditDashboard";
@@ -25,6 +27,8 @@ import UserProfile from "./user/profile/UserProfile";
 import { ToastProvider } from "./components/ToastProvider";
 import CloudSettingsAdmin from "./admin/settings/CloudSettingsAdmin";
 import PrivacyPolicy from "./legal/PrivacyPolicy";
+import ForgotPassword from "./auth/recover/ForgotPassword";
+import ResetPassword from "./auth/recover/ResetPassword";
 
 function ErrorFallback({ error, resetErrorBoundary }) {
   return (
@@ -54,6 +58,8 @@ function App() {
         <>
           <Route path="/users" exact={true} element={<PrivateRoute><UserListAdmin /></PrivateRoute>} />
           <Route path="/users/:id" exact={true} element={<PrivateRoute><UserEditAdmin /></PrivateRoute>} />
+          <Route path="/companies" exact={true} element={<PrivateRoute><CompanyListAdmin /></PrivateRoute>} />
+          <Route path="/companies/:id" exact={true} element={<PrivateRoute><CompanyEditAdmin /></PrivateRoute>} />
           <Route path="/formations" exact={true} element={<PrivateRoute><FormationListAdmin /></PrivateRoute>} />
           <Route path="/formations/:id" exact={true} element={<PrivateRoute><FormationEditAdmin /></PrivateRoute>} />
           <Route path="/formations/:id/details" exact={true} element={<PrivateRoute><FormationDetailsAdmin /></PrivateRoute>} />
@@ -92,9 +98,9 @@ function App() {
         <AppNavbar />
         <Routes>
           <Route path="/" exact={true} element={<Home />} />
-          {/* Ruta pública siempre accesible */}
           <Route path="/privacy-policy" exact={true} element={<PrivacyPolicy />} />
-          
+          <Route path="/forgot-password" exact={true} element={<ForgotPassword />} />
+          <Route path="/reset-password" exact={true} element={<ResetPassword />} />
           {publicRoutes}
           {userRoutes}
           {adminRoutes}

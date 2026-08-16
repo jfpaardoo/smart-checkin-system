@@ -18,6 +18,7 @@ class AuthTokenFilterTests {
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String VALID_JWT_TOKEN = "validJwtToken";
+    private static final String COOKIE_JWT_TOKEN = "cookieJwtToken";
 
     private JwtUtils jwtUtils;
     private UserDetailsServiceImpl userDetailsService;
@@ -124,10 +125,10 @@ class AuthTokenFilterTests {
 
     @Test
     void testDoFilterInternalCookieJwt() throws Exception {
-        when(jwtUtils.getJwtFromCookies(request)).thenReturn("cookieJwtToken");
-        when(jwtUtils.validateJwtToken("cookieJwtToken")).thenReturn(true);
-        when(jwtBlacklistService.isBlacklisted("cookieJwtToken")).thenReturn(false);
-        when(jwtUtils.getUserNameFromJwtToken("cookieJwtToken")).thenReturn("cookieUser");
+        when(jwtUtils.getJwtFromCookies(request)).thenReturn(COOKIE_JWT_TOKEN);
+        when(jwtUtils.validateJwtToken(COOKIE_JWT_TOKEN)).thenReturn(true);
+        when(jwtBlacklistService.isBlacklisted(COOKIE_JWT_TOKEN)).thenReturn(false);
+        when(jwtUtils.getUserNameFromJwtToken(COOKIE_JWT_TOKEN)).thenReturn("cookieUser");
 
         UserDetails userDetails = mock(UserDetails.class);
         when(userDetailsService.loadUserByUsername("cookieUser")).thenReturn(userDetails);

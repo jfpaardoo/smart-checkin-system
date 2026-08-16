@@ -26,6 +26,8 @@ import org.springframework.samples.smartcheckin.audit.AnomalyDetectionService;
 import org.springframework.samples.smartcheckin.auth.payload.request.LoginRequest;
 import org.springframework.samples.smartcheckin.auth.payload.request.SignupRequest;
 import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest;
+import org.springframework.samples.smartcheckin.company.Company;
+import org.springframework.samples.smartcheckin.company.CompanyService;
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtBlacklistService;
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
@@ -98,6 +100,12 @@ class AuthControllerTests {
 	private JwtBlacklistService jwtBlacklistService;
 
 	@MockitoBean
+	private PasswordResetService passwordResetService;
+
+	@MockitoBean
+	private CaptchaService captchaService;
+
+	@MockitoBean
 	private JavaMailSender javaMailSender;
 
 	@MockitoBean
@@ -105,6 +113,9 @@ class AuthControllerTests {
 
 	@MockitoBean
 	private PushNotificationSender pushNotificationSender;
+
+	@MockitoBean
+	private CompanyService companyService;
 
 	@Autowired
 	@SuppressWarnings("java:S6813")
@@ -134,12 +145,15 @@ class AuthControllerTests {
 		loginRequest = new LoginRequest();
 		loginRequest.setUsername("owner");
 		loginRequest.setPassword(PASSWORD);
+		loginRequest.setCaptchaToken("dummy-captcha-token");
 
 		userDetails = new UserDetailsImpl(1, loginRequest.getUsername(), loginRequest.getPassword(),
 				List.of(new SimpleGrantedAuthority("OWNER")));
 
 		token = "JWT_TOKEN";
 		jwtCookie = ResponseCookie.from("jwt", token).path("/api").maxAge(24 * 60 * 60).httpOnly(true).build();
+		
+		when(this.captchaService.validateCaptcha(any())).thenReturn(true);
 	}
 
 	@Test
@@ -262,6 +276,7 @@ class AuthControllerTests {
 		signup.setFirstName("New");
 		signup.setLastName("User");
 		signup.setEmail("newuser@example.com");
+		signup.setCaptchaToken("dummy-captcha-token");
 
 		when(userService.findUser(newUser)).thenThrow(new ResourceNotFoundException("User", "username", newUser));
 		when(authoritiesService.findByAuthority("EMPLOYEE")).thenReturn(new Authorities());
@@ -269,6 +284,33 @@ class AuthControllerTests {
 		mockMvc.perform(post(SIGNUP_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(signup)))
 				.andExpect(status().isOk());
+	}
+
+	@Test
+	void shouldRegisterUserWithCompanySuccess() throws Exception {
+		String newUser = "companyuser";
+		SignupRequest signup = new SignupRequest();
+		signup.setUsername(newUser);
+		signup.setPassword(PASSWORD);
+		signup.setPersonalCode("7777");
+		signup.setFirstName("Comp");
+		signup.setLastName("User");
+		signup.setEmail("compuser@example.com");
+		signup.setCaptchaToken("dummy-captcha-token");
+		signup.setCompanyId(1);
+
+		Company mockCompany = Company.builder().name("BA Glass Spain SAU").build();
+		mockCompany.setId(1);
+
+		when(userService.findUser(newUser)).thenThrow(new ResourceNotFoundException("User", "username", newUser));
+		when(authoritiesService.findByAuthority("EMPLOYEE")).thenReturn(new Authorities());
+		when(companyService.findById(1)).thenReturn(mockCompany);
+
+		mockMvc.perform(post(SIGNUP_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(signup)))
+				.andExpect(status().isOk());
+
+		verify(companyService, times(1)).findById(1);
 	}
 
 	@Test
@@ -301,6 +343,7 @@ class AuthControllerTests {
 		signup.setFirstName("New");
 		signup.setLastName("User");
 		signup.setEmail("existinguser@example.com");
+		signup.setCaptchaToken("dummy-captcha-token");
 
 		User existing = new User();
 		existing.setUsername(existingUser);
@@ -346,15 +389,6 @@ class AuthControllerTests {
 		mockMvc.perform(post(SIGNIN_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(loginRequest)))
 				.andExpect(status().isOk());
-	}
-
-	@Test
-	void shouldGetPublicKey() throws Exception {
-		when(jwtUtils.getPublicKeyBase64()).thenReturn("PUBLIC_KEY");
-
-		mockMvc.perform(get(BASE_URL + "/public-key"))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$").value("PUBLIC_KEY"));
 	}
 
 	@Test
@@ -404,6 +438,7 @@ class AuthControllerTests {
         signup.setFirstName("New");
         signup.setLastName("User");
         signup.setEmail("newUser2@example.com");
+        signup.setCaptchaToken("dummy-captcha-token");
 
         when(userService.findUser(NEW_USER_2)).thenThrow(new ResourceNotFoundException("User", "username", NEW_USER_2));
         when(authoritiesService.findByAuthority("EMPLOYEE")).thenThrow(new ResourceNotFoundException("Authority not found"));
