@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Turnstile } from '@marsidev/react-turnstile';
 import AuthService from '../../services/auth.service';
+import { useCaptchaSiteKey } from '../../hooks/useCaptchaSiteKey';
 
 export default function ForgotPassword() {
+    const siteKey = useCaptchaSiteKey();
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState({ text: '', type: '' });
     const [loading, setLoading] = useState(false);
@@ -86,8 +88,8 @@ export default function ForgotPassword() {
             {/* Contenedor Glassmorphism para Cloudflare */}
             <div className="flex justify-center items-center mt-2 p-3 rounded-2xl bg-white/30 backdrop-blur-md border border-white/40 shadow-inner">
                 <Turnstile 
-                    key={captchaKey}
-                    siteKey={process.env.REACT_APP_CAPTCHA_SITE_KEY || '1x00000000000000000000AA'} 
+                    key={`${siteKey}-${captchaKey}`}
+                    siteKey={siteKey} 
                     onSuccess={(token) => setCaptchaToken(token)}
                     onError={() => setCaptchaToken(null)}
                     onExpire={() => setCaptchaToken(null)}

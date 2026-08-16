@@ -87,6 +87,9 @@ public class AuthController {
     @Value("${app.frontend.url:http://localhost:3000}")
     private String frontendUrl;
 
+    @Value("${app.captcha.site-key:1x00000000000000000000AA}")
+    private String captchaSiteKey;
+
     @Autowired
     public AuthController(AuthenticationManager authenticationManager, UserService userService, 
             AuthoritiesService authoritiesService, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, 
@@ -342,6 +345,11 @@ public class AuthController {
                 }
             }
         }
+    }
+
+    @GetMapping("/captcha-config")
+    public ResponseEntity<java.util.Map<String, String>> getCaptchaConfig() {
+        return ResponseEntity.ok(java.util.Map.of("siteKey", captchaSiteKey));
     }
 
     @GetMapping("/validate")
