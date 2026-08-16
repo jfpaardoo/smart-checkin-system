@@ -28,14 +28,13 @@ export default function UserTable({
         <Table responsive hover aria-label="users" className="da-table align-middle" style={{ tableLayout: 'fixed', minWidth: '900px', width: '100%' }}>
           <thead>
             <tr>
-              <th style={{ width: '10%', paddingLeft: '1rem' }}>{t('users.personalCode', 'Código')}</th>
-              <th style={{ width: '12%' }}>{t('users.username', 'Usuario')}</th>
-              <th style={{ width: '13%' }}>{t('users.firstName', 'Nombre')}</th>
-              <th style={{ width: '13%' }}>{t('users.lastName', 'Apellidos')}</th>
-              <th style={{ width: '16%' }}>{t('users.company', 'Empresa / Centro')}</th>
+              <th style={{ width: '11%', paddingLeft: '1rem' }}>{t('users.personalCode', 'Código')}</th>
+              <th style={{ width: '13%' }}>{t('users.username', 'Usuario')}</th>
+              <th style={{ width: '14%' }}>{t('users.firstName', 'Nombre')}</th>
+              <th style={{ width: '14%' }}>{t('users.lastName', 'Apellidos')}</th>
+              <th style={{ width: '18%' }}>{t('users.company', 'Empresa / Centro')}</th>
               <th style={{ width: '12%' }} className="text-center">{t('users.status', 'Estado')}</th>
-              <th style={{ width: '8%' }} className="text-center">{t('users.role', 'Rol')}</th>
-              <th style={{ width: '16%' }} className="text-center">{t('users.actions', 'Acciones')}</th>
+              <th style={{ width: '18%' }} className="text-center">{t('users.actions', 'Acciones')}</th>
             </tr>
           </thead>
           <tbody>
@@ -56,7 +55,7 @@ export default function UserTable({
                 <td style={{ wordBreak: 'break-word' }}>{user.lastName}</td>
                 <td>
                   {user.company ? (
-                    <span className="font-semibold text-slate-800 text-xs truncate max-w-[140px] block" title={user.company.name}>
+                    <span className="font-semibold text-slate-800 text-xs truncate max-w-[150px] block" title={user.company.name}>
                       {user.company.name}
                     </span>
                   ) : (
@@ -71,9 +70,6 @@ export default function UserTable({
                   ) : (
                     <span className="da-badge da-badge-warning">{t('users.statusPending', 'Pendiente de Aprobación')}</span>
                   )}
-                </td>
-                <td className="text-center">
-                  <span className="da-badge bg-light text-dark border">{user.authority?.authority}</span>
                 </td>
                 <td>
                   {activeTab === 'approved' || activeTab === 'admins' || activeTab === 'employees' ? (
@@ -139,9 +135,6 @@ export default function UserTable({
                 </div>
                 <h3 className="font-bold text-slate-800 m-0 text-lg">{user.firstName} {user.lastName}</h3>
                 <p className="text-xs text-slate-500 m-0 mt-0.5">@{user.username}</p>
-              </div>
-              <div>
-                <span className="da-badge bg-light text-dark border text-xs">{user.authority?.authority}</span>
               </div>
             </div>
 
