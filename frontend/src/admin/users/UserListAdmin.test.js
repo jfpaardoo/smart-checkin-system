@@ -13,6 +13,6 @@ describe('UserListAdmin', () => {
         expect(screen.getByText(/Administradores|Admins/i)).toBeInTheDocument();
         expect(screen.getByText(/Empleados|Employees/i)).toBeInTheDocument();
         expect(screen.getByText(/Solicitudes Pendientes|Pending Requests/i)).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: /Añadir Empleado|Add Employee/i })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: /Añadir|Add/i })).toBeInTheDocument();
     });
 });

@@ -2,6 +2,7 @@ import React from "react";
 import TwoFactorSettings from "./TwoFactorSettings";
 import PasswordChangeCard from "./PasswordChangeCard";
 import PasskeySettings from "./PasskeySettings";
+import ActiveSessionsTab from "./ActiveSessionsTab";
 import PrivacyDataTab from "./PrivacyDataTab";
 
 export default function PasswordSecurityTab({
@@ -42,6 +43,11 @@ export default function PasswordSecurityTab({
             t={t}
           />
         </div>
+      </div>
+
+      {/* Card 4: Sesiones Activas y Revocación Remota (OWASP ASVS L3) */}
+      <div className="mb-6">
+        <ActiveSessionsTab t={t} toast={toast} />
       </div>
 
       {/* Sección de Privacidad y Datos (GDPR) */}

@@ -43,6 +43,9 @@ public class AuditLog extends BaseEntity {
     @Column(name = "log_hash", length = 64)
     private String logHash;
 
+    @Column(name = "signature_hmac", length = 64)
+    private String signatureHmac;
+
     public AuditLog() {
         this.timestamp = LocalDateTime.now(ZoneId.systemDefault()).truncatedTo(ChronoUnit.SECONDS);
     }
@@ -66,15 +69,35 @@ public class AuditLog extends BaseEntity {
                     + (details != null ? details : "") + "|"
                     + (ipAddress != null ? ipAddress : "");
             byte[] hash = digest.digest(data.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
-            }
-            return hexString.toString();
+            return bytesToHex(hash);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("SHA-256 algorithm not available", e);
         }
+    }
+
+    public static String calculateHmac(String logHash, String secretKey) {
+        try {
+            if (logHash == null || secretKey == null || secretKey.isBlank()) {
+                return null;
+            }
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            javax.crypto.spec.SecretKeySpec secretKeySpec = new javax.crypto.spec.SecretKeySpec(
+                    secretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            mac.init(secretKeySpec);
+            byte[] hmacBytes = mac.doFinal(logHash.getBytes(StandardCharsets.UTF_8));
+            return bytesToHex(hmacBytes);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to calculate HMAC-SHA256 signature", e);
+        }
+    }
+
+    private static String bytesToHex(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : bytes) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) hexString.append('0');
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 }

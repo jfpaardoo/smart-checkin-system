@@ -44,6 +44,7 @@ class CheckinRestControllerTests {
 	private static final String TOKEN_123456 = "123456";
 	private static final String TOKEN_000000 = "000000";
 	private static final String JSON_PATH_CHECKIN_ID = "$.checkin.id";
+	private static final String JSON_PATH_MESSAGE = "$.message";
 	private static final String WRONG_TOKEN_VAL = "WRONG_TOKEN";
 
 	@MockitoBean
@@ -194,7 +195,7 @@ class CheckinRestControllerTests {
 
 		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.message").value("Error al registrar en formación: Database error"));
+				.andExpect(jsonPath(JSON_PATH_MESSAGE).value("Error al registrar en formación: Database error"));
 	}
 
 	@Test
@@ -528,7 +529,7 @@ class CheckinRestControllerTests {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req)))
 				.andExpect(status().isForbidden())
-				.andExpect(jsonPath("$.message").value("Se requiere ubicación GPS activa para fichar."));
+				.andExpect(jsonPath(JSON_PATH_MESSAGE).value("Se requiere ubicación GPS activa para fichar."));
 	}
 
 	@Test
@@ -554,7 +555,7 @@ class CheckinRestControllerTests {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req)))
 				.andExpect(status().isForbidden())
-				.andExpect(jsonPath("$.message").value("El código no contiene ubicación válida del administrador para validar la distancia."));
+				.andExpect(jsonPath(JSON_PATH_MESSAGE).value("El código no contiene ubicación válida del administrador para validar la distancia."));
 	}
 
 	@Test

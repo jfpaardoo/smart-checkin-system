@@ -19,6 +19,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -48,10 +49,17 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .headers(headers -> headers
-                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
                         .xssProtection(HeadersConfigurer.XXssConfig::disable)
+                        .contentTypeOptions(Customizer.withDefaults())
+                        .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
                         .contentSecurityPolicy(csp -> csp.policyDirectives(
-                                "default-src 'self' https: data: blob:; script-src 'self' https:; style-src 'self' https: 'unsafe-inline'; object-src 'none'")))
+                                "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' https: 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' https: data:; connect-src 'self' https: wss: ws:; frame-src 'self' https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';"))
+                        .addHeaderWriter((request, response) -> {
+                            response.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=()");
+                            response.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+                            response.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+                        }))
                 .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(unauthorizedHandler))
 
                 .authorizeHttpRequests(auth -> auth
@@ -78,7 +86,7 @@ public class SecurityConfiguration {
                         .hasAuthority(ADMIN)
 
                         // 4. Endpoints públicos
-                        .requestMatchers("/api/v1/auth/**", "/ws/**", "/api/v1/cloud-settings/oauth/callback", "/actuator/health", "/actuator/info")
+                        .requestMatchers("/api/v1/auth/**", "/ws/**", "/api/v1/cloud-settings/oauth/callback", "/actuator/health", "/actuator/info", "/actuator/prometheus")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/companies").permitAll()
 
@@ -130,8 +138,9 @@ public class SecurityConfiguration {
     public AuthTokenFilter authenticationJwtTokenFilter(
             JwtUtils jwtUtils,
             UserDetailsServiceImpl userDetailsService,
-            JwtBlacklistService jwtBlacklistService) {
-        return new AuthTokenFilter(jwtUtils, userDetailsService, jwtBlacklistService);
+            JwtBlacklistService jwtBlacklistService,
+            org.springframework.samples.smartcheckin.auth.session.UserSessionService userSessionService) {
+        return new AuthTokenFilter(jwtUtils, userDetailsService, jwtBlacklistService, userSessionService);
     }
 
     @Bean

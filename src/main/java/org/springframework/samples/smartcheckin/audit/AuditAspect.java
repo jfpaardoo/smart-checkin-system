@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Aspect
 @Component
-@SuppressWarnings("null")
 public class AuditAspect {
 
     private final AuditService auditService;

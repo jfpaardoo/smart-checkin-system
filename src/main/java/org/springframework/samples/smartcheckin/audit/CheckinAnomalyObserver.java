@@ -16,19 +16,24 @@ import org.springframework.samples.smartcheckin.notifications.Notification;
 
 @Component
 @ObserverPattern.Observer
-@SuppressWarnings("null")
 public class CheckinAnomalyObserver {
 
     private static final Logger logger = LoggerFactory.getLogger(CheckinAnomalyObserver.class);
     private final AuditService auditService;
     private final CheckinRepository checkinRepository;
     private final EmailNotificationSender emailNotificationSender;
+    private org.springframework.samples.smartcheckin.metrics.AppMetricsService metricsService;
 
     @Autowired
     public CheckinAnomalyObserver(AuditService auditService, CheckinRepository checkinRepository, EmailNotificationSender emailNotificationSender) {
         this.auditService = auditService;
         this.checkinRepository = checkinRepository;
         this.emailNotificationSender = emailNotificationSender;
+    }
+
+    @Autowired(required = false)
+    public void setMetricsService(org.springframework.samples.smartcheckin.metrics.AppMetricsService metricsService) {
+        this.metricsService = metricsService;
     }
 
     @EventListener
@@ -57,6 +62,9 @@ public class CheckinAnomalyObserver {
     private void logAnomaly(String details) {
         AuditLog log = new AuditLog("SECURITY_ANOMALY", "system", details, "127.0.0.1");
         auditService.recordAuditLog(log);
+        if (metricsService != null) {
+            metricsService.incrementCheckinAnomaly();
+        }
         logger.warn("Security Anomaly Logged: {}", details);
 
         // Enviar notificación al administrador usando el patrón Bridge

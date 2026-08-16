@@ -21,11 +21,17 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 	private final JwtUtils jwtUtils;
 	private final UserDetailsServiceImpl userDetailsService;
 	private final JwtBlacklistService jwtBlacklistService;
+	private final org.springframework.samples.smartcheckin.auth.session.UserSessionService userSessionService;
 
 	public AuthTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService, JwtBlacklistService jwtBlacklistService) {
+		this(jwtUtils, userDetailsService, jwtBlacklistService, null);
+	}
+
+	public AuthTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService, JwtBlacklistService jwtBlacklistService, org.springframework.samples.smartcheckin.auth.session.UserSessionService userSessionService) {
 		this.jwtUtils = jwtUtils;
 		this.userDetailsService = userDetailsService;
 		this.jwtBlacklistService = jwtBlacklistService;
+		this.userSessionService = userSessionService;
 	}
 
 	@Override
@@ -39,6 +45,11 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 					response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has been invalidated (Logged out)");
 					return;
 				}
+				if (userSessionService != null && !userSessionService.isSessionActive(jwt)) {
+					logger.error("Session has been revoked remotely");
+					response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Session has been revoked remotely");
+					return;
+				}
 				String username = jwtUtils.getUserNameFromJwtToken(jwt);
 				UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
@@ -46,6 +57,12 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
 				SecurityContextHolder.getContext().setAuthentication(authentication);
+
+				if (userSessionService != null) {
+					String clientIp = request.getHeader("X-Forwarded-For") != null ? request.getHeader("X-Forwarded-For").split(",")[0].trim() : request.getRemoteAddr();
+					String userAgent = request.getHeader("User-Agent");
+					userSessionService.registerOrUpdateSession(username, jwt, clientIp, userAgent);
+				}
 			}
 		} catch (Exception e) {
 			logger.error("Cannot set user authentication: {}", e);
