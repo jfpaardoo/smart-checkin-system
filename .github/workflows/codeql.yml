@@ -41,7 +41,7 @@ jobs:
         cache: maven
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
+      uses: github/codeql-action/init@v4
       with:
         languages: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
@@ -51,7 +51,7 @@ jobs:
       run: mvn compile -DskipTests -Dfrontend.skip=true -Dskip.npm=true
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+      uses: github/codeql-action/analyze@v4
       continue-on-error: true
       with:
         category: "/language:${{ matrix.language }}"
