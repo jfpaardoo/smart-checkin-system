@@ -270,12 +270,16 @@ public class AuthController {
             return ResponseEntity.badRequest().body(new MessageResponse(CAPTCHA_SUCCESS_MESSAGE));
         }
 
-        try {
-            if (userService.findUser(signupRequest.getUsername()) != null) {
-                return ResponseEntity.badRequest().body(new MessageResponse("El nombre de usuario ya se encuentra registrado."));
-            }
-        } catch (ResourceNotFoundException e) {
-            // no hace nada
+        if (Boolean.TRUE.equals(userService.existsUser(signupRequest.getUsername()))) {
+            return ResponseEntity.badRequest().body(new MessageResponse("El nombre de usuario ya se encuentra registrado."));
+        }
+
+        if (signupRequest.getEmail() != null && Boolean.TRUE.equals(userService.existsByEmail(signupRequest.getEmail()))) {
+            return ResponseEntity.badRequest().body(new MessageResponse("El correo electrónico ya se encuentra registrado."));
+        }
+
+        if (signupRequest.getPersonalCode() != null && Boolean.TRUE.equals(userService.existsByPersonalCode(signupRequest.getPersonalCode()))) {
+            return ResponseEntity.badRequest().body(new MessageResponse("El código personal de 4 dígitos ya se encuentra asignado a otro usuario."));
         }
 
         if (haveIBeenPwnedService.isPasswordPwned(signupRequest.getPassword())) {

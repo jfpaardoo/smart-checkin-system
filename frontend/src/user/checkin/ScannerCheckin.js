@@ -1,9 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faQrcode, faKeyboard, faCamera, faCalendarCheck, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faQrcode, faKeyboard, faCamera, faCalendarCheck, faSpinner, faLocationDot, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '../../components/ToastProvider';
 import GlassDropdown from '../../components/GlassDropdown';
 import { useQrScanner } from '../../hooks/useQrScanner';
@@ -25,22 +25,6 @@ const parseRawInput = (rawInput) => {
   }
 };
 
-const getUserGeolocation = async () => {
-  if (typeof navigator === 'undefined' || !("geolocation" in navigator)) return {};
-  try {
-    const pos = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 5000 });
-    });
-    return {
-      userLat: pos.coords.latitude,
-      userLng: pos.coords.longitude
-    };
-  } catch (err) {
-    console.warn("Geolocalización del usuario fallida", err);
-    return {};
-  }
-};
-
 export default function ScannerCheckin() {
   const { t } = useTranslation();
   const toast = useToast();
@@ -54,6 +38,37 @@ export default function ScannerCheckin() {
   const [formationDetails, setFormationDetails] = useState(null);
 
   const [isManualInput, setIsManualInput] = useState(false);
+  const [gpsCoords, setGpsCoords] = useState({});
+  const [gpsStatus, setGpsStatus] = useState('prompt'); // 'prompt', 'granted', 'denied', 'unsupported'
+
+  const requestGps = useCallback(async () => {
+    if (typeof navigator === 'undefined' || !("geolocation" in navigator)) {
+      setGpsStatus('unsupported');
+      return {};
+    }
+    try {
+      const pos = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, { 
+          enableHighAccuracy: true, 
+          timeout: 8000,
+          maximumAge: 10000 
+        });
+      });
+      const coords = { userLat: pos.coords.latitude, userLng: pos.coords.longitude };
+      setGpsCoords(coords);
+      setGpsStatus('granted');
+      return coords;
+    } catch (err) {
+      console.warn("Geolocalización fallida o denegada", err);
+      setGpsStatus('denied');
+      return {};
+    }
+  }, []);
+
+  // Solicitar ubicación automáticamente al entrar a la pantalla
+  useEffect(() => {
+    requestGps();
+  }, [requestGps]);
 
   // Hook maneja la lógica de las cámaras y validación del código
   const {
@@ -86,7 +101,7 @@ export default function ScannerCheckin() {
     setLoading(true);
     try {
       const basePayload = parseRawInput(rawInput);
-      const coords = await getUserGeolocation();
+      const coords = gpsCoords.userLat ? gpsCoords : await requestGps();
       const payload = {
         ...basePayload,
         ...coords,
@@ -144,9 +159,29 @@ export default function ScannerCheckin() {
             <h2 className="text-slate-800 font-bold text-2xl sm:text-3xl mb-2">
               {t('checkin.scanQr', 'Escanear el QR')}
             </h2>
-            <p className="text-slate-600 text-sm sm:text-base">
+            <p className="text-slate-600 text-sm sm:text-base mb-3">
               {t('checkin.qrSubtitle', 'Enfoca el código QR de la formación con tu cámara')}
             </p>
+
+            {/* Barra de estado de permisos de geolocalización */}
+            <div className="flex items-center justify-center gap-2 mb-3 mx-auto max-w-[380px]">
+              {gpsStatus === 'granted' ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+                  <FontAwesomeIcon icon={faCheckCircle} className="text-emerald-500" />
+                  {t('checkin.gpsActive', 'Ubicación GPS verificada')}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={requestGps}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition shadow-2xs cursor-pointer"
+                  title={t('checkin.enableGpsTooltip', 'Pulsa para conceder permiso de ubicación')}
+                >
+                  <FontAwesomeIcon icon={faLocationDot} className="text-amber-600" />
+                  {t('checkin.enableGps', 'Permitir acceso a ubicación GPS')}
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="scanner-section text-center">

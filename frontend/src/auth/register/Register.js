@@ -104,9 +104,11 @@ export default function Register() {
         setCaptchaKey((k) => k + 1);
         let errorMsg = data.message || t('register.genericError', 'Error al procesar la solicitud de registro.');
         
-        if (errorMsg.includes('duplicate key value') || errorMsg.includes('uk5v7b31bxs6tcvinhg22i2v029') || errorMsg.includes('personal_code')) {
+        if (errorMsg.includes('personal_code') || errorMsg.toLowerCase().includes('código personal') || errorMsg.includes('uk5v7b31bxs6tcvinhg22i2v029')) {
           errorMsg = t('users.duplicatePersonalCode', 'El Código Personal ya existe para otro usuario.');
-        } else if (errorMsg.includes('username')) {
+        } else if (errorMsg.includes('email') || errorMsg.toLowerCase().includes('correo electrónico') || errorMsg.toLowerCase().includes('correo')) {
+          errorMsg = t('users.duplicateEmail', 'El correo electrónico ya se encuentra registrado.');
+        } else if (errorMsg.includes('username') || errorMsg.toLowerCase().includes('nombre de usuario')) {
           errorMsg = t('users.duplicateUsername', 'El Nombre de usuario ya existe.');
         }
 

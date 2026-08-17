@@ -25,9 +25,12 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
   - Protegida la ruta `/checkin` mediante `<PrivateRoute>` en `App.js` para evitar envíos no autenticados (`401 Unauthorized / Full authentication is required`).
   - Sustituido `fetch` nativo por la instancia estándar de Axios (`api.post`) en `ScannerCheckin.js` para garantizar la transmisión de cookies `HttpOnly` y un formateo consistente de errores.
   - Implementado overlay de carga flotante centrado (`fixed inset-0`) con `backdrop-blur` en `ScannerCheckin.js`, evitando desplazamientos bruscos del contenedor de la cámara.
-- **Estabilidad de Cámara y Prevención de Pantallas Negras en Móviles**:
-  - Configurado `{ facingMode: 'environment' }` como modo prioritario en `useQrScanner.js` con fallback automático si falla una ID de cámara específica, resolviendo el problema de visor negro en smartphones multicámara (Samsung/iPhone).
-  - Añadido ciclo de reinicio reactivo (`scannerKey`) para reiniciar la cámara tras errores de fichaje sin colapsar el contenedor visual del escáner.
+- **Corrección de Registro y Validación de Código de 4 Dígitos**:
+  - Implementada verificación preventiva e individual de `username`, `email` y `personalCode` en `AuthController.java` y `UserRepository.java`.
+  - Corregido el mapeo de errores en `Register.js` que erróneamente informaba de código personal duplicado cuando el conflicto era por email o usuario.
+- **Gestión Proactiva de Permisos de Ubicación (GPS) y Selección de Cámaras en iOS**:
+  - Añadida solicitud proactiva de geolocalización al montar `ScannerCheckin.js` junto con una barra de estado visual (`Ubicación GPS verificada` / botón de activación manual) que permite a iOS Safari activar el diálogo nativo de permisos sin bloquear el fichaje.
+  - Alternancia y ciclo de reinicio reactivo refinado en `useQrScanner.js` para conmutar sin latencia entre la cámara trasera principal (`environment`) y la frontal (`user`).
 - **Limpieza Visual y Responsive de Cloudflare Turnstile**:
   - Eliminado el marco contenedor redundante alrededor de Cloudflare Turnstile en las pantallas de Login, Recuperación de Contraseña y Registro, manteniendo un renderizado limpio, centrado y adaptado a dispositivos móviles.
 

@@ -77,21 +77,21 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     } catch { /* ignore */ }
   }, []);
 
-  const loadAvailableCameras = useCallback(async () => {
-    try {
-      const devices = await Html5Qrcode.getCameras();
-      if (!devices || devices.length === 0) return null;
-
-      const camOptions = devices.map(d => ({
-        value: d.id,
-        label: d.label || `${t('common.camera', 'Cámara')} ${d.id}`
-      }));
-      setCameras(camOptions);
-      return devices[0].id;
-    } catch (err) {
+  useEffect(() => {
+    let isMounted = true;
+    Html5Qrcode.getCameras().then(devices => {
+      if (!isMounted) return;
+      if (devices && devices.length > 0) {
+        const camOptions = devices.map(d => ({
+          value: d.id,
+          label: d.label || `${t('common.camera', 'Cámara')} ${d.id}`
+        }));
+        setCameras(camOptions);
+      }
+    }).catch(err => {
       console.debug('Initial getCameras before permission:', err);
-      return null;
-    }
+    });
+    return () => { isMounted = false; };
   }, [t]);
 
   // Handle scanner lifecycle
@@ -121,8 +121,9 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       const html5Qrcode = new Html5Qrcode(elementId);
       html5QrcodeRef.current = html5Qrcode;
 
-      // Pass selectedCameraId directly or facingMode object
-      const cameraConfig = selectedCameraId || { facingMode };
+      const cameraConfig = selectedCameraId 
+        ? { deviceId: { exact: selectedCameraId } }
+        : { facingMode };
 
       try {
         await html5Qrcode.start(
@@ -137,14 +138,22 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
         );
         if (!cancelled) {
           setIsScannerReady(true);
-          await loadAvailableCameras();
+          Html5Qrcode.getCameras().then(devices => {
+            if (devices && devices.length > 0 && !cancelled) {
+              const camOptions = devices.map(d => ({
+                value: d.id,
+                label: d.label || `${t('common.camera', 'Cámara')} ${d.id}`
+              }));
+              setCameras(camOptions);
+            }
+          }).catch(() => {});
         }
       } catch (err) {
-        console.error('Error starting scanner, falling back to facingMode:', err);
-        if (!cancelled && selectedCameraId) {
+        console.warn('Primary camera config failed, falling back to facingMode:', err);
+        if (!cancelled) {
           try {
             await html5Qrcode.start(
-              { facingMode: 'environment' },
+              { facingMode },
               { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
               handleSuccess,
               () => {}
@@ -159,7 +168,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       }
     };
 
-    const timerId = setTimeout(startScanner, 120);
+    const timerId = setTimeout(startScanner, 100);
 
     return () => {
       cancelled = true;
@@ -167,7 +176,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       setIsScannerReady(false);
       stopScannerSafely(html5QrcodeRef.current, elementId);
     };
-  }, [isScanningEnabled, selectedCameraId, facingMode, elementId, scannerKey, stopScannerSafely, loadAvailableCameras]);
+  }, [isScanningEnabled, selectedCameraId, facingMode, elementId, scannerKey, stopScannerSafely, t]);
 
   const resetScannerState = useCallback(() => {
     scannedRef.current = false;
@@ -175,24 +184,23 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
   }, []);
 
   const toggleCamera = useCallback(() => {
-    if (cameras.length > 1 && selectedCameraId) {
-      const currentIndex = cameras.findIndex(c => c.value === selectedCameraId);
-      const nextIndex = (currentIndex + 1) % cameras.length;
-      setSelectedCameraId(cameras[nextIndex].value);
-    } else {
-      setSelectedCameraId('');
-      setFacingMode(prev => (prev === 'environment' ? 'user' : 'environment'));
-    }
-  }, [cameras, selectedCameraId]);
+    setSelectedCameraId('');
+    setFacingMode(prev => (prev === 'environment' ? 'user' : 'environment'));
+    setScannerKey(k => k + 1);
+  }, []);
 
   return {
     cameras,
     selectedCameraId,
-    setSelectedCameraId,
+    setSelectedCameraId: (id) => {
+      setSelectedCameraId(id);
+      setScannerKey(k => k + 1);
+    },
     isScannerReady,
     resetScannerState,
     toggleCamera,
-    hasMultipleCameras: cameras.length > 1 || true,
+    facingMode,
+    hasMultipleCameras: cameras.length > 1 || typeof navigator !== 'undefined',
     stopScannerSafely: () => stopScannerSafely(html5QrcodeRef.current, elementId)
   };
 }
