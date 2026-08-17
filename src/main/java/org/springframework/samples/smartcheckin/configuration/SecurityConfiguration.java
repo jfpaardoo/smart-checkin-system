@@ -56,7 +56,7 @@ public class SecurityConfiguration {
                         .contentSecurityPolicy(csp -> csp.policyDirectives(
                                 "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' https: 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' https: data:; connect-src 'self' https: wss: ws:; frame-src 'self' https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';"))
                         .addHeaderWriter((request, response) -> {
-                            response.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=()");
+                            response.setHeader("Permissions-Policy", "camera=(self), geolocation=(self), microphone=(), payment=(), usb=()");
                             response.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
                             response.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
                         }))

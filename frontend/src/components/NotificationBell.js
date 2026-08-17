@@ -113,13 +113,13 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
     };
   }, []);
 
-  const userId = user?.id;
+  const isLoggedIn = !!user?.username;
 
   useEffect(() => {
-    if (userId) {
+    if (isLoggedIn) {
       registerPushNotifications();
     }
-  }, [userId]);
+  }, [isLoggedIn]);
 
   const markAllRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
