@@ -31,6 +31,7 @@ import org.springframework.samples.smartcheckin.user.UserService;
 import org.springframework.samples.smartcheckin.analytics.AnalyticsService;
 import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.audit.AuditLogRepository;
+import org.springframework.samples.smartcheckin.auth.session.UserSessionRepository;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -67,6 +68,9 @@ class ExportRestControllerTests {
 
 	@MockitoBean
 	private AuditLogRepository auditLogRepository;
+
+	@MockitoBean
+	private UserSessionRepository userSessionRepository;
 
 	@MockitoBean
 	private PdfReportGenerator pdfReportGenerator;
@@ -137,6 +141,15 @@ class ExportRestControllerTests {
 
 	@Test
 	@WithMockUser(authorities = "ADMIN")
+	void shouldExportUsersPdf() throws Exception {
+		when(pdfReportGenerator.generateUsersPdf(any())).thenReturn(new byte[]{1, 2, 3});
+
+		mockMvc.perform(get(BASE_URL + "/users/pdf"))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser(authorities = "ADMIN")
 	void shouldExportAuditPdf() throws Exception {
 		AuditLog log = new AuditLog("TEST_ACTION", "admin", "details", "127.0.0.1");
 		when(auditLogRepository.findAll()).thenReturn(List.of(log));
@@ -159,6 +172,22 @@ class ExportRestControllerTests {
 	void testExportCheckinsExcel() throws Exception {
 		when(checkinRepository.findAll()).thenReturn(List.of(checkin));
 		mockMvc.perform(get(BASE_URL + CHECKINS_EXCEL))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser(authorities = {"ADMIN"})
+	void testExportCheckinsPdf() throws Exception {
+		when(pdfReportGenerator.generateCheckinsPdf(any())).thenReturn(new byte[]{1, 2, 3});
+		mockMvc.perform(get(BASE_URL + "/checkins/pdf"))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser(authorities = {"ADMIN"})
+	void testExportFormationsPdf() throws Exception {
+		when(pdfReportGenerator.generateFormationsPdf(any())).thenReturn(new byte[]{1, 2, 3});
+		mockMvc.perform(get(BASE_URL + "/formations/pdf"))
 				.andExpect(status().isOk());
 	}
 

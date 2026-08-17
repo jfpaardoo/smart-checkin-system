@@ -55,7 +55,7 @@ class NotificationTests {
     void testAuthNotification() {
         Notification auth = new AuthNotification(pushSender, "User logged in");
         auth.notify("user123");
-        verify(messagingTemplate, times(1)).convertAndSend("user123", "Se ha detectado un nuevo inicio de sesión en tu cuenta: User logged in");
+        verify(messagingTemplate, times(1)).convertAndSend("/topic/notifications/user123", "Se ha detectado un nuevo inicio de sesión en tu cuenta: User logged in");
     }
 
     @Test

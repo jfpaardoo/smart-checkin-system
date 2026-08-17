@@ -131,7 +131,7 @@ export default function AppNavbar() {
                     <div className="flex items-center">
                         <Link to="/" className="flex items-center gap-3 sm:gap-4 group text-white hover:text-white no-underline" onClick={closeAll}>
                             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden flex items-center justify-center shadow-[0_2px_5px_rgba(0,0,0,0.2)] group-hover:scale-105 transition-transform duration-300 shrink-0 bg-white/10 backdrop-blur-md">
-                                <img src="/logo.png" alt="la empresa" className="w-[54px] h-[54px] sm:w-[60px] sm:h-[60px] object-cover" />
+                                <img src="/logo.png" alt={t('common.companyLogo', 'Logo de la empresa')} className="w-[54px] h-[54px] sm:w-[60px] sm:h-[60px] object-cover" />
                             </div>
                             <span className="text-[1.4rem] font-semibold tracking-tight hidden sm:block whitespace-nowrap drop-shadow-md">
                                 Distribution Academy

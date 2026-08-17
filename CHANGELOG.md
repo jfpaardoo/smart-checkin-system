@@ -40,9 +40,12 @@ Primera versión estable de **Smart Checkin System**: plataforma integral de con
 - **Panel de Analítica y RR. HH.**:
   - Métricas de puntualidad, absentismo y horas trabajadas.
   - Exportación de informes en formatos CSV, Excel (XLSX) y PDF.
-- **Notificaciones Multi-Canal**: Notificaciones Web Push (VAPID) en segundo plano y notificaciones en tiempo real vía WebSocket (STOMP).
-- **Progressive Web App (PWA)**: Aplicación web instalable en móviles y escritorios con soporte offline y caché de recursos esenciales.
-- **Internacionalización (i18n)**: Soporte completo de interfaz en 8 idiomas (español, inglés, francés, alemán, italiano, portugués, ruso y búlgaro).
+- **Notificaciones Multi-Canal**: Notificaciones Web Push (VAPID) en segundo plano, eventos en tiempo real vía WebSocket (STOMP) con canales privados por usuario (`/topic/notifications/{username}`) y disparador nativo en sistema operativo.
+- **Progressive Web App (PWA) e Instalador Inteligente**:
+  - Aplicación web instalable en móviles (Android / iOS Safari) y escritorios con banner nativo `PwaInstallPrompt` y modo *standalone*.
+  - Sistema de detección de actualizaciones en caliente (*Auto-Update*) sin intermediación de tiendas de aplicaciones.
+- **Diseño Glassmorphism y Experiencia Móvil**: Interfaz moderna basada en Tailwind CSS con tarjetas translúcidas (`backdrop-blur`), paleta de colores corporativa armónica y navegación táctil adaptable.
+- **Internacionalización Integral (i18n)**: Soporte completo y sincronizado de interfaz en 8 idiomas (español `es`, inglés `en`, francés `fr`, alemán `de`, portugués `pt`, rumano `ro`, polaco `pl` y búlgaro `bg`) con paridad total de 852 claves.
 
 ### Añadido — Cumplimiento Normativo, Privacidad y RGPD
 - **Derecho al Olvido (Art. 17 RGPD)**: Anonimización física y técnica de datos personales sin rotura de integridad referencial ni destrucción de registros fiscales/laborales obligatorios.

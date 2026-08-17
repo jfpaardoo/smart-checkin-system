@@ -87,7 +87,8 @@
     "totpCodeLabel": "Cod din 6 cifre",
     "verifyAndEnter": "Verifică și Intră",
     "forgotPassword": "Ați uitat parola?",
-    "privacyPolicy": "Politică de Confidențialitate"
+    "privacyPolicy": "Politică de Confidențialitate",
+    "backupCodeInvalidFormat": "Codul de recuperare trebuie să aibă formatul XXXX-XXXX."
   },
   "users": {
     "allActive": "Toți cei Activi",
@@ -398,7 +399,9 @@
     "somethingWentWrong": "Ceva nu a funcționat corect:",
     "tryAgain": "Încearcă din nou",
     "selectOption": "Selectează",
-    "clearSearch": "Șterge căutarea"
+    "clearSearch": "Șterge căutarea",
+    "logoutWarning": "Sesiunea dvs. se va închide în siguranță pe acest dispozitiv.",
+    "companyLogo": "Sigla companiei"
   },
   "lang": {
     "es": "Español",
@@ -475,7 +478,12 @@
     "totalExpected": "Așteptați",
     "statAttendance": "Prezență:",
     "statTrainingTime": "Timp instruire:",
-    "statFormationsCount": "Instruiri (Participat/Alocat):"
+    "statFormationsCount": "Instruiri (Participat/Alocat):",
+    "formationsPdf": "Formări (PDF Executiv)",
+    "employeesPdf": "Angajați (PDF Executiv)",
+    "exportPdf": "Exportă PDF",
+    "startDate": "Data de început",
+    "endDate": "Data de sfârșit"
   },
   "profile": {
     "myProfileTitle": "Profilul Meu",
@@ -575,7 +583,15 @@
     "unknownDevice": "Dispozitiv Necunoscut",
     "currentSessionBadge": "Această sesiune",
     "lastActive": "Ultima activitate",
-    "revokeSession": "Deconectare"
+    "revokeSession": "Deconectare",
+    "regenerateConfirm": "Sigur doriți să regenerați codurile de recuperare? Cele anterioare nu vor mai fi valabile.",
+    "backupCodesRegenerated": "Noi coduri de recuperare generate.",
+    "copiedBackupCodes": "Coduri copiate în clipboard.",
+    "backupCodesOfflineTitle": "Coduri de Recuperare Offline",
+    "regenerate": "Regenerează",
+    "backupCodesDesc": "Dacă pierdeți accesul la dispozitiv, puteți folosi unul dintre codurile de recuperare de unică folosință pentru a vă conecta.",
+    "twoFactorEmail": "E-mail",
+    "twoFactorApp": "Aplicație de Autentificare"
   },
   "register": {
     "company": "Companie / Loc de Muncă",
@@ -663,9 +679,9 @@
     },
     "exportPDF": "Exportați în PDF",
     "fetchError": "Eroare la încărcarea jurnalelor de audit",
-    "integrityTampered": "Alertă! S-a detectat o manipulare a înregistrărilor de audit",
+    "integrityTampered": "Alertă! Modificare detectată în jurnalul de audit #{{logId}}.",
     "integrityTamperedAlert": "Lanț Modificat",
-    "integrityValid": "Integritate SHA-256 verificată cu succes",
+    "integrityValid": "Integritate criptografică SHA-256 verificată. Toate cele {{count}} înregistrări din lanț sunt autentice și intacte.",
     "integrityVerified": "Lanț Integru",
     "verifyChain": "Verifică Integritatea",
     "verifying": "Verificare SHA-256...",
@@ -878,5 +894,17 @@
   "signature": {
     "loading": "Se încarcă semnătura...",
     "loadError": "Eroare la încărcarea semnăturii"
+  },
+  "pwa": {
+    "installTitle": "Instalează Distribution Academy",
+    "installDesc": "Instalează aplicația pe dispozitivul tău pentru pontaj și acces mai rapid.",
+    "installBtn": "Instalează Aplicația",
+    "dismiss": "Nu acum",
+    "updateTitle": "Versiune nouă disponibilă",
+    "updateDesc": "Îmbunătățiri gata. Actualizează pentru a le aplica.",
+    "updateBtn": "Actualizează",
+    "iosTitle": "Instalează Aplicația pe iPhone",
+    "iosInstructions": "Apasă Distribuie",
+    "iosInstructions2": "și apoi \"Adaugă la ecranul principal\""
   }
 }

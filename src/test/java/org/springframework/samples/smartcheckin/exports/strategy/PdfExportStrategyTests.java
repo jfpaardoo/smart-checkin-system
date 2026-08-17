@@ -26,7 +26,6 @@ class PdfExportStrategyTests {
     @InjectMocks
     private PdfExportStrategy strategy;
 
-
     // ─── Metadata ─────────────────────────────────────────────────────────────
 
     @Test
@@ -39,27 +38,43 @@ class PdfExportStrategyTests {
         assertEquals("pdf", strategy.getFileExtension());
     }
 
-    // ─── Unsupported operations ────────────────────────────────────────────────
+    // ─── Export Operations ───────────────────────────────────────────────────
 
     @Test
-    void testExportUsersThrowsUnsupportedOperationException() {
-        List<UserAnalyticsDTO> users = Collections.emptyList();
-        assertThrows(UnsupportedOperationException.class, () -> strategy.exportUsers(users));
+    void testExportUsersDelegatesToPdfReportGenerator() throws Exception {
+        List<UserAnalyticsDTO> users = List.of(UserAnalyticsDTO.builder().userId(1).username("user1").build());
+        byte[] expected = new byte[]{1, 2, 3};
+        when(pdfReportGenerator.generateUsersPdf(users)).thenReturn(expected);
+
+        byte[] result = strategy.exportUsers(users);
+
+        assertArrayEquals(expected, result);
+        verify(pdfReportGenerator, times(1)).generateUsersPdf(users);
     }
 
     @Test
-    void exportCheckins_throwsUnsupportedOperationException() {
-        List<Checkin> checkins = Collections.emptyList();
-        assertThrows(UnsupportedOperationException.class, () -> strategy.exportCheckins(checkins));
+    void exportCheckins_delegatesToPdfReportGenerator() throws Exception {
+        List<Checkin> checkins = List.of(new Checkin());
+        byte[] expected = new byte[]{4, 5, 6};
+        when(pdfReportGenerator.generateCheckinsPdf(checkins)).thenReturn(expected);
+
+        byte[] result = strategy.exportCheckins(checkins);
+
+        assertArrayEquals(expected, result);
+        verify(pdfReportGenerator, times(1)).generateCheckinsPdf(checkins);
     }
 
     @Test
-    void exportFormations_throwsUnsupportedOperationException() {
-        List<Formation> formations = Collections.emptyList();
-        assertThrows(UnsupportedOperationException.class, () -> strategy.exportFormations(formations));
-    }
+    void exportFormations_delegatesToPdfReportGenerator() throws Exception {
+        List<Formation> formations = List.of(new Formation());
+        byte[] expected = new byte[]{7, 8, 9};
+        when(pdfReportGenerator.generateFormationsPdf(formations)).thenReturn(expected);
 
-    // ─── exportAuditLogs delegates to PdfReportGenerator ─────────────────────
+        byte[] result = strategy.exportFormations(formations);
+
+        assertArrayEquals(expected, result);
+        verify(pdfReportGenerator, times(1)).generateFormationsPdf(formations);
+    }
 
     @Test
     void exportAuditLogs_delegatesToPdfReportGenerator() throws Exception {

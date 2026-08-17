@@ -129,7 +129,7 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
       <div className="bg-green-100/50 border border-green-200 rounded-2xl p-4">
         <p className="text-green-700 font-bold text-sm m-0">
           {t('profile.twoFactorActive', 'El doble factor está actualmente activado en tu cuenta.')} 
-          ({userData.twoFactorType === 'EMAIL' ? 'Correo Electrónico' : 'App de Autenticación'})
+          {' '}({userData.twoFactorType === 'EMAIL' ? t('profile.twoFactorEmail', 'Correo Electrónico') : t('profile.twoFactorApp', 'App de Autenticación')})
         </p>
       </div>
 
@@ -137,7 +137,7 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-slate-800 font-bold text-sm">
             <FaKey className="text-[#8a9e29]" />
-            <span>Códigos de Recuperación Offline</span>
+            <span>{t('profile.backupCodesOfflineTitle', 'Códigos de Recuperación Offline')}</span>
           </div>
           <button
             type="button"
@@ -146,11 +146,11 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
             className="text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white/70 hover:bg-white border border-slate-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition"
           >
             <FaRedo className={`text-xs ${loading2FA ? 'animate-spin' : ''}`} />
-            Regenerar
+            {t('profile.regenerate', 'Regenerar')}
           </button>
         </div>
         <p className="text-xs text-slate-600 m-0">
-          Si pierdes acceso a tu dispositivo, puedes usar uno de tus códigos de recuperación de un solo uso para iniciar sesión.
+          {t('profile.backupCodesDesc', 'Si pierdes acceso a tu dispositivo, puedes usar uno de tus códigos de recuperación de un solo uso para iniciar sesión.')}
         </p>
       </div>
       

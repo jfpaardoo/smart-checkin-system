@@ -79,8 +79,9 @@ export const useUserEdit = (id, jwt, toast, t) => {
           setTimeout(() => { window.location.href = "/users"; }, 1200);
         }
       })
-      .catch(() => {
-        toast.error(t('users.connectionError'));
+      .catch((err) => {
+        const errorMsg = err?.response?.data?.message || t('users.connectionError');
+        toast.error(parseApiError(errorMsg, t, { 'authority': t('users.role') }));
         setIsSaving(false);
       });
   };

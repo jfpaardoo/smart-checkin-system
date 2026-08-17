@@ -416,6 +416,24 @@
 						<version>1.2.1</version>
 					</dependency>
 				</dependencies>
+				<configuration>
+					<targetClasses>
+						<param>org.springframework.samples.smartcheckin.exports.*</param>
+						<param>org.springframework.samples.smartcheckin.util.*</param>
+						<param>org.springframework.samples.smartcheckin.audit.*</param>
+					</targetClasses>
+					<targetTests>
+						<param>org.springframework.samples.smartcheckin.exports.*</param>
+						<param>org.springframework.samples.smartcheckin.util.*</param>
+						<param>org.springframework.samples.smartcheckin.audit.*</param>
+					</targetTests>
+					<threads>4</threads>
+					<outputFormats>
+						<outputFormat>HTML</outputFormat>
+						<outputFormat>XML</outputFormat>
+					</outputFormats>
+					<timestampedReports>false</timestampedReports>
+				</configuration>
 			</plugin>
 
 			<!-- Spring Boot Actuator displays build-related information if a git.properties

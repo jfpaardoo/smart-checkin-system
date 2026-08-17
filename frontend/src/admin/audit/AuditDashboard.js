@@ -150,9 +150,11 @@ export default function AuditDashboard() {
       const res = await api.get('/audit/verify-integrity');
       setIntegrityResult(res.data);
       if (res.data.valid) {
-        toast.success(res.data.message || t('audit.integrityValid', 'Integridad SHA-256 verificada con éxito'));
+        const count = res.data.verifiedLogsCount ?? res.data.verifiedCount ?? 0;
+        toast.success(t('audit.integrityValid', 'Integridad criptográfica SHA-256 verificada. Los {{count}} registros de la cadena son auténticos e intactos.', { count }));
       } else {
-        toast.error(res.data.message || t('audit.integrityTampered', '¡Alerta! Se ha detectado manipulación en los registros'));
+        const logId = res.data.brokenLogId ?? '';
+        toast.error(t('audit.integrityTampered', '¡Alerta! Se ha detectado alteración en el registro de auditoría #{{logId}}.', { logId }));
       }
     } catch (err) {
       console.error("Verification error:", err);

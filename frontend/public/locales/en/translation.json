@@ -87,7 +87,8 @@
     "totpCodeLabel": "6-digit code",
     "verifyAndEnter": "Verify & Enter",
     "forgotPassword": "Forgot your password?",
-    "privacyPolicy": "Privacy Policy"
+    "privacyPolicy": "Privacy Policy",
+    "backupCodeInvalidFormat": "The recovery code must be in XXXX-XXXX format."
   },
   "users": {
     "allActive": "All Active",
@@ -398,7 +399,9 @@
     "somethingWentWrong": "Something went wrong:",
     "tryAgain": "Try again",
     "selectOption": "Select",
-    "clearSearch": "Clear search"
+    "clearSearch": "Clear search",
+    "logoutWarning": "Your session will be securely closed on this device.",
+    "companyLogo": "Company logo"
   },
   "lang": {
     "es": "Español",
@@ -475,7 +478,12 @@
     "totalExpected": "Expected",
     "statAttendance": "Attendance:",
     "statTrainingTime": "Training Time:",
-    "statFormationsCount": "Trainings (Attended/Assigned):"
+    "statFormationsCount": "Trainings (Attended/Assigned):",
+    "formationsPdf": "Formations (Executive PDF)",
+    "employeesPdf": "Employees (Executive PDF)",
+    "exportPdf": "Export PDF",
+    "startDate": "Start date",
+    "endDate": "End date"
   },
   "profile": {
     "myProfileTitle": "My Profile",
@@ -575,7 +583,15 @@
     "unknownDevice": "Unknown Device",
     "currentSessionBadge": "This session",
     "lastActive": "Last active",
-    "revokeSession": "Log out"
+    "revokeSession": "Log out",
+    "regenerateConfirm": "Are you sure you want to regenerate recovery codes? The previous ones will no longer be valid.",
+    "backupCodesRegenerated": "New recovery codes generated.",
+    "copiedBackupCodes": "Codes copied to clipboard.",
+    "backupCodesOfflineTitle": "Offline Recovery Codes",
+    "regenerate": "Regenerate",
+    "backupCodesDesc": "If you lose access to your device, you can use one of your single-use recovery codes to sign in.",
+    "twoFactorEmail": "Email",
+    "twoFactorApp": "Authenticator App"
   },
   "register": {
     "company": "Company / Workspace",
@@ -663,9 +679,9 @@
     },
     "exportPDF": "Export to PDF",
     "fetchError": "Error loading audit logs",
-    "integrityTampered": "Alert! Tampering detected in the audit records",
+    "integrityTampered": "Alert! Tampering detected in audit log #{{logId}}.",
     "integrityTamperedAlert": "Tampered Chain",
-    "integrityValid": "SHA-256 integrity verified successfully",
+    "integrityValid": "SHA-256 cryptographic integrity verified. All {{count}} logs in the chain are authentic and intact.",
     "integrityVerified": "Chain Verified",
     "verifyChain": "Verify Integrity",
     "verifying": "Verifying SHA-256...",
@@ -878,5 +894,17 @@
   "signature": {
     "loading": "Loading signature...",
     "loadError": "Error loading signature"
+  },
+  "pwa": {
+    "installTitle": "Install Distribution Academy",
+    "installDesc": "Install the app on your device for quicker check-ins and access.",
+    "installBtn": "Install App",
+    "dismiss": "Not now",
+    "updateTitle": "New version available",
+    "updateDesc": "Updates are ready. Refresh to apply them.",
+    "updateBtn": "Update",
+    "iosTitle": "Install App on iPhone",
+    "iosInstructions": "Tap Share",
+    "iosInstructions2": "and then \"Add to Home Screen\""
   }
 }

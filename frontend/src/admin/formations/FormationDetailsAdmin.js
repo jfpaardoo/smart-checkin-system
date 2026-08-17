@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Collapse } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQrcode, faPencil, faTrash, faFileLines, faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import { faQrcode, faPencil, faTrash, faFileLines, faChevronDown, faChevronUp, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import getIdFromUrl from "../../util/getIdFromUrl";
@@ -46,22 +46,57 @@ export default function FormationDetailsAdmin() {
   return (
     <div className="da-container">
       <div className="da-card">
-        <div className="da-card-header da-admin-header border-0 flex-wrap">
-          <h2 className="mb-0 flex-grow-1 text-wrap" style={{ lineHeight: '1.2' }}>
-            {t('formationDetails.title')}: {formation.name}
-          </h2>
-          <div className="da-admin-header-actions">
-            <Button size="sm" className="da-btn-secondary px-3 py-2 text-nowrap" tag={Link} to={`/formations/${id}`} title={t('formations.edit')}>
-              <FontAwesomeIcon icon={faPencil} className="me-1" />{t('formations.edit')}
+        <div className="da-card-header da-admin-header border-0 flex flex-col md:flex-row justify-between items-center gap-4 pb-4 mb-4 border-b border-slate-200/60 relative">
+          {/* Botón Volver absoluto en móvil y alineado en desktop */}
+          <Link
+            to="/formations"
+            className="absolute left-0 top-0 md:static p-2.5 rounded-2xl bg-white/50 border border-white/70 text-slate-600 hover:text-slate-900 hover:bg-white hover:scale-105 active:scale-95 transition shadow-xs flex items-center justify-center shrink-0"
+            title={t("common.back", "Volver")}
+            style={{ textDecoration: 'none' }}
+          >
+            <FontAwesomeIcon icon={faArrowLeft} />
+          </Link>
+
+          <div className="flex flex-col items-center md:items-start text-center md:text-left flex-1 px-8 md:px-0 pt-0.5 md:pt-0">
+            <span className="text-xs font-extrabold uppercase tracking-widest text-[#73841e] bg-[#b3c34c]/20 px-3 py-1 rounded-full border border-[#b3c34c]/30 mb-1.5 inline-block">
+              {t('formationDetails.title', 'Detalles de Formación')}
+            </span>
+            <h2 className="mb-0 text-slate-800 fw-bold text-2xl" style={{ lineHeight: '1.2' }}>
+              {formation.name}
+            </h2>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 w-full md:w-auto mt-2 md:mt-0">
+            <Button 
+              size="sm" 
+              className="da-btn-primary font-bold shadow-xs px-3.5 py-2 rounded-pill d-inline-flex align-items-center gap-1.5" 
+              tag={Link} 
+              to={`/formations/${id}`} 
+              title={t('formations.edit')}
+            >
+              <FontAwesomeIcon icon={faPencil} />
+              <span>{t('formations.edit', 'Editar')}</span>
             </Button>
-            <Button size="sm" className="da-btn-blue px-3 py-2 text-nowrap" tag={Link} to={`/qr-generator?formationId=${id}`} title={t('formationDetails.qrButton')}>
-              <FontAwesomeIcon icon={faQrcode} className="me-1" />{t('formationDetails.qrButton')}
+
+            <Button 
+              size="sm" 
+              className="da-btn-blue font-bold shadow-xs px-3.5 py-2 rounded-pill d-inline-flex align-items-center gap-1.5" 
+              tag={Link} 
+              to={`/qr-generator?formationId=${id}`} 
+              title={t('formationDetails.qrButton')}
+            >
+              <FontAwesomeIcon icon={faQrcode} />
+              <span>{t('formationDetails.qrButton', 'QR')}</span>
             </Button>
-            <Button size="sm" className="da-btn-danger px-3 py-2 text-nowrap" onClick={handleDeleteFormation} title={t('formations.delete')}>
-              <FontAwesomeIcon icon={faTrash} className="me-1" />{t('formations.delete')}
-            </Button>
-            <Button size="sm" className="da-btn-secondary px-3 py-2 text-nowrap" tag={Link} to="/formations">
-              {t('formationDetails.backToList')}
+
+            <Button 
+              size="sm" 
+              className="da-btn-danger font-bold shadow-xs px-3.5 py-2 rounded-pill d-inline-flex align-items-center gap-1.5" 
+              onClick={handleDeleteFormation} 
+              title={t('formations.delete')}
+            >
+              <FontAwesomeIcon icon={faTrash} />
+              <span>{t('formations.delete', 'Eliminar')}</span>
             </Button>
           </div>
         </div>

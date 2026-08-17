@@ -12,32 +12,90 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
   const [unreadCount, setUnreadCount] = useState(0);
 
   const handleAlert = useCallback((message) => {
-    if (message.body) {
+    if (!message?.body) return;
+    const text = message.body;
+
+    setNotifications(prev => {
+      // Evitar notificaciones duplicadas en un intervalo de 3 segundos
+      const isDuplicate = prev.some(n => n.text === text && (Date.now() - n.id) < 3000);
+      if (isDuplicate) return prev;
+
       const newNotif = {
         id: Date.now(),
-        text: message.body,
+        text: text,
         timestamp: new Date(),
         read: false
       };
-      setNotifications(prev => [newNotif, ...prev].slice(0, 50));
-      setUnreadCount(prev => prev + 1);
-    }
+
+      // Disparar notificación nativa en el dispositivo / SO si hay permiso
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        let notifTitle = 'Distribution Academy';
+        let notifBody = text;
+        if (text.startsWith('[')) {
+          const closingBracket = text.indexOf(']');
+          if (closingBracket > 1) {
+            notifTitle = text.substring(1, closingBracket);
+            notifBody = text.substring(closingBracket + 1).trim();
+          }
+        }
+
+        console.info('[Push] Disparando notificación en el SO:', notifTitle, notifBody);
+
+        const options = {
+          body: notifBody,
+          icon: '/favicon.png?v=5',
+          badge: '/favicon.png?v=5',
+          tag: 'da-alert-' + Date.now()
+        };
+
+        if ('serviceWorker' in navigator && navigator.serviceWorker) {
+          navigator.serviceWorker.ready
+            .then(reg => {
+              reg.showNotification(notifTitle, options);
+            })
+            .catch(() => {
+              try {
+                new Notification(notifTitle, options);
+              } catch (e) {
+                console.debug('[Push] Fallback notification failed:', e);
+              }
+            });
+        } else {
+          try {
+            new Notification(notifTitle, options);
+          } catch (e) {
+            console.debug('[Push] Notification constructor failed:', e);
+          }
+        }
+      }
+
+      setUnreadCount(count => count + 1);
+      return [newNotif, ...prev].slice(0, 50);
+    });
   }, []);
 
-  useSubscription('/topic/alerts', handleAlert);
+  const username = user?.username;
+
+  useSubscription(username ? `/topic/notifications/${username}` : '/topic/alerts', handleAlert);
 
   useEffect(() => {
     const handleServiceWorkerMessage = (event) => {
       if (event?.data?.type === 'PUSH_RECEIVED') {
         const payload = event.data.payload;
-        const newNotif = {
-          id: Date.now(),
-          text: payload.body || payload.title || 'Nueva notificación',
-          timestamp: new Date(),
-          read: false
-        };
-        setNotifications(prev => [newNotif, ...prev].slice(0, 50));
-        setUnreadCount(prev => prev + 1);
+        const text = payload.body || payload.title || 'Nueva notificación';
+        setNotifications(prev => {
+          const isDuplicate = prev.some(n => n.text === text && (Date.now() - n.id) < 3000);
+          if (isDuplicate) return prev;
+
+          const newNotif = {
+            id: Date.now(),
+            text: text,
+            timestamp: new Date(),
+            read: false
+          };
+          setUnreadCount(count => count + 1);
+          return [newNotif, ...prev].slice(0, 50);
+        });
       }
     };
 

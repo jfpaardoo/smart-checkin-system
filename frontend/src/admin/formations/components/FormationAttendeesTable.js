@@ -242,34 +242,37 @@ export default function FormationAttendeesTable({
                     <span><strong>{t('formationDetails.checkoutTime', 'Salida:')}</strong> {isCompleted ? dayjs.utc(att.checkOutDate).local().format('HH:mm:ss') : '-'}</span>
                   </div>
 
-                  <div className="flex gap-2 justify-end pt-2 border-t border-slate-200/50">
+                  <div className={`grid ${att.signature ? 'grid-cols-3' : 'grid-cols-2'} gap-2 pt-2 border-t border-slate-200/50 w-full`}>
                     <Button
                       size="sm"
-                      className="da-btn-primary flex-1 d-flex items-center justify-center gap-1.5 py-2 font-bold shadow-xs text-xs"
+                      className="da-btn-primary w-full d-flex items-center justify-center gap-1 font-bold shadow-xs"
+                      style={{ padding: '6px 4px', minWidth: 0, height: '36px', borderRadius: '16px', fontSize: '0.78rem' }}
                       onClick={() => onViewSignature(att)}
                     >
                       <FontAwesomeIcon icon={faEye} />
-                      {t('common.details', 'Detalles')}
+                      <span className="truncate">{t('common.details', 'Detalles')}</span>
                     </Button>
 
                     {att.signature && (
                       <Button
                         size="sm"
-                        className="da-btn-blue flex-1 d-flex items-center justify-center gap-1.5 py-2 font-bold shadow-xs text-xs"
+                        className="da-btn-blue w-full d-flex items-center justify-center gap-1 font-bold shadow-xs"
+                        style={{ padding: '6px 4px', minWidth: 0, height: '36px', borderRadius: '16px', fontSize: '0.78rem' }}
                         onClick={() => onDownloadPdf(att.id)}
                       >
                         <FontAwesomeIcon icon={faFilePdf} />
-                        PDF
+                        <span className="truncate">PDF</span>
                       </Button>
                     )}
 
                     <Button
                       size="sm"
-                      className="da-btn-danger flex-1 d-flex items-center justify-center gap-1.5 py-2 font-bold shadow-xs text-xs"
+                      className="da-btn-danger w-full d-flex items-center justify-center gap-1 font-bold shadow-xs"
+                      style={{ padding: '6px 4px', minWidth: 0, height: '36px', borderRadius: '16px', fontSize: '0.78rem' }}
                       onClick={() => handleRemoveUser(user.id)}
                     >
                       <FontAwesomeIcon icon={faTrash} />
-                      {t('formations.delete', 'Eliminar')}
+                      <span className="truncate">{t('formations.delete', 'Eliminar')}</span>
                     </Button>
                   </div>
                 </div>

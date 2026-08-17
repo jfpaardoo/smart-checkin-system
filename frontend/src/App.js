@@ -14,6 +14,7 @@ import ScannerCheckin from "./user/checkin/ScannerCheckin";
 import UserDashboard from "./user/dashboard/UserDashboard";
 import { ToastProvider } from "./components/ToastProvider";
 import SessionTimeoutModal from "./components/SessionTimeoutModal";
+import PwaInstallPrompt from "./components/PwaInstallPrompt";
 import { useTranslation } from "react-i18next";
 
 // Lazy-loaded Views (Code-Splitting for lighter initial bundle)
@@ -58,54 +59,54 @@ function PageLoadingFallback() {
 
 function App() {
   useLocation();
+
+  let adminRoutes = null;
+  let userRoutes = null;
   const user = tokenService.getUser();
-  let roles = []
-  if (user?.roles) {
-    roles = user.roles;
-  }
 
-  let adminRoutes = <></>;
-  let userRoutes = <></>;
-  let publicRoutes = <></>;
-
-  roles.forEach((role) => {
-    if (role === "ADMIN") {
+  if (user) {
+    if (user.roles?.includes("ADMIN")) {
       adminRoutes = (
         <>
-          <Route path="/users" exact={true} element={<PrivateRoute><UserListAdmin /></PrivateRoute>} />
-          <Route path="/users/:id" exact={true} element={<PrivateRoute><UserEditAdmin /></PrivateRoute>} />
-          <Route path="/companies" exact={true} element={<PrivateRoute><CompanyListAdmin /></PrivateRoute>} />
-          <Route path="/companies/:id" exact={true} element={<PrivateRoute><CompanyEditAdmin /></PrivateRoute>} />
-          <Route path="/formations" exact={true} element={<PrivateRoute><FormationListAdmin /></PrivateRoute>} />
-          <Route path="/formations/:id" exact={true} element={<PrivateRoute><FormationEditAdmin /></PrivateRoute>} />
-          <Route path="/formations/:id/details" exact={true} element={<PrivateRoute><FormationDetailsAdmin /></PrivateRoute>} />
-          <Route path="/qr-generator" exact={true} element={<PrivateRoute><QRGeneratorAdmin /></PrivateRoute>} />
-          <Route path="/analytics" exact={true} element={<PrivateRoute><AnalyticsDashboard /></PrivateRoute>} />
-          <Route path="/audit" exact={true} element={<PrivateRoute><AuditDashboard /></PrivateRoute>} />
-          <Route path="/admin/cloud-settings" exact={true} element={<PrivateRoute><CloudSettingsAdmin /></PrivateRoute>} />
+          <Route path="/users" element={<PrivateRoute><UserListAdmin /></PrivateRoute>} />
+          <Route path="/users/:username" element={<PrivateRoute><UserEditAdmin /></PrivateRoute>} />
+          <Route path="/formations" element={<PrivateRoute><FormationListAdmin /></PrivateRoute>} />
+          <Route path="/formations/new" element={<PrivateRoute><FormationEditAdmin /></PrivateRoute>} />
+          <Route path="/formations/:id" element={<PrivateRoute><FormationDetailsAdmin /></PrivateRoute>} />
+          <Route path="/formations/:id/edit" element={<PrivateRoute><FormationEditAdmin /></PrivateRoute>} />
+          <Route path="/companies" element={<PrivateRoute><CompanyListAdmin /></PrivateRoute>} />
+          <Route path="/companies/new" element={<PrivateRoute><CompanyEditAdmin /></PrivateRoute>} />
+          <Route path="/companies/:id" element={<PrivateRoute><CompanyEditAdmin /></PrivateRoute>} />
+          <Route path="/qr-generator" element={<PrivateRoute><QRGeneratorAdmin /></PrivateRoute>} />
+          <Route path="/analytics" element={<PrivateRoute><AnalyticsDashboard /></PrivateRoute>} />
+          <Route path="/audit" element={<PrivateRoute><AuditDashboard /></PrivateRoute>} />
+          <Route path="/settings" element={<PrivateRoute><CloudSettingsAdmin /></PrivateRoute>} />
           <Route path="/docs" element={<PrivateRoute><SwaggerDocs /></PrivateRoute>} />
-        </>)
+          <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
+        </>
+      );
     }
-  })
-  
+    if (user.roles?.includes("EMPLOYEE")) {
+      userRoutes = (
+        <>
+          <Route path="/dashboard" element={<PrivateRoute><UserDashboard /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
+        </>
+      );
+    }
+  }
+
+  let publicRoutes = null;
   if (!user) {
     publicRoutes = (
-      <>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-      </>
-    )
-  } else {
-    userRoutes = (
       <>
         <Route path="/logout" element={<Logout />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/checkin" element={<ScannerCheckin />} />
         <Route path="/dashboard" element={<UserDashboard />} />
-        <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
       </>
-    )
+    );
   }
 
   return (
@@ -113,6 +114,7 @@ function App() {
       <ErrorBoundary FallbackComponent={ErrorFallback} >
         <AppNavbar />
         <SessionTimeoutModal />
+        <PwaInstallPrompt />
         <Suspense fallback={<PageLoadingFallback />}>
           <Routes>
             <Route path="/" exact={true} element={<Home />} />

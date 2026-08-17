@@ -112,7 +112,7 @@ function ToastItem({ toast, onRemove }) {
               bg-white/10 hover:bg-white/20 text-white/70 hover:text-white
               transition duration-200 cursor-pointer border-0 p-0
             "
-            aria-label="Cerrar"
+            aria-label={t('common.close', 'Cerrar')}
           >
             <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" className="w-2.5 h-2.5">
               <path d="M1 1l10 10M11 1L1 11" strokeWidth="2" strokeLinecap="round"/>

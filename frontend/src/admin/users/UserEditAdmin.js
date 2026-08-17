@@ -206,10 +206,12 @@ export default function UserEditAdmin() {
               <FormGroup>
                 <Label for="authority">{t('users.role')}</Label>
                 <GlassDropdown
-                  options={auths.map((auth) => ({
-                    value: auth.id,
-                    label: auth.authority
-                  }))}
+                  options={auths
+                    .filter((auth) => auth.authority === 'ADMIN' || auth.authority === 'EMPLOYEE')
+                    .map((auth) => ({
+                      value: auth.id,
+                      label: auth.authority === 'EMPLOYEE' ? 'EMPLOYEE' : 'ADMIN'
+                    }))}
                   value={user.authority?.id || ''}
                   onChange={(val) => handleChange({ target: { name: 'authority', value: val } })}
                   placeholder={t('users.selectRole', '-- Seleccionar Rol --')}

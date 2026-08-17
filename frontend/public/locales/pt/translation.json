@@ -87,7 +87,8 @@
     "totpCodeLabel": "Código de 6 dígitos",
     "verifyAndEnter": "Verificar e Entrar",
     "forgotPassword": "Esqueceu sua senha?",
-    "privacyPolicy": "Política de Privacidade"
+    "privacyPolicy": "Política de Privacidade",
+    "backupCodeInvalidFormat": "O código de recuperação deve ter o formato XXXX-XXXX."
   },
   "users": {
     "allActive": "Todos os Ativos",
@@ -398,7 +399,9 @@
     "somethingWentWrong": "Algo correu mal:",
     "tryAgain": "Tentar novamente",
     "selectOption": "Selecionar",
-    "clearSearch": "Limpar pesquisa"
+    "clearSearch": "Limpar pesquisa",
+    "logoutWarning": "A sua sessão será encerrada com segurança neste dispositivo.",
+    "companyLogo": "Logotipo da empresa"
   },
   "lang": {
     "es": "Español",
@@ -475,7 +478,12 @@
     "totalExpected": "Esperados",
     "statAttendance": "Presença:",
     "statTrainingTime": "T. Formação:",
-    "statFormationsCount": "Formações (Assistidas/Atribuídas):"
+    "statFormationsCount": "Formações (Assistidas/Atribuídas):",
+    "formationsPdf": "Formações (PDF Executivo)",
+    "employeesPdf": "Funcionários (PDF Executivo)",
+    "exportPdf": "Exportar PDF",
+    "startDate": "Data de início",
+    "endDate": "Data de término"
   },
   "profile": {
     "myProfileTitle": "Meu Perfil",
@@ -575,7 +583,15 @@
     "unknownDevice": "Dispositivo Desconhecido",
     "currentSessionBadge": "Esta sessão",
     "lastActive": "Última atividade",
-    "revokeSession": "Encerrar sessão"
+    "revokeSession": "Encerrar sessão",
+    "regenerateConfirm": "Tem a certeza de que deseja regenerar os códigos de recuperação? Os anteriores deixarão de ser válidos.",
+    "backupCodesRegenerated": "Novos códigos de recuperação gerados.",
+    "copiedBackupCodes": "Códigos copiados para a área de transferência.",
+    "backupCodesOfflineTitle": "Códigos de Recuperação Offline",
+    "regenerate": "Regenerar",
+    "backupCodesDesc": "Se perder o acesso ao seu dispositivo, pode usar um dos seus códigos de recuperação de uso único para iniciar sessão.",
+    "twoFactorEmail": "E-mail",
+    "twoFactorApp": "App de Autenticação"
   },
   "register": {
     "company": "Empresa / Centro de Trabalho",
@@ -663,9 +679,9 @@
     },
     "exportPDF": "Exportar para PDF",
     "fetchError": "Erro ao carregar os registros de auditoria",
-    "integrityTampered": "Alerta! Adulteração detectada nos registros de auditoria",
+    "integrityTampered": "Alerta! Adulteração detetada no registo de auditoria #{{logId}}.",
     "integrityTamperedAlert": "Cadeia Adulterada",
-    "integrityValid": "Integridade SHA-256 verificada com sucesso",
+    "integrityValid": "Integridade criptográfica SHA-256 verificada. Todos os {{count}} registos na cadeia são autênticos e intactos.",
     "integrityVerified": "Cadeia Íntegra",
     "verifyChain": "Verificar Integridade",
     "verifying": "Verificando SHA-256...",
@@ -878,5 +894,17 @@
   "signature": {
     "loading": "Carregando assinatura...",
     "loadError": "Erro ao carregar assinatura"
+  },
+  "pwa": {
+    "installTitle": "Instalar Distribution Academy",
+    "installDesc": "Instale a app no seu dispositivo para picar o ponto e aceder mais rapidamente.",
+    "installBtn": "Instalar App",
+    "dismiss": "Agora não",
+    "updateTitle": "Nova versão disponível",
+    "updateDesc": "Há melhorias prontas. Atualize para aplicá-las.",
+    "updateBtn": "Atualizar",
+    "iosTitle": "Instalar a App no iPhone",
+    "iosInstructions": "Toque em Partilhar",
+    "iosInstructions2": "e depois \"Adicionar ao ecrã principal\""
   }
 }
