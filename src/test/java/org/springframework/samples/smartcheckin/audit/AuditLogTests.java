@@ -3,9 +3,11 @@ package org.springframework.samples.smartcheckin.audit;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("java:S1313")
 class AuditLogTests {
 
     @Test
@@ -51,7 +53,7 @@ class AuditLogTests {
         AuditLog log1 = AuditLog.builder()
                 .action("ACTION")
                 .username("user")
-                .timestamp(LocalDateTime.now())
+                .timestamp(LocalDateTime.now(ZoneId.systemDefault()))
                 .build();
 
         assertNotNull(log1);

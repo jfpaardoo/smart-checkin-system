@@ -87,7 +87,8 @@
     "totpCodeLabel": "6-cyfrowy kod",
     "verifyAndEnter": "Weryfikuj i Zaloguj",
     "forgotPassword": "Nie pamiętasz hasła?",
-    "privacyPolicy": "Polityka Prywatności"
+    "privacyPolicy": "Polityka Prywatności",
+    "backupCodeInvalidFormat": "Kod odzyskiwania musi mieć format XXXX-XXXX."
   },
   "users": {
     "allActive": "Wszyscy Aktywni",
@@ -398,7 +399,9 @@
     "somethingWentWrong": "Coś poszło nie tak:",
     "tryAgain": "Spróbuj ponownie",
     "selectOption": "Wybierz",
-    "clearSearch": "Wyczyść wyszukiwanie"
+    "clearSearch": "Wyczyść wyszukiwanie",
+    "logoutWarning": "Twoja sesja zostanie bezpiecznie zakończona na tym urządzeniu.",
+    "companyLogo": "Logo firmy"
   },
   "lang": {
     "es": "Español",
@@ -475,7 +478,12 @@
     "totalExpected": "Oczekiwani",
     "statAttendance": "Obecność:",
     "statTrainingTime": "Czas szkolenia:",
-    "statFormationsCount": "Szkolenia (Ukończone/Przypisane):"
+    "statFormationsCount": "Szkolenia (Ukończone/Przypisane):",
+    "formationsPdf": "Szkolenia (PDF Wykonawczy)",
+    "employeesPdf": "Pracownicy (PDF Wykonawczy)",
+    "exportPdf": "Eksportuj PDF",
+    "startDate": "Data rozpoczęcia",
+    "endDate": "Data zakończenia"
   },
   "profile": {
     "myProfileTitle": "Mój Profil",
@@ -575,7 +583,15 @@
     "unknownDevice": "Nieznane urządzenie",
     "currentSessionBadge": "Ta sesja",
     "lastActive": "Ostatnia aktywność",
-    "revokeSession": "Wyloguj"
+    "revokeSession": "Wyloguj",
+    "regenerateConfirm": "Czy na pewno chcesz wygenerować nowe kody odzyskiwania? Poprzednie stracą ważność.",
+    "backupCodesRegenerated": "Wygenerowano nowe kody odzyskiwania.",
+    "copiedBackupCodes": "Kody skopiowane do schowka.",
+    "backupCodesOfflineTitle": "Kody Odzyskiwania Offline",
+    "regenerate": "Wygeneruj ponownie",
+    "backupCodesDesc": "Jeśli stracisz dostęp do swojego urządzenia, możesz użyć jednego z jednorazowych kodów odzyskiwania, aby się zalogować.",
+    "twoFactorEmail": "E-mail",
+    "twoFactorApp": "Aplikacja Uwierzytelniająca"
   },
   "register": {
     "company": "Firma / Miejsce Pracy",
@@ -663,9 +679,9 @@
     },
     "exportPDF": "Eksportuj do pliku PDF",
     "fetchError": "Błąd podczas ładowania dziennika audytu",
-    "integrityTampered": "Uwaga! Wykryto naruszenie spójności w dzienniku audytu",
+    "integrityTampered": "Ostrzeżenie! Wykryto modyfikację we wpisie audytu #{{logId}}.",
     "integrityTamperedAlert": "Łańcuch Naruszony",
-    "integrityValid": "Spójność SHA-256 zweryfikowana pomyślnie",
+    "integrityValid": "Kryptograficzna integralność SHA-256 zweryfikowana. Wszystkie {{count}} wpisy w łańcuchu są autentyczne i nienaruszone.",
     "integrityVerified": "Łańcuch Nienaruszony",
     "verifyChain": "Weryfikuj Spójność",
     "verifying": "Weryfikacja SHA-256...",
@@ -878,5 +894,17 @@
   "signature": {
     "loading": "Ładowanie podpisu...",
     "loadError": "Błąd podczas ładowania podpisu"
+  },
+  "pwa": {
+    "installTitle": "Zainstaluj Distribution Academy",
+    "installDesc": "Zainstaluj aplikację na swoim urządzeniu, aby szybciej rejestrować obecność i uzyskiwać dostęp.",
+    "installBtn": "Zainstaluj Aplikację",
+    "dismiss": "Nie teraz",
+    "updateTitle": "Dostępna nowa wersja",
+    "updateDesc": "Usprawnienia są gotowe. Odśwież, aby je zastosować.",
+    "updateBtn": "Aktualizuj",
+    "iosTitle": "Zainstaluj aplikację na iPhone",
+    "iosInstructions": "Dotknij Udostępnij",
+    "iosInstructions2": "a następnie \"Do ekranu początkowego\""
   }
 }

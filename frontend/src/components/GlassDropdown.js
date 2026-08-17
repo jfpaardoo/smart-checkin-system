@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { useTranslation } from 'react-i18next';
 
 export default function GlassDropdown({ 
@@ -14,8 +14,11 @@ export default function GlassDropdown({
   direction = "down"
 }) {
   const { t } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   
+  const toggle = () => setIsOpen(prevState => !prevState);
+
   const selectedOption = options.find(opt => String(opt.value) === String(value));
   const displayLabel = selectedOption ? selectedOption.label : placeholder;
 
@@ -24,7 +27,13 @@ export default function GlassDropdown({
     : options;
 
   return (
-    <UncontrolledDropdown direction={direction} className={`w-100 position-relative ${className}`} style={{ zIndex: 50 }}>
+    <Dropdown 
+      isOpen={isOpen} 
+      toggle={toggle} 
+      direction={direction} 
+      className={`w-100 position-relative ${className}`} 
+      style={{ zIndex: isOpen ? 1050 : 1 }}
+    >
       <DropdownToggle
         tag="button"
         type="button"
@@ -91,6 +100,6 @@ export default function GlassDropdown({
           )}
         </div>
       </DropdownMenu>
-    </UncontrolledDropdown>
+    </Dropdown>
   );
 }

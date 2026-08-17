@@ -11,6 +11,7 @@ function urlBase64ToUint8Array(base64String) {
 
 export async function registerPushNotifications() {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+    console.info('[Push] ServiceWorker or PushManager is not supported in this browser.');
     return;
   }
 
@@ -18,23 +19,40 @@ export async function registerPushNotifications() {
     const registration = await navigator.serviceWorker.register('/sw.js');
     await navigator.serviceWorker.ready;
 
+    console.info('[Push] ServiceWorker registered successfully.');
+
     const response = await fetch('/api/v1/push/vapid-key', { credentials: 'include' });
-    if (!response.ok) return;
+    if (!response.ok) {
+      console.warn('[Push] Could not fetch VAPID key from backend, status:', response.status);
+      return;
+    }
     const { publicKey } = await response.json();
+    if (!publicKey || publicKey === 'defaultPublicKey') {
+      console.warn('[Push] Invalid or default VAPID public key received:', publicKey);
+      return;
+    }
+
+    let permission = Notification.permission;
+    if (permission === 'default') {
+      permission = await Notification.requestPermission();
+    }
+
+    if (permission !== 'granted') {
+      console.warn('[Push] Notification permission not granted:', permission);
+      return;
+    }
 
     let subscription = await registration.pushManager.getSubscription();
     if (!subscription) {
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') return;
-
       subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(publicKey),
       });
+      console.info('[Push] New push subscription created.');
     }
 
     if (subscription) {
-      await fetch('/api/v1/push/subscribe', {
+      const subRes = await fetch('/api/v1/push/subscribe', {
         credentials: 'include',
         method: 'POST',
         headers: {
@@ -42,8 +60,13 @@ export async function registerPushNotifications() {
         },
         body: JSON.stringify(subscription.toJSON()),
       });
+      if (subRes.ok) {
+        console.info('[Push] Push subscription synced with backend successfully.');
+      } else {
+        console.warn('[Push] Failed to sync subscription with backend:', subRes.status);
+      }
     }
   } catch (err) {
-    console.warn('Push subscription failed:', err);
+    console.warn('[Push] Push registration error:', err);
   }
 }

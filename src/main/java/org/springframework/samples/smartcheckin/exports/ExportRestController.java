@@ -22,6 +22,8 @@ import org.springframework.samples.smartcheckin.analytics.AnalyticsService;
 import org.springframework.samples.smartcheckin.analytics.UserAnalyticsDTO;
 import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.audit.AuditLogRepository;
+import org.springframework.samples.smartcheckin.auth.session.UserSession;
+import org.springframework.samples.smartcheckin.auth.session.UserSessionRepository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -29,10 +31,15 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import org.springframework.samples.smartcheckin.exports.strategy.DataExportStrategy;
 import org.springframework.samples.smartcheckin.exports.strategy.ExportFactory;
+import org.springframework.samples.smartcheckin.exports.strategy.ExportUtils;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
@@ -46,7 +53,7 @@ public class ExportRestController {
     private final FormationRepository formationRepository;
     private final UserService userService;
     private final AuditLogRepository auditLogRepository;
-    
+    private final UserSessionRepository userSessionRepository;
     private final AnalyticsService analyticsService;
     private final ExportFactory exportFactory;
 
@@ -56,6 +63,7 @@ public class ExportRestController {
                                 FormationRepository formationRepository,
                                 UserService userService,
                                 AuditLogRepository auditLogRepository,
+                                UserSessionRepository userSessionRepository,
                                 AnalyticsService analyticsService,
                                 ExportFactory exportFactory) {
         this.checkinRepository = checkinRepository;
@@ -63,6 +71,7 @@ public class ExportRestController {
         this.formationRepository = formationRepository;
         this.userService = userService;
         this.auditLogRepository = auditLogRepository;
+        this.userSessionRepository = userSessionRepository;
         this.analyticsService = analyticsService;
         this.exportFactory = exportFactory;
     }
@@ -110,26 +119,125 @@ public class ExportRestController {
         List<Checkin> checkins = checkinRepository.findByUserId(user.getId());
         List<FormationAttendance> attendances = attendanceRepository.findByUserId(user.getId());
 
+        ObjectMapper mapper = createObjectMapper();
+        Map<String, Object> exportData = new LinkedHashMap<>();
+
+        exportData.put("_metadata", buildMetadataMap(user));
+        exportData.put("userProfile", buildUserProfileMap(user));
+        exportData.put("checkinsHistory", buildCheckinsMap(checkins));
+        exportData.put("formationsHistory", buildFormationsMap(attendances));
+        exportData.put("activeSessions", buildSessionsMap(user));
+        exportData.put("personalAuditLogs", buildAuditMap(user));
+
+        byte[] jsonData = mapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(exportData);
+        return createResponse(jsonData, "my_data.json", MediaType.APPLICATION_JSON_VALUE);
+    }
+
+    private ObjectMapper createObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return mapper;
+    }
 
-        Map<String, Object> exportData = new HashMap<>();
-        exportData.put("userProfile", user);
-        exportData.put("checkins", checkins);
-        exportData.put("formations", attendances);
+    private Map<String, Object> buildMetadataMap(User user) {
+        Map<String, Object> metadata = new LinkedHashMap<>();
+        metadata.put("exportTimestamp", LocalDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_DATE_TIME));
+        metadata.put("schemaVersion", "2.0.0");
+        metadata.put("systemName", "Smart Check-in (Distribution Academy)");
+        metadata.put("compliance", "Reglamento General de Protección de Datos (RGPD / EU GDPR 2016/679)");
+        metadata.put("requestingUser", user.getUsername());
+        return metadata;
+    }
 
-        byte[] jsonData = mapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(exportData);
+    private Map<String, Object> buildUserProfileMap(User user) {
+        Map<String, Object> profile = new LinkedHashMap<>();
+        profile.put("id", user.getId());
+        profile.put("username", user.getUsername());
+        profile.put("email", user.getEmail());
+        profile.put("personalCode", user.getPersonalCode());
+        profile.put("locator", user.getLocator());
+        profile.put("firstName", user.getFirstName());
+        profile.put("lastName", user.getLastName());
+        profile.put("authority", user.getAuthority() != null ? user.getAuthority().getAuthority() : null);
+        profile.put("company", user.getCompany() != null ? user.getCompany().getName() : null);
+        profile.put("isWorking", user.getIsWorking());
+        profile.put("isApproved", user.getIsApproved());
+        profile.put("emailNotificationsEnabled", user.getEmailNotificationsEnabled());
+        profile.put("pushNotificationsEnabled", user.getPushNotificationsEnabled());
+        profile.put("privacyPolicyAccepted", user.getPrivacyPolicyAccepted());
+        profile.put("privacyPolicyAcceptedAt", user.getPrivacyPolicyAcceptedAt());
+        profile.put("twoFactorEnabled", user.getTwoFactorEnabled());
+        profile.put("twoFactorType", user.getTwoFactorType());
+        return profile;
+    }
 
-        return createResponse(jsonData, "my_data.json", MediaType.APPLICATION_JSON_VALUE);
+    private Map<String, Object> buildCheckinsMap(List<Checkin> checkins) {
+        Map<String, Object> block = new LinkedHashMap<>();
+        block.put("totalCheckinsCount", checkins != null ? checkins.size() : 0);
+        block.put("records", checkins != null ? checkins : List.of());
+        return block;
+    }
+
+    private Map<String, Object> buildFormationsMap(List<FormationAttendance> attendances) {
+        Map<String, Object> block = new LinkedHashMap<>();
+        block.put("totalAttendancesCount", attendances != null ? attendances.size() : 0);
+        List<Map<String, Object>> list = new ArrayList<>();
+        if (attendances != null) {
+            for (FormationAttendance att : attendances) {
+                list.add(buildAttendanceEntry(att));
+            }
+        }
+        block.put("attendances", list);
+        return block;
+    }
+
+    private Map<String, Object> buildAttendanceEntry(FormationAttendance att) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("id", att.getId());
+        map.put("formationId", att.getFormation() != null ? att.getFormation().getId() : null);
+        map.put("formationName", att.getFormation() != null ? att.getFormation().getName() : null);
+        map.put("formationDate", att.getFormation() != null ? att.getFormation().getFormationDate() : null);
+        map.put("checkInDate", att.getCheckInDate());
+        map.put("checkOutDate", att.getCheckOutDate());
+        map.put("signaturePresent", att.getSignature() != null && !att.getSignature().trim().isEmpty());
+        map.put("digitalVerificationHash", ExportUtils.generateVerificationHash(att));
+        return map;
+    }
+
+    private List<Map<String, Object>> buildSessionsMap(User user) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        if (userSessionRepository == null || user.getUsername() == null) {
+            return list;
+        }
+        List<UserSession> sessions = userSessionRepository.findAllByUsernameAndActiveTrueOrderByLastActivityAtDesc(user.getUsername());
+        if (sessions != null) {
+            for (UserSession s : sessions) {
+                Map<String, Object> map = new LinkedHashMap<>();
+                map.put("id", s.getId());
+                map.put("deviceInfo", s.getDeviceInfo());
+                map.put("userAgent", s.getUserAgent());
+                map.put("ipAddress", s.getIpAddress());
+                map.put("createdAt", s.getCreatedAt());
+                map.put("lastActivityAt", s.getLastActivityAt());
+                list.add(map);
+            }
+        }
+        return list;
+    }
+
+    private List<AuditLog> buildAuditMap(User user) {
+        if (auditLogRepository == null || user.getUsername() == null) {
+            return List.of();
+        }
+        List<AuditLog> logs = auditLogRepository.findByUsername(user.getUsername());
+        return logs != null ? logs : List.of();
     }
 
     private ResponseEntity<byte[]> createResponse(byte[] data, String filename, String contentType) {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
         
-        // Handling UTF-8 BOM or specific character sets for CSV is generally done by the client or in strategy,
-        // but spring sets default charset properly for application type. 
         if ("text/csv".equalsIgnoreCase(contentType)) {
             headers.setContentType(new MediaType("text", "csv", StandardCharsets.UTF_8));
         } else {

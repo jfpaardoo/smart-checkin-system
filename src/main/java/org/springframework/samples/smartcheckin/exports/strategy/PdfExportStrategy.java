@@ -21,17 +21,17 @@ public class PdfExportStrategy implements DataExportStrategy {
 
     @Override
     public byte[] exportUsers(List<UserAnalyticsDTO> users) throws IOException {
-        throw new UnsupportedOperationException("PDF export for Users is not supported yet.");
+        return pdfReportGenerator.generateUsersPdf(users);
     }
 
     @Override
     public byte[] exportCheckins(List<Checkin> checkins) throws IOException {
-        throw new UnsupportedOperationException("PDF export for Checkins is not supported yet.");
+        return pdfReportGenerator.generateCheckinsPdf(checkins);
     }
 
     @Override
     public byte[] exportFormations(List<Formation> formations) throws IOException {
-        throw new UnsupportedOperationException("PDF export for Formations is not supported yet.");
+        return pdfReportGenerator.generateFormationsPdf(formations);
     }
 
     @Override

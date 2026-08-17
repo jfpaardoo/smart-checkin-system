@@ -7,121 +7,219 @@ import org.springframework.samples.smartcheckin.formation.Formation;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.ZoneOffset;
-import java.util.List;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.time.temporal.ChronoUnit;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Component
 public class CsvExportStrategy implements DataExportStrategy {
 
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+    private static final String CSV_DELIMITER = ",";
+    private static final String NOT_AVAILABLE = "N/A";
+    private static final String USERNAME_HEADER = "Username";
+    private static final String PERSONAL_CODE_HEADER = "PersonalCode";
+    private static final String COMPANY_HEADER = "Company";
+    private static final String YES = "YES";
+    private static final String NO = "NO";
+
     @Override
     public byte[] exportUsers(List<UserAnalyticsDTO> users) throws IOException {
-        StringBuilder csvBuilder = new StringBuilder();
-        csvBuilder.append("ID,Username,PersonalCode,FirstName,LastName,Role,CurrentlyInFormation,FormationsAssigned,FormationsAttended,AttendanceRate,TotalFormationMinutes\n");
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (PrintWriter writer = createUtf8BomWriter(out)) {
+            writer.println(String.join(CSV_DELIMITER,
+                    "ID", USERNAME_HEADER, PERSONAL_CODE_HEADER, "Locator", "FirstName", "LastName",
+                    COMPANY_HEADER, "Role", "CurrentlyWorking", "TotalCheckins", "TotalWorkMinutes",
+                    "FormationsAssigned", "FormationsAttended", "FormationsCompleted",
+                    "AttendanceRate", "TotalFormationMinutes"
+            ));
 
-        for (UserAnalyticsDTO u : users) {
-            buildUserCsvRow(csvBuilder, u);
+            if (users != null) {
+                for (UserAnalyticsDTO u : users) {
+                    writer.println(buildUserCsvRow(u));
+                }
+            }
         }
-
-        return csvBuilder.toString().getBytes(StandardCharsets.UTF_8);
+        return out.toByteArray();
     }
 
-    private void buildUserCsvRow(StringBuilder csvBuilder, UserAnalyticsDTO u) {
-        String role = u.getAuthority() != null ? u.getAuthority() : "N/A";
-        csvBuilder.append(u.getUserId()).append(",")
-                .append(u.getUsername() != null ? u.getUsername().replace(",", " ") : "").append(",")
-                .append(u.getPersonalCode() != null ? u.getPersonalCode() : "").append(",")
-                .append(u.getFirstName() != null ? u.getFirstName().replace(",", " ") : "").append(",")
-                .append(u.getLastName() != null ? u.getLastName().replace(",", " ") : "").append(",")
-                .append(role).append(",")
-                .append(Boolean.TRUE.equals(u.getIsWorking()) ? "YES" : "NO").append(",")
-                .append(u.getFormationsAssigned() != null ? u.getFormationsAssigned() : 0).append(",")
-                .append(u.getFormationsAttended() != null ? u.getFormationsAttended() : 0).append(",")
-                .append(u.getAttendancePercentage() != null ? u.getAttendancePercentage() : 0.0).append(",")
-                .append(u.getTotalFormationMinutes() != null ? u.getTotalFormationMinutes() : 0).append("\n");
+    private String buildUserCsvRow(UserAnalyticsDTO u) {
+        String isWorkingStr = Boolean.TRUE.equals(u.getIsWorking()) ? YES : NO;
+        double rate = u.getAttendancePercentage() != null ? u.getAttendancePercentage() : 0.0;
+
+        return String.join(CSV_DELIMITER,
+                String.valueOf(u.getUserId() != null ? u.getUserId() : 0),
+                sanitize(u.getUsername()),
+                sanitize(u.getPersonalCode()),
+                sanitize(u.getLocator()),
+                sanitize(u.getFirstName()),
+                sanitize(u.getLastName()),
+                sanitize(u.getCompanyName()),
+                sanitize(u.getAuthority()),
+                isWorkingStr,
+                String.valueOf(u.getTotalCheckins() != null ? u.getTotalCheckins() : 0),
+                String.valueOf(u.getTotalWorkMinutes() != null ? u.getTotalWorkMinutes() : 0),
+                String.valueOf(u.getFormationsAssigned() != null ? u.getFormationsAssigned() : 0),
+                String.valueOf(u.getFormationsAttended() != null ? u.getFormationsAttended() : 0),
+                String.valueOf(u.getFormationsCompleted() != null ? u.getFormationsCompleted() : 0),
+                String.format(java.util.Locale.US, "%.1f", rate),
+                String.valueOf(u.getTotalFormationMinutes() != null ? u.getTotalFormationMinutes() : 0)
+        );
     }
 
     @Override
     public byte[] exportCheckins(List<Checkin> checkins) throws IOException {
-        StringBuilder csvBuilder = new StringBuilder();
-        csvBuilder.append("ID,User,PersonalCode,Direction,Timestamp\n");
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (PrintWriter writer = createUtf8BomWriter(out)) {
+            writer.println(String.join(CSV_DELIMITER,
+                    "ID", USERNAME_HEADER, PERSONAL_CODE_HEADER, "FullName", COMPANY_HEADER, "Direction", "Timestamp", "SignaturePresent"
+            ));
 
-        for (Checkin checkin : checkins) {
-            String username = checkin.getUser() != null && checkin.getUser().getUsername() != null ? checkin.getUser().getUsername() : "N/A";
-            String pCode = checkin.getUser() != null && checkin.getUser().getPersonalCode() != null ? checkin.getUser().getPersonalCode() : "N/A";
-            csvBuilder.append(checkin.getId() != null ? checkin.getId() : 0).append(",")
-                    .append(username).append(",")
-                    .append(pCode).append(",")
-                    .append(checkin.getCheckInType() != null ? checkin.getCheckInType().name() : "N/A").append(",")
-                    .append(checkin.getCheckInDate() != null ? checkin.getCheckInDate().toString() : "N/A").append("\n");
+            if (checkins != null) {
+                for (Checkin c : checkins) {
+                    writer.println(buildCheckinCsvRow(c));
+                }
+            }
         }
+        return out.toByteArray();
+    }
 
-        return csvBuilder.toString().getBytes(StandardCharsets.UTF_8);
+    private String buildCheckinCsvRow(Checkin c) {
+        String idStr = String.valueOf(c.getId() != null ? c.getId() : 0);
+        String username = c.getUser() != null ? sanitize(c.getUser().getUsername()) : NOT_AVAILABLE;
+        String personalCode = c.getUser() != null ? sanitize(c.getUser().getPersonalCode()) : NOT_AVAILABLE;
+        String fullName = c.getUser() != null
+                ? sanitize((safe(c.getUser().getFirstName()) + " " + safe(c.getUser().getLastName())).trim())
+                : NOT_AVAILABLE;
+        String company = (c.getUser() != null && c.getUser().getCompany() != null)
+                ? sanitize(c.getUser().getCompany().getName())
+                : NOT_AVAILABLE;
+        String type = c.getCheckInType() != null ? c.getCheckInType().name() : NOT_AVAILABLE;
+        String ts = c.getCheckInDate() != null ? c.getCheckInDate().format(DATE_FORMATTER) : NOT_AVAILABLE;
+        String hasSignature = (c.getSignature() != null && !c.getSignature().trim().isEmpty()) ? YES : NO;
+
+        return String.join(CSV_DELIMITER, idStr, username, personalCode, fullName, company, type, ts, hasSignature);
     }
 
     @Override
     public byte[] exportFormations(List<Formation> formations) throws IOException {
-        StringBuilder csvBuilder = new StringBuilder();
-        csvBuilder.append("FormationID,FormationName,ScheduledDate,UserID,Username,PersonalCode,FullName,CheckInTime,CheckOutTime,Duration(Minutes),SignaturePresent,AuditVerificationHash\n");
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (PrintWriter writer = createUtf8BomWriter(out)) {
+            writer.println(String.join(CSV_DELIMITER,
+                    "FormationID", "FormationName", "ScheduledDate", "UserID", USERNAME_HEADER,
+                    PERSONAL_CODE_HEADER, "FullName", COMPANY_HEADER, "CheckInTime", "CheckOutTime",
+                    "Duration(Minutes)", "SignaturePresent", "AuditVerificationHash"
+            ));
 
-        for (Formation f : formations) {
-            if (f.getAttendances() != null) {
-                for (FormationAttendance att : f.getAttendances()) {
-                    buildAttendanceCsvRow(csvBuilder, f, att);
+            if (formations != null) {
+                for (Formation f : formations) {
+                    writeFormationAttendances(writer, f);
                 }
             }
         }
-        return csvBuilder.toString().getBytes(StandardCharsets.UTF_8);
+        return out.toByteArray();
     }
 
-    private void buildAttendanceCsvRow(StringBuilder csvBuilder, Formation f, FormationAttendance att) {
-        String formationName = f.getName() != null ? f.getName().replace(",", " ") : "N/A";
-        String scheduledDate = f.getFormationDate() != null ? f.getFormationDate().toString() : "N/A";
-        String username = att.getUser() != null && att.getUser().getUsername() != null ? att.getUser().getUsername() : "N/A";
-        String personalCode = att.getUser() != null && att.getUser().getPersonalCode() != null ? att.getUser().getPersonalCode() : "N/A";
-        String fullName = att.getUser() != null ? (att.getUser().getFirstName() + " " + att.getUser().getLastName()).replace(",", " ") : "N/A";
-        String checkIn = att.getCheckInDate() != null ? att.getCheckInDate().toString() : "N/A";
-        String checkOut = att.getCheckOutDate() != null ? att.getCheckOutDate().toString() : "N/A";
-
-        long durationMinutes = 0;
-        if (att.getCheckInDate() != null && att.getCheckOutDate() != null) {
-            durationMinutes = Duration.between(att.getCheckInDate().atZone(ZoneOffset.UTC), att.getCheckOutDate().atZone(ZoneOffset.UTC)).toMinutes();
+    private void writeFormationAttendances(PrintWriter writer, Formation f) {
+        if (f.getAttendances() == null || f.getAttendances().isEmpty()) {
+            return;
         }
-        boolean hasSig = att.getSignature() != null && !att.getSignature().trim().isEmpty();
-        String auditHash = ExportUtils.generateVerificationHash(att);
+        for (FormationAttendance att : f.getAttendances()) {
+            writer.println(buildAttendanceCsvRow(f, att));
+        }
+    }
 
-        csvBuilder.append(f.getId() != null ? f.getId() : 0).append(",")
-                .append(formationName).append(",")
-                .append(scheduledDate).append(",")
-                .append(att.getUser() != null ? att.getUser().getId() : 0).append(",")
-                .append(username).append(",")
-                .append(personalCode).append(",")
-                .append(fullName).append(",")
-                .append(checkIn).append(",")
-                .append(checkOut).append(",")
-                .append(durationMinutes).append(",")
-                .append(hasSig ? "YES" : "NO").append(",")
-                .append(auditHash).append("\n");
+    private String buildAttendanceCsvRow(Formation f, FormationAttendance att) {
+        String fId = String.valueOf(f.getId() != null ? f.getId() : 0);
+        String fName = sanitize(f.getName());
+        String schedDate = f.getFormationDate() != null ? f.getFormationDate().format(DATE_FORMATTER) : NOT_AVAILABLE;
+
+        String userFields = extractAttendanceUserData(att);
+        String cIn = att.getCheckInDate() != null ? att.getCheckInDate().format(DATE_FORMATTER) : NOT_AVAILABLE;
+        String cOut = att.getCheckOutDate() != null ? att.getCheckOutDate().format(DATE_FORMATTER) : NOT_AVAILABLE;
+        long duration = calculateAttendanceDuration(att);
+
+        boolean hasSig = att.getSignature() != null && !att.getSignature().trim().isEmpty();
+        String hasSigStr = hasSig ? YES : NO;
+        String hash = hasSig ? ExportUtils.generateVerificationHash(att) : NOT_AVAILABLE;
+
+        return String.join(CSV_DELIMITER, fId, fName, schedDate, userFields, cIn, cOut, String.valueOf(duration), hasSigStr, hash);
+    }
+
+    private String extractAttendanceUserData(FormationAttendance att) {
+        String uId = (att.getUser() != null && att.getUser().getId() != null) ? String.valueOf(att.getUser().getId()) : NOT_AVAILABLE;
+        String uName = att.getUser() != null ? sanitize(att.getUser().getUsername()) : NOT_AVAILABLE;
+        String pCode = att.getUser() != null ? sanitize(att.getUser().getPersonalCode()) : NOT_AVAILABLE;
+        String fullName = att.getUser() != null
+                ? sanitize((safe(att.getUser().getFirstName()) + " " + safe(att.getUser().getLastName())).trim())
+                : NOT_AVAILABLE;
+        String company = (att.getUser() != null && att.getUser().getCompany() != null)
+                ? sanitize(att.getUser().getCompany().getName())
+                : NOT_AVAILABLE;
+
+        return String.join(CSV_DELIMITER, uId, uName, pCode, fullName, company);
+    }
+
+    private long calculateAttendanceDuration(FormationAttendance att) {
+        if (att.getCheckInDate() == null || att.getCheckOutDate() == null) {
+            return 0;
+        }
+        return ChronoUnit.MINUTES.between(
+                att.getCheckInDate().atZone(java.time.ZoneId.systemDefault()),
+                att.getCheckOutDate().atZone(java.time.ZoneId.systemDefault()));
     }
 
     @Override
     public byte[] exportAuditLogs(List<AuditLog> auditLogs) throws IOException {
-        StringBuilder csvBuilder = new StringBuilder();
-        csvBuilder.append("Timestamp,Action,Details,IPAddress\n");
-        for (AuditLog log : auditLogs) {
-            String timestamp = log.getTimestamp() != null ? log.getTimestamp().toString() : "";
-            String action = log.getAction() != null ? log.getAction().replace(",", " ") : "";
-            String details = log.getDetails() != null ? log.getDetails().replace(",", " ") : "";
-            String ip = log.getIpAddress() != null ? log.getIpAddress() : "";
-            
-            csvBuilder.append(timestamp).append(",")
-                      .append(action).append(",")
-                      .append(details).append(",")
-                      .append(ip).append("\n");
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (PrintWriter writer = createUtf8BomWriter(out)) {
+            writer.println(String.join(CSV_DELIMITER,
+                    "ID", "Timestamp", "Action", USERNAME_HEADER, "Details", "IPAddress", "LogHash"
+            ));
+
+            if (auditLogs != null) {
+                for (AuditLog log : auditLogs) {
+                    writer.println(buildAuditLogRow(log));
+                }
+            }
         }
-        return csvBuilder.toString().getBytes(StandardCharsets.UTF_8);
+        return out.toByteArray();
+    }
+
+    private String buildAuditLogRow(AuditLog log) {
+        String idStr = String.valueOf(log.getId() != null ? log.getId() : 0);
+        String ts = log.getTimestamp() != null ? log.getTimestamp().format(DATE_FORMATTER) : NOT_AVAILABLE;
+        String action = sanitize(log.getAction());
+        String username = sanitize(log.getUsername());
+        String details = sanitize(log.getDetails());
+        String ip = sanitize(log.getIpAddress());
+        String rawData = ts + action + username + ip;
+        String hash = org.springframework.samples.smartcheckin.util.HashUtils.generateHash(rawData);
+
+        return String.join(CSV_DELIMITER, idStr, ts, action, username, details, ip, hash);
+    }
+
+    private PrintWriter createUtf8BomWriter(ByteArrayOutputStream out) {
+        out.write(0xEF);
+        out.write(0xBB);
+        out.write(0xBF);
+        return new PrintWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
+    }
+
+    private String sanitize(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return NOT_AVAILABLE;
+        }
+        return value.replace(",", " ").trim();
+    }
+
+    private String safe(String value) {
+        return value != null ? value : "";
     }
 
     @Override
@@ -134,5 +232,3 @@ public class CsvExportStrategy implements DataExportStrategy {
         return "csv";
     }
 }
-
-

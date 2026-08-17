@@ -36,7 +36,7 @@ export default function Home() {
             <div className="da-home-logo mb-2 mb-md-0">
               <img
                 src="/favicon.png"
-                alt="la empresa"
+                alt={t('common.companyLogo', 'Logo de la empresa')}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.15)' }}
               />
             </div>

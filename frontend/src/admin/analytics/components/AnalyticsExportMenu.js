@@ -1,7 +1,7 @@
 import React from 'react';
 import { UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDownload, faFileCsv, faFileExcel } from '@fortawesome/free-solid-svg-icons';
+import { faDownload, faFileCsv, faFileExcel, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../../components/ToastProvider';
 import downloadExportFile from '../../../util/downloadExportFile';
@@ -27,23 +27,33 @@ export default function AnalyticsExportMenu() {
       </DropdownToggle>
       <DropdownMenu end className="da-dropdown-menu shadow-2xl border-0 rounded-3" style={{ zIndex: 99999 }}>
         <DropdownItem header className="fw-bold text-muted">{t('analytics.formationExports', 'Formaciones y Asistencias')}</DropdownItem>
-        <DropdownItem onClick={() => handleDownloadExport('formations/csv', 'formaciones_firmas.csv')} className="py-2 da-dropdown-item">
-          <FontAwesomeIcon icon={faFileCsv} className="me-2" style={{ color: 'var(--da-primary)' }} /> 
-          <span className="fw-bold" style={{ color: '#2c3e50' }}>{t('analytics.formationsCsv', 'Formaciones (CSV)')}</span>
+        <DropdownItem onClick={() => handleDownloadExport('formations/pdf', 'formaciones_informe.pdf')} className="py-2 da-dropdown-item">
+          <FontAwesomeIcon icon={faFilePdf} className="me-2 text-danger" /> 
+          <span className="fw-bold" style={{ color: '#2c3e50' }}>{t('analytics.formationsPdf', 'Formaciones (PDF Ejecutivo)')}</span>
         </DropdownItem>
         <DropdownItem onClick={() => handleDownloadExport('formations/excel', 'formaciones_firmas.xlsx')} className="py-2 da-dropdown-item">
           <FontAwesomeIcon icon={faFileExcel} className="me-2 text-success" /> 
           <span className="fw-bold" style={{ color: '#2c3e50' }}>{t('analytics.formationsExcel', 'Formaciones (Excel)')}</span>
         </DropdownItem>
-        <DropdownItem divider />
-        <DropdownItem header className="fw-bold text-muted">{t('analytics.employeeExports', 'Analítica de Empleados')}</DropdownItem>
-        <DropdownItem onClick={() => handleDownloadExport('users/csv', 'empleados_analiticas.csv')} className="py-2 da-dropdown-item">
+        <DropdownItem onClick={() => handleDownloadExport('formations/csv', 'formaciones_firmas.csv')} className="py-2 da-dropdown-item">
           <FontAwesomeIcon icon={faFileCsv} className="me-2" style={{ color: 'var(--da-primary)' }} /> 
-          <span className="fw-bold" style={{ color: '#2c3e50' }}>{t('analytics.employeesCsv', 'Empleados (CSV)')}</span>
+          <span className="fw-bold" style={{ color: '#2c3e50' }}>{t('analytics.formationsCsv', 'Formaciones (CSV)')}</span>
+        </DropdownItem>
+
+        <DropdownItem divider />
+        
+        <DropdownItem header className="fw-bold text-muted">{t('analytics.employeeExports', 'Analítica de Empleados')}</DropdownItem>
+        <DropdownItem onClick={() => handleDownloadExport('users/pdf', 'empleados_analiticas.pdf')} className="py-2 da-dropdown-item">
+          <FontAwesomeIcon icon={faFilePdf} className="me-2 text-danger" /> 
+          <span className="fw-bold" style={{ color: '#2c3e50' }}>{t('analytics.employeesPdf', 'Empleados (PDF Ejecutivo)')}</span>
         </DropdownItem>
         <DropdownItem onClick={() => handleDownloadExport('users/excel', 'empleados_analiticas.xlsx')} className="py-2 da-dropdown-item">
           <FontAwesomeIcon icon={faFileExcel} className="me-2 text-success" /> 
           <span className="fw-bold" style={{ color: '#2c3e50' }}>{t('analytics.employeesExcel', 'Empleados (Excel)')}</span>
+        </DropdownItem>
+        <DropdownItem onClick={() => handleDownloadExport('users/csv', 'empleados_analiticas.csv')} className="py-2 da-dropdown-item">
+          <FontAwesomeIcon icon={faFileCsv} className="me-2" style={{ color: 'var(--da-primary)' }} /> 
+          <span className="fw-bold" style={{ color: '#2c3e50' }}>{t('analytics.employeesCsv', 'Empleados (CSV)')}</span>
         </DropdownItem>
       </DropdownMenu>
     </UncontrolledDropdown>

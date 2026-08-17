@@ -87,7 +87,8 @@
     "totpCodeLabel": "6-stelliger Code",
     "verifyAndEnter": "Überprüfen & Anmelden",
     "forgotPassword": "Passwort vergessen?",
-    "privacyPolicy": "Datenschutzerklärung"
+    "privacyPolicy": "Datenschutzerklärung",
+    "backupCodeInvalidFormat": "Der Wiederherstellungscode muss das Format XXXX-XXXX haben."
   },
   "users": {
     "allActive": "Alle Aktiven",
@@ -398,7 +399,9 @@
     "somethingWentWrong": "Etwas ist schiefgelaufen:",
     "tryAgain": "Erneut versuchen",
     "selectOption": "Auswählen",
-    "clearSearch": "Suche löschen"
+    "clearSearch": "Suche löschen",
+    "logoutWarning": "Ihre Sitzung wird auf diesem Gerät sicher beendet.",
+    "companyLogo": "Unternehmenslogo"
   },
   "lang": {
     "es": "Español",
@@ -475,7 +478,12 @@
     "totalExpected": "Erwartet",
     "statAttendance": "Anwesenheit:",
     "statTrainingTime": "Schulungszeit:",
-    "statFormationsCount": "Schulungen (Teilgenommen/Zugewiesen):"
+    "statFormationsCount": "Schulungen (Teilgenommen/Zugewiesen):",
+    "formationsPdf": "Schulungen (Executive PDF)",
+    "employeesPdf": "Mitarbeiter (Executive PDF)",
+    "exportPdf": "PDF Exportieren",
+    "startDate": "Startdatum",
+    "endDate": "Enddatum"
   },
   "profile": {
     "myProfileTitle": "Mein Profil",
@@ -575,7 +583,15 @@
     "unknownDevice": "Unbekanntes Gerät",
     "currentSessionBadge": "Diese Sitzung",
     "lastActive": "Zuletzt aktiv",
-    "revokeSession": "Abmelden"
+    "revokeSession": "Abmelden",
+    "regenerateConfirm": "Sind Sie sicher, dass Sie die Wiederherstellungscodes neu generieren möchten? Die vorherigen sind nicht mehr gültig.",
+    "backupCodesRegenerated": "Neue Wiederherstellungscodes generiert.",
+    "copiedBackupCodes": "Codes in die Zwischenablage kopiert.",
+    "backupCodesOfflineTitle": "Offline-Wiederherstellungscodes",
+    "regenerate": "Neu generieren",
+    "backupCodesDesc": "Wenn Sie den Zugriff auf Ihr Gerät verlieren, können Sie einen Ihrer Einmal-Wiederherstellungscodes verwenden, um sich anzumelden.",
+    "twoFactorEmail": "E-Mail",
+    "twoFactorApp": "Authenticator-App"
   },
   "register": {
     "company": "Unternehmen / Arbeitsplatz",
@@ -663,9 +679,9 @@
     },
     "exportPDF": "Als PDF exportieren",
     "fetchError": "Fehler beim Laden der Audit-Protokolle",
-    "integrityTampered": "Warnung! Manipulation in den Audit-Protokollen festgestellt",
+    "integrityTampered": "Warnung! Manipulation im Prüfprotokoll #{{logId}} erkannt.",
     "integrityTamperedAlert": "Kette Manipuliert",
-    "integrityValid": "SHA-256-Integrität erfolgreich überprüft",
+    "integrityValid": "Kryptografische SHA-256-Integrität verifiziert. Alle {{count}} Protokolle in der Kette sind authentisch und intakt.",
     "integrityVerified": "Kette Intakt",
     "verifyChain": "Integrität Prüfen",
     "verifying": "SHA-256 Überprüfung...",
@@ -878,5 +894,17 @@
   "signature": {
     "loading": "Signatur wird geladen...",
     "loadError": "Fehler beim Laden der Signatur"
+  },
+  "pwa": {
+    "installTitle": "Distribution Academy installieren",
+    "installDesc": "Installieren Sie die App auf Ihrem Gerät, um schneller einzuchecken und zuzugreifen.",
+    "installBtn": "App installieren",
+    "dismiss": "Jetzt nicht",
+    "updateTitle": "Neue Version verfügbar",
+    "updateDesc": "Verbesserungen sind bereit. Aktualisieren Sie, um sie anzuwenden.",
+    "updateBtn": "Aktualisieren",
+    "iosTitle": "App auf dem iPhone installieren",
+    "iosInstructions": "Tippen Sie auf Teilen",
+    "iosInstructions2": "und dann \"Zum Home-Bildschirm\""
   }
 }

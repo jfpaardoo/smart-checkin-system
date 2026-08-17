@@ -121,6 +121,10 @@
 					<groupId>org.junit.vintage</groupId>
 					<artifactId>junit-vintage-engine</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>com.vaadin.external.google</groupId>
+					<artifactId>android-json</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -168,7 +172,7 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20230227</version>
+			<version>20250107</version>
 		</dependency>
 		<!-- RATE LIMITING -->
 		<dependency>
@@ -239,6 +243,16 @@
 			<groupId>nl.martijndwars</groupId>
 			<artifactId>web-push</artifactId>
 			<version>5.1.2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcprov-jdk15on</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcpkix-jdk15on</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -252,8 +266,13 @@
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.70</version>
+			<artifactId>bcprov-jdk18on</artifactId>
+			<version>1.80</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpkix-jdk18on</artifactId>
+			<version>1.80</version>
 		</dependency>
 	</dependencies>
 
@@ -416,6 +435,24 @@
 						<version>1.2.1</version>
 					</dependency>
 				</dependencies>
+				<configuration>
+					<targetClasses>
+						<param>org.springframework.samples.smartcheckin.exports.*</param>
+						<param>org.springframework.samples.smartcheckin.util.*</param>
+						<param>org.springframework.samples.smartcheckin.audit.*</param>
+					</targetClasses>
+					<targetTests>
+						<param>org.springframework.samples.smartcheckin.exports.*</param>
+						<param>org.springframework.samples.smartcheckin.util.*</param>
+						<param>org.springframework.samples.smartcheckin.audit.*</param>
+					</targetTests>
+					<threads>4</threads>
+					<outputFormats>
+						<outputFormat>HTML</outputFormat>
+						<outputFormat>XML</outputFormat>
+					</outputFormats>
+					<timestampedReports>false</timestampedReports>
+				</configuration>
 			</plugin>
 
 			<!-- Spring Boot Actuator displays build-related information if a git.properties
@@ -463,6 +500,32 @@
 							<version>0.2.0</version>
 						</path>
 					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+			<!-- Software Bill of Materials (SBOM) for NIS2 & Cyber Resilience Act compliance -->
+			<plugin>
+				<groupId>org.cyclonedx</groupId>
+				<artifactId>cyclonedx-maven-plugin</artifactId>
+				<version>2.9.1</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>makeAggregateBom</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<projectType>application</projectType>
+					<schemaVersion>1.5</schemaVersion>
+					<includeBomSerialNumber>true</includeBomSerialNumber>
+					<includeCompileScope>true</includeCompileScope>
+					<includeProvidedScope>true</includeProvidedScope>
+					<includeRuntimeScope>true</includeRuntimeScope>
+					<includeSystemScope>true</includeSystemScope>
+					<includeTestScope>false</includeTestScope>
+					<outputFormat>all</outputFormat>
+					<outputName>bom</outputName>
 				</configuration>
 			</plugin>
 		</plugins>

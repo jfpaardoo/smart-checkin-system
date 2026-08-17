@@ -87,7 +87,8 @@
     "totpCodeLabel": "6-цифрен код",
     "verifyAndEnter": "Потвърди и Влез",
     "forgotPassword": "Забравена парола?",
-    "privacyPolicy": "Политика за поверителност"
+    "privacyPolicy": "Политика за поверителност",
+    "backupCodeInvalidFormat": "Кодът за възстановяване трябва да бъде във формат XXXX-XXXX."
   },
   "users": {
     "allActive": "Всички Активни",
@@ -398,7 +399,9 @@
     "somethingWentWrong": "Възникна грешка:",
     "tryAgain": "Опитай отново",
     "selectOption": "Избери",
-    "clearSearch": "Изчисти търсенето"
+    "clearSearch": "Изчисти търсенето",
+    "logoutWarning": "Сесията ви ще бъде сигурно прекратена на това устройство.",
+    "companyLogo": "Лого на компанията"
   },
   "lang": {
     "es": "Español",
@@ -475,7 +478,12 @@
     "totalExpected": "Очаквани",
     "statAttendance": "Присъствие:",
     "statTrainingTime": "Време за обучение:",
-    "statFormationsCount": "Обучения (Посетени/Възложени):"
+    "statFormationsCount": "Обучения (Посетени/Възложени):",
+    "formationsPdf": "Обучения (Изпълнителен PDF)",
+    "employeesPdf": "Служители (Изпълнителен PDF)",
+    "exportPdf": "Експорт на PDF",
+    "startDate": "Начална дата",
+    "endDate": "Крайна дата"
   },
   "profile": {
     "myProfileTitle": "Моят Профил",
@@ -575,7 +583,15 @@
     "unknownDevice": "Неизвестно устройство",
     "currentSessionBadge": "Тази сесия",
     "lastActive": "Последна активност",
-    "revokeSession": "Изход"
+    "revokeSession": "Изход",
+    "regenerateConfirm": "Сигурни ли сте, че искате да генерирате отново кодовете за възстановяване? Предишните вече няма да са валидни.",
+    "backupCodesRegenerated": "Генерирани са нови кодове за възстановяване.",
+    "copiedBackupCodes": "Кодовете са копирани в клипборда.",
+    "backupCodesOfflineTitle": "Офлайн кодове за възстановяване",
+    "regenerate": "Регенериране",
+    "backupCodesDesc": "Ако загубите достъп до устройството си, можете да използвате един от вашите кодове за еднократна употреба, за да влезете.",
+    "twoFactorEmail": "Имейл",
+    "twoFactorApp": "Приложение за автентикация"
   },
   "register": {
     "company": "Компания / Работно Място",
@@ -663,9 +679,9 @@
     },
     "exportPDF": "Експортиране в PDF",
     "fetchError": "Грешка при зареждане на одитните записи",
-    "integrityTampered": "Внимание! Открита е манипулация в одитните записи",
+    "integrityTampered": "Внимание! Открита е подправка в одитния лог #{{logId}}.",
     "integrityTamperedAlert": "Манипулирана Верига",
-    "integrityValid": "SHA-256 целостта е потвърдена успешно",
+    "integrityValid": "Криптографската цялост SHA-256 е потвърдена. Всички {{count}} записа във веригата са автентични и непокътнати.",
     "integrityVerified": "Непокътната Верига",
     "verifyChain": "Провери Целостта",
     "verifying": "Проверка на SHA-256...",
@@ -878,5 +894,17 @@
   "signature": {
     "loading": "Зареждане на подпис...",
     "loadError": "Грешка при зареждане на подпис"
+  },
+  "pwa": {
+    "installTitle": "Инсталирайте Distribution Academy",
+    "installDesc": "Инсталирайте приложението на вашето устройство за по-бързо чекиране и достъп.",
+    "installBtn": "Инсталиране на приложението",
+    "dismiss": "Не сега",
+    "updateTitle": "Налична е нова версия",
+    "updateDesc": "Подобренията са готови. Обновете, за да ги приложите.",
+    "updateBtn": "Обновяване",
+    "iosTitle": "Инсталирайте приложението на iPhone",
+    "iosInstructions": "Докоснете Споделяне",
+    "iosInstructions2": "и след това \"Към началния екран\""
   }
 }

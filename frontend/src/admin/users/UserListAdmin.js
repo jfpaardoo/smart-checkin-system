@@ -4,7 +4,7 @@ import { Button } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import deleteFromList from "../../util/deleteFromList";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUsers, faFileCsv, faFileExcel, faPlus, faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faUsers, faFileCsv, faFileExcel, faFilePdf, faPlus, faFilter } from '@fortawesome/free-solid-svg-icons';
 import GlassSearchBar from "../../components/GlassSearchBar";
 import GlassDropdown from "../../components/GlassDropdown";
 import GlassPagination from "../../components/GlassPagination";
@@ -203,6 +203,15 @@ export default function UserListAdmin() {
                     <span className="btn-expand-label ms-1">{t('analytics.exportCsv', 'Exportar CSV')}</span>
                 </Button>
                 
+                {/* Botón PDF */}
+                <Button 
+                  className="da-btn-secondary btn-icon-expand btn-expand-lg bg-red-500/20 hover:bg-red-500/30 text-red-700 border border-red-200/60 backdrop-blur-xl shadow-xs transition duration-300 hover:-translate-y-0.5" 
+                  onClick={() => handleDownloadExport('users/pdf', 'usuarios.pdf')}
+                >
+                    <FontAwesomeIcon icon={faFilePdf} className="text-red-600" />
+                    <span className="btn-expand-label ms-1 font-semibold">{t('analytics.exportPdf', 'Exportar PDF')}</span>
+                </Button>
+
                 {/* Botón Excel */}
                 <Button 
                   className="da-btn-secondary btn-icon-expand btn-expand-lg bg-slate-500/30 hover:bg-slate-500/50 text-slate-800 border border-white/60 backdrop-blur-xl shadow-[0_8px_20px_0_rgba(31,38,135,0.07)] transition duration-300 hover:-translate-y-0.5" 

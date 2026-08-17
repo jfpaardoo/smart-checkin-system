@@ -94,9 +94,7 @@ public class SecurityConfiguration {
                         .requestMatchers(
                                 "/api/v1/users/me",
                                 "/api/v1/users/me/**",
-                                "/api/v1/users/2fa/setup",
-                                "/api/v1/users/2fa/enable",
-                                "/api/v1/users/2fa/disable",
+                                "/api/v1/users/2fa/**",
                                 "/api/v1/exports/me/export")
                         .authenticated()
 

@@ -78,4 +78,26 @@ public class ExceptionHandlerController {
         return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
     }
 
+	@ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorMessage> handleDataIntegrityViolationException(org.springframework.dao.DataIntegrityViolationException ex, WebRequest request) {
+        String msg = "Error de duplicidad o integridad de datos.";
+        String exMsg = ex.getMessage() != null ? ex.getMessage() : "";
+        if (exMsg.contains("personal_code") || exMsg.contains("uk5v7b31bxs6tcvinhg22i2v029")) {
+            msg = "El código personal de 4 dígitos ya se encuentra registrado por otro usuario.";
+        } else if (exMsg.contains("username")) {
+            msg = "El nombre de usuario ya se encuentra registrado.";
+        } else if (exMsg.contains("email")) {
+            msg = "El correo electrónico ya se encuentra registrado.";
+        }
+
+        ErrorMessage message = new ErrorMessage(
+                HttpStatus.BAD_REQUEST.value(), 
+                LocalDateTime.now(ZoneId.systemDefault()), 
+                msg,
+                request.getDescription(false));
+
+        return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+    }
+
 }

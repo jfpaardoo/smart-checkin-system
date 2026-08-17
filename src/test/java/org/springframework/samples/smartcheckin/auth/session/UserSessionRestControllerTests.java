@@ -16,6 +16,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -26,13 +27,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SuppressWarnings("null")
+@SuppressWarnings({ "null", "java:S1313" })
 @WebMvcTest(controllers = UserSessionRestController.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebSecurityConfigurer.class),
         excludeAutoConfiguration = { SecurityAutoConfiguration.class })
 class UserSessionRestControllerTests {
 
     private static final String BASE_URL = "/api/v1/users/me/sessions";
+    private static final String SESSION_USER = "sessionUser";
+    private static final String CURRENT_JWT = "currentJwt";
 
     @Autowired
     private MockMvc mockMvc;
@@ -46,30 +49,28 @@ class UserSessionRestControllerTests {
     @MockitoBean
     private JwtUtils jwtUtils;
 
-    private User testUser;
-
     @BeforeEach
     void setUp() {
-        testUser = new User();
+        User testUser = new User();
         testUser.setId(1);
-        testUser.setUsername("sessionUser");
+        testUser.setUsername(SESSION_USER);
         when(userService.findCurrentUser()).thenReturn(testUser);
     }
 
     @Test
-    @WithMockUser(username = "sessionUser")
+    @WithMockUser(username = SESSION_USER)
     void testGetMyActiveSessions() throws Exception {
         UserSessionDTO dto = UserSessionDTO.builder()
                 .id(10)
                 .ipAddress("192.168.1.1")
                 .deviceInfo("Chrome en Windows")
-                .createdAt(LocalDateTime.now())
-                .lastActivityAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now(ZoneId.systemDefault()))
+                .lastActivityAt(LocalDateTime.now(ZoneId.systemDefault()))
                 .isCurrent(true)
                 .build();
 
-        when(jwtUtils.getJwtFromCookies(any())).thenReturn("currentJwt");
-        when(userSessionService.getActiveSessions("sessionUser", "currentJwt")).thenReturn(List.of(dto));
+        when(jwtUtils.getJwtFromCookies(any())).thenReturn(CURRENT_JWT);
+        when(userSessionService.getActiveSessions(SESSION_USER, CURRENT_JWT)).thenReturn(List.of(dto));
 
         mockMvc.perform(get(BASE_URL).with(csrf()))
                 .andExpect(status().isOk())
@@ -79,9 +80,9 @@ class UserSessionRestControllerTests {
     }
 
     @Test
-    @WithMockUser(username = "sessionUser")
+    @WithMockUser(username = SESSION_USER)
     void testRevokeSessionSuccess() throws Exception {
-        when(userSessionService.revokeSession("sessionUser", 10)).thenReturn(true);
+        when(userSessionService.revokeSession(SESSION_USER, 10)).thenReturn(true);
 
         mockMvc.perform(delete(BASE_URL + "/10").with(csrf()))
                 .andExpect(status().isOk())
@@ -89,19 +90,19 @@ class UserSessionRestControllerTests {
     }
 
     @Test
-    @WithMockUser(username = "sessionUser")
+    @WithMockUser(username = SESSION_USER)
     void testRevokeSessionNotFound() throws Exception {
-        when(userSessionService.revokeSession("sessionUser", 99)).thenReturn(false);
+        when(userSessionService.revokeSession(SESSION_USER, 99)).thenReturn(false);
 
         mockMvc.perform(delete(BASE_URL + "/99").with(csrf()))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @WithMockUser(username = "sessionUser")
+    @WithMockUser(username = SESSION_USER)
     void testRevokeOtherSessions() throws Exception {
-        when(jwtUtils.getJwtFromCookies(any())).thenReturn("currentJwt");
-        when(userSessionService.revokeOtherSessions("sessionUser", "currentJwt")).thenReturn(3);
+        when(jwtUtils.getJwtFromCookies(any())).thenReturn(CURRENT_JWT);
+        when(userSessionService.revokeOtherSessions(SESSION_USER, CURRENT_JWT)).thenReturn(3);
 
         mockMvc.perform(delete(BASE_URL + "/others").with(csrf()))
                 .andExpect(status().isOk())

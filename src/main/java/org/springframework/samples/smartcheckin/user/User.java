@@ -1,6 +1,8 @@
 package org.springframework.samples.smartcheckin.user;
 
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.samples.smartcheckin.checkin.Checkin;
@@ -18,6 +20,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -103,6 +108,13 @@ public class User extends BaseEntity implements OrganizationalUnit {
     @Column(name = "two_factor_secret")
     @Convert(converter = StringCryptoConverter.class)
     private String twoFactorSecret;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_2fa_backup_codes", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "code_hash")
+    @lombok.Builder.Default
+    @JsonIgnore
+    private Set<String> twoFactorBackupCodes = new HashSet<>();
 
     @NotNull
     @Column(name = "email_notifications_enabled")

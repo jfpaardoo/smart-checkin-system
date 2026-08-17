@@ -4,9 +4,10 @@ import { useTranslation } from "react-i18next";
 import { useToast } from "../../components/ToastProvider";
 import { Turnstile } from '@marsidev/react-turnstile';
 import tokenService from "../../services/token.service";
-import { FaSignInAlt, FaShieldAlt, FaKey, FaFingerprint } from "react-icons/fa";
+import { FaSignInAlt, FaKey, FaFingerprint } from "react-icons/fa";
 import { isWebAuthnSupported, loginWithPasskey } from "../../util/webauthnUtil";
 import { useCaptchaSiteKey } from "../../hooks/useCaptchaSiteKey";
+import TwoFactorLoginForm from "./components/TwoFactorLoginForm";
 
 export default function Login() {
   const { t } = useTranslation();
@@ -16,7 +17,6 @@ export default function Login() {
   const navigate = useNavigate();
   const [requires2FA, setRequires2FA] = useState(false);
   const [username2FA, setUsername2FA] = useState("");
-  const [totpCode, setTotpCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState(null);
   const [captchaKey, setCaptchaKey] = useState(0);
@@ -106,10 +106,14 @@ export default function Login() {
     }
   }
 
-  async function handleVerify2FA(e) {
-    e.preventDefault();
-    if (totpCode.length !== 6) {
+  async function handleVerify2FA(totpCode, useBackupCode) {
+    const cleanCode = totpCode.trim().toUpperCase();
+    if (!useBackupCode && cleanCode.length !== 6) {
       toast.error(t('profile.codeMustBe6Digits', "El código debe tener 6 dígitos."));
+      return;
+    }
+    if (useBackupCode && cleanCode.length < 8) {
+      toast.error(t('login.backupCodeInvalidFormat', "El código de recuperación debe tener el formato XXXX-XXXX."));
       return;
     }
 
@@ -119,7 +123,7 @@ export default function Login() {
         headers: { "Content-Type": "application/json" },
         method: "POST",
         credentials: "include",
-        body: JSON.stringify({ username: username2FA, code: totpCode }),
+        body: JSON.stringify({ username: username2FA, code: cleanCode }),
       });
 
       const data = await response.json();
@@ -129,7 +133,7 @@ export default function Login() {
         tokenService.setUser(data);
         setTimeout(() => { navigate("/"); }, 1000);
       } else {
-        throw new Error(data.message || "Código 2FA incorrecto.");
+        throw new Error(data.message || "Código 2FA o código de recuperación incorrecto.");
       }
     } catch (error) {
       toast.error(error.message || t('login.genericError'));
@@ -241,41 +245,13 @@ export default function Login() {
             </form>
           </div>
         ) : (
-          <form onSubmit={handleVerify2FA} className="flex flex-col gap-5">
-            <div className="text-center">
-              <FaShieldAlt className="text-4xl text-[#b3c34c] mx-auto mb-3 drop-shadow-sm" />
-              <h2 className="text-xl font-bold text-slate-800 mb-1">{t('login.twoFactorHeader', 'Verificación en dos pasos')}</h2>
-              <p className="text-sm text-slate-600">
-                {t('login.twoFactorPrompt', 'Autenticación de Doble Factor (2FA) requerida para')} <strong className="text-slate-800">{username2FA}</strong>
-              </p>
-            </div>
-            
-            <div className="flex flex-col gap-2">
-              <label htmlFor="totpCode" className="text-sm font-semibold text-slate-700 ml-1">
-                {t('login.totpCodeLabel', 'Código de 6 dígitos')}
-              </label>
-              <input
-                type="text"
-                inputMode="numeric"
-                maxLength="6"
-                id="totpCode"
-                placeholder="000000"
-                value={totpCode}
-                onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ""))}
-                required
-                autoFocus
-                className="w-full text-center text-3xl tracking-[0.5rem] py-4 rounded-2xl border border-white/50 bg-white/50 backdrop-blur-sm focus:border-[#b3c34c] focus:bg-white/80 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition font-mono text-slate-800 shadow-inner"
-              />
-            </div>
-            
-            <button 
-              type="submit" 
-              disabled={loading}
-              className={`${glassButtonClass} disabled:opacity-50`}
-            >
-              {loading ? t('common.loading', 'Verificando...') : t('login.verifyAndEnter', 'Verificar y Acceder')}
-            </button>
-          </form>
+          <TwoFactorLoginForm
+            username2FA={username2FA}
+            loading={loading}
+            onVerify={handleVerify2FA}
+            t={t}
+            glassButtonClass={glassButtonClass}
+          />
         )}
       </div>
 
