@@ -75,34 +75,42 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     } catch { /* ignore */ }
   }, []);
 
+  const loadAvailableCameras = useCallback(async () => {
+    try {
+      const devices = await Html5Qrcode.getCameras();
+      if (!devices || devices.length === 0) return null;
+
+      const camOptions = devices.map(d => ({
+        value: d.id,
+        label: d.label || `${t('common.camera', 'Cámara')} ${d.id}`
+      }));
+      setCameras(camOptions);
+
+      const backCamera = devices.find(d => 
+        d.label.toLowerCase().includes('back') || 
+        d.label.toLowerCase().includes('rear') || 
+        d.label.toLowerCase().includes('trasera') ||
+        d.label.toLowerCase().includes('environment') ||
+        d.label.toLowerCase().includes('externa')
+      );
+
+      return backCamera ? backCamera.id : devices[0].id;
+    } catch (err) {
+      console.debug('Initial getCameras before permission (will retry on start):', err);
+      return null;
+    }
+  }, [t]);
+
   // Fetch cameras once
   useEffect(() => {
     let isMounted = true;
-    Html5Qrcode.getCameras().then(devices => {
-      if (devices && devices.length > 0 && isMounted) {
-        const camOptions = devices.map(d => ({
-          value: d.id,
-          label: d.label || `${t('common.camera', 'Cámara')} ${d.id}`
-        }));
-        setCameras(camOptions);
-        
-        const backCamera = devices.find(d => 
-          d.label.toLowerCase().includes('back') || 
-          d.label.toLowerCase().includes('rear') || 
-          d.label.toLowerCase().includes('trasera') ||
-          d.label.toLowerCase().includes('environment') ||
-          d.label.toLowerCase().includes('externa')
-        );
-        
-        if (backCamera) {
-          setSelectedCameraId(backCamera.id);
-        }
+    loadAvailableCameras().then(defaultCameraId => {
+      if (defaultCameraId && isMounted) {
+        setSelectedCameraId(defaultCameraId);
       }
-    }).catch(err => {
-      console.debug('Initial getCameras before permission (will retry on start):', err);
     });
     return () => { isMounted = false; };
-  }, [t]);
+  }, [loadAvailableCameras]);
 
   // Handle scanner lifecycle
   useEffect(() => {
@@ -119,7 +127,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       onScanSuccessRef.current?.(decodedText);
     };
 
-    const timerId = setTimeout(() => {
+    const startScanner = async () => {
       if (cancelled) return;
       const container = document.getElementById(elementId);
       if (!container) return;
@@ -131,29 +139,23 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       // This immediately triggers the browser permission modal on Android/Samsung without blocking on getCameras()
       const cameraConfig = selectedCameraId || { facingMode: 'environment' };
 
-      html5Qrcode.start(
-        cameraConfig,
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        handleSuccess,
-        () => {} // Ignore continuous decode errors
-      ).then(() => {
+      try {
+        await html5Qrcode.start(
+          cameraConfig,
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          handleSuccess,
+          () => {} // Ignore continuous decode errors
+        );
         if (!cancelled) {
           setIsScannerReady(true);
-          // Refresh cameras list after permission is granted
-          Html5Qrcode.getCameras().then(devices => {
-            if (devices && devices.length > 0 && !cancelled) {
-              const camOptions = devices.map(d => ({
-                value: d.id,
-                label: d.label || `${t('common.camera', 'Cámara')} ${d.id}`
-              }));
-              setCameras(camOptions);
-            }
-          }).catch(() => {});
+          await loadAvailableCameras();
         }
-      }).catch(err => {
+      } catch (err) {
         console.error('Error starting scanner:', err);
-      });
-    }, 100);
+      }
+    };
+
+    const timerId = setTimeout(startScanner, 100);
 
     return () => {
       cancelled = true;
@@ -161,7 +163,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       setIsScannerReady(false);
       stopScannerSafely(html5QrcodeRef.current, elementId);
     };
-  }, [isScanningEnabled, selectedCameraId, elementId, stopScannerSafely, t]);
+  }, [isScanningEnabled, selectedCameraId, elementId, stopScannerSafely, loadAvailableCameras]);
 
   const resetScannerState = useCallback(() => {
     scannedRef.current = false;
