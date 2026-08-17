@@ -373,6 +373,12 @@ public class AuthController {
     @GetMapping("/validate")
     public ResponseEntity<Boolean> validateToken(HttpServletRequest request) {
         String token = jwtUtils.getJwtFromCookies(request);
+        if (token == null) {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                token = authHeader.substring(7);
+            }
+        }
         Boolean isValid = (token != null && jwtUtils.validateJwtToken(token));
         return ResponseEntity.ok(isValid);
     }
