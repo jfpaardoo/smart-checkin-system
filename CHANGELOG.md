@@ -18,6 +18,9 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
   - **Resiliencia en `PrivateRoute.js`**: Implementada caché de validación en memoria (TTL 30s) y tolerancia a micro-cortes de red/timeouts para que caídas momentáneas de conectividad en móviles no cierren la sesión del usuario.
 - **Estabilidad de Arranque y Endpoints en Backend**:
   - Eliminado el mapeo duplicado del endpoint `@GetMapping("/validate")` en `AuthController.java`, solucionando el fallo `IllegalStateException: Ambiguous mapping` que impedía el despliegue de Spring Boot.
+- **Corrección de Concurrencia en Sesiones y Formaciones (`NonUniqueResultException`)**:
+  - Sustituido `findByTokenHash` por `findFirstByTokenHashOrderByLastActivityAtDesc` y limpieza de registros concurrentes duplicados en `UserSessionService.java`, erradicando el fallo de Hibernate `NonUniqueResultException: 2 results were returned` que provocaba expulsiones inesperadas al login durante la validación de tokens en `AuthTokenFilter`.
+  - Reemplazado `findByFormationAndUser` por `findFirstByFormationAndUserOrderByCheckInDateDesc` en `FormationAttendanceRepository.java` y `FormationService.java` para prevenir errores de base de datos en asistencias duplicadas.
 - **Protección y Flujo de Check-in con QR**:
   - Protegida la ruta `/checkin` mediante `<PrivateRoute>` en `App.js` para evitar envíos no autenticados (`401 Unauthorized / Full authentication is required`).
   - Sustituido `fetch` nativo por la instancia estándar de Axios (`api.post`) en `ScannerCheckin.js` para garantizar la transmisión de cookies `HttpOnly` y un formateo consistente de errores.

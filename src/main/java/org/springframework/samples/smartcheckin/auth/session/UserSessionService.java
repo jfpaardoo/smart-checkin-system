@@ -25,13 +25,19 @@ public class UserSessionService {
         if (username == null || token == null) return;
         String tokenHash = hashToken(token);
 
-        Optional<UserSession> existing = userSessionRepository.findByTokenHash(tokenHash);
-        if (existing.isPresent()) {
-            UserSession session = existing.get();
+        List<UserSession> existingList = userSessionRepository.findAllByTokenHash(tokenHash);
+        if (!existingList.isEmpty()) {
+            UserSession session = existingList.get(0);
             session.setLastActivityAt(LocalDateTime.now(java.time.ZoneId.systemDefault()));
             session.setIpAddress(ipAddress);
             session.setActive(true);
             userSessionRepository.save(session);
+            // Clean up any duplicate records if they were created concurrently
+            if (existingList.size() > 1) {
+                for (int i = 1; i < existingList.size(); i++) {
+                    userSessionRepository.delete(existingList.get(i));
+                }
+            }
         } else {
             UserSession newSession = UserSession.builder()
                     .username(username)
@@ -95,7 +101,7 @@ public class UserSessionService {
     public boolean isSessionActive(String token) {
         if (token == null) return false;
         String tokenHash = hashToken(token);
-        return userSessionRepository.findByTokenHash(tokenHash)
+        return userSessionRepository.findFirstByTokenHashOrderByLastActivityAtDesc(tokenHash)
                 .map(UserSession::isActive)
                 .orElse(true); // default true if session record not yet migrated
     }

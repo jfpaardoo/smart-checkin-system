@@ -75,11 +75,23 @@ public class FormationService {
         return formationRepository.findById(id);
     }
 
+    private Optional<FormationAttendance> findAttendance(Formation formation, User user) {
+        try {
+            Optional<FormationAttendance> att = attendanceRepository.findByFormationAndUser(formation, user);
+            if (att.isPresent()) {
+                return att;
+            }
+        } catch (Exception e) {
+            // Fallback if duplicate records exist in database (NonUniqueResultException)
+        }
+        return attendanceRepository.findFirstByFormationAndUserOrderByCheckInDateDesc(formation, user);
+    }
+
     private Formation doRegisterAttendance(Integer formationId, User user) {
         Formation formation = formationRepository.findById(formationId)
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
 
-        Optional<FormationAttendance> existing = attendanceRepository.findByFormationAndUser(formation, user);
+        Optional<FormationAttendance> existing = findAttendance(formation, user);
         if (!existing.isPresent()) {
             FormationAttendance att = new FormationAttendance();
             att.setFormation(formation);
@@ -134,7 +146,7 @@ public class FormationService {
         
         User user = userService.findByPersonalCode(personalCode);
 
-        FormationAttendance att = attendanceRepository.findByFormationAndUser(formation, user)
+        FormationAttendance att = findAttendance(formation, user)
             .orElseThrow(() -> new IllegalArgumentException("El usuario no ha hecho check-in en esta formación"));
 
         att.setCheckOutDate(LocalDateTime.now(ZoneId.systemDefault()));

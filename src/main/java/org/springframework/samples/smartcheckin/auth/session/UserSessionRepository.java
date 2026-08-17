@@ -13,5 +13,9 @@ public interface UserSessionRepository extends JpaRepository<UserSession, Intege
 
     Optional<UserSession> findByTokenHash(String tokenHash);
 
+    Optional<UserSession> findFirstByTokenHashOrderByLastActivityAtDesc(String tokenHash);
+
+    List<UserSession> findAllByTokenHash(String tokenHash);
+
     Optional<UserSession> findByIdAndUsername(Integer id, String username);
 }
