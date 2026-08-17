@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../../services/api';
 import { Table, Badge } from 'reactstrap';
-import { FaShieldAlt, FaDownload, FaCheckCircle, FaExclamationTriangle, FaLock } from 'react-icons/fa';
+import { FaShieldAlt, FaDownload, FaCheckCircle, FaExclamationTriangle, FaLock, FaSpinner } from 'react-icons/fa';
 import { TableGhostLoader } from '../../components/GhostLoader';
 import GlassSearchBar from '../../components/GlassSearchBar';
 import GlassDropdown from '../../components/GlassDropdown';
 import GlassPagination from '../../components/GlassPagination';
+import downloadExportFile from '../../util/downloadExportFile';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useTranslation } from 'react-i18next';
@@ -13,40 +14,6 @@ import { useToast } from '../../components/ToastProvider';
 import { useWebSocket } from '../../context/WebSocketProvider';
 
 dayjs.extend(utc);
-
-const handleDownloadCsv = async () => {
-  try {
-    const res = await api.get('/audit/csv', { responseType: 'blob' });
-    const url = window.URL.createObjectURL(new Blob([res.data]));
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'audit_logs.csv';
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    a.remove();
-  } catch (error) {
-    console.error("Error downloading CSV", error);
-  }
-};
-
-const handleDownloadPdf = async (toast, t) => {
-  try {
-    const res = await api.get('/exports/audit/pdf', { responseType: 'blob' });
-    const url = window.URL.createObjectURL(new Blob([res.data]));
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `audit-log-${new Date().toISOString().split('T')[0]}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
-    toast.success(t('common.exportSuccess', 'Informe descargado con éxito'));
-  } catch (error) {
-    console.error('Error exporting PDF:', error);
-    toast.error(t('common.networkError', 'Error de conexión con el servidor'));
-  }
-};
 
 const getActionColor = (action) => {
   if (action.includes('SECURITY_ANOMALY')) return 'danger';
@@ -124,6 +91,7 @@ export default function AuditDashboard() {
   const [actionCategory, setActionCategory] = useState('ALL');
   const [verifying, setVerifying] = useState(false);
   const [integrityResult, setIntegrityResult] = useState(null);
+  const [exportingType, setExportingType] = useState(null);
   
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -131,6 +99,27 @@ export default function AuditDashboard() {
   const toast = useToast();
   const { t } = useTranslation();
   const { stompClient, isConnected } = useWebSocket();
+
+  const handleDownloadCsv = async () => {
+    if (exportingType) return;
+    setExportingType('csv');
+    try {
+      await downloadExportFile('audit/csv', 'audit_logs.csv', toast, t);
+    } finally {
+      setExportingType(null);
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    if (exportingType) return;
+    setExportingType('pdf');
+    try {
+      const filename = `audit-log-${new Date().toISOString().split('T')[0]}.pdf`;
+      await downloadExportFile('audit/pdf', filename, toast, t);
+    } finally {
+      setExportingType(null);
+    }
+  };
 
   const fetchLogs = useCallback(async () => {
     try {
@@ -242,18 +231,20 @@ export default function AuditDashboard() {
             </button>
             <button 
               type="button" 
-              className="inline-flex items-center justify-center px-4 py-2 bg-white/80 hover:bg-white text-slate-800 font-semibold text-xs rounded-full transition border border-white shadow-[0_8px_25px_rgba(0,0,0,0.06)] backdrop-blur-xl active:scale-95 hover:-translate-y-0.5 gap-2 w-full sm:w-auto" 
+              disabled={!!exportingType}
+              className="inline-flex items-center justify-center px-4 py-2 bg-white/80 hover:bg-white text-slate-800 font-semibold text-xs rounded-full transition border border-white shadow-[0_8px_25px_rgba(0,0,0,0.06)] backdrop-blur-xl active:scale-95 hover:-translate-y-0.5 gap-2 w-full sm:w-auto disabled:opacity-50" 
               onClick={handleDownloadCsv}
             >
-              <FaDownload className="text-[#b3c34c]" /> 
+              {exportingType === 'csv' ? <FaSpinner className="animate-spin text-[#b3c34c]" /> : <FaDownload className="text-[#b3c34c]" />} 
               <span>{t('audit.exportCSV', 'Exportar a CSV')}</span>
             </button>
             <button 
               type="button" 
-              className="inline-flex items-center justify-center px-4 py-2 bg-white/80 hover:bg-white text-slate-800 font-semibold text-xs rounded-full transition border border-white shadow-[0_8px_25px_rgba(0,0,0,0.06)] backdrop-blur-xl active:scale-95 hover:-translate-y-0.5 gap-2 w-full sm:w-auto" 
-              onClick={() => handleDownloadPdf(toast, t)}
+              disabled={!!exportingType}
+              className="inline-flex items-center justify-center px-4 py-2 bg-white/80 hover:bg-white text-slate-800 font-semibold text-xs rounded-full transition border border-white shadow-[0_8px_25px_rgba(0,0,0,0.06)] backdrop-blur-xl active:scale-95 hover:-translate-y-0.5 gap-2 w-full sm:w-auto disabled:opacity-50" 
+              onClick={handleDownloadPdf}
             >
-              <FaDownload className="text-[#b3c34c]" /> 
+              {exportingType === 'pdf' ? <FaSpinner className="animate-spin text-[#b3c34c]" /> : <FaDownload className="text-[#b3c34c]" />} 
               <span>{t('audit.exportPDF', 'Exportar a PDF')}</span>
             </button>
           </div>

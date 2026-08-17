@@ -64,13 +64,11 @@ export default function useIdleTimeout({
       return;
     }
 
-    // Inicializar timestamp de actividad si no existe
-    if (!localStorage.getItem(ACTIVITY_KEY)) {
-      localStorage.setItem(ACTIVITY_KEY, Date.now().toString());
-    }
+    // Actualizar timestamp de actividad al montar el componente / recargar la página
+    localStorage.setItem(ACTIVITY_KEY, Date.now().toString());
 
     // Escuchar eventos de actividad del usuario
-    const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'wheel'];
+    const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'wheel', 'click', 'focus'];
     
     let lastThrottledTime = 0;
     const throttledActivity = () => {
@@ -84,6 +82,15 @@ export default function useIdleTimeout({
     activityEvents.forEach(eventName => {
       window.addEventListener(eventName, throttledActivity, { passive: true });
     });
+
+    // Actualizar actividad cuando el usuario vuelve a enfocar la pestaña tras un flujo OAuth externo
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        localStorage.setItem(ACTIVITY_KEY, Date.now().toString());
+        setIsWarningModalOpen(false);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // Escuchar sincronización de otras pestañas
     const handleStorageEvent = (event) => {
@@ -124,6 +131,7 @@ export default function useIdleTimeout({
       activityEvents.forEach(eventName => {
         window.removeEventListener(eventName, throttledActivity);
       });
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('storage', handleStorageEvent);
       clearInterval(checkInterval);
     };

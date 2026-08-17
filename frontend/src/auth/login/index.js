@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useToast } from "../../components/ToastProvider";
@@ -24,19 +24,29 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const isPasskeySupported = isWebAuthnSupported();
+  const notifiedReasonRef = useRef(false);
 
   useEffect(() => {
     document.body.style.overflow = "auto";
     const params = new URLSearchParams(window.location.search);
-    if (params.get("reason") === "timeout") {
-      toast.info(t('session.timeoutNotice', 'Tu sesión se ha cerrado automáticamente por inactividad.'));
-    } else if (params.get("reason") === "multi_tab_logout") {
-      toast.info(t('session.multiTabLogoutNotice', 'Has cerrado sesión en otra pestaña.'));
+    const reason = params.get("reason");
+
+    if (reason && !notifiedReasonRef.current) {
+      notifiedReasonRef.current = true;
+      if (reason === "timeout") {
+        toast.info(t('session.timeoutNotice', 'Tu sesión se ha cerrado automáticamente por inactividad.'));
+      } else if (reason === "multi_tab_logout") {
+        toast.info(t('session.multiTabLogoutNotice', 'Has cerrado sesión en otra pestaña.'));
+      }
+      // Limpiar el parámetro 'reason' de la URL sin recargar la página para que no reaparezca al refrescar
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
     }
+
     if (typeof window !== 'undefined' && (window.navigator.webdriver || window.__PLAYWRIGHT__)) {
       setCaptchaToken('1x00000000000000000000AA');
     }
-  }, [captchaKey, toast, t]);
+  }, [toast, t]);
 
   async function handleSubmit(e) {
     e.preventDefault();

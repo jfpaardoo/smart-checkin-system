@@ -4,7 +4,7 @@ import { Button } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import deleteFromList from "../../util/deleteFromList";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUsers, faFileCsv, faFileExcel, faFilePdf, faPlus, faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faUsers, faFileCsv, faFileExcel, faFilePdf, faPlus, faFilter, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import GlassSearchBar from "../../components/GlassSearchBar";
 import GlassDropdown from "../../components/GlassDropdown";
 import GlassPagination from "../../components/GlassPagination";
@@ -56,9 +56,10 @@ export default function UserListAdmin() {
   const [selectedCompany, setSelectedCompany] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
 
-  // Paginación
+  // Paginación y Exportación
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [exportingType, setExportingType] = useState(null);
 
   const fetchUsers = useCallback(async (query = '') => {
     setLoading(true);
@@ -169,8 +170,14 @@ export default function UserListAdmin() {
     return filteredUsers.slice(startIndex, startIndex + pageSize);
   }, [filteredUsers, currentPage, pageSize]);
 
-  const handleDownloadExport = (endpoint, defaultFilename) => {
-    downloadExportFile(endpoint, defaultFilename, toast, t);
+  const handleDownloadExport = async (endpoint, defaultFilename, type) => {
+    if (exportingType) return;
+    setExportingType(type);
+    try {
+      await downloadExportFile(endpoint, defaultFilename, toast, t);
+    } finally {
+      setExportingType(null);
+    }
   };
 
   return (
@@ -196,28 +203,31 @@ export default function UserListAdmin() {
             <div className="da-admin-header-actions flex flex-wrap gap-2 w-full md:w-auto justify-end">
                 {/* Botón CSV */}
                 <Button 
-                  className="da-btn-primary btn-icon-expand btn-expand-lg bg-[#b3c34c]/80 hover:bg-[#b3c34c] text-slate-900 border-0 shadow-sm" 
-                  onClick={() => handleDownloadExport('users/csv', 'usuarios.csv')}
+                  disabled={!!exportingType}
+                  className="da-btn-primary btn-icon-expand btn-expand-lg bg-[#b3c34c]/80 hover:bg-[#b3c34c] text-slate-900 border-0 shadow-sm disabled:opacity-50" 
+                  onClick={() => handleDownloadExport('users/csv', 'usuarios.csv', 'csv')}
                 >
-                    <FontAwesomeIcon icon={faFileCsv} />
+                    <FontAwesomeIcon icon={exportingType === 'csv' ? faSpinner : faFileCsv} spin={exportingType === 'csv'} />
                     <span className="btn-expand-label ms-1">{t('analytics.exportCsv', 'Exportar CSV')}</span>
                 </Button>
                 
                 {/* Botón PDF */}
                 <Button 
-                  className="da-btn-secondary btn-icon-expand btn-expand-lg bg-red-500/20 hover:bg-red-500/30 text-red-700 border border-red-200/60 backdrop-blur-xl shadow-xs transition duration-300 hover:-translate-y-0.5" 
-                  onClick={() => handleDownloadExport('users/pdf', 'usuarios.pdf')}
+                  disabled={!!exportingType}
+                  className="da-btn-secondary btn-icon-expand btn-expand-lg bg-red-500/20 hover:bg-red-500/30 text-red-700 border border-red-200/60 backdrop-blur-xl shadow-xs transition duration-300 hover:-translate-y-0.5 disabled:opacity-50" 
+                  onClick={() => handleDownloadExport('users/pdf', 'usuarios.pdf', 'pdf')}
                 >
-                    <FontAwesomeIcon icon={faFilePdf} className="text-red-600" />
+                    <FontAwesomeIcon icon={exportingType === 'pdf' ? faSpinner : faFilePdf} spin={exportingType === 'pdf'} className="text-red-600" />
                     <span className="btn-expand-label ms-1 font-semibold">{t('analytics.exportPdf', 'Exportar PDF')}</span>
                 </Button>
 
                 {/* Botón Excel */}
                 <Button 
-                  className="da-btn-secondary btn-icon-expand btn-expand-lg bg-slate-500/30 hover:bg-slate-500/50 text-slate-800 border border-white/60 backdrop-blur-xl shadow-[0_8px_20px_0_rgba(31,38,135,0.07)] transition duration-300 hover:-translate-y-0.5" 
-                  onClick={() => handleDownloadExport('users/excel', 'usuarios.xlsx')}
+                  disabled={!!exportingType}
+                  className="da-btn-secondary btn-icon-expand btn-expand-lg bg-slate-500/30 hover:bg-slate-500/50 text-slate-800 border border-white/60 backdrop-blur-xl shadow-[0_8px_20px_0_rgba(31,38,135,0.07)] transition duration-300 hover:-translate-y-0.5 disabled:opacity-50" 
+                  onClick={() => handleDownloadExport('users/excel', 'usuarios.xlsx', 'excel')}
                 >
-                    <FontAwesomeIcon icon={faFileExcel} className="text-slate-700" />
+                    <FontAwesomeIcon icon={exportingType === 'excel' ? faSpinner : faFileExcel} spin={exportingType === 'excel'} className="text-slate-700" />
                     <span className="btn-expand-label ms-1 font-semibold">{t('analytics.exportExcel', 'Exportar Excel')}</span>
                 </Button>
 
