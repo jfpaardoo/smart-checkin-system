@@ -6,7 +6,6 @@ import java.util.List;
 
 import jakarta.validation.Valid;
 
-import org.springframework.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -126,19 +125,6 @@ public class AuthController {
         this.companyService = companyService;
         this.haveIBeenPwnedService = haveIBeenPwnedService;
         this.backupCodeService = backupCodeService;
-    }
-
-    @GetMapping("/validate")
-    public ResponseEntity<Boolean> validateToken() {
-        String jwt = jwtUtils.getJwtFromCookies(request);
-        if (jwt == null) {
-            String headerAuth = request.getHeader("Authorization");
-            if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-                jwt = headerAuth.substring(7);
-            }
-        }
-        boolean isValid = jwt != null && jwtUtils.validateJwtToken(jwt);
-        return ResponseEntity.ok(isValid);
     }
 
     @PostMapping("/logout")
