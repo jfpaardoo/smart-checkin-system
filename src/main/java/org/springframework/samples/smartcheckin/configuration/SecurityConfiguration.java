@@ -52,7 +52,10 @@ public class SecurityConfiguration {
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
                         .xssProtection(HeadersConfigurer.XXssConfig::disable)
                         .contentTypeOptions(Customizer.withDefaults())
-                        .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .requestMatcher(request -> request.isSecure() || "https".equalsIgnoreCase(request.getHeader("X-Forwarded-Proto")))
+                                .includeSubDomains(true)
+                                .maxAgeInSeconds(31536000))
                         .contentSecurityPolicy(csp -> csp.policyDirectives(
                                 "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' https: 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' https: data:; connect-src 'self' https: wss: ws:; frame-src 'self' https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';"))
                         .addHeaderWriter((request, response) -> {
@@ -155,11 +158,16 @@ public class SecurityConfiguration {
     private String[] allowedOrigins;
 
     @Bean
+    @SuppressWarnings("java:S5122")
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        if (allowedOrigins != null && allowedOrigins.length > 0) {
+            configuration.setAllowedOriginPatterns(Arrays.asList(allowedOrigins));
+        } else {
+            configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        }
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

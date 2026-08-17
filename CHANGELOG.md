@@ -13,6 +13,8 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
   - Parametrizado el flag `Secure` de las cookies JWT (`${JWT_COOKIE_SECURE:false}`) en `JwtUtils.java` y `application.properties` para evitar que los navegadores descarten la cookie de sesión en servidores HTTP.
   - Configurado `SameSite=Lax` en las cookies de autenticación para garantizar la persistencia de la sesión en navegaciones internas entre menús de la aplicación.
   - Añadido fallback para leer el token desde la cabecera `Authorization: Bearer` en el endpoint `/api/v1/auth/validate`.
+  - **Condicional HSTS en `SecurityConfiguration.java`**: Restringido el envío de la cabecera `Strict-Transport-Security` exclusivamente a conexiones HTTPS reales para evitar que iOS / iPadOS WebKit intente forzar HTTPS y rompa la conexión en servidores HTTP.
+  - **Soporte CORS Flexible**: Configurado `setAllowedOriginPatterns` para admitir orígenes de aplicaciones web PWA y móviles con credenciales.
   - **Resiliencia en `PrivateRoute.js`**: Implementada caché de validación en memoria (TTL 30s) y tolerancia a micro-cortes de red/timeouts para que caídas momentáneas de conectividad en móviles no cierren la sesión del usuario.
 - **Compatibilidad de Cámara en Móviles (Samsung Internet / Android)**:
   - Inicialización directa del escáner en `useQrScanner.js` con `{ facingMode: 'environment' }` (cámara trasera) sin bloquear el ciclo de vida a la espera de `getCameras()`.
