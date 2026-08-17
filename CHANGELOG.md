@@ -6,6 +6,28 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ---
 
+## [1.0.1](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.0.1) - 2026-08-17
+
+### Corregido (Bug Fixes)
+- **Desplegables Responsivos y Animaciones**:
+  - Refactorizado `GlassDropdown` y `AnalyticsExportMenu` con Tailwind CSS puro.
+  - Comportamiento flotante con elevación y sombras en escritorio (`md:absolute`, `sm:absolute`).
+  - Expansión inline fluida con Grid (`grid-rows-[0fr]` $\rightarrow$ `grid-rows-[1fr]`) en móvil que adapta la altura y empuja suavemente el contenido inferior sin desalineaciones.
+  - Aislados los estilos de menú oscuro en `navbar.css` a `.da-navbar` para evitar contaminación en selectores y parpadeos en pantalla.
+- **Flujo OAuth2 de OneDrive en Servidor**:
+  - Detección dinámica del host y protocolo público (`X-Forwarded-Proto`, `X-Forwarded-Host`, `Host`, `Origin`) para resolver la URI de retorno sin forzar `localhost:8080`.
+  - Codificación segura de la URL del frontend dentro del parámetro `state` de OAuth para redirección transparente tras la autorización en Azure.
+  - Parametrización de rutas de callback mediante `@Value` cumpliendo con la regla SonarCloud `java:S1075`.
+- **Protección Antidoble-Clic en Exportaciones**:
+  - Añadido registro global de descargas concurrentes en `downloadExportFile.js` para descartar peticiones simultáneas del mismo archivo.
+  - Estados de carga interactivos (`exportingType` / `isExporting`), spinners animados y bloqueo de botones (`disabled`) en `UserListAdmin`, `AnalyticsExportMenu` y `AuditDashboard`.
+- **Gestión de Inactividad y Avisos de Sesión**:
+  - Refresco automático del temporizador de inactividad en `api.js` ante cualquier petición y respuesta HTTP.
+  - Detección de retorno de flujos externos mediante `visibilitychange` en `useIdleTimeout.js`.
+  - Corrección de aviso duplicado por inactividad y limpieza automática del parámetro `?reason=timeout` de la URL en la pantalla de login (`history.replaceState`).
+
+---
+
 ## [1.0.0](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.0.0) - 2026-08-17
 
 Primera versión estable de **Smart Checkin System**: plataforma integral de control de presencia laboral, gestión de formaciones, seguridad avanzada y cumplimiento del Reglamento General de Protección de Datos (RGPD) para entornos corporativos e industriales.

@@ -35,6 +35,15 @@ test.describe('Flujo de Activación de 2FA y Verificación TOTP (2FA Setup E2E)'
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
     });
 
+    // Interceptar llamadas auxiliares del perfil para evitar 401 no mockeados
+    await page.route('**/api/v1/auth/webauthn/**', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+    });
+
+    await page.route('**/api/v1/users/me/sessions**', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+    });
+
     // Interceptar API de configuración 2FA
     await page.route('**/api/v1/users/2fa/setup**', async (route) => {
       await route.fulfill({
@@ -80,7 +89,7 @@ test.describe('Flujo de Activación de 2FA y Verificación TOTP (2FA Setup E2E)'
     await page.waitForURL('**/profile', { timeout: 10000 });
 
     // 3. Hacer clic en la pestaña "Seguridad y Contraseña"
-    const securityTab = page.getByText(/seguridad y contraseña|security & password|seguridad|security/i).first();
+    const securityTab = page.locator('.da-nav-pills .nav-link').filter({ hasText: /seguridad|security/i }).first();
     await expect(securityTab).toBeVisible({ timeout: 15000 });
     await securityTab.click();
 

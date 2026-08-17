@@ -9,8 +9,22 @@ const instance = axios.create({
     },
 });
 
+instance.interceptors.request.use((config) => {
+    try {
+        localStorage.setItem("da_last_user_activity", Date.now().toString());
+    } catch {
+        // Ignorar
+    }
+    return config;
+});
+
 instance.interceptors.response.use(
     (res) => {
+        try {
+            localStorage.setItem("da_last_user_activity", Date.now().toString());
+        } catch {
+            // Ignorar
+        }
         return res;
     },
     async (err) => {
