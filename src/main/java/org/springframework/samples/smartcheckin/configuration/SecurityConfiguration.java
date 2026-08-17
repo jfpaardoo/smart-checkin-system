@@ -59,7 +59,7 @@ public class SecurityConfiguration {
                         .contentSecurityPolicy(csp -> csp.policyDirectives(
                                 "default-src 'self' http: https: data: blob:; script-src 'self' http: https: https://challenges.cloudflare.com 'unsafe-inline'; style-src 'self' http: https: 'unsafe-inline'; img-src 'self' http: https: data: blob:; font-src 'self' http: https: data:; connect-src 'self' http: https: wss: ws:; frame-src 'self' http: https: https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self';"))
                         .addHeaderWriter((request, response) -> 
-                            response.setHeader("Permissions-Policy", "camera=(self), geolocation=(self), microphone=(), payment=(), usb=()")
+                            response.setHeader("Permissions-Policy", "camera=*, geolocation=*, microphone=(), payment=(), usb=()")
                         ))
                 .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(unauthorizedHandler))
 

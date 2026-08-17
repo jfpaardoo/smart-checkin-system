@@ -45,6 +45,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
   const { t } = useTranslation();
   const [cameras, setCameras] = useState([]);
   const [selectedCameraId, setSelectedCameraId] = useState('');
+  const [facingMode, setFacingMode] = useState('environment');
   const [isScannerReady, setIsScannerReady] = useState(false);
   const [scannerKey, setScannerKey] = useState(0);
   const html5QrcodeRef = useRef(null);
@@ -120,11 +121,8 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       const html5Qrcode = new Html5Qrcode(elementId);
       html5QrcodeRef.current = html5Qrcode;
 
-      // Prefer generic { facingMode: 'environment' } if no explicit camera chosen
-      // This avoids multi-lens black screen bugs on iOS and Samsung devices
-      const cameraConfig = selectedCameraId 
-        ? { deviceId: { exact: selectedCameraId } }
-        : { facingMode: 'environment' };
+      // Pass selectedCameraId directly or facingMode object
+      const cameraConfig = selectedCameraId || { facingMode };
 
       try {
         await html5Qrcode.start(
@@ -144,7 +142,6 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       } catch (err) {
         console.error('Error starting scanner, falling back to facingMode:', err);
         if (!cancelled && selectedCameraId) {
-          // Fallback if specific deviceId fails
           try {
             await html5Qrcode.start(
               { facingMode: 'environment' },
@@ -170,7 +167,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       setIsScannerReady(false);
       stopScannerSafely(html5QrcodeRef.current, elementId);
     };
-  }, [isScanningEnabled, selectedCameraId, elementId, scannerKey, stopScannerSafely, loadAvailableCameras]);
+  }, [isScanningEnabled, selectedCameraId, facingMode, elementId, scannerKey, stopScannerSafely, loadAvailableCameras]);
 
   const resetScannerState = useCallback(() => {
     scannedRef.current = false;
@@ -178,10 +175,14 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
   }, []);
 
   const toggleCamera = useCallback(() => {
-    if (cameras.length <= 1) return;
-    const currentIndex = cameras.findIndex(c => c.value === selectedCameraId);
-    const nextIndex = (currentIndex + 1) % cameras.length;
-    setSelectedCameraId(cameras[nextIndex].value);
+    if (cameras.length > 1 && selectedCameraId) {
+      const currentIndex = cameras.findIndex(c => c.value === selectedCameraId);
+      const nextIndex = (currentIndex + 1) % cameras.length;
+      setSelectedCameraId(cameras[nextIndex].value);
+    } else {
+      setSelectedCameraId('');
+      setFacingMode(prev => (prev === 'environment' ? 'user' : 'environment'));
+    }
   }, [cameras, selectedCameraId]);
 
   return {
@@ -191,7 +192,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     isScannerReady,
     resetScannerState,
     toggleCamera,
-    hasMultipleCameras: cameras.length > 1,
+    hasMultipleCameras: cameras.length > 1 || true,
     stopScannerSafely: () => stopScannerSafely(html5QrcodeRef.current, elementId)
   };
 }

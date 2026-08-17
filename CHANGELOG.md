@@ -9,12 +9,12 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 ## [1.0.2](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.0.2) - 2026-08-17
 
 ### Corregido (Bug Fixes) & Mejoras
-- **Persistencia de Sesión y Navegación en Servidor**:
-  - Parametrizado el flag `Secure` de las cookies JWT (`${JWT_COOKIE_SECURE:false}`) en `JwtUtils.java` y `application.properties` para evitar que los navegadores descarten la cookie de sesión en servidores HTTP.
-  - Configurado `SameSite=Lax` en las cookies de autenticación para garantizar la persistencia de la sesión en navegaciones internas entre menús de la aplicación.
+- **Persistencia de Sesión y Cookies en iOS WebKit / HTTPS**:
+  - Detección dinámica de HTTPS (`isRequestSecure`: `request.isSecure() || X-Forwarded-Proto: https`) en `JwtUtils.java` para asignar automáticamente el atributo `Secure` en producción, garantizando que iOS Safari y WebKit Standalone (PWA) no descarten la cookie `jwt` en las peticiones `POST` autenticadas de fichaje.
+  - Configurado `SameSite=Lax` y `Path=/` en las cookies de autenticación para garantizar la persistencia de la sesión en navegaciones internas entre menús de la aplicación.
   - Añadido fallback para leer el token desde la cabecera `Authorization: Bearer` en el endpoint `/api/v1/auth/validate`.
-  - **Condicional HSTS en `SecurityConfiguration.java`**: Restringido el envío de la cabecera `Strict-Transport-Security` exclusivamente a conexiones HTTPS reales para evitar que iOS / iPadOS WebKit intente forzar HTTPS y rompa la conexión en servidores HTTP.
-  - **Soporte CORS Flexible**: Configurado `setAllowedOriginPatterns` para admitir orígenes de aplicaciones web PWA y móviles con credenciales.
+  - **Condicional HSTS en `SecurityConfiguration.java`**: Restringido el envío de la cabecera `Strict-Transport-Security` exclusivamente a conexiones HTTPS reales.
+  - **Soporte CORS y Permisos Globales**: Configurado `setAllowedOriginPatterns` y `Permissions-Policy: camera=*, geolocation=*` para garantizar acceso a cámara y GPS en contenedores PWA.
   - **Resiliencia en `PrivateRoute.js`**: Implementada caché de validación en memoria (TTL 30s) y tolerancia a micro-cortes de red/timeouts para que caídas momentáneas de conectividad en móviles no cierren la sesión del usuario.
 - **Estabilidad de Arranque y Endpoints en Backend**:
   - Eliminado el mapeo duplicado del endpoint `@GetMapping("/validate")` en `AuthController.java`, solucionando el fallo `IllegalStateException: Ambiguous mapping` que impedía el despliegue de Spring Boot.

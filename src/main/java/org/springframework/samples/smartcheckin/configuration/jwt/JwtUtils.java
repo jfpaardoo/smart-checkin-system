@@ -67,25 +67,46 @@ public class JwtUtils {
                 .compact();
     }
 
-    public ResponseCookie generateJwtCookie(Authentication authentication) {
+    public boolean isRequestSecure(HttpServletRequest req) {
+        if (jwtCookieSecure) return true;
+        HttpServletRequest currentReq = req;
+        if (currentReq == null) {
+            org.springframework.web.context.request.RequestAttributes attrs = org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+            if (attrs instanceof org.springframework.web.context.request.ServletRequestAttributes servletRequestAttributes) {
+                currentReq = servletRequestAttributes.getRequest();
+            }
+        }
+        if (currentReq == null) return false;
+        return currentReq.isSecure() || "https".equalsIgnoreCase(currentReq.getHeader("X-Forwarded-Proto"));
+    }
+
+    public ResponseCookie generateJwtCookie(Authentication authentication, HttpServletRequest request) {
         String jwt = generateJwtToken(authentication);
         return ResponseCookie.from("jwt", jwt)
                 .path("/")
                 .maxAge(jwtExpirationMs / 1000)
                 .httpOnly(true)
-                .secure(jwtCookieSecure)
+                .secure(isRequestSecure(request))
+                .sameSite("Lax")
+                .build();
+    }
+
+    public ResponseCookie generateJwtCookie(Authentication authentication) {
+        return generateJwtCookie(authentication, null);
+    }
+
+    public ResponseCookie getCleanJwtCookie(HttpServletRequest request) {
+        return ResponseCookie.from("jwt", "")
+                .path("/")
+                .maxAge(0)
+                .httpOnly(true)
+                .secure(isRequestSecure(request))
                 .sameSite("Lax")
                 .build();
     }
 
     public ResponseCookie getCleanJwtCookie() {
-        return ResponseCookie.from("jwt", "")
-                .path("/")
-                .maxAge(0)
-                .httpOnly(true)
-                .secure(jwtCookieSecure)
-                .sameSite("Lax")
-                .build();
+        return getCleanJwtCookie(null);
     }
 
     public String getJwtFromCookies(HttpServletRequest request) {
