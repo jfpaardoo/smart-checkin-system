@@ -16,21 +16,17 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
   - **Condicional HSTS en `SecurityConfiguration.java`**: Restringido el envío de la cabecera `Strict-Transport-Security` exclusivamente a conexiones HTTPS reales para evitar que iOS / iPadOS WebKit intente forzar HTTPS y rompa la conexión en servidores HTTP.
   - **Soporte CORS Flexible**: Configurado `setAllowedOriginPatterns` para admitir orígenes de aplicaciones web PWA y móviles con credenciales.
   - **Resiliencia en `PrivateRoute.js`**: Implementada caché de validación en memoria (TTL 30s) y tolerancia a micro-cortes de red/timeouts para que caídas momentáneas de conectividad en móviles no cierren la sesión del usuario.
-- **Compatibilidad de Cámara en Móviles (Samsung Internet / Android)**:
-  - Inicialización directa del escáner en `useQrScanner.js` con `{ facingMode: 'environment' }` (cámara trasera) sin bloquear el ciclo de vida a la espera de `getCameras()`.
-  - Fuerza la aparición inmediata del diálogo modal nativo de permisos de cámara del sistema operativo en dispositivos Samsung y Android donde `enumerateDevices()` no disparaba el prompt.
-- **Permisos de Cámara y Geolocalización en Backend (`Permissions-Policy`)**:
-  - Actualizada la cabecera HTTP de seguridad en `SecurityConfiguration.java` a `camera=(self), geolocation=(self), microphone=(), payment=(), usb=()`.
-  - Permite al navegador solicitar y utilizar la cámara para el escaneo de códigos QR y la geolocalización GPS en los fichajes sin violaciones de política de permisos (`Permissions policy violation / NotAllowedError`).
-- **Permisos y Suscripción a Notificaciones Push**:
-  - Corregida la condición de registro en `NotificationBell.js` evaluando `user.username` en lugar de `user.id` (no presente en el almacenamiento de sesión), asegurando la solicitud nativa de permisos push en el navegador tras iniciar sesión.
-- **Auditoría React Doctor (Puntuación 100/100 en Frontend)**:
-  - **Scroll Pasivo en Móviles**: Incorporada la opción `{ passive: true }` a los eventos `touchstart` en `GlassDropdown.js` y `AnalyticsExportMenu.js` para navegación táctil fluida sin bloquear el hilo principal.
-  - **Accesibilidad (a11y)**: Eliminado `autoFocus` invasivo en `TwoFactorLoginForm.js` y añadida etiqueta `<label htmlFor="disable2faCode">` con `aria-label` en `TwoFactorSettings.js`.
-  - **Rendimiento de Componentes**: Sustituido `useState` por `useRef` para eventos internos (`beforeinstallprompt` y Service Worker) en `PwaInstallPrompt.js`, eliminando re-renderizados innecesarios.
-  - Configuración de reglas de análisis estático en `package.json`.
-- **Estabilidad en Tests E2E Playwright**:
-  - Interceptados endpoints secundarios de credenciales WebAuthn y sesiones en `2fa-flow.spec.js` para evitar redirecciones `401 Unauthorized` a la pantalla de login.
+- **Estabilidad de Arranque y Endpoints en Backend**:
+  - Eliminado el mapeo duplicado del endpoint `@GetMapping("/validate")` en `AuthController.java`, solucionando el fallo `IllegalStateException: Ambiguous mapping` que impedía el despliegue de Spring Boot.
+- **Protección y Flujo de Check-in con QR**:
+  - Protegida la ruta `/checkin` mediante `<PrivateRoute>` en `App.js` para evitar envíos no autenticados (`401 Unauthorized / Full authentication is required`).
+  - Sustituido `fetch` nativo por la instancia estándar de Axios (`api.post`) en `ScannerCheckin.js` para garantizar la transmisión de cookies `HttpOnly` y un formateo consistente de errores.
+  - Implementado overlay de carga flotante centrado (`fixed inset-0`) con `backdrop-blur` en `ScannerCheckin.js`, evitando desplazamientos bruscos del contenedor de la cámara.
+- **Estabilidad de Cámara y Prevención de Pantallas Negras en Móviles**:
+  - Configurado `{ facingMode: 'environment' }` como modo prioritario en `useQrScanner.js` con fallback automático si falla una ID de cámara específica, resolviendo el problema de visor negro en smartphones multicámara (Samsung/iPhone).
+  - Añadido ciclo de reinicio reactivo (`scannerKey`) para reiniciar la cámara tras errores de fichaje sin colapsar el contenedor visual del escáner.
+- **Limpieza Visual y Responsive de Cloudflare Turnstile**:
+  - Eliminado el marco contenedor redundante alrededor de Cloudflare Turnstile en las pantallas de Login, Recuperación de Contraseña y Registro, manteniendo un renderizado limpio, centrado y adaptado a dispositivos móviles.
 
 ---
 

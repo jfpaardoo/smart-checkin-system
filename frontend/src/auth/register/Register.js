@@ -124,7 +124,7 @@ export default function Register() {
 
   // Creamos el componente del CAPTCHA con su estética aquí, para inyectarlo en el formulario
   const captchaWidget = (
-    <div className="flex justify-center items-center p-3 rounded-2xl bg-white/30 backdrop-blur-md border border-white/40 shadow-inner w-fit mx-auto">
+    <div className="flex justify-center items-center my-2 w-full overflow-hidden mx-auto">
       <Turnstile 
         key={`${siteKey}-${captchaKey}`}
         siteKey={siteKey} 

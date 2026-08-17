@@ -7,6 +7,7 @@ import { faQrcode, faKeyboard, faCamera, faCalendarCheck, faSpinner } from '@for
 import { useToast } from '../../components/ToastProvider';
 import GlassDropdown from '../../components/GlassDropdown';
 import { useQrScanner } from '../../hooks/useQrScanner';
+import api from '../../services/api';
 import ManualCheckinForm from './components/ManualCheckinForm';
 import SignatureStep from './components/SignatureStep';
 
@@ -92,33 +93,19 @@ export default function ScannerCheckin() {
         ...(signature ? { signature } : {})
       };
 
-      const response = await fetch('/api/v1/checkins/qr-fichaje', {
-        credentials: 'include',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(payload)
+      const res = await api.post('/checkins/qr-fichaje', payload, {
+        validateStatus: status => (status >= 200 && status < 300) || status === 202
       });
 
-      if (response.status === 202) {
-        const data = await response.json();
-        if (data.needsSignature) {
-          pendingTokenRef.current = payload.token;
-          setNeedsSignature(true);
-          toast.info(t('checkin.signatureRequiredInfo', 'Se requiere su firma para registrar la salida.'));
-          setLoading(false);
-          return;
-        }
+      if (res.status === 202 && res.data?.needsSignature) {
+        pendingTokenRef.current = payload.token;
+        setNeedsSignature(true);
+        toast.info(t('checkin.signatureRequiredInfo', 'Se requiere su firma para registrar la salida.'));
+        setLoading(false);
+        return;
       }
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.message || t('checkin.processError', 'Error al procesar la solicitud'));
-      }
-
-      const data = await response.json();
+      const data = res.data;
       setFormationDetails({
         name: data.formationName || data.formation?.name || t('formations.title', 'Formación'),
         description: data.checkin?.type === 'ENTRADA' ? t('checkin.checkinRecorded', 'Entrada registrada con éxito') : t('checkin.checkoutRecorded', 'Salida registrada con éxito'),
@@ -130,34 +117,34 @@ export default function ScannerCheckin() {
     } catch (error) {
       setLoading(false);
       resetScanner();
-      toast.error(error.message || t('checkin.processError', 'Error al procesar la solicitud'));
+      const errMsg = error.response?.data?.message || error.message || t('checkin.processError', 'Error al procesar la solicitud');
+      toast.error(errMsg);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="da-container flex justify-center items-center min-h-screen w-full">
-        <div className="bg-white/70 backdrop-blur-md rounded-[28px] p-8 border border-white/60 shadow-lg text-center flex flex-col items-center gap-4 max-w-[400px] w-full mx-4">
-          <FontAwesomeIcon icon={faSpinner} className="fa-spin text-3xl" style={{ color: 'var(--da-primary)' }} />
-          <p className="text-slate-700 font-semibold mb-0 text-lg">
-            {t('checkin.processing', 'Procesando registro...')}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="da-container flex flex-col justify-center min-h-screen py-10">
-      <div className="da-card mx-auto w-full max-w-[600px] p-8">
+    <div className="da-container flex flex-col justify-center items-center min-h-[calc(100vh-80px)] py-8 relative">
+      {/* Overlay de carga centrado sin alterar el diseño de la tarjeta */}
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white/95 backdrop-blur-xl rounded-[28px] p-8 border border-white shadow-2xl text-center flex flex-col items-center gap-4 max-w-[320px] w-full mx-4 animate-in fade-in zoom-in-95 duration-200">
+            <FontAwesomeIcon icon={faSpinner} className="fa-spin text-4xl" style={{ color: 'var(--da-primary)' }} />
+            <p className="text-slate-800 font-bold mb-0 text-base">
+              {t('checkin.processing', 'Procesando registro...')}
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className="da-card mx-auto w-full max-w-[600px] p-6 sm:p-8 shadow-xl">
         
         <div style={{ display: (!isManualInput && !needsSignature) ? 'block' : 'none' }}>
           <div className="text-center mb-6">
             <FontAwesomeIcon icon={faQrcode} size="3x" style={{ color: 'var(--da-primary)' }} className="mb-4" />
-            <h2 className="text-slate-800 font-bold text-3xl mb-2">
+            <h2 className="text-slate-800 font-bold text-2xl sm:text-3xl mb-2">
               {t('checkin.scanQr', 'Escanear el QR')}
             </h2>
-            <p className="text-slate-600 text-lg">
+            <p className="text-slate-600 text-sm sm:text-base">
               {t('checkin.qrSubtitle', 'Enfoca el código QR de la formación con tu cámara')}
             </p>
           </div>
@@ -186,32 +173,32 @@ export default function ScannerCheckin() {
             )}
 
             {!isScannerReady && (
-              <div className="p-4 text-center text-slate-500 mx-auto mb-2">
-                <FontAwesomeIcon icon={faCamera} className="fa-spin mb-2" size="2x" />
-                <p className="mb-0">{t('checkin.startingCamera', 'Iniciando cámara...')}</p>
+              <div className="p-8 text-center text-slate-500 mx-auto mb-2 min-h-[260px] flex flex-col justify-center items-center bg-slate-100/50 rounded-2xl border border-dashed border-slate-200">
+                <FontAwesomeIcon icon={faCamera} className="fa-spin mb-3 text-3xl text-slate-400" />
+                <p className="mb-0 text-sm font-medium">{t('checkin.startingCamera', 'Iniciando cámara...')}</p>
               </div>
             )}
-            <div className="px-3 px-md-4">
+            <div className="px-1 sm:px-4">
               <div 
                 id="qr-reader" 
                 className="mx-auto"
                 style={{ 
                   width: '100%', 
-                  maxWidth: '400px',
+                  maxWidth: '380px',
+                  minHeight: isScannerReady ? '280px' : '0px',
                   borderRadius: '24px', 
                   overflow: 'hidden', 
-                  border: isScannerReady ? '2px solid rgba(255, 255, 255, 0.5)' : 'none',
+                  border: isScannerReady ? '2px solid rgba(255, 255, 255, 0.6)' : 'none',
                   boxShadow: isScannerReady ? '0 10px 30px rgba(0,0,0,0.08)' : 'none',
-                  height: isScannerReady ? 'auto' : '0px',
-                  opacity: isScannerReady ? 1 : 0
+                  display: isScannerReady ? 'block' : 'none'
                 }}
               />
             </div>
 
-            <div className="mt-4 pt-2">
+            <div className="mt-6 pt-2">
               <button 
                 type="button" 
-                className="da-btn da-btn-secondary py-3 px-4 w-100" 
+                className="da-btn da-btn-secondary py-3 px-4 w-100 text-xs sm:text-sm" 
                 style={{ maxWidth: '350px' }}
                 onClick={() => setIsManualInput(true)}
               >

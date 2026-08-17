@@ -46,6 +46,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
   const [cameras, setCameras] = useState([]);
   const [selectedCameraId, setSelectedCameraId] = useState('');
   const [isScannerReady, setIsScannerReady] = useState(false);
+  const [scannerKey, setScannerKey] = useState(0);
   const html5QrcodeRef = useRef(null);
   const scannedRef = useRef(false);
 
@@ -85,36 +86,19 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
         label: d.label || `${t('common.camera', 'Cámara')} ${d.id}`
       }));
       setCameras(camOptions);
-
-      const backCamera = devices.find(d => 
-        d.label.toLowerCase().includes('back') || 
-        d.label.toLowerCase().includes('rear') || 
-        d.label.toLowerCase().includes('trasera') ||
-        d.label.toLowerCase().includes('environment') ||
-        d.label.toLowerCase().includes('externa')
-      );
-
-      return backCamera ? backCamera.id : devices[0].id;
+      return devices[0].id;
     } catch (err) {
-      console.debug('Initial getCameras before permission (will retry on start):', err);
+      console.debug('Initial getCameras before permission:', err);
       return null;
     }
   }, [t]);
 
-  // Fetch cameras once
-  useEffect(() => {
-    let isMounted = true;
-    loadAvailableCameras().then(defaultCameraId => {
-      if (defaultCameraId && isMounted) {
-        setSelectedCameraId(defaultCameraId);
-      }
-    });
-    return () => { isMounted = false; };
-  }, [loadAvailableCameras]);
-
   // Handle scanner lifecycle
   useEffect(() => {
-    if (!isScanningEnabled || !elementId) return;
+    if (!isScanningEnabled || !elementId) {
+      setIsScannerReady(false);
+      return;
+    }
 
     let cancelled = false;
     scannedRef.current = false;
@@ -123,6 +107,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       if (scannedRef.current || cancelled) return;
       scannedRef.current = true;
       triggerHapticAndAudio();
+      setIsScannerReady(false);
       stopScannerSafely(html5QrcodeRef.current, elementId);
       onScanSuccessRef.current?.(decodedText);
     };
@@ -135,14 +120,20 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       const html5Qrcode = new Html5Qrcode(elementId);
       html5QrcodeRef.current = html5Qrcode;
 
-      // Use selected camera ID if available, otherwise default to back camera (facingMode: environment)
-      // This immediately triggers the browser permission modal on Android/Samsung without blocking on getCameras()
-      const cameraConfig = selectedCameraId || { facingMode: 'environment' };
+      // Prefer generic { facingMode: 'environment' } if no explicit camera chosen
+      // This avoids multi-lens black screen bugs on iOS and Samsung devices
+      const cameraConfig = selectedCameraId 
+        ? { deviceId: { exact: selectedCameraId } }
+        : { facingMode: 'environment' };
 
       try {
         await html5Qrcode.start(
           cameraConfig,
-          { fps: 10, qrbox: { width: 250, height: 250 } },
+          { 
+            fps: 10, 
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0
+          },
           handleSuccess,
           () => {} // Ignore continuous decode errors
         );
@@ -151,11 +142,27 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
           await loadAvailableCameras();
         }
       } catch (err) {
-        console.error('Error starting scanner:', err);
+        console.error('Error starting scanner, falling back to facingMode:', err);
+        if (!cancelled && selectedCameraId) {
+          // Fallback if specific deviceId fails
+          try {
+            await html5Qrcode.start(
+              { facingMode: 'environment' },
+              { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
+              handleSuccess,
+              () => {}
+            );
+            if (!cancelled) {
+              setIsScannerReady(true);
+            }
+          } catch (fallbackErr) {
+            console.error('Fallback camera start failed:', fallbackErr);
+          }
+        }
       }
     };
 
-    const timerId = setTimeout(startScanner, 100);
+    const timerId = setTimeout(startScanner, 120);
 
     return () => {
       cancelled = true;
@@ -163,10 +170,11 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       setIsScannerReady(false);
       stopScannerSafely(html5QrcodeRef.current, elementId);
     };
-  }, [isScanningEnabled, selectedCameraId, elementId, stopScannerSafely, loadAvailableCameras]);
+  }, [isScanningEnabled, selectedCameraId, elementId, scannerKey, stopScannerSafely, loadAvailableCameras]);
 
   const resetScannerState = useCallback(() => {
     scannedRef.current = false;
+    setScannerKey(k => k + 1);
   }, []);
 
   const toggleCamera = useCallback(() => {

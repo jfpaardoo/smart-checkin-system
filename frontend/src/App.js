@@ -70,7 +70,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/logout" element={<Logout />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/checkin" element={<ScannerCheckin />} />
+            <Route path="/checkin" element={<PrivateRoute><ScannerCheckin /></PrivateRoute>} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
