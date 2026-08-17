@@ -859,8 +859,7 @@ class AuthControllerTests {
 
         verify(javaMailSender).send(any(org.springframework.mail.SimpleMailMessage.class));
     }
-
-    @Test
+    @Test
     void testForgotPasswordUserNotFoundSilentlySucceeds() throws Exception {
         when(userService.findUser("unknown@example.com")).thenThrow(new ResourceNotFoundException("User not found"));
 
@@ -978,8 +977,8 @@ class AuthControllerTests {
         when(userService.findUser("backupUser")).thenReturn(user);
         when(backupCodeService.verifyAndConsumeBackupCode(user, "ABCD-EFGH")).thenReturn(true);
 
-        UserDetailsImpl userDetails = new UserDetailsImpl(1, "backupUser", "pass", List.of(new SimpleGrantedAuthority("EMPLOYEE")));
-        when(userDetailsService.loadUserByUsername("backupUser")).thenReturn(userDetails);
+        UserDetailsImpl backupUserDetails = new UserDetailsImpl(1, "backupUser", "pass", List.of(new SimpleGrantedAuthority("EMPLOYEE")));
+        when(userDetailsService.loadUserByUsername("backupUser")).thenReturn(backupUserDetails);
         when(jwtUtils.generateJwtCookie(any())).thenReturn(ResponseCookie.from("jwt", MOCK_JWT_LITERAL).build());
 
         mockMvc.perform(post(BASE_URL + VERIFY_URL).with(csrf())

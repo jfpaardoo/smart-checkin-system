@@ -17,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -67,7 +66,7 @@ class TwoFactorBackupCodeServiceTests {
 
         testUser.getTwoFactorBackupCodes().add(codeHash);
 
-        when(passwordEncoder.matches(eq(normalizedCode), eq(codeHash))).thenReturn(true);
+        when(passwordEncoder.matches(normalizedCode, codeHash)).thenReturn(true);
 
         boolean result = backupCodeService.verifyAndConsumeBackupCode(testUser, rawCode);
 
@@ -85,7 +84,7 @@ class TwoFactorBackupCodeServiceTests {
 
         testUser.getTwoFactorBackupCodes().add(codeHash);
 
-        when(passwordEncoder.matches(eq(normalizedCode), eq(codeHash))).thenReturn(false);
+        when(passwordEncoder.matches(normalizedCode, codeHash)).thenReturn(false);
 
         boolean result = backupCodeService.verifyAndConsumeBackupCode(testUser, rawCode);
 
