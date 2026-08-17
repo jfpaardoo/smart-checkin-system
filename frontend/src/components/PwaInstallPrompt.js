@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaDownload, FaTimes, FaSyncAlt, FaShareSquare } from 'react-icons/fa';
 
 export default function PwaInstallPrompt() {
   const { t } = useTranslation();
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const deferredPromptRef = useRef(null);
+  const waitingWorkerRef = useRef(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [showIosPrompt, setShowIosPrompt] = useState(false);
   const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
-  const [waitingWorker, setWaitingWorker] = useState(null);
 
   useEffect(() => {
     // 1. Comprobar si ya está instalada en modo app independiente (standalone)
@@ -26,7 +26,7 @@ export default function PwaInstallPrompt() {
     // 3. Capturar evento de instalación nativa en Android / Chrome / Edge
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      deferredPromptRef.current = e;
       setShowInstallPrompt(true);
     };
 
@@ -53,7 +53,7 @@ export default function PwaInstallPrompt() {
           if (newWorker) {
             newWorker.addEventListener('statechange', () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                setWaitingWorker(newWorker);
+                waitingWorkerRef.current = newWorker;
                 setShowUpdatePrompt(true);
               }
             });
@@ -64,13 +64,14 @@ export default function PwaInstallPrompt() {
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
+    const promptEvent = deferredPromptRef.current;
+    if (!promptEvent) return;
+    promptEvent.prompt();
+    const { outcome } = await promptEvent.userChoice;
     if (outcome === 'accepted') {
       setShowInstallPrompt(false);
     }
-    setDeferredPrompt(null);
+    deferredPromptRef.current = null;
   };
 
   const handleDismiss = () => {
@@ -81,8 +82,8 @@ export default function PwaInstallPrompt() {
   };
 
   const handleUpdate = () => {
-    if (waitingWorker) {
-      waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+    if (waitingWorkerRef.current) {
+      waitingWorkerRef.current.postMessage({ type: 'SKIP_WAITING' });
     }
     window.location.reload();
   };
