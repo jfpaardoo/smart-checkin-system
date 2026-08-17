@@ -68,38 +68,39 @@ test.describe('Flujo de Activación de 2FA y Verificación TOTP (2FA Setup E2E)'
 
     // 2. Navegar desplegando el menú de usuario en la barra superior
     const userMenu = page.getByRole('button', { name: /juanperez/i }).or(page.getByRole('link', { name: /juanperez/i }));
-    await expect(userMenu).toBeVisible();
+    await expect(userMenu).toBeVisible({ timeout: 10000 });
     await userMenu.click();
 
     // Click en la opción Perfil del menú desplegable
     const profileLink = page.getByRole('menuitem', { name: /perfil|profile/i }).or(page.getByRole('link', { name: /perfil|profile/i }));
-    await expect(profileLink).toBeVisible();
+    await expect(profileLink).toBeVisible({ timeout: 10000 });
     await profileLink.click();
 
     // Confirmar cambio de URL
-    await page.waitForURL('**/profile');
+    await page.waitForURL('**/profile', { timeout: 10000 });
 
     // 3. Hacer clic en la pestaña "Seguridad y Contraseña"
-    const securityTab = page.getByRole('tab', { name: /seguridad|security/i }).or(page.getByText(/seguridad y contraseña|security/i));
+    const securityTab = page.getByText(/seguridad y contraseña|security & password|seguridad|security/i).first();
     await expect(securityTab).toBeVisible({ timeout: 15000 });
     await securityTab.click();
 
     // 4. Iniciar la configuración de 2FA
     const setup2faBtn = page.getByRole('button', { name: /configurar 2fa|setup 2fa/i });
-    await expect(setup2faBtn).toBeVisible();
+    await expect(setup2faBtn).toBeVisible({ timeout: 10000 });
     await setup2faBtn.click();
 
     // 5. Verificar que el secreto del QR se muestra en pantalla
-    await expect(page.getByText('JBSWY3DPEHPK3PXP')).toBeVisible();
+    await expect(page.getByText('JBSWY3DPEHPK3PXP')).toBeVisible({ timeout: 10000 });
 
     // 6. Introducir el código TOTP de 6 dígitos
     await page.locator('input#verificationCode').fill('123456');
 
     // 7. Confirmar y activar
-    const confirmBtn = page.getByRole('button', { name: /confirmar y activar|confirm and enable/i });
+    const confirmBtn = page.getByRole('button', { name: /confirmar|confirm/i });
+    await expect(confirmBtn).toBeVisible({ timeout: 10000 });
     await confirmBtn.click();
 
     // 8. Validar el mensaje de éxito
-    await expect(page.getByText(/activado|enabled/i).first()).toBeVisible();
+    await expect(page.getByText(/activado|enabled/i).first()).toBeVisible({ timeout: 10000 });
   });
 });

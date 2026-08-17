@@ -5,15 +5,62 @@ import { useSubscription } from '../hooks/useSubscription';
 import tokenService from '../services/token.service';
 import { registerPushNotifications } from '../util/pushNotificationUtil';
 
+function triggerNativeNotification(text) {
+  if (typeof window === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') {
+    return;
+  }
+
+  let notifTitle = 'Distribution Academy';
+  let notifBody = text;
+  if (text.startsWith('[')) {
+    const closingBracket = text.indexOf(']');
+    if (closingBracket > 1) {
+      notifTitle = text.substring(1, closingBracket);
+      notifBody = text.substring(closingBracket + 1).trim();
+    }
+  }
+
+  const options = {
+    body: notifBody,
+    icon: '/favicon.png?v=5',
+    badge: '/favicon.png?v=5',
+    tag: 'da-alert-' + Date.now()
+  };
+
+  if ('serviceWorker' in navigator && navigator.serviceWorker) {
+    navigator.serviceWorker.ready
+      .then(reg => {
+        reg.showNotification(notifTitle, options);
+      })
+      .catch(() => {
+        try {
+          new Notification(notifTitle, options);
+        } catch (e) {
+          console.debug('[Push] Fallback notification failed:', e);
+        }
+      });
+  } else {
+    try {
+      new Notification(notifTitle, options);
+    } catch (e) {
+      console.debug('[Push] Notification constructor failed:', e);
+    }
+  }
+}
+
 export default function NotificationBell({ isMobile = false, isOpen = false, onToggle = null }) {
   const { t } = useTranslation();
   const user = tokenService.getUser();
   const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleAlert = useCallback((message) => {
     if (!message?.body) return;
     const text = message.body;
+
+    // Disparar efecto secundario (notificación nativa del SO) fuera del updater
+    triggerNativeNotification(text);
 
     setNotifications(prev => {
       // Evitar notificaciones duplicadas en un intervalo de 3 segundos
@@ -27,49 +74,6 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
         read: false
       };
 
-      // Disparar notificación nativa en el dispositivo / SO si hay permiso
-      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-        let notifTitle = 'Distribution Academy';
-        let notifBody = text;
-        if (text.startsWith('[')) {
-          const closingBracket = text.indexOf(']');
-          if (closingBracket > 1) {
-            notifTitle = text.substring(1, closingBracket);
-            notifBody = text.substring(closingBracket + 1).trim();
-          }
-        }
-
-        console.info('[Push] Disparando notificación en el SO:', notifTitle, notifBody);
-
-        const options = {
-          body: notifBody,
-          icon: '/favicon.png?v=5',
-          badge: '/favicon.png?v=5',
-          tag: 'da-alert-' + Date.now()
-        };
-
-        if ('serviceWorker' in navigator && navigator.serviceWorker) {
-          navigator.serviceWorker.ready
-            .then(reg => {
-              reg.showNotification(notifTitle, options);
-            })
-            .catch(() => {
-              try {
-                new Notification(notifTitle, options);
-              } catch (e) {
-                console.debug('[Push] Fallback notification failed:', e);
-              }
-            });
-        } else {
-          try {
-            new Notification(notifTitle, options);
-          } catch (e) {
-            console.debug('[Push] Notification constructor failed:', e);
-          }
-        }
-      }
-
-      setUnreadCount(count => count + 1);
       return [newNotif, ...prev].slice(0, 50);
     });
   }, []);
@@ -93,7 +97,6 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
             timestamp: new Date(),
             read: false
           };
-          setUnreadCount(count => count + 1);
           return [newNotif, ...prev].slice(0, 50);
         });
       }
@@ -120,13 +123,11 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
 
   const markAllRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    setUnreadCount(0);
   };
 
   const clearAll = (e) => {
     e.stopPropagation();
     setNotifications([]);
-    setUnreadCount(0);
   };
 
   const handleToggle = (e) => {

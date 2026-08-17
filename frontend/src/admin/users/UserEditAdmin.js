@@ -78,6 +78,18 @@ export default function UserEditAdmin() {
     handleSubmit
   } = useUserEdit(id, jwt, toast, t);
 
+  const roleOptions = React.useMemo(() => {
+    return auths.reduce((acc, auth) => {
+      if (auth.authority === 'ADMIN' || auth.authority === 'EMPLOYEE') {
+        acc.push({
+          value: auth.id,
+          label: auth.authority === 'EMPLOYEE' ? 'EMPLOYEE' : 'ADMIN'
+        });
+      }
+      return acc;
+    }, []);
+  }, [auths]);
+
   if (id !== "new" && loading) {
     return <CardGhostLoader />;
   }
@@ -206,12 +218,7 @@ export default function UserEditAdmin() {
               <FormGroup>
                 <Label for="authority">{t('users.role')}</Label>
                 <GlassDropdown
-                  options={auths
-                    .filter((auth) => auth.authority === 'ADMIN' || auth.authority === 'EMPLOYEE')
-                    .map((auth) => ({
-                      value: auth.id,
-                      label: auth.authority === 'EMPLOYEE' ? 'EMPLOYEE' : 'ADMIN'
-                    }))}
+                  options={roleOptions}
                   value={user.authority?.id || ''}
                   onChange={(val) => handleChange({ target: { name: 'authority', value: val } })}
                   placeholder={t('users.selectRole', '-- Seleccionar Rol --')}
