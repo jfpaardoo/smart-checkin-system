@@ -57,12 +57,10 @@ public class SecurityConfiguration {
                                 .includeSubDomains(true)
                                 .maxAgeInSeconds(31536000))
                         .contentSecurityPolicy(csp -> csp.policyDirectives(
-                                "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' https: 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' https: data:; connect-src 'self' https: wss: ws:; frame-src 'self' https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';"))
-                        .addHeaderWriter((request, response) -> {
-                            response.setHeader("Permissions-Policy", "camera=(self), geolocation=(self), microphone=(), payment=(), usb=()");
-                            response.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
-                            response.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-                        }))
+                                "default-src 'self' http: https: data: blob:; script-src 'self' http: https: https://challenges.cloudflare.com 'unsafe-inline'; style-src 'self' http: https: 'unsafe-inline'; img-src 'self' http: https: data: blob:; font-src 'self' http: https: data:; connect-src 'self' http: https: wss: ws:; frame-src 'self' http: https: https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self';"))
+                        .addHeaderWriter((request, response) -> 
+                            response.setHeader("Permissions-Policy", "camera=(self), geolocation=(self), microphone=(), payment=(), usb=()")
+                        ))
                 .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(unauthorizedHandler))
 
                 .authorizeHttpRequests(auth -> auth
