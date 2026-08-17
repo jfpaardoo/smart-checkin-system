@@ -3,6 +3,11 @@
   "name": "smartcheckin",
   "version": "1.0.0",
   "private": true,
+  "reactDoctor": {
+    "rules": {
+      "deslop/unused-file": "off"
+    }
+  },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.3.1",
     "@fortawesome/free-solid-svg-icons": "^7.3.1",

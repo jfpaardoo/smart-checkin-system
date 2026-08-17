@@ -6,6 +6,24 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ---
 
+## [1.0.2](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.0.2) - 2026-08-17
+
+### Corregido (Bug Fixes) & Mejoras
+- **Permisos de Cámara y Geolocalización (`Permissions-Policy`)**:
+  - Actualizada la cabecera HTTP de seguridad en `SecurityConfiguration.java` a `camera=(self), geolocation=(self), microphone=(), payment=(), usb=()`.
+  - Permite al navegador solicitar y utilizar la cámara para el escaneo de códigos QR y la geolocalización GPS en los fichajes sin violaciones de política de permisos (`Permissions policy violation / NotAllowedError`).
+- **Permisos y Suscripción a Notificaciones Push**:
+  - Corregida la condición de registro en `NotificationBell.js` evaluando `user.username` en lugar de `user.id` (no presente en el almacenamiento de sesión), asegurando la solicitud nativa de permisos push en el navegador tras iniciar sesión.
+- **Auditoría React Doctor (Puntuación 100/100 en Frontend)**:
+  - **Scroll Pasivo en Móviles**: Incorporada la opción `{ passive: true }` a los eventos `touchstart` en `GlassDropdown.js` y `AnalyticsExportMenu.js` para navegación táctil fluida sin bloquear el hilo principal.
+  - **Accesibilidad (a11y)**: Eliminado `autoFocus` invasivo en `TwoFactorLoginForm.js` y añadida etiqueta `<label htmlFor="disable2faCode">` con `aria-label` en `TwoFactorSettings.js`.
+  - **Rendimiento de Componentes**: Sustituido `useState` por `useRef` para eventos internos (`beforeinstallprompt` y Service Worker) en `PwaInstallPrompt.js`, eliminando re-renderizados innecesarios.
+  - Configuración de reglas de análisis estático en `package.json`.
+- **Estabilidad en Tests E2E Playwright**:
+  - Interceptados endpoints secundarios de credenciales WebAuthn y sesiones en `2fa-flow.spec.js` para evitar redirecciones `401 Unauthorized` a la pantalla de login.
+
+---
+
 ## [1.0.1](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.0.1) - 2026-08-17
 
 ### Corregido (Bug Fixes)

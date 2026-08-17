@@ -52,7 +52,6 @@ export default function TwoFactorLoginForm({
             }
           }}
           required
-          autoFocus
           className="w-full text-center text-3xl tracking-[0.4rem] py-4 rounded-2xl border border-white/50 bg-white/50 backdrop-blur-sm focus:border-[#b3c34c] focus:bg-white/80 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition font-mono text-slate-800 shadow-inner"
         />
       </div>

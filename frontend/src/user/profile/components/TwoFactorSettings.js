@@ -166,14 +166,16 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
 
       {showDisablePrompt && (
         <div className="mt-3 p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-red-200 flex flex-col gap-3">
-          <p className="text-xs text-slate-600 mb-0">
+          <label htmlFor="disable2faCode" className="text-xs text-slate-600 mb-0">
             {t('profile.disable2FAPrompt', 'Introduce el código de 6 dígitos actual para confirmar la desactivación:')}
-          </p>
+          </label>
           <input
+            id="disable2faCode"
             type="text"
             inputMode="numeric"
             maxLength="6"
             placeholder="000000"
+            aria-label={t('profile.disable2FAPrompt', 'Introduce el código de 6 dígitos actual para confirmar la desactivación')}
             value={disableCode}
             onChange={(e) => setDisableCode(e.target.value.replace(/\D/g, ""))}
             className="w-full text-center text-xl tracking-[0.3rem] py-2 rounded-xl border border-white/60 bg-white/70 focus:border-red-400 outline-none transition font-mono"
