@@ -9,7 +9,15 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 ## [1.0.2](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.0.2) - 2026-08-17
 
 ### Corregido (Bug Fixes) & Mejoras
-- **Permisos de Cámara y Geolocalización (`Permissions-Policy`)**:
+- **Persistencia de Sesión y Navegación en Servidor**:
+  - Parametrizado el flag `Secure` de las cookies JWT (`${JWT_COOKIE_SECURE:false}`) en `JwtUtils.java` y `application.properties` para evitar que los navegadores descarten la cookie de sesión en servidores HTTP.
+  - Configurado `SameSite=Lax` en las cookies de autenticación para garantizar la persistencia de la sesión en navegaciones internas entre menús de la aplicación.
+  - Añadido fallback para leer el token desde la cabecera `Authorization: Bearer` en el endpoint `/api/v1/auth/validate`.
+  - **Resiliencia en `PrivateRoute.js`**: Implementada caché de validación en memoria (TTL 30s) y tolerancia a micro-cortes de red/timeouts para que caídas momentáneas de conectividad en móviles no cierren la sesión del usuario.
+- **Compatibilidad de Cámara en Móviles (Samsung Internet / Android)**:
+  - Inicialización directa del escáner en `useQrScanner.js` con `{ facingMode: 'environment' }` (cámara trasera) sin bloquear el ciclo de vida a la espera de `getCameras()`.
+  - Fuerza la aparición inmediata del diálogo modal nativo de permisos de cámara del sistema operativo en dispositivos Samsung y Android donde `enumerateDevices()` no disparaba el prompt.
+- **Permisos de Cámara y Geolocalización en Backend (`Permissions-Policy`)**:
   - Actualizada la cabecera HTTP de seguridad en `SecurityConfiguration.java` a `camera=(self), geolocation=(self), microphone=(), payment=(), usb=()`.
   - Permite al navegador solicitar y utilizar la cámara para el escaneo de códigos QR y la geolocalización GPS en los fichajes sin violaciones de política de permisos (`Permissions policy violation / NotAllowedError`).
 - **Permisos y Suscripción a Notificaciones Push**:

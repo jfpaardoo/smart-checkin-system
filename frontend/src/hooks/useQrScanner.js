@@ -94,17 +94,19 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
           d.label.toLowerCase().includes('externa')
         );
         
-        setSelectedCameraId(backCamera ? backCamera.id : devices[0].id);
+        if (backCamera) {
+          setSelectedCameraId(backCamera.id);
+        }
       }
     }).catch(err => {
-      console.error('Error fetching cameras', err);
+      console.debug('Initial getCameras before permission (will retry on start):', err);
     });
     return () => { isMounted = false; };
   }, [t]);
 
   // Handle scanner lifecycle
   useEffect(() => {
-    if (!isScanningEnabled || !selectedCameraId || !elementId) return;
+    if (!isScanningEnabled || !elementId) return;
 
     let cancelled = false;
     scannedRef.current = false;
@@ -125,13 +127,29 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       const html5Qrcode = new Html5Qrcode(elementId);
       html5QrcodeRef.current = html5Qrcode;
 
+      // Use selected camera ID if available, otherwise default to back camera (facingMode: environment)
+      // This immediately triggers the browser permission modal on Android/Samsung without blocking on getCameras()
+      const cameraConfig = selectedCameraId || { facingMode: 'environment' };
+
       html5Qrcode.start(
-        selectedCameraId,
+        cameraConfig,
         { fps: 10, qrbox: { width: 250, height: 250 } },
         handleSuccess,
         () => {} // Ignore continuous decode errors
       ).then(() => {
-        if (!cancelled) setIsScannerReady(true);
+        if (!cancelled) {
+          setIsScannerReady(true);
+          // Refresh cameras list after permission is granted
+          Html5Qrcode.getCameras().then(devices => {
+            if (devices && devices.length > 0 && !cancelled) {
+              const camOptions = devices.map(d => ({
+                value: d.id,
+                label: d.label || `${t('common.camera', 'Cámara')} ${d.id}`
+              }));
+              setCameras(camOptions);
+            }
+          }).catch(() => {});
+        }
       }).catch(err => {
         console.error('Error starting scanner:', err);
       });
@@ -143,7 +161,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       setIsScannerReady(false);
       stopScannerSafely(html5QrcodeRef.current, elementId);
     };
-  }, [isScanningEnabled, selectedCameraId, elementId, stopScannerSafely]);
+  }, [isScanningEnabled, selectedCameraId, elementId, stopScannerSafely, t]);
 
   const resetScannerState = useCallback(() => {
     scannedRef.current = false;

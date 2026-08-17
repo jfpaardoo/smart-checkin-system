@@ -48,6 +48,9 @@ public class JwtUtils {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
+    @Value("${badistributionacademy.app.jwtCookieSecure:${smartcheckin.app.jwtCookieSecure:false}}")
+    private boolean jwtCookieSecure;
+
     public String generateJwtToken(Authentication authentication) {
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
         Map<String, Object> claims = new HashMap<>();
@@ -70,8 +73,8 @@ public class JwtUtils {
                 .path("/")
                 .maxAge(jwtExpirationMs / 1000)
                 .httpOnly(true)
-                .secure(true)
-                .sameSite("Strict")
+                .secure(jwtCookieSecure)
+                .sameSite("Lax")
                 .build();
     }
 
@@ -80,8 +83,8 @@ public class JwtUtils {
                 .path("/")
                 .maxAge(0)
                 .httpOnly(true)
-                .secure(true)
-                .sameSite("Strict")
+                .secure(jwtCookieSecure)
+                .sameSite("Lax")
                 .build();
     }
 
