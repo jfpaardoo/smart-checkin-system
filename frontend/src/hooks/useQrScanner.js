@@ -104,7 +104,47 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     }
   }, []);
 
-  // Iniciar instancia de escaneo con resolución en cascada
+  // Enumerar dispositivos de vídeo de forma pasiva sin invocar un nuevo getUserMedia (evita cortar el stream en iOS)
+  const refreshCameraListSafely = useCallback(async () => {
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.enumerateDevices) return;
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoInputs = devices.filter(d => d.kind === 'videoinput');
+      if (videoInputs.length > 0) {
+        setCameras(videoInputs.map((d, index) => ({
+          value: d.deviceId,
+          label: formatCameraLabel(d, index)
+        })));
+      }
+    } catch (err) {
+      console.debug('Safe device enumeration deferred:', err);
+    }
+  }, []);
+
+  // Asegurar atributos playsinline y autoplay para WebKit / iOS Safari
+  const enforceVideoPlaybackOnIOS = useCallback((containerId) => {
+    try {
+      const container = document.getElementById(containerId);
+      if (container) {
+        const video = container.querySelector('video');
+        if (video) {
+          video.setAttribute('playsinline', 'true');
+          video.setAttribute('webkit-playsinline', 'true');
+          video.setAttribute('muted', 'true');
+          video.muted = true;
+          video.playsInline = true;
+          video.autoplay = true;
+          if (video.paused) {
+            video.play().catch(e => console.debug('Video auto-play resume:', e));
+          }
+        }
+      }
+    } catch (e) {
+      console.debug('Playsinline enforcement ignored:', e);
+    }
+  }, []);
+
+  // Iniciar instancia de escaneo con resolución en cascada compatible con iOS/Android
   const executeStart = useCallback(async (scanner, scanConfig, onSuccess) => {
     // 1. Si el usuario seleccionó un dispositivo concreto por ID
     if (selectedCameraId) {
@@ -116,7 +156,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       }
     }
 
-    // 2. Intentar con facingMode deseado (preferido por iOS/Android para evitar pantallas negras)
+    // 2. Intentar con facingMode deseado (preferido por iOS/Android)
     try {
       await scanner.start({ facingMode }, scanConfig, onSuccess, () => {});
       return;
@@ -133,13 +173,17 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       console.debug('Alternate facingMode unavailable:', error_);
     }
 
-    // 4. Fallback final a primer dispositivo disponible
-    const devices = await Html5Qrcode.getCameras();
-    if (devices && devices.length > 0) {
-      await scanner.start(devices[0].id, scanConfig, onSuccess, () => {});
-    } else {
-      throw new Error('No camera hardware found');
+    // 4. Fallback final usando enumerateDevices pasivo
+    if (navigator?.mediaDevices?.enumerateDevices) {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(d => d.kind === 'videoinput');
+      if (videoDevices.length > 0) {
+        await scanner.start(videoDevices[0].deviceId, scanConfig, onSuccess, () => {});
+        return;
+      }
     }
+
+    throw new Error('No camera hardware found');
   }, [facingMode, selectedCameraId]);
 
   // Ciclo de vida del escáner
@@ -176,33 +220,36 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
         }
         if (cancelled) return;
 
+        // Desactivar BarcodeDetector experimental (causa congelación en iOS Safari / WebKit)
         const html5Qrcode = new Html5Qrcode(elementId, {
-          experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+          experimentalFeatures: { useBarCodeDetectorIfSupported: false },
           verbose: false
         });
         html5QrcodeRef.current = html5Qrcode;
 
         const scanConfig = { 
-          fps: 8, 
-          qrbox: { width: 250, height: 250 }
+          fps: 10,
+          qrbox: (viewfinderWidth, viewfinderHeight) => {
+            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            const edgeSize = Math.floor(minEdge * 0.72);
+            return {
+              width: Math.max(edgeSize, 180),
+              height: Math.max(edgeSize, 180)
+            };
+          },
+          aspectRatio: 1.0,
+          disableFlip: false
         };
 
         await executeStart(html5Qrcode, scanConfig, handleSuccess);
         
         if (!cancelled) {
+          // Forzar compatibilidad de reproducción inline en iOS
+          enforceVideoPlaybackOnIOS(elementId);
           setIsScannerReady(true);
 
-          // Actualizar lista de cámaras sin forzar reinicios
-          Html5Qrcode.getCameras().then(devices => {
-            if (!cancelled && devices && devices.length > 0) {
-              setCameras(devices.map((d, index) => ({
-                value: d.id,
-                label: formatCameraLabel(d, index)
-              })));
-            }
-          }).catch(error_ => {
-            console.debug('Camera enumeration deferred:', error_);
-          });
+          // Actualizar lista de cámaras de forma pasiva sin cortar el stream
+          refreshCameraListSafely();
         }
       } catch (error_) {
         if (!cancelled) {
@@ -222,7 +269,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       setIsScannerReady(false);
       stopScannerSafely(html5QrcodeRef.current, elementId);
     };
-  }, [isScanningEnabled, facingMode, selectedCameraId, elementId, scannerKey, stopScannerSafely, executeStart]);
+  }, [isScanningEnabled, facingMode, selectedCameraId, elementId, scannerKey, stopScannerSafely, executeStart, enforceVideoPlaybackOnIOS, refreshCameraListSafely]);
 
   const resetScannerState = useCallback(() => {
     scannedRef.current = false;
@@ -251,3 +298,4 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     stopScannerSafely: () => stopScannerSafely(html5QrcodeRef.current, elementId)
   };
 }
+
