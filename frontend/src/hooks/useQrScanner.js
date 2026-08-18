@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { useTranslation } from 'react-i18next';
 
 /**
  * Emite una vibración háptica suave y un chime de confirmación
@@ -42,9 +41,6 @@ function triggerHapticAndAudio() {
 }
 
 export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
-  const { t } = useTranslation();
-  const [cameras, setCameras] = useState([]);
-  const [selectedCameraId, setSelectedCameraId] = useState('');
   const [facingMode, setFacingMode] = useState('environment');
   const [isScannerReady, setIsScannerReady] = useState(false);
   const [scannerKey, setScannerKey] = useState(0);
@@ -77,12 +73,11 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     } catch { /* ignore */ }
   }, []);
 
-
-
   // Handle scanner lifecycle
   useEffect(() => {
     if (!isScanningEnabled || !elementId) {
       setIsScannerReady(false);
+      stopScannerSafely(html5QrcodeRef.current, elementId);
       return;
     }
 
@@ -106,13 +101,9 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       const html5Qrcode = new Html5Qrcode(elementId);
       html5QrcodeRef.current = html5Qrcode;
 
-      const cameraConfig = selectedCameraId 
-        ? selectedCameraId
-        : { facingMode };
-
       try {
         await html5Qrcode.start(
-          cameraConfig,
+          { facingMode }, // DELEGAMOS LA ELECCIÓN AL SISTEMA OPERATIVO
           { 
             fps: 10, 
             qrbox: { width: 250, height: 250 },
@@ -121,35 +112,12 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
           handleSuccess,
           () => {} // Ignore continuous decode errors
         );
+        
         if (!cancelled) {
           setIsScannerReady(true);
-          Html5Qrcode.getCameras().then(devices => {
-            if (devices && devices.length > 0 && !cancelled) {
-              const camOptions = devices.map(d => ({
-                value: d.id,
-                label: d.label || `${t('common.camera', 'Cámara')} ${d.id}`
-              }));
-              setCameras(camOptions);
-            }
-          }).catch(() => {});
         }
       } catch (err) {
-        console.warn('Primary camera config failed, falling back to facingMode:', err);
-        if (!cancelled) {
-          try {
-            await html5Qrcode.start(
-              { facingMode },
-              { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
-              handleSuccess,
-              () => {}
-            );
-            if (!cancelled) {
-              setIsScannerReady(true);
-            }
-          } catch (fallbackErr) {
-            console.error('Fallback camera start failed:', fallbackErr);
-          }
-        }
+        console.error('Camera start failed:', err);
       }
     };
 
@@ -161,7 +129,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       setIsScannerReady(false);
       stopScannerSafely(html5QrcodeRef.current, elementId);
     };
-  }, [isScanningEnabled, selectedCameraId, facingMode, elementId, scannerKey, stopScannerSafely, t]);
+  }, [isScanningEnabled, facingMode, elementId, scannerKey, stopScannerSafely]);
 
   const resetScannerState = useCallback(() => {
     scannedRef.current = false;
@@ -169,23 +137,15 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
   }, []);
 
   const toggleCamera = useCallback(() => {
-    setSelectedCameraId('');
     setFacingMode(prev => (prev === 'environment' ? 'user' : 'environment'));
     setScannerKey(k => k + 1);
   }, []);
 
   return {
-    cameras,
-    selectedCameraId,
-    setSelectedCameraId: (id) => {
-      setSelectedCameraId(id);
-      setScannerKey(k => k + 1);
-    },
     isScannerReady,
     resetScannerState,
     toggleCamera,
     facingMode,
-    hasMultipleCameras: cameras.length > 1 || typeof navigator !== 'undefined',
     stopScannerSafely: () => stopScannerSafely(html5QrcodeRef.current, elementId)
   };
 }
