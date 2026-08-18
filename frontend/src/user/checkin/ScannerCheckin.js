@@ -46,33 +46,36 @@ export default function ScannerCheckin() {
       setGpsStatus('unsupported');
       return {};
     }
-    const getPos = (highAccuracy, timeoutMs) => {
+    const getPos = (highAccuracy, timeoutMs, maxAge = 60000) => {
       return new Promise((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, { 
           enableHighAccuracy: highAccuracy, 
           timeout: timeoutMs, 
-          maximumAge: 30000 
+          maximumAge: maxAge 
         });
       });
     };
 
-    try {
-      let pos;
+    const tiers = [
+      { high: true, timeout: 4000, maxAge: 15000 },
+      { high: false, timeout: 6000, maxAge: 60000 },
+      { high: false, timeout: 8000, maxAge: 600000 }
+    ];
+
+    for (const tier of tiers) {
       try {
-        pos = await getPos(true, 6000);
-      } catch (errHigh) {
-        console.warn("High accuracy GPS timed out/failed, falling back to network geolocation:", errHigh);
-        pos = await getPos(false, 8000);
+        const pos = await getPos(tier.high, tier.timeout, tier.maxAge);
+        const coords = { userLat: pos.coords.latitude, userLng: pos.coords.longitude };
+        setGpsCoords(coords);
+        setGpsStatus('granted');
+        return coords;
+      } catch (error_) {
+        console.debug("User GPS tier deferred:", error_);
       }
-      const coords = { userLat: pos.coords.latitude, userLng: pos.coords.longitude };
-      setGpsCoords(coords);
-      setGpsStatus('granted');
-      return coords;
-    } catch (err) {
-      console.warn("Geolocalización fallida o denegada", err);
-      setGpsStatus('denied');
-      return {};
     }
+
+    setGpsStatus('denied');
+    return {};
   }, []);
 
   // Solicitar GPS al montar la vista

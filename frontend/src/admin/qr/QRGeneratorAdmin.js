@@ -38,20 +38,34 @@ const QRGeneratorAdmin = () => {
                 });
             };
 
-            navigator.geolocation.getCurrentPosition(
-                handleSuccess,
-                (error) => {
-                    console.warn("High accuracy geolocation timed out or failed, falling back to network geolocation:", error);
-                    navigator.geolocation.getCurrentPosition(
-                        handleSuccess,
-                        (fallbackErr) => {
-                            console.warn("All geolocation attempts failed:", fallbackErr);
-                        },
-                        { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
-                    );
-                },
-                { enableHighAccuracy: true, timeout: 6000, maximumAge: 30000 }
-            );
+            const getPos = (highAccuracy, timeoutMs, maxAge) => {
+                return new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: highAccuracy,
+                        timeout: timeoutMs,
+                        maximumAge: maxAge
+                    });
+                });
+            };
+
+            const locate = async () => {
+                const tiers = [
+                    { high: true, timeout: 4000, maxAge: 15000 },
+                    { high: false, timeout: 6000, maxAge: 60000 },
+                    { high: false, timeout: 8000, maxAge: 600000 }
+                ];
+                for (const tier of tiers) {
+                    try {
+                        const pos = await getPos(tier.high, tier.timeout, tier.maxAge);
+                        handleSuccess(pos);
+                        return;
+                    } catch (error_) {
+                        console.debug("Admin GPS tier deferred:", error_);
+                    }
+                }
+            };
+
+            locate();
         }
     }, []);
 
