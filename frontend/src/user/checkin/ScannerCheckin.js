@@ -3,12 +3,12 @@ import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faQrcode, faKeyboard, faCalendarCheck, faSpinner, faLocationDot, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faQrcode, faKeyboard, faCalendarCheck, faSpinner, faLocationDot, faCheckCircle, faCameraRotate } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '../../components/ToastProvider';
-import { Html5QrcodeScanner } from 'html5-qrcode';
 import api from '../../services/api';
 import ManualCheckinForm from './components/ManualCheckinForm';
 import SignatureStep from './components/SignatureStep';
+import { useQrScanner } from '../../hooks/useQrScanner';
 
 const parseRawInput = (rawInput) => {
   try {
@@ -64,58 +64,27 @@ export default function ScannerCheckin() {
     }
   }, []);
 
-  // Setup Html5QrcodeScanner
-  const scannerRef = useRef(null);
-
+  // Solicitar GPS al montar la vista
   useEffect(() => {
-    if (isManualInput || needsSignature || successModal) {
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(console.error);
-        scannerRef.current = null;
-      }
-      return;
+    requestGps();
+  }, [requestGps]);
+
+  // Hook personalizado de la cámara (Reemplaza al Html5QrcodeScanner directo)
+  const isScanningEnabled = !isManualInput && !needsSignature && !successModal;
+  
+  const { toggleCamera, facingMode } = useQrScanner(
+    "qr-reader",
+    isScanningEnabled,
+    (decodedText) => {
+      toast.success(t('checkin.qrDetected', 'Código QR detectado.'));
+      handleCheckinExecution(decodedText);
     }
-
-    if (!scannerRef.current) {
-      const scanner = new Html5QrcodeScanner(
-        "qr-reader",
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        false
-      );
-      scannerRef.current = scanner;
-
-      scanner.render(
-        (decodedText) => {
-          toast.success(t('checkin.qrDetected', 'Código QR detectado.'));
-          if (scannerRef.current) {
-            scannerRef.current.clear().catch(console.error);
-            scannerRef.current = null;
-          }
-          handleCheckinExecution(decodedText);
-        },
-        (errorMessage) => {
-          // Ignore continuous scanning errors
-        }
-      );
-      
-      // Request GPS once scanner is initialized
-      requestGps();
-    }
-
-    return () => {
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(console.error);
-        scannerRef.current = null;
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isManualInput, needsSignature, successModal, requestGps, t]);
+  );
 
   const resetScanner = () => {
     setNeedsSignature(false);
     pendingTokenRef.current = '';
     setIsManualInput(false);
-    // When states change, the useEffect will re-initialize the scanner
   };
 
   const handleCloseSuccess = () => {
@@ -166,7 +135,7 @@ export default function ScannerCheckin() {
 
   return (
     <div className="da-container flex flex-col justify-center items-center min-h-[calc(100vh-80px)] py-8 relative">
-      {/* Overlay de carga centrado sin alterar el diseño de la tarjeta */}
+      {/* Overlay de carga */}
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm">
           <div className="bg-white/95 backdrop-blur-xl rounded-[28px] p-8 border border-white shadow-2xl text-center flex flex-col items-center gap-4 max-w-[320px] w-full mx-4 animate-in fade-in zoom-in-95 duration-200">
@@ -180,7 +149,7 @@ export default function ScannerCheckin() {
 
       <div className="da-card mx-auto w-full max-w-[600px] p-6 sm:p-8 shadow-xl">
         
-        <div style={{ display: (!isManualInput && !needsSignature) ? 'block' : 'none' }}>
+        <div style={{ display: isScanningEnabled ? 'block' : 'none' }}>
           <div className="text-center mb-6">
             <FontAwesomeIcon icon={faQrcode} size="3x" style={{ color: 'var(--da-primary)' }} className="mb-4" />
             <h2 className="text-slate-800 font-bold text-2xl sm:text-3xl mb-2">
@@ -190,7 +159,6 @@ export default function ScannerCheckin() {
               {t('checkin.qrSubtitle', 'Enfoca el código QR de la formación con tu cámara')}
             </p>
 
-            {/* Barra de estado de permisos de geolocalización */}
             <div className="flex items-center justify-center gap-2 mb-3 mx-auto max-w-[380px]">
               {gpsStatus === 'granted' ? (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
@@ -216,14 +184,23 @@ export default function ScannerCheckin() {
               <div 
                 id="qr-reader" 
                 className="mx-auto bg-white rounded-2xl overflow-hidden"
-                style={{ 
-                  width: '100%', 
-                  maxWidth: '380px'
-                }}
+                style={{ width: '100%', maxWidth: '380px' }}
               />
             </div>
 
-            <div className="mt-6 pt-2">
+            <div className="mt-6 pt-2 flex flex-col items-center gap-3">
+              <button 
+                type="button" 
+                className="da-btn da-btn-secondary py-3 px-4 w-100 text-xs sm:text-sm" 
+                style={{ maxWidth: '350px' }}
+                onClick={toggleCamera}
+              >
+                <FontAwesomeIcon icon={faCameraRotate} className="me-2" />
+                {facingMode === 'environment' 
+                  ? t('checkin.useFrontCamera', 'Cambiar a cámara frontal') 
+                  : t('checkin.useBackCamera', 'Cambiar a cámara trasera')}
+              </button>
+
               <button 
                 type="button" 
                 className="da-btn da-btn-secondary py-3 px-4 w-100 text-xs sm:text-sm" 
