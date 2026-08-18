@@ -3,10 +3,9 @@ import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faQrcode, faKeyboard, faCamera, faCalendarCheck, faSpinner, faLocationDot, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faQrcode, faKeyboard, faCalendarCheck, faSpinner, faLocationDot, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '../../components/ToastProvider';
-import GlassDropdown from '../../components/GlassDropdown';
-import { useQrScanner } from '../../hooks/useQrScanner';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 import api from '../../services/api';
 import ManualCheckinForm from './components/ManualCheckinForm';
 import SignatureStep from './components/SignatureStep';
@@ -65,32 +64,58 @@ export default function ScannerCheckin() {
     }
   }, []);
 
-  // Hook maneja la lógica de las cámaras y validación del código
-  const {
-    cameras,
-    selectedCameraId,
-    setSelectedCameraId,
-    isScannerReady,
-    resetScannerState,
-    toggleCamera,
-    hasMultipleCameras
-  } = useQrScanner('qr-reader', !isManualInput && !needsSignature && !successModal, (decodedText) => {
-    toast.success(t('checkin.qrDetected', 'Código QR detectado.'));
-    handleCheckinExecution(decodedText);
-  });
+  // Setup Html5QrcodeScanner
+  const scannerRef = useRef(null);
 
-  // Solicitar ubicación una vez que la cámara esté lista para evitar conflictos de permisos en móviles
   useEffect(() => {
-    if (isScannerReady) {
+    if (isManualInput || needsSignature || successModal) {
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(console.error);
+        scannerRef.current = null;
+      }
+      return;
+    }
+
+    if (!scannerRef.current) {
+      const scanner = new Html5QrcodeScanner(
+        "qr-reader",
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        false
+      );
+      scannerRef.current = scanner;
+
+      scanner.render(
+        (decodedText) => {
+          toast.success(t('checkin.qrDetected', 'Código QR detectado.'));
+          if (scannerRef.current) {
+            scannerRef.current.clear().catch(console.error);
+            scannerRef.current = null;
+          }
+          handleCheckinExecution(decodedText);
+        },
+        (errorMessage) => {
+          // Ignore continuous scanning errors
+        }
+      );
+      
+      // Request GPS once scanner is initialized
       requestGps();
     }
-  }, [isScannerReady, requestGps]);
+
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(console.error);
+        scannerRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isManualInput, needsSignature, successModal, requestGps, t]);
 
   const resetScanner = () => {
-    resetScannerState();
     setNeedsSignature(false);
     pendingTokenRef.current = '';
     setIsManualInput(false);
+    // When states change, the useEffect will re-initialize the scanner
   };
 
   const handleCloseSuccess = () => {
@@ -187,47 +212,13 @@ export default function ScannerCheckin() {
           </div>
 
           <div className="scanner-section text-center">
-            {hasMultipleCameras && (
-              <div className="flex justify-center items-center gap-3 mb-4 mx-auto max-w-[340px]">
-                <div className="flex-1">
-                  <GlassDropdown
-                    options={cameras}
-                    value={selectedCameraId}
-                    onChange={(camId) => setSelectedCameraId(camId)}
-                    placeholder={t('dashboard.selectCamera')}
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={toggleCamera}
-                  className="px-3.5 py-2 rounded-2xl bg-white/70 hover:bg-white text-slate-700 hover:text-[#8a9e29] border border-white/80 shadow-xs transition hover:scale-105 cursor-pointer flex items-center gap-1.5 text-xs font-bold"
-                  title={t('checkin.switchCamera', 'Alternar Cámara')}
-                >
-                  <FontAwesomeIcon icon={faCamera} className="text-sm text-[#8a9e29]" />
-                  <span className="hidden sm:inline">{t('checkin.switchCamera', 'Alternar')}</span>
-                </button>
-              </div>
-            )}
-
-            {!isScannerReady && (
-              <div className="p-8 text-center text-slate-500 mx-auto mb-2 min-h-[260px] flex flex-col justify-center items-center bg-slate-100/50 rounded-2xl border border-dashed border-slate-200">
-                <FontAwesomeIcon icon={faCamera} className="fa-spin mb-3 text-3xl text-slate-400" />
-                <p className="mb-0 text-sm font-medium">{t('checkin.startingCamera', 'Iniciando cámara...')}</p>
-              </div>
-            )}
             <div className="px-1 sm:px-4">
               <div 
                 id="qr-reader" 
-                className="mx-auto"
+                className="mx-auto bg-white rounded-2xl overflow-hidden"
                 style={{ 
                   width: '100%', 
-                  maxWidth: '380px',
-                  minHeight: isScannerReady ? '280px' : '0px',
-                  borderRadius: '24px', 
-                  overflow: 'hidden', 
-                  border: isScannerReady ? '2px solid rgba(255, 255, 255, 0.6)' : 'none',
-                  boxShadow: isScannerReady ? '0 10px 30px rgba(0,0,0,0.08)' : 'none',
-                  display: isScannerReady ? 'block' : 'none'
+                  maxWidth: '380px'
                 }}
               />
             </div>
