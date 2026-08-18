@@ -77,22 +77,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     } catch { /* ignore */ }
   }, []);
 
-  useEffect(() => {
-    let isMounted = true;
-    Html5Qrcode.getCameras().then(devices => {
-      if (!isMounted) return;
-      if (devices && devices.length > 0) {
-        const camOptions = devices.map(d => ({
-          value: d.id,
-          label: d.label || `${t('common.camera', 'Cámara')} ${d.id}`
-        }));
-        setCameras(camOptions);
-      }
-    }).catch(err => {
-      console.debug('Initial getCameras before permission:', err);
-    });
-    return () => { isMounted = false; };
-  }, [t]);
+
 
   // Handle scanner lifecycle
   useEffect(() => {
@@ -122,7 +107,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       html5QrcodeRef.current = html5Qrcode;
 
       const cameraConfig = selectedCameraId 
-        ? { deviceId: { exact: selectedCameraId } }
+        ? selectedCameraId
         : { facingMode };
 
       try {

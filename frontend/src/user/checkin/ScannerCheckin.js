@@ -65,11 +65,6 @@ export default function ScannerCheckin() {
     }
   }, []);
 
-  // Solicitar ubicación automáticamente al entrar a la pantalla
-  useEffect(() => {
-    requestGps();
-  }, [requestGps]);
-
   // Hook maneja la lógica de las cámaras y validación del código
   const {
     cameras,
@@ -83,6 +78,13 @@ export default function ScannerCheckin() {
     toast.success(t('checkin.qrDetected', 'Código QR detectado.'));
     handleCheckinExecution(decodedText);
   });
+
+  // Solicitar ubicación una vez que la cámara esté lista para evitar conflictos de permisos en móviles
+  useEffect(() => {
+    if (isScannerReady) {
+      requestGps();
+    }
+  }, [isScannerReady, requestGps]);
 
   const resetScanner = () => {
     resetScannerState();
