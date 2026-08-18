@@ -7,39 +7,46 @@
   position: relative !important;
   width: 100% !important;
   max-width: 100% !important;
+  height: 100% !important;
   overflow: hidden !important;
-  border-radius: 24px !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
-  background: #000000 !important;
+  border-radius: 20px !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
   margin: 0 auto !important;
-  backdrop-filter: blur(20px) !important;
-  padding: 18px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 #qr-reader video, #checkout-qr-reader video {
   width: 100% !important;
-  max-width: 100% !important;
-  height: auto !important;
+  height: 100% !important;
+  min-height: 100% !important;
   object-fit: cover !important;
   border-radius: 20px !important;
   display: block !important;
+  margin: 0 auto !important;
 }
 
 #qr-reader img, #checkout-qr-reader img,
 #qr-reader canvas, #checkout-qr-reader canvas {
   max-width: 100% !important;
-  height: auto !important;
+  height: 100% !important;
+  object-fit: cover !important;
   border-radius: 20px !important;
 }
 
 #qr-reader__scan_region, #checkout-qr-reader__scan_region {
   width: 100% !important;
+  height: 100% !important;
   max-width: 100% !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
   overflow: hidden !important;
+  margin: 0 auto !important;
 }
 
 /* QR Generator Component Styles */

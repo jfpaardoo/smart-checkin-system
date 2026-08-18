@@ -126,6 +126,9 @@ class AuthControllerTests {
 	@MockitoBean
 	private org.springframework.samples.smartcheckin.auth.service.TwoFactorBackupCodeService backupCodeService;
 
+	@MockitoBean
+	private org.springframework.samples.smartcheckin.auth.session.UserSessionService userSessionService;
+
 	@Autowired
 	@SuppressWarnings("java:S6813")
 	private ObjectMapper objectMapper;

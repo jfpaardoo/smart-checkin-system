@@ -6,9 +6,26 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ---
 
-## [1.0.2](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.0.2) - 2026-08-17
+## [1.0.2](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.0.2) - 2026-08-18
 
 ### Corregido (Bug Fixes) & Mejoras
+- **Cámara QR y Soporte Multilente / Multidispositivo (iOS, Android y PC)**:
+  - **Selección Inteligente de Lente Trasera**: Algoritmo `findBestBackCamera` en `useQrScanner.js` que detecta y selecciona por defecto la cámara trasera estándar principal (`0 / main / principal`) en smartphones con múltiples lentes (triple/cuádruple cámara), evitando inicios involuntarios en lentes macro o ultra gran angular.
+  - **Formateo Amigable de Dispositivos**: Nombres limpios y comprensibles en los selectores desplegables (`Cámara Trasera Principal`, `Gran Angular`, `Teleobjetivo`, `Cámara Frontal`).
+  - **Interfaz Compacta y Centrada**: Reubicado el botón de conmutación de cámara en la fila superior junto al desplegable `GlassDropdown`, manteniendo la misma proporción centrada (`aspectRatio: '1 / 1'`) y ajuste `object-fit: cover` en el visor de vídeo tanto en Check-in como en el modal de Checkout.
+  - **Eliminación de Pantallas Negras y Bloqueos de Hardware**: Liberación explícita de los `MediaStreamTrack` y neutralización de los listeners `onabort` antes de transicionar entre lentes, erradicando los errores de consola `Uncaught RenderedCameraImpl video surface onabort()` y `AbortError: The play() request was interrupted`.
+  - **Contenedor Estable durante la Carga**: Establecidas dimensiones fijas e indicador giratorio integrado (*"Iniciando cámara..."*) para prevenir saltos de interfaz o que el cuadro aparezca colapsado/aplastado mientras se conecta el stream de vídeo.
+  - **Protección Nula en Checkout**: Resuelto el error `Cannot read properties of undefined (reading 'length')` en `CheckoutModal.js`.
+- **Enrutamiento SPA y Prevención de Error 403 Forbidden en Recarga (F5)**:
+  - Configurado matcher dinámico en `SecurityConfiguration.java` y forwarder por expresiones regulares en `SpaController.java` para despachar `index.html` ante cualquier ruta web del cliente (presente o futura) sin alterar la protección estricta de los endpoints de la API (`/api/**`, `/ws/**`).
+- **Deduplicación de Sesiones y Revocación en Cierre de Sesión**:
+  - Implementada deduplicación automática por dispositivo en `UserSessionService.java` para evitar acumulación de entradas redundantes de una misma máquina/navegador.
+  - Expiración proactiva de sesiones inactivas (>24h) y revocación explícita del registro de sesión en base de datos al invocar `/api/v1/auth/logout` en `AuthController.java`.
+- **Geolocalización (GPS) Robusta y Prevención de Fichajes sin Coordenadas**:
+  - Estrategia de geolocalización multi-fase en `ScannerCheckin.js` y `QRGeneratorAdmin.js`: si la fijación GPS de alta precisión excede 6 segundos (típico en interiores), conmuta automáticamente a geolocalización por red móvil y Wi-Fi (`enableHighAccuracy: false`).
+  - Añadida cápsula de estado con indicador LED de alto contraste (`GPS Administrador Vinculado`) en `QRGeneratorAdmin.js` para asegurar que el QR proyectado contenga las coordenadas antes del escaneo.
+- **Diseño Glassmorphism y Accesibilidad**:
+  - Rediseñado el botón "Desconectar cuenta de OneDrive" en `CloudSettingsAdmin.js` con estilo cápsula de cristal translúcido, borde suave y contraste mejorado.
 - **Persistencia de Sesión y Cookies en iOS WebKit / HTTPS**:
   - Detección dinámica de HTTPS (`isRequestSecure`: `request.isSecure() || X-Forwarded-Proto: https`) en `JwtUtils.java` para asignar automáticamente el atributo `Secure` en producción, garantizando que iOS Safari y WebKit Standalone (PWA) no descarten la cookie `jwt` en las peticiones `POST` autenticadas de fichaje.
   - Configurado `SameSite=Lax` y `Path=/` en las cookies de autenticación para garantizar la persistencia de la sesión en navegaciones internas entre menús de la aplicación.
@@ -28,9 +45,6 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 - **Corrección de Registro y Validación de Código de 4 Dígitos**:
   - Implementada verificación preventiva e individual de `username`, `email` y `personalCode` en `AuthController.java` y `UserRepository.java`.
   - Corregido el mapeo de errores en `Register.js` que erróneamente informaba de código personal duplicado cuando el conflicto era por email o usuario.
-- **Gestión Proactiva de Permisos de Ubicación (GPS) y Selección de Cámaras en iOS**:
-  - Añadida solicitud proactiva de geolocalización al montar `ScannerCheckin.js` junto con una barra de estado visual (`Ubicación GPS verificada` / botón de activación manual) que permite a iOS Safari activar el diálogo nativo de permisos sin bloquear el fichaje.
-  - Alternancia y ciclo de reinicio reactivo refinado en `useQrScanner.js` para conmutar sin latencia entre la cámara trasera principal (`environment`) y la frontal (`user`).
 - **Limpieza Visual y Responsive de Cloudflare Turnstile**:
   - Eliminado el marco contenedor redundante alrededor de Cloudflare Turnstile en las pantallas de Login, Recuperación de Contraseña y Registro, manteniendo un renderizado limpio, centrado y adaptado a dispositivos móviles.
 

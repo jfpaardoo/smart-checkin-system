@@ -39,12 +39,26 @@ public class UserSessionService {
                 }
             }
         } else {
+            String deviceInfo = parseDeviceInfo(userAgent);
+            // Desactivar sesiones anteriores del mismo usuario en el mismo dispositivo para evitar duplicados
+            try {
+                List<UserSession> sameDeviceSessions = userSessionRepository.findAllByUsernameAndDeviceInfoAndActiveTrue(username, deviceInfo);
+                if (sameDeviceSessions != null) {
+                    for (UserSession s : sameDeviceSessions) {
+                        s.setActive(false);
+                        userSessionRepository.save(s);
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("Could not cleanup same device sessions", e);
+            }
+
             UserSession newSession = UserSession.builder()
                     .username(username)
                     .tokenHash(tokenHash)
                     .ipAddress(ipAddress)
                     .userAgent(userAgent != null ? userAgent.substring(0, Math.min(userAgent.length(), 500)) : "Desconocido")
-                    .deviceInfo(parseDeviceInfo(userAgent))
+                    .deviceInfo(deviceInfo)
                     .lastActivityAt(LocalDateTime.now(java.time.ZoneId.systemDefault()))
                     .active(true)
                     .build();
@@ -52,21 +66,31 @@ public class UserSessionService {
         }
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<UserSessionDTO> getActiveSessions(String username, String currentToken) {
         String currentTokenHash = currentToken != null ? hashToken(currentToken) : "";
         List<UserSession> sessions = userSessionRepository.findAllByUsernameAndActiveTrueOrderByLastActivityAtDesc(username);
+        LocalDateTime expirationCutoff = LocalDateTime.now(java.time.ZoneId.systemDefault()).minusHours(24);
 
-        return sessions.stream().map(s -> UserSessionDTO.builder()
-                .id(s.getId())
-                .ipAddress(s.getIpAddress())
-                .userAgent(s.getUserAgent())
-                .deviceInfo(s.getDeviceInfo())
-                .createdAt(s.getCreatedAt())
-                .lastActivityAt(s.getLastActivityAt())
-                .isCurrent(s.getTokenHash().equals(currentTokenHash))
-                .build()
-        ).toList();
+        return sessions.stream()
+                .filter(s -> {
+                    if (s.getLastActivityAt() != null && s.getLastActivityAt().isBefore(expirationCutoff)) {
+                        s.setActive(false);
+                        userSessionRepository.save(s);
+                        return false;
+                    }
+                    return true;
+                })
+                .map(s -> UserSessionDTO.builder()
+                        .id(s.getId())
+                        .ipAddress(s.getIpAddress())
+                        .userAgent(s.getUserAgent())
+                        .deviceInfo(s.getDeviceInfo())
+                        .createdAt(s.getCreatedAt())
+                        .lastActivityAt(s.getLastActivityAt())
+                        .isCurrent(s.getTokenHash().equals(currentTokenHash))
+                        .build()
+                ).toList();
     }
 
     @Transactional
@@ -79,6 +103,17 @@ public class UserSessionService {
             return true;
         }
         return false;
+    }
+
+    @Transactional
+    public void revokeSessionByToken(String token) {
+        if (token == null) return;
+        String tokenHash = hashToken(token);
+        List<UserSession> sessions = userSessionRepository.findAllByTokenHash(tokenHash);
+        for (UserSession s : sessions) {
+            s.setActive(false);
+            userSessionRepository.save(s);
+        }
     }
 
     @Transactional

@@ -3,11 +3,12 @@ import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faQrcode, faKeyboard, faCalendarCheck, faSpinner, faLocationDot, faCheckCircle, faCameraRotate } from '@fortawesome/free-solid-svg-icons';
+import { faQrcode, faKeyboard, faCalendarCheck, faSpinner, faLocationDot, faCheckCircle, faCameraRotate, faCamera } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '../../components/ToastProvider';
 import api from '../../services/api';
 import ManualCheckinForm from './components/ManualCheckinForm';
 import SignatureStep from './components/SignatureStep';
+import GlassDropdown from '../../components/GlassDropdown';
 import { useQrScanner } from '../../hooks/useQrScanner';
 
 const parseRawInput = (rawInput) => {
@@ -45,14 +46,24 @@ export default function ScannerCheckin() {
       setGpsStatus('unsupported');
       return {};
     }
-    try {
-      const pos = await new Promise((resolve, reject) => {
+    const getPos = (highAccuracy, timeoutMs) => {
+      return new Promise((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, { 
-          enableHighAccuracy: true, 
-          timeout: 8000,
-          maximumAge: 10000 
+          enableHighAccuracy: highAccuracy, 
+          timeout: timeoutMs, 
+          maximumAge: 30000 
         });
       });
+    };
+
+    try {
+      let pos;
+      try {
+        pos = await getPos(true, 6000);
+      } catch (errHigh) {
+        console.warn("High accuracy GPS timed out/failed, falling back to network geolocation:", errHigh);
+        pos = await getPos(false, 8000);
+      }
       const coords = { userLat: pos.coords.latitude, userLng: pos.coords.longitude };
       setGpsCoords(coords);
       setGpsStatus('granted');
@@ -72,7 +83,14 @@ export default function ScannerCheckin() {
   // Hook personalizado de la cámara (Reemplaza al Html5QrcodeScanner directo)
   const isScanningEnabled = !isManualInput && !needsSignature && !successModal;
   
-  const { toggleCamera, facingMode } = useQrScanner(
+  const { 
+    cameras, 
+    selectedCameraId, 
+    setSelectedCameraId, 
+    toggleCamera, 
+    facingMode,
+    isScannerReady
+  } = useQrScanner(
     "qr-reader",
     isScanningEnabled,
     (decodedText) => {
@@ -98,6 +116,11 @@ export default function ScannerCheckin() {
     try {
       const basePayload = parseRawInput(rawInput);
       const coords = gpsCoords.userLat ? gpsCoords : await requestGps();
+
+      if (!coords.userLat && !basePayload.userLat) {
+        toast.warning(t('checkin.gpsMissingWarning', 'No se ha detectado ubicación GPS. Por favor, autoriza la ubicación en tu navegador si el administrador exige control de distancia.'));
+      }
+
       const payload = {
         ...basePayload,
         ...coords,
@@ -179,32 +202,58 @@ export default function ScannerCheckin() {
             </div>
           </div>
 
-          <div className="scanner-section text-center">
-            <div className="px-1 sm:px-4">
+          <div className="scanner-section text-center flex flex-col items-center">
+            <div className="mb-3 w-full flex items-center justify-center gap-2" style={{ maxWidth: '360px' }}>
+              {cameras && cameras.length > 1 && (
+                <div className="flex-1" style={{ minWidth: 0 }}>
+                  <GlassDropdown
+                    options={cameras}
+                    value={selectedCameraId}
+                    onChange={(camId) => setSelectedCameraId(camId)}
+                    placeholder={t('checkin.selectCamera', 'Seleccionar cámara')}
+                  />
+                </div>
+              )}
+              <button 
+                type="button" 
+                className="da-btn da-btn-secondary px-3 py-2 rounded-full text-xs font-semibold shrink-0 d-inline-flex align-items-center gap-2" 
+                onClick={toggleCamera}
+                title={facingMode === 'environment' 
+                  ? t('checkin.useFrontCamera', 'Cambiar a cámara frontal') 
+                  : t('checkin.useBackCamera', 'Cambiar a cámara trasera')}
+              >
+                <FontAwesomeIcon icon={faCameraRotate} />
+                <span className="d-none d-sm-inline">
+                  {facingMode === 'environment' 
+                    ? t('checkin.useFrontCamera', 'Frontal') 
+                    : t('checkin.useBackCamera', 'Trasera')}
+                </span>
+              </button>
+            </div>
+
+            <div 
+              className="w-full rounded-2xl overflow-hidden shadow-md relative flex items-center justify-center border border-white/20"
+              style={{ maxWidth: '360px', aspectRatio: '1 / 1', backgroundColor: '#000000' }}
+            >
+              {!isScannerReady && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-slate-900 text-slate-200 p-4">
+                  <FontAwesomeIcon icon={faCamera} className="fa-spin text-3xl text-emerald-400" />
+                  <p className="text-xs font-semibold text-slate-300 mb-0">
+                    {t('checkin.startingCamera', 'Iniciando cámara...')}
+                  </p>
+                </div>
+              )}
               <div 
                 id="qr-reader" 
-                className="mx-auto bg-white rounded-2xl overflow-hidden"
-                style={{ width: '100%', maxWidth: '380px' }}
+                style={{ width: '100%', height: '100%' }}
               />
             </div>
 
-            <div className="mt-6 pt-2 flex flex-col items-center gap-3">
+            <div className="mt-6 pt-2 flex flex-col items-center gap-3 w-full">
               <button 
                 type="button" 
-                className="da-btn da-btn-secondary py-3 px-4 w-100 text-xs sm:text-sm" 
-                style={{ maxWidth: '350px' }}
-                onClick={toggleCamera}
-              >
-                <FontAwesomeIcon icon={faCameraRotate} className="me-2" />
-                {facingMode === 'environment' 
-                  ? t('checkin.useFrontCamera', 'Cambiar a cámara frontal') 
-                  : t('checkin.useBackCamera', 'Cambiar a cámara trasera')}
-              </button>
-
-              <button 
-                type="button" 
-                className="da-btn da-btn-secondary py-3 px-4 w-100 text-xs sm:text-sm" 
-                style={{ maxWidth: '350px' }}
+                className="da-btn da-btn-secondary py-3 px-4 w-full text-xs sm:text-sm" 
+                style={{ maxWidth: '360px' }}
                 onClick={() => setIsManualInput(true)}
               >
                 <FontAwesomeIcon icon={faKeyboard} className="me-2" />

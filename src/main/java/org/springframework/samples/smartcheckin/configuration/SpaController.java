@@ -8,31 +8,12 @@ public class SpaController {
 
     /**
      * Reenvía todas las rutas del cliente (React Router) que no sean peticiones de API
-     * ni recursos estáticos al index.html para permitir navegación directa y recarga de página.
+     * ni recursos estáticos al index.html para permitir navegación directa y recarga de página (F5).
      */
     @GetMapping(value = {
         "/",
-        "/login",
-        "/register",
-        "/forgot-password",
-        "/reset-password",
-        "/qr-generator",
-        "/users",
-        "/users/**",
-        "/formations",
-        "/formations/**",
-        "/companies",
-        "/companies/**",
-        "/analytics",
-        "/analytics/**",
-        "/audit",
-        "/audit/**",
-        "/profile",
-        "/profile/**",
-        "/admin",
-        "/admin/**",
-        "/cloud-settings",
-        "/cloud-settings/**"
+        "/{path:^(?!api|ws|actuator|swagger|v3|static|locales|h2-console).*$}/**",
+        "/{path:^(?!api|ws|actuator|swagger|v3|static|locales|h2-console)[^\\.]*}"
     })
     public String forwardSpaRoutes() {
         return "forward:/index.html";
