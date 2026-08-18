@@ -130,36 +130,42 @@ public class AuthController {
         this.userSessionService = userSessionService;
     }
 
+    private String extractJwtFromRequest(HttpServletRequest req) {
+        String jwt = jwtUtils.getJwtFromCookies(req);
+        if (jwt == null) {
+            String authHeader = req.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                return authHeader.substring(7);
+            }
+        }
+        return jwt;
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<MessageResponse> logoutUser(@RequestParam(required = false) String reason) {
-        String jwt = jwtUtils.getJwtFromCookies(request);
+        String jwt = extractJwtFromRequest(request);
         if (jwt == null) {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                jwt = authHeader.substring(7);
-            }
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: No JWT token found in request."));
         }
-        if (jwt != null) {
-            String currentUsername = null;
-            try {
-                currentUsername = jwtUtils.getUserNameFromJwtToken(jwt);
-            } catch (Exception e) {
-                // Ignore if expired
-            }
-            String clientIp = request.getHeader(HEADER) != null ? request.getHeader(HEADER).split(",")[0].trim() : request.getRemoteAddr();
-            jwtBlacklistService.blacklistToken(jwt);
-            if (userSessionService != null) {
-                userSessionService.revokeSessionByToken(jwt);
-            }
-            anomalyDetectionService.recordLogout(currentUsername != null ? currentUsername : "anonymous", clientIp, reason != null ? reason : "Manual");
-            ResponseCookie cleanCookie = jwtUtils.getCleanJwtCookie();
-            var responseBuilder = ResponseEntity.ok();
-            if (cleanCookie != null) {
-                responseBuilder.header(HttpHeaders.SET_COOKIE, cleanCookie.toString());
-            }
-            return responseBuilder.body(new MessageResponse("Log out successful!"));
+
+        String currentUsername = null;
+        try {
+            currentUsername = jwtUtils.getUserNameFromJwtToken(jwt);
+        } catch (Exception e) {
+            // Ignore if expired
         }
-        return ResponseEntity.badRequest().body(new MessageResponse("Error: No JWT token found in request."));
+        String clientIp = request.getHeader(HEADER) != null ? request.getHeader(HEADER).split(",")[0].trim() : request.getRemoteAddr();
+        jwtBlacklistService.blacklistToken(jwt);
+        if (userSessionService != null) {
+            userSessionService.revokeSessionByToken(jwt);
+        }
+        anomalyDetectionService.recordLogout(currentUsername != null ? currentUsername : "anonymous", clientIp, reason != null ? reason : "Manual");
+        ResponseCookie cleanCookie = jwtUtils.getCleanJwtCookie();
+        var responseBuilder = ResponseEntity.ok();
+        if (cleanCookie != null) {
+            responseBuilder.header(HttpHeaders.SET_COOKIE, cleanCookie.toString());
+        }
+        return responseBuilder.body(new MessageResponse("Log out successful!"));
     }
 
     @PostMapping("/signin")

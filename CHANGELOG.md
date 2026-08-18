@@ -24,8 +24,13 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 - **Geolocalización (GPS) Robusta y Prevención de Fichajes sin Coordenadas**:
   - Estrategia de geolocalización multi-fase en `ScannerCheckin.js` y `QRGeneratorAdmin.js`: si la fijación GPS de alta precisión excede 6 segundos (típico en interiores), conmuta automáticamente a geolocalización por red móvil y Wi-Fi (`enableHighAccuracy: false`).
   - Añadida cápsula de estado con indicador LED de alto contraste (`GPS Administrador Vinculado`) en `QRGeneratorAdmin.js` para asegurar que el QR proyectado contenga las coordenadas antes del escaneo.
+- **Sistema Automático de Actualizaciones para PWA y Móviles**:
+  - Detección proactiva de nuevas versiones en segundo plano en `PwaUpdateNotification.js` al abrir la app, alternar pestañas (`visibilitychange`) o mediante comprobación periódica cada 15 minutos.
+  - Implementada cápsula de actualización flotante Glassmorphism que permite recargar la app con un solo toque (`SKIP_WAITING`) sin tener que borrar el acceso directo del móvil ni vaciar cachés manualmente.
+  - Configurado `Cache-Control: no-cache, no-store, must-revalidate` en `WebConfig.java` e `index.html` para `index.html` y `sw.js`, permitiendo que el cliente reciba siempre los archivos empaquetados más recientes de forma inmediata.
 - **Diseño Glassmorphism y Accesibilidad**:
   - Rediseñado el botón "Desconectar cuenta de OneDrive" en `CloudSettingsAdmin.js` con estilo cápsula de cristal translúcido, borde suave y contraste mejorado.
+  - Pantalla de Logout (`frontend/src/auth/logout`) perfectamente centrada en móviles con altura dinámica `100dvh` y botones tipo cápsula idénticos a los de Login y Home.
 - **Persistencia de Sesión y Cookies en iOS WebKit / HTTPS**:
   - Detección dinámica de HTTPS (`isRequestSecure`: `request.isSecure() || X-Forwarded-Proto: https`) en `JwtUtils.java` para asignar automáticamente el atributo `Secure` en producción, garantizando que iOS Safari y WebKit Standalone (PWA) no descarten la cookie `jwt` en las peticiones `POST` autenticadas de fichaje.
   - Configurado `SameSite=Lax` y `Path=/` en las cookies de autenticación para garantizar la persistencia de la sesión en navegaciones internas entre menús de la aplicación.
