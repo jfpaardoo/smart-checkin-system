@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { FaDesktop, FaMobileAlt, FaLaptop, FaSignOutAlt, FaShieldAlt, FaSyncAlt } from "react-icons/fa";
 import api from "../../../services/api";
 
+import { formatDate } from "../../../utils/dateUtils";
+
 const getDeviceIcon = (deviceInfo, userAgent) => {
   const info = (deviceInfo || userAgent || "").toLowerCase();
   if (info.includes("ios") || info.includes("android") || info.includes("iphone") || info.includes("mobile")) {
@@ -11,16 +13,6 @@ const getDeviceIcon = (deviceInfo, userAgent) => {
     return <FaLaptop className="text-xl text-[#8a9e29]" />;
   }
   return <FaDesktop className="text-xl text-[#8a9e29]" />;
-};
-
-const formatDate = (dateStr) => {
-  if (!dateStr) return "";
-  try {
-    const d = new Date(dateStr);
-    return d.toLocaleString();
-  } catch {
-    return dateStr;
-  }
 };
 
 export default function ActiveSessionsTab({ t, toast }) {

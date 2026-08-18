@@ -78,6 +78,20 @@ public class ExceptionHandlerController {
 				.body(message);
 	}
 
+	@ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorMessage> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
+        ErrorMessage message = new ErrorMessage(
+                HttpStatus.BAD_REQUEST.value(), 
+                LocalDateTime.now(ZoneId.systemDefault()), 
+                ex.getMessage(),
+                request.getDescription(false));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(message);
+    }
+
 	@ExceptionHandler(IllegalStateException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorMessage> handleIllegalStateException(IllegalStateException ex, WebRequest request) {

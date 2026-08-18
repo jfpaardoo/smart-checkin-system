@@ -94,7 +94,7 @@ public class FormationRestController {
     @PostMapping("/{id}/checkout")
     public ResponseEntity<Object> checkoutAttendance(@PathVariable Integer id, @Valid @RequestBody FormationCheckoutRequest request) {
         try {
-            Formation formation = facade.checkoutAttendance(id, request.getSignature());
+            Formation formation = facade.checkoutAttendance(id, request.getSignature(), request.getToken());
             return ResponseEntity.ok(formation);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Failed to checkout: " + e.getMessage());

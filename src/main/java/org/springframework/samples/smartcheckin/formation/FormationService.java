@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.jpatterns.gof.SingletonPattern;
 @Service
 @SingletonPattern.Singleton
@@ -31,6 +32,7 @@ public class FormationService {
     private final NotificationContext notificationContext;
     private final SignatureStorageService signatureStorageService;
     private final ApplicationEventPublisher eventPublisher;
+    private final TotpService totpService;
 
     @Autowired
     public FormationService(FormationRepository formationRepository, 
@@ -39,7 +41,8 @@ public class FormationService {
                             CloudStorageAdapter cloudStorageAdapter,
                             NotificationContext notificationContext,
                             SignatureStorageService signatureStorageService,
-                            ApplicationEventPublisher eventPublisher) {
+                            ApplicationEventPublisher eventPublisher,
+                            TotpService totpService) {
         this.formationRepository = formationRepository;
         this.attendanceRepository = attendanceRepository;
         this.userService = userService;
@@ -47,6 +50,7 @@ public class FormationService {
         this.notificationContext = notificationContext;
         this.signatureStorageService = signatureStorageService;
         this.eventPublisher = eventPublisher;
+        this.totpService = totpService;
     }
 
     private static final String FORMATION_NOT_FOUND_MSG = "Formation not found";
@@ -140,7 +144,12 @@ public class FormationService {
     }
 
     @Transactional
-    public Formation checkoutAttendance(Integer formationId, String personalCode, String signature) {
+    public Formation checkoutAttendance(Integer formationId, String personalCode, String signature, String token) {
+        if (token != null && !token.isBlank()) {
+            if (!totpService.verifyToken(token, formationId)) {
+                throw new IllegalArgumentException("Código inválido o expirado para esta formación.");
+            }
+        }
         Formation formation = formationRepository.findById(formationId)
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
         
@@ -171,6 +180,11 @@ public class FormationService {
 
         eventPublisher.publishEvent(new FormationAttendanceEvent(this));
         return formation;
+    }
+
+    @Transactional
+    public Formation checkoutAttendance(Integer formationId, String personalCode, String signature) {
+        return checkoutAttendance(formationId, personalCode, signature, null);
     }
 
     @Transactional

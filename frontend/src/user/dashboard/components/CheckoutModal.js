@@ -31,13 +31,21 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
     toggleCamera,
     facingMode,
     isScannerReady,
+    resumeScanning,
     resetScannerState,
     stopScannerSafely
   } = useQrScanner('checkout-qr-reader', isOpen && step === 'scan' && !isManualCheckout, (decodedText) => {
     try {
       const parsed = JSON.parse(decodedText);
+      if (parsed?.formationId && selectedAtt?.formation?.id && String(parsed.formationId) !== String(selectedAtt.formation.id)) {
+        toast.error(t('dashboard.wrongFormationQr', 'Este código QR pertenece a otra formación.'));
+        resumeScanning();
+        return;
+      }
       if (parsed?.token) {
         validatedTokenRef.current = parsed.token;
+      } else {
+        validatedTokenRef.current = decodedText;
       }
     } catch (e) {
       console.debug("QR text is not JSON, using raw string:", e);

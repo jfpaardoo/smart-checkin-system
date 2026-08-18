@@ -10,6 +10,7 @@ import ManualCheckinForm from './components/ManualCheckinForm';
 import SignatureStep from './components/SignatureStep';
 import GlassDropdown from '../../components/GlassDropdown';
 import { useQrScanner } from '../../hooks/useQrScanner';
+import { formatDate } from '../../utils/dateUtils';
 
 const parseRawInput = (rawInput) => {
   try {
@@ -92,12 +93,12 @@ export default function ScannerCheckin() {
     setSelectedCameraId, 
     toggleCamera, 
     facingMode,
-    isScannerReady
+    isScannerReady,
+    resumeScanning
   } = useQrScanner(
     "qr-reader",
     isScanningEnabled,
     (decodedText) => {
-      toast.success(t('checkin.qrDetected', 'Código QR detectado.'));
       handleCheckinExecution(decodedText);
     }
   );
@@ -153,7 +154,7 @@ export default function ScannerCheckin() {
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      resetScanner();
+      resumeScanning();
       const errMsg = error.response?.data?.message || error.message || t('checkin.processError', 'Error al procesar la solicitud');
       toast.error(errMsg);
     }
@@ -313,7 +314,7 @@ export default function ScannerCheckin() {
             <div className="p-3 mx-auto bg-slate-50 rounded-xl border border-slate-200 inline-block shadow-sm">
               <p className="mb-0 font-medium text-slate-700">
                 <FontAwesomeIcon icon={faCalendarCheck} className="me-2" style={{ color: 'var(--da-primary)' }} />
-                {t('checkin.dateLabel', 'Fecha')}: {new Date(formationDetails.formationDate).toLocaleString()}
+                {t('checkin.dateLabel', 'Fecha')}: {formatDate(formationDetails.formationDate)}
               </p>
             </div>
           )}

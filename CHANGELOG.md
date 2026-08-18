@@ -9,6 +9,20 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 ## [1.0.2](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.0.2) - 2026-08-18
 
 ### Corregido (Bug Fixes) & Mejoras
+- **Prevención de Cierre de Sesión Involuntario en Escaneo QR**:
+  - Sustituido el código HTTP `401 Unauthorized` por `400 Bad Request` en `CheckinRestController.java` ante códigos QR inválidos, expirados o de formaciones ya registradas, evitando que el interceptor de seguridad de Axios interprete la respuesta como expiración del JWT del usuario y expulse la sesión al login.
+- **Sincronización del Estado de Trabajo (`isWorking`) en Fichaje Global**:
+  - Corregido el método `processCheckinRecord` y el endpoint `checkIn` en `CheckinRestController.java` para actualizar y persistir `user.setIsWorking(type == ENTRADA)` en base de datos, garantizando que el sistema alterne fluidamente entre fichajes de Entrada y solicitudes de Salida con firma obligatoria.
+- **Validación Estricta de Formación en Checkout (Frontend & Backend)**:
+  - **Frontend (`CheckoutModal.js`)**: Comprobación explícita de que el `formationId` contenido en el código QR escaneado coincida con la formación seleccionada (`selectedAtt.formation.id`), mostrando la advertencia *"Este código QR pertenece a otra formación"* y reanudando la cámara sin avanzar a la firma si se escanea un QR erróneo.
+  - **Backend (`FormationService.java`, `FormationRestController.java`, `FormationCheckoutRequest.java`)**: Incorporado el parámetro `token` y validación criptográfica TOTP por ID de formación (`totpService.verifyToken(token, formationId)`) para rechazar peticiones de checkout con tokens ajenos.
+- **Manejador Global de `IllegalArgumentException`**:
+  - Añadido `@ExceptionHandler(IllegalArgumentException.class)` en `ExceptionHandlerController.java` para devolver `400 Bad Request` con mensaje descriptivo ante cualquier violación de regla de negocio, evitando respuestas genéricas `500 Internal Server Error`.
+- **Estandarización de Zonas Horarias (UTC / Local)**:
+  - Forzada la zona horaria UTC en `SmartcheckinApplication.java` mediante `@PostConstruct init() { TimeZone.setDefault(TimeZone.getTimeZone("UTC")); }`, asegurando coherencia temporal idéntica entre entornos de desarrollo local y servidores en la nube (Render).
+  - Unificado el formateo de fechas con `formatDate` en `UserFormationsTable.js` (vista móvil), `ScannerCheckin.js` y `ActiveSessionsTab.js`.
+- **Internacionalización y Soporte Multilingüe Completo (8 Idiomas)**:
+  - Añadidas y sincronizadas todas las claves de traducción de toasts y alertas de escaneo/checkout (`wrongFormationQr`, `gpsMissingWarning`, `useFrontCamera`, `useBackCamera`, `confirmSignature`) en los 8 idiomas soportados: Español (`es`), Inglés (`en`), Portugués (`pt`), Francés (`fr`), Alemán (`de`), Polaco (`pl`), Búlgaro (`bg`) y Rumano (`ro`).
 - **Cámara QR y Soporte Multilente / Multidispositivo (iOS, Android y PC)**:
   - **Selección Inteligente de Lente Trasera**: Algoritmo `findBestBackCamera` en `useQrScanner.js` que detecta y selecciona por defecto la cámara trasera estándar principal (`0 / main / principal`) en smartphones con múltiples lentes (triple/cuádruple cámara), evitando inicios involuntarios en lentes macro o ultra gran angular.
   - **Formateo Amigable de Dispositivos**: Nombres limpios y comprensibles en los selectores desplegables (`Cámara Trasera Principal`, `Gran Angular`, `Teleobjetivo`, `Cámara Frontal`).

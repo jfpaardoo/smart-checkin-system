@@ -62,6 +62,8 @@ public class CheckinRestController {
     public ResponseEntity<Checkin> checkIn(@RequestBody @Valid CheckinRequest request) {
         User currentUser = userService.findCurrentUser();
         Checkin saved = checkInService.performCheckIn(currentUser, request.getCheckInType());
+        currentUser.setIsWorking(request.getCheckInType() == CheckinType.ENTRADA);
+        userService.saveUser(currentUser);
         return new ResponseEntity<>(saved, HttpStatus.CREATED);
     }
 
@@ -108,7 +110,7 @@ public class CheckinRestController {
         // FLUJO 2: EL CÓDIGO NO ES DE FORMACIÓN (Fichaje Global de la fábrica)
         // ==========================================
         if (!totpService.verifyToken(request.getToken())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of(MESSAGE_KEY, "Código inválido o expirado."));
         }
 
@@ -216,6 +218,8 @@ public class CheckinRestController {
             saved.setSignature(fileName);
             saved = checkInService.save(saved);
         }
+        user.setIsWorking(type == CheckinType.ENTRADA);
+        userService.saveUser(user);
         return saved;
     }
 

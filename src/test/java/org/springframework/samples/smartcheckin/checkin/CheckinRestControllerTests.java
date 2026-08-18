@@ -219,7 +219,7 @@ class CheckinRestControllerTests {
 		req.setFormationId(5L);
 
 		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(req))).andExpect(status().isUnauthorized());
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest());
 	}
 
 	@Test
@@ -447,7 +447,7 @@ class CheckinRestControllerTests {
             	})
             	.contentType(MediaType.APPLICATION_JSON)
             	.content(objectMapper.writeValueAsString(req)))
-            	.andExpect(status().isUnauthorized())
+            	.andExpect(status().isBadRequest())
             	.andExpect(jsonPath("$.message").value("Código inválido o expirado."));
 	}
 
