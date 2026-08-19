@@ -415,5 +415,45 @@ class ExportRestControllerTests {
         mockMvc.perform(get(BASE_URL + "/me/export"))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void shouldExportUsersCsvWithCompanyFilter() throws Exception {
+        when(analyticsService.getAllUsersAnalytics("", 5)).thenReturn(List.of());
+
+        mockMvc.perform(get(BASE_URL + USERS_CSV).param("companyId", "5"))
+                .andExpect(status().isOk());
+
+        verify(analyticsService).getAllUsersAnalytics("", 5);
+    }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void shouldExportCheckinsCsvWithCompanyFilter() throws Exception {
+        org.springframework.samples.smartcheckin.company.Company comp = new org.springframework.samples.smartcheckin.company.Company();
+        comp.setId(5);
+        user.setCompany(comp);
+        checkin.setUser(user);
+
+        when(checkinRepository.findAll()).thenReturn(List.of(checkin));
+
+        mockMvc.perform(get(BASE_URL + CHECKINS_CSV).param("companyId", "5"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void shouldExportFormationsExcelWithCompanyFilter() throws Exception {
+        org.springframework.samples.smartcheckin.company.Company comp = new org.springframework.samples.smartcheckin.company.Company();
+        comp.setId(5);
+        user.setCompany(comp);
+        attendance.setUser(user);
+        formation.setAttendances(new java.util.ArrayList<>(List.of(attendance)));
+
+        when(formationRepository.findAll()).thenReturn(List.of(formation));
+
+        mockMvc.perform(get(BASE_URL + FORMATIONS_EXCEL).param("companyId", "5"))
+                .andExpect(status().isOk());
+    }
 }
 

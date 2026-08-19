@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,6 +29,7 @@ public class EmailService {
         this.javaMailSender = javaMailSender;
     }
 
+    @Async("taskExecutor")
     public void sendEmailWithAttachment(String to, String subject, String text, byte[] attachmentBytes, String attachmentFilename) {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();

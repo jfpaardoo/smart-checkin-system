@@ -52,7 +52,7 @@ public class Formation extends BaseEntity {
     @lombok.Builder.Default
     private List<String> documentUrls = new ArrayList<>();
 
-    @OneToMany(mappedBy = "formation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "formation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonIgnoreProperties("formation")
     @lombok.Builder.Default
     private List<FormationAttendance> attendances = new ArrayList<>();

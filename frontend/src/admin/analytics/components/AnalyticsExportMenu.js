@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDownload, faFileCsv, faFileExcel, faFilePdf, faSpinner, faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { faDownload, faFileCsv, faFileExcel, faFilePdf, faSpinner, faChevronDown, faBuilding } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../../components/ToastProvider';
 import downloadExportFile from '../../../util/downloadExportFile';
+import GlassDropdown from '../../../components/GlassDropdown';
 
-export default function AnalyticsExportMenu() {
+export default function AnalyticsExportMenu({ companies = [] }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const menuRef = useRef(null);
 
   const toggle = () => {
@@ -39,7 +41,8 @@ export default function AnalyticsExportMenu() {
     setIsExporting(true);
     setIsOpen(false);
     try {
-      await downloadExportFile(endpoint, defaultFilename, toast, t);
+      const finalEndpoint = selectedCompanyId ? `${endpoint}?companyId=${selectedCompanyId}` : endpoint;
+      await downloadExportFile(finalEndpoint, defaultFilename, toast, t);
     } finally {
       setIsExporting(false);
     }
@@ -53,11 +56,14 @@ export default function AnalyticsExportMenu() {
         onClick={toggle}
         className={`w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-2xl flex items-center justify-between sm:justify-center gap-2.5 font-bold text-xs sm:text-sm text-slate-800 transition-all duration-200 border border-white/80 bg-white/75 hover:bg-white/95 backdrop-blur-md shadow-xs active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed ${
           isOpen ? 'ring-2 ring-[#b3c34c]/50 border-[#b3c34c]/60 shadow-md bg-white' : ''
-        }`}
+        } ${selectedCompanyId ? 'border-[#8a9b1c] bg-[#b3c34c]/10' : ''}`}
       >
         <div className="flex items-center gap-2.5 truncate">
           <FontAwesomeIcon icon={isExporting ? faSpinner : faDownload} spin={isExporting} className="text-[#8a9b1c]" />
-          <span className="truncate">{t('analytics.exportData', 'Exportar Informes')}</span>
+          <span className="truncate">
+            {t('analytics.exportData', 'Exportar Informes')}
+            {selectedCompanyId && ` (${t('analytics.filtered', 'Filtrado')})`}
+          </span>
         </div>
         <FontAwesomeIcon 
           icon={faChevronDown} 
@@ -77,6 +83,31 @@ export default function AnalyticsExportMenu() {
       >
         <div className="overflow-hidden sm:overflow-visible">
           <div className="w-full bg-white/95 backdrop-blur-2xl border border-white/90 shadow-[0_16px_40px_rgba(0,0,0,0.14)] rounded-2xl p-2.5">
+            {companies?.length > 0 && (
+              <div className="mb-2 pb-2 border-b border-slate-100">
+                <div className="flex items-center gap-1.5 px-3 py-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <FontAwesomeIcon icon={faBuilding} className="text-[#8a9b1c]" />
+                  <span>{t('analytics.filterCompany', 'Filtrar por Empresa')}</span>
+                </div>
+                <div className="mt-1">
+                  <GlassDropdown
+                    options={[
+                      { value: '', label: t('analytics.allCompanies', 'Todas las empresas (Global)') },
+                      ...companies.map((comp) => ({
+                        value: comp.id,
+                        label: comp.name
+                      }))
+                    ]}
+                    value={selectedCompanyId}
+                    onChange={(val) => setSelectedCompanyId(val)}
+                    placeholder={t('analytics.allCompanies', 'Todas las empresas (Global)')}
+                    compact={true}
+                    className="w-full text-xs"
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
               {t('analytics.formationExports', 'Formaciones y Asistencias')}
             </div>

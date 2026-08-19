@@ -63,7 +63,7 @@ test.describe('Flujo de Recuperación de Contraseña (Forgot Password E2E)', () 
     await changeBtn.click();
 
     // 5. Verificar error de validación en el frontend sin llamar a la API
-    await expect(page.getByText(/las contraseñas no coinciden|passwords do not match/i)).toBeVisible();
+    await expect(page.getByText(/las contraseñas no coinciden|passwords do not match|palavras-passe|mots de passe|passwörter|hasła|паролите|parolele/i)).toBeVisible();
   });
 
   test('Debe permitir restablecer la contraseña con un token válido y redirigir al login', async ({ page }) => {

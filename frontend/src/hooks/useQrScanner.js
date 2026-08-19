@@ -96,11 +96,16 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
             v.onabort = null;
             v.onerror = null;
             v.onpause = null;
+            try {
+              v.pause();
+            } catch {}
             if (v.srcObject && typeof v.srcObject.getTracks === 'function') {
               v.srcObject.getTracks().forEach(t => {
                 try { t.stop(); } catch (error_) { /* ignore */ }
               });
-              v.srcObject = null;
+              try {
+                v.srcObject = null;
+              } catch {}
             }
           });
         }
@@ -276,7 +281,12 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
         }
       } catch (error_) {
         if (!cancelled) {
-          console.warn('Camera failed to start:', error_);
+          const isAbort = error_?.name === 'AbortError' || String(error_?.message || '').includes('interrupted');
+          if (isAbort) {
+            console.debug('Camera stream play interrupted cleanly:', error_);
+          } else {
+            console.warn('Camera failed to start:', error_);
+          }
           setIsScannerReady(false);
         }
       } finally {
@@ -284,7 +294,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       }
     };
 
-    const timerId = setTimeout(startScanner, 120);
+    const timerId = setTimeout(startScanner, 180);
 
     return () => {
       cancelled = true;

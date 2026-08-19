@@ -41,7 +41,7 @@ class ExportFactoryTests {
 
     @ParameterizedTest
     @ValueSource(strings = {"pdf", "PDF", "Pdf"})
-    void getStrategy_pdfFormats_returnsPdfStrategy(String format) {
+    void testGetStrategyPdfFormatsReturnsPdfStrategy(String format) {
         DataExportStrategy s = factory.getStrategy(format);
         assertSame(pdfStrategy, s);
     }
@@ -49,7 +49,7 @@ class ExportFactoryTests {
     // ─── Null format ────────────────────────────────────────────────────────
 
     @Test
-    void getStrategy_nullFormat_throwsIllegalArgumentException() {
+    void testGetStrategyNullFormatThrowsIllegalArgumentException() {
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
                 () -> factory.getStrategy(null)
@@ -60,7 +60,7 @@ class ExportFactoryTests {
     // ─── Unknown format ──────────────────────────────────────────────────────
 
     @Test
-    void getStrategy_unknownFormat_throwsIllegalArgumentException() {
+    void testGetStrategyUnknownFormatThrowsIllegalArgumentException() {
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
                 () -> factory.getStrategy("xml")
@@ -71,7 +71,7 @@ class ExportFactoryTests {
 
     @ParameterizedTest
     @ValueSource(strings = {"", "   "})
-    void getStrategy_blankFormats_throwsIllegalArgumentException(String format) {
+    void testGetStrategyBlankFormatsThrowsIllegalArgumentException(String format) {
         assertThrows(IllegalArgumentException.class, () -> factory.getStrategy(format));
     }
 }

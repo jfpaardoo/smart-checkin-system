@@ -205,7 +205,10 @@ export default function UserListAdmin() {
                 <Button 
                   disabled={!!exportingType}
                   className="da-btn-primary btn-icon-expand btn-expand-lg bg-[#b3c34c]/80 hover:bg-[#b3c34c] text-slate-900 border-0 shadow-sm disabled:opacity-50" 
-                  onClick={() => handleDownloadExport('users/csv', 'usuarios.csv', 'csv')}
+                  onClick={() => {
+                    const companyQuery = selectedCompany && selectedCompany !== 'NONE' ? `?companyId=${selectedCompany}` : '';
+                    handleDownloadExport(`users/csv${companyQuery}`, 'usuarios.csv', 'csv');
+                  }}
                 >
                     <FontAwesomeIcon icon={exportingType === 'csv' ? faSpinner : faFileCsv} spin={exportingType === 'csv'} />
                     <span className="btn-expand-label ms-1">{t('analytics.exportCsv', 'Exportar CSV')}</span>
@@ -215,7 +218,10 @@ export default function UserListAdmin() {
                 <Button 
                   disabled={!!exportingType}
                   className="da-btn-secondary btn-icon-expand btn-expand-lg bg-red-500/20 hover:bg-red-500/30 text-red-700 border border-red-200/60 backdrop-blur-xl shadow-xs transition duration-300 hover:-translate-y-0.5 disabled:opacity-50" 
-                  onClick={() => handleDownloadExport('users/pdf', 'usuarios.pdf', 'pdf')}
+                  onClick={() => {
+                    const companyQuery = selectedCompany && selectedCompany !== 'NONE' ? `?companyId=${selectedCompany}` : '';
+                    handleDownloadExport(`users/pdf${companyQuery}`, 'usuarios.pdf', 'pdf');
+                  }}
                 >
                     <FontAwesomeIcon icon={exportingType === 'pdf' ? faSpinner : faFilePdf} spin={exportingType === 'pdf'} className="text-red-600" />
                     <span className="btn-expand-label ms-1 font-semibold">{t('analytics.exportPdf', 'Exportar PDF')}</span>
@@ -225,7 +231,10 @@ export default function UserListAdmin() {
                 <Button 
                   disabled={!!exportingType}
                   className="da-btn-secondary btn-icon-expand btn-expand-lg bg-slate-500/30 hover:bg-slate-500/50 text-slate-800 border border-white/60 backdrop-blur-xl shadow-[0_8px_20px_0_rgba(31,38,135,0.07)] transition duration-300 hover:-translate-y-0.5 disabled:opacity-50" 
-                  onClick={() => handleDownloadExport('users/excel', 'usuarios.xlsx', 'excel')}
+                  onClick={() => {
+                    const companyQuery = selectedCompany && selectedCompany !== 'NONE' ? `?companyId=${selectedCompany}` : '';
+                    handleDownloadExport(`users/excel${companyQuery}`, 'usuarios.xlsx', 'excel');
+                  }}
                 >
                     <FontAwesomeIcon icon={exportingType === 'excel' ? faSpinner : faFileExcel} spin={exportingType === 'excel'} className="text-slate-700" />
                     <span className="btn-expand-label ms-1 font-semibold">{t('analytics.exportExcel', 'Exportar Excel')}</span>

@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,10 +22,17 @@ import org.springframework.web.context.request.WebRequest;
 @SuppressWarnings("null")
 public class ExceptionHandlerController {
 
+	private static final Logger logger = LoggerFactory.getLogger(ExceptionHandlerController.class);
+
 	@ExceptionHandler(Exception.class)
 	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
 	public ResponseEntity<ErrorMessage> globalExceptionHandler(Exception ex, WebRequest request) {
-		ErrorMessage message = new ErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now(ZoneId.systemDefault()), ex.getMessage(),
+		logger.error("Unhandled internal server error occurred for request [{}]: {}", request.getDescription(false), ex.getMessage(), ex);
+
+		ErrorMessage message = new ErrorMessage(
+				HttpStatus.INTERNAL_SERVER_ERROR.value(), 
+				LocalDateTime.now(ZoneId.systemDefault()), 
+				"Ha ocurrido un error interno en el servidor.",
 				request.getDescription(false));
 
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
