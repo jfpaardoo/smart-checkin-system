@@ -74,8 +74,10 @@ public class AnalyticsRestController {
 
     @GetMapping("/users")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<List<UserAnalyticsDTO>> getAllUsersAnalytics(@RequestParam(required = false) String search) {
-        return ResponseEntity.ok(analyticsService.getAllUsersAnalytics(search));
+    public ResponseEntity<List<UserAnalyticsDTO>> getAllUsersAnalytics(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer companyId) {
+        return ResponseEntity.ok(analyticsService.getAllUsersAnalytics(search, companyId));
     }
 
     @GetMapping("/users/{userId}")

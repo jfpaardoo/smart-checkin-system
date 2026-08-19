@@ -128,14 +128,32 @@ export default function CloudSettingsAdmin() {
 
           <div>
             {isConnected ? (
-              <Button 
+              <button 
+                type="button"
                 onClick={handleDisconnect}
-                className="btn btn-outline-danger px-4 py-2 rounded-pill fw-bold shadow-sm d-inline-flex align-items-center gap-2"
-                style={{ fontSize: '1rem', transition: 'color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease' }}
+                className="d-inline-flex align-items-center gap-2 px-4 py-2 rounded-pill shadow-sm transition"
+                style={{
+                  background: 'rgba(246, 222, 225, 0.08)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(220, 53, 69, 0.3)',
+                  color: '#dc3545',
+                  fontSize: '0.95rem',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(220, 53, 69, 0.16)';
+                  e.currentTarget.style.borderColor = 'rgba(220, 53, 69, 0.5)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(220, 53, 69, 0.08)';
+                  e.currentTarget.style.borderColor = 'rgba(220, 53, 69, 0.3)';
+                }}
               >
-                <FaUnlink />
-                {t('cloudSettings.disconnectBtn', 'Desconectar cuenta de OneDrive')}
-              </Button>
+                <FaUnlink style={{ color: '#dc3545' }} />
+                <span>{t('cloudSettings.disconnectBtn', 'Desconectar cuenta de OneDrive')}</span>
+              </button>
             ) : (
               <Button 
                 onClick={handleConnectOneDrive}

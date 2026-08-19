@@ -158,7 +158,7 @@ class FormationCheckinFacadeTests {
         when(userService.findCurrentUser()).thenReturn(sampleUser);
         Formation formation = new Formation();
         formation.setId(5);
-        when(formationService.checkoutAttendance(5, EMP_001, "signatureBase64")).thenReturn(formation);
+        when(formationService.checkoutAttendance(5, EMP_001, "signatureBase64", null)).thenReturn(formation);
 
         Formation result = facade.checkoutAttendance(5, "signatureBase64");
         assertNotNull(result);

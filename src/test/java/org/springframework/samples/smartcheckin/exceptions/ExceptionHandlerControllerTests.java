@@ -29,7 +29,7 @@ class ExceptionHandlerControllerTests {
 
 		assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
 		assertNotNull(response.getBody());
-		assertEquals("Global error", response.getBody().getMessage());
+		assertEquals("Ha ocurrido un error interno en el servidor.", response.getBody().getMessage());
 	}
 
 	@Test
@@ -60,4 +60,15 @@ class ExceptionHandlerControllerTests {
 		assertNotNull(response.getBody());
 		assertEquals("Access denied", response.getBody().getMessage());
 	}
+
+	@Test
+	void testIllegalArgumentException() {
+		IllegalArgumentException ex = new IllegalArgumentException("Parámetro no válido");
+		ResponseEntity<ErrorMessage> response = controller.handleIllegalArgumentException(ex, webRequest);
+
+		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+		assertNotNull(response.getBody());
+		assertEquals("Parámetro no válido", response.getBody().getMessage());
+	}
 }
+

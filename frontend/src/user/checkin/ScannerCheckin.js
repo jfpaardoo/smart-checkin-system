@@ -1,14 +1,17 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faQrcode, faKeyboard, faCamera, faCalendarCheck, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faQrcode, faKeyboard, faCalendarCheck, faSpinner, faLocationDot, faCheckCircle, faCameraRotate, faCamera } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '../../components/ToastProvider';
-import GlassDropdown from '../../components/GlassDropdown';
-import { useQrScanner } from '../../hooks/useQrScanner';
+import api from '../../services/api';
 import ManualCheckinForm from './components/ManualCheckinForm';
 import SignatureStep from './components/SignatureStep';
+import GlassDropdown from '../../components/GlassDropdown';
+import { useQrScanner } from '../../hooks/useQrScanner';
+import { formatDate } from '../../utils/dateUtils';
+import { saveOfflineCheckin, initOfflineSync } from '../../util/offlineQueue';
 
 const parseRawInput = (rawInput) => {
   try {
@@ -21,22 +24,6 @@ const parseRawInput = (rawInput) => {
     };
   } catch {
     return { token: rawInput };
-  }
-};
-
-const getUserGeolocation = async () => {
-  if (typeof navigator === 'undefined' || !("geolocation" in navigator)) return {};
-  try {
-    const pos = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 5000 });
-    });
-    return {
-      userLat: pos.coords.latitude,
-      userLng: pos.coords.longitude
-    };
-  } catch (err) {
-    console.warn("Geolocalización del usuario fallida", err);
-    return {};
   }
 };
 
@@ -53,23 +40,71 @@ export default function ScannerCheckin() {
   const [formationDetails, setFormationDetails] = useState(null);
 
   const [isManualInput, setIsManualInput] = useState(false);
+  const [gpsCoords, setGpsCoords] = useState({});
+  const [gpsStatus, setGpsStatus] = useState('prompt'); // 'prompt', 'granted', 'denied', 'unsupported'
 
-  // Hook maneja la lógica de las cámaras y validación del código
-  const {
-    cameras,
-    selectedCameraId,
-    setSelectedCameraId,
+  const requestGps = useCallback(async () => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation || navigator.webdriver || (typeof window !== 'undefined' && (window.__PLAYWRIGHT__ || window.Cypress))) {
+      setGpsStatus('unsupported');
+      return {};
+    }
+
+    const gpsPromise = (async () => {
+      const getPos = (highAccuracy, timeoutMs, maxAge = 10000) => {
+        return new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, { 
+            enableHighAccuracy: highAccuracy, 
+            timeout: timeoutMs, 
+            maximumAge: maxAge 
+          });
+        });
+      };
+
+      try {
+        const pos = await getPos(false, 1500, 30000);
+        const coords = { userLat: pos.coords.latitude, userLng: pos.coords.longitude };
+        setGpsCoords(coords);
+        setGpsStatus('granted');
+        return coords;
+      } catch {
+        setGpsStatus('denied');
+        return {};
+      }
+    })();
+
+    const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({}), 1800));
+    return Promise.race([gpsPromise, timeoutPromise]);
+  }, []);
+
+  // Solicitar GPS al montar la vista e inicializar sincronizador offline
+  useEffect(() => {
+    requestGps();
+    const cleanupSync = initOfflineSync(api, toast, t);
+    return () => {
+      if (cleanupSync) cleanupSync();
+    };
+  }, [requestGps, toast, t]);
+
+  // Hook personalizado de la cámara (Reemplaza al Html5QrcodeScanner directo)
+  const isScanningEnabled = !isManualInput && !needsSignature && !successModal;
+  
+  const { 
+    cameras, 
+    selectedCameraId, 
+    setSelectedCameraId, 
+    toggleCamera, 
+    facingMode,
     isScannerReady,
-    resetScannerState,
-    toggleCamera,
-    hasMultipleCameras
-  } = useQrScanner('qr-reader', !isManualInput && !needsSignature && !successModal, (decodedText) => {
-    toast.success(t('checkin.qrDetected', 'Código QR detectado.'));
-    handleCheckinExecution(decodedText);
-  });
+    resumeScanning
+  } = useQrScanner(
+    "qr-reader",
+    isScanningEnabled,
+    (decodedText) => {
+      handleCheckinExecution(decodedText);
+    }
+  );
 
   const resetScanner = () => {
-    resetScannerState();
     setNeedsSignature(false);
     pendingTokenRef.current = '';
     setIsManualInput(false);
@@ -83,42 +118,35 @@ export default function ScannerCheckin() {
 
   const handleCheckinExecution = async (rawInput, signature = null) => {
     setLoading(true);
+    let payload;
     try {
       const basePayload = parseRawInput(rawInput);
-      const coords = await getUserGeolocation();
-      const payload = {
+      const coords = gpsCoords.userLat ? gpsCoords : await requestGps();
+
+      if (!coords.userLat && !basePayload.userLat && !navigator.webdriver && !(typeof window !== 'undefined' && (window.__PLAYWRIGHT__ || window.Cypress))) {
+        toast.warning(t('checkin.gpsMissingWarning', 'No se ha detectado ubicación GPS. Por favor, autoriza la ubicación en tu navegador si el administrador exige control de distancia.'));
+      }
+
+      payload = {
         ...basePayload,
         ...coords,
         ...(signature ? { signature } : {})
       };
 
-      const response = await fetch('/api/v1/checkins/qr-fichaje', {
-        credentials: 'include',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(payload)
+      const res = await api.post('/checkins/qr-fichaje', payload, {
+        validateStatus: status => (status >= 200 && status < 300) || status === 202
       });
 
-      if (response.status === 202) {
-        const data = await response.json();
-        if (data.needsSignature) {
-          pendingTokenRef.current = payload.token;
-          setNeedsSignature(true);
-          toast.info(t('checkin.signatureRequiredInfo', 'Se requiere su firma para registrar la salida.'));
-          setLoading(false);
-          return;
-        }
+      if (res.status === 202 && res.data?.needsSignature) {
+        pendingTokenRef.current = payload.token;
+        setIsManualInput(false);
+        setNeedsSignature(true);
+        toast.info(t('checkin.signatureRequiredInfo', 'Se requiere su firma para registrar la salida.'));
+        setLoading(false);
+        return;
       }
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.message || t('checkin.processError', 'Error al procesar la solicitud'));
-      }
-
-      const data = await response.json();
+      const data = res.data;
       setFormationDetails({
         name: data.formationName || data.formation?.name || t('formations.title', 'Formación'),
         description: data.checkin?.type === 'ENTRADA' ? t('checkin.checkinRecorded', 'Entrada registrada con éxito') : t('checkin.checkoutRecorded', 'Salida registrada con éxito'),
@@ -129,90 +157,127 @@ export default function ScannerCheckin() {
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      resetScanner();
-      toast.error(error.message || t('checkin.processError', 'Error al procesar la solicitud'));
+      resumeScanning();
+
+      // Si no hay conexión a internet o falló por error de red
+      if ((typeof navigator !== 'undefined' && !navigator.onLine) || !error.response) {
+        if (payload) {
+          await saveOfflineCheckin(payload);
+          toast.info(t('checkin.savedOffline', 'Sin conexión: Fichaje guardado localmente en tu dispositivo. Se sincronizará automáticamente al recuperar cobertura.'));
+          setFormationDetails({
+            name: t('formations.title', 'Fichaje Guardado Offline'),
+            description: t('checkin.offlineQueued', 'Tu registro ha quedado almacenado en el dispositivo y se enviará al recuperar conexión.'),
+            formationDate: new Date().toISOString(),
+            type: 'ENTRADA'
+          });
+          setSuccessModal(true);
+          return;
+        }
+      }
+
+      const errMsg = error.response?.data?.message || error.message || t('checkin.processError', 'Error al procesar la solicitud');
+      toast.error(errMsg);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="da-container flex justify-center items-center min-h-screen w-full">
-        <div className="bg-white/70 backdrop-blur-md rounded-[28px] p-8 border border-white/60 shadow-lg text-center flex flex-col items-center gap-4 max-w-[400px] w-full mx-4">
-          <FontAwesomeIcon icon={faSpinner} className="fa-spin text-3xl" style={{ color: 'var(--da-primary)' }} />
-          <p className="text-slate-700 font-semibold mb-0 text-lg">
-            {t('checkin.processing', 'Procesando registro...')}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="da-container flex flex-col justify-center min-h-screen py-10">
-      <div className="da-card mx-auto w-full max-w-[600px] p-8">
-        
-        <div style={{ display: (!isManualInput && !needsSignature) ? 'block' : 'none' }}>
-          <div className="text-center mb-6">
-            <FontAwesomeIcon icon={faQrcode} size="3x" style={{ color: 'var(--da-primary)' }} className="mb-4" />
-            <h2 className="text-slate-800 font-bold text-3xl mb-2">
-              {t('checkin.scanQr', 'Escanear el QR')}
-            </h2>
-            <p className="text-slate-600 text-lg">
-              {t('checkin.qrSubtitle', 'Enfoca el código QR de la formación con tu cámara')}
+    <div className="da-container flex flex-col justify-center items-center min-h-[calc(100vh-80px)] py-8 relative">
+      {/* Overlay de carga */}
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white/95 backdrop-blur-xl rounded-[28px] p-8 border border-white shadow-2xl text-center flex flex-col items-center gap-4 max-w-[320px] w-full mx-4 animate-in fade-in zoom-in-95 duration-200">
+            <FontAwesomeIcon icon={faSpinner} className="fa-spin text-4xl" style={{ color: 'var(--da-primary)' }} />
+            <p className="text-slate-800 font-bold mb-0 text-base">
+              {t('checkin.processing', 'Procesando registro...')}
             </p>
           </div>
+        </div>
+      )}
 
-          <div className="scanner-section text-center">
-            {hasMultipleCameras && (
-              <div className="flex justify-center items-center gap-3 mb-4 mx-auto max-w-[340px]">
-                <div className="flex-1">
+      <div className="da-card mx-auto w-full max-w-[600px] p-6 sm:p-8 shadow-xl">
+        
+        <div style={{ display: isScanningEnabled ? 'block' : 'none' }}>
+          <div className="text-center mb-6">
+            <FontAwesomeIcon icon={faQrcode} size="3x" style={{ color: 'var(--da-primary)' }} className="mb-4" />
+            <h2 className="text-slate-800 font-bold text-2xl sm:text-3xl mb-2">
+              {t('checkin.scanQr', 'Escanear el QR')}
+            </h2>
+            <p className="text-slate-600 text-sm sm:text-base mb-3">
+              {t('checkin.qrSubtitle', 'Enfoca el código QR de la formación con tu cámara')}
+            </p>
+
+            <div className="flex items-center justify-center gap-2 mb-3 mx-auto max-w-[380px]">
+              {gpsStatus === 'granted' ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+                  <FontAwesomeIcon icon={faCheckCircle} className="text-emerald-500" />
+                  {t('checkin.gpsActive', 'Ubicación GPS verificada')}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={requestGps}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition shadow-2xs cursor-pointer"
+                  title={t('checkin.enableGpsTooltip', 'Pulsa para conceder permiso de ubicación')}
+                >
+                  <FontAwesomeIcon icon={faLocationDot} className="text-amber-600" />
+                  {t('checkin.enableGps', 'Permitir acceso a ubicación GPS')}
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="scanner-section text-center flex flex-col items-center">
+            <div className="mb-3 w-full flex items-center justify-center gap-2" style={{ maxWidth: '360px' }}>
+              {cameras && cameras.length > 1 && (
+                <div className="flex-1" style={{ minWidth: 0 }}>
                   <GlassDropdown
                     options={cameras}
                     value={selectedCameraId}
                     onChange={(camId) => setSelectedCameraId(camId)}
-                    placeholder={t('dashboard.selectCamera')}
+                    placeholder={t('checkin.selectCamera', 'Seleccionar cámara')}
                   />
                 </div>
-                <button
-                  type="button"
-                  onClick={toggleCamera}
-                  className="px-3.5 py-2 rounded-2xl bg-white/70 hover:bg-white text-slate-700 hover:text-[#8a9e29] border border-white/80 shadow-xs transition hover:scale-105 cursor-pointer flex items-center gap-1.5 text-xs font-bold"
-                  title={t('checkin.switchCamera', 'Alternar Cámara')}
-                >
-                  <FontAwesomeIcon icon={faCamera} className="text-sm text-[#8a9e29]" />
-                  <span className="hidden sm:inline">{t('checkin.switchCamera', 'Alternar')}</span>
-                </button>
-              </div>
-            )}
+              )}
+              <button 
+                type="button" 
+                className="da-btn da-btn-secondary px-3 py-2 rounded-full text-xs font-semibold shrink-0 d-inline-flex align-items-center gap-2" 
+                onClick={toggleCamera}
+                title={facingMode === 'environment' 
+                  ? t('checkin.useFrontCamera', 'Cambiar a cámara frontal') 
+                  : t('checkin.useBackCamera', 'Cambiar a cámara trasera')}
+              >
+                <FontAwesomeIcon icon={faCameraRotate} />
+                <span className="d-none d-sm-inline">
+                  {facingMode === 'environment' 
+                    ? t('checkin.useFrontCamera', 'Frontal') 
+                    : t('checkin.useBackCamera', 'Trasera')}
+                </span>
+              </button>
+            </div>
 
-            {!isScannerReady && (
-              <div className="p-4 text-center text-slate-500 mx-auto mb-2">
-                <FontAwesomeIcon icon={faCamera} className="fa-spin mb-2" size="2x" />
-                <p className="mb-0">{t('checkin.startingCamera', 'Iniciando cámara...')}</p>
-              </div>
-            )}
-            <div className="px-3 px-md-4">
+            <div 
+              className="w-full rounded-2xl overflow-hidden shadow-md relative flex items-center justify-center border border-white/20"
+              style={{ maxWidth: '360px', aspectRatio: '1 / 1', backgroundColor: '#000000' }}
+            >
+              {!isScannerReady && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-slate-900 text-slate-200 p-4">
+                  <FontAwesomeIcon icon={faCamera} className="fa-spin text-3xl text-emerald-400" />
+                  <p className="text-xs font-semibold text-slate-300 mb-0">
+                    {t('checkin.startingCamera', 'Iniciando cámara...')}
+                  </p>
+                </div>
+              )}
               <div 
                 id="qr-reader" 
-                className="mx-auto"
-                style={{ 
-                  width: '100%', 
-                  maxWidth: '400px',
-                  borderRadius: '24px', 
-                  overflow: 'hidden', 
-                  border: isScannerReady ? '2px solid rgba(255, 255, 255, 0.5)' : 'none',
-                  boxShadow: isScannerReady ? '0 10px 30px rgba(0,0,0,0.08)' : 'none',
-                  height: isScannerReady ? 'auto' : '0px',
-                  opacity: isScannerReady ? 1 : 0
-                }}
+                style={{ width: '100%', height: '100%' }}
               />
             </div>
 
-            <div className="mt-4 pt-2">
+            <div className="mt-6 pt-2 flex flex-col items-center gap-3 w-full">
               <button 
                 type="button" 
-                className="da-btn da-btn-secondary py-3 px-4 w-100" 
-                style={{ maxWidth: '350px' }}
+                className="da-btn da-btn-secondary py-3 px-4 w-full text-xs sm:text-sm" 
+                style={{ maxWidth: '360px' }}
                 onClick={() => setIsManualInput(true)}
               >
                 <FontAwesomeIcon icon={faKeyboard} className="me-2" />
@@ -269,7 +334,7 @@ export default function ScannerCheckin() {
             <div className="p-3 mx-auto bg-slate-50 rounded-xl border border-slate-200 inline-block shadow-sm">
               <p className="mb-0 font-medium text-slate-700">
                 <FontAwesomeIcon icon={faCalendarCheck} className="me-2" style={{ color: 'var(--da-primary)' }} />
-                {t('checkin.dateLabel', 'Fecha')}: {new Date(formationDetails.formationDate).toLocaleString()}
+                {t('checkin.dateLabel', 'Fecha')}: {formatDate(formationDetails.formationDate)}
               </p>
             </div>
           )}

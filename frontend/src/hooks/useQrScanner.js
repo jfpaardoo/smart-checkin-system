@@ -1,21 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { useTranslation } from 'react-i18next';
 
 /**
  * Emite una vibración háptica suave y un chime de confirmación
  */
 function triggerHapticAndAudio() {
-  // 1. Vibración háptica en móviles
   try {
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       navigator.vibrate([80, 40, 80]);
     }
-  } catch (e) {
-    console.debug('Haptic feedback not supported', e);
+  } catch (error_) {
+    console.debug('Haptic feedback not supported', error_);
   }
 
-  // 2. Chime de confirmación auditivo
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (AudioContext) {
@@ -24,8 +21,8 @@ function triggerHapticAndAudio() {
       const gain = ctx.createGain();
 
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, ctx.currentTime); // Nota A5
-      osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.12); // Nota A6
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.12);
 
       gain.gain.setValueAtTime(0.15, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
@@ -36,126 +33,268 @@ function triggerHapticAndAudio() {
       osc.start();
       osc.stop(ctx.currentTime + 0.16);
     }
-  } catch (e) {
-    console.debug('Audio chime failed', e);
+  } catch (error_) {
+    console.debug('Audio chime failed', error_);
   }
 }
 
+function formatCameraLabel(device, index) {
+  const l = (device.label || '').toLowerCase();
+  if (l.includes('back') || l.includes('trasera') || l.includes('rear') || l.includes('environment')) {
+    if (l.includes('ultra') || l.includes('wide') || l.includes('gran')) return `Cámara Trasera (Gran Angular)`;
+    if (l.includes('tele') || l.includes('zoom')) return `Cámara Trasera (Teleobjetivo)`;
+    if (l.includes('macro')) return `Cámara Trasera (Macro)`;
+    return `Cámara Trasera Principal`;
+  }
+  if (l.includes('front') || l.includes('delantera') || l.includes('user') || l.includes('selfie')) {
+    return `Cámara Frontal`;
+  }
+  return device.label || `Cámara ${index + 1}`;
+}
+
 export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
-  const { t } = useTranslation();
   const [cameras, setCameras] = useState([]);
-  const [selectedCameraId, setSelectedCameraId] = useState('');
+  const [selectedCameraId, setSelectedCameraId] = useState(() => {
+    try {
+      return localStorage.getItem('da_preferred_camera') || null;
+    } catch {
+      return null;
+    }
+  });
+  const [facingMode, setFacingMode] = useState('environment');
   const [isScannerReady, setIsScannerReady] = useState(false);
+  const [scannerKey, setScannerKey] = useState(0);
+
   const html5QrcodeRef = useRef(null);
-  const scannedRef = useRef(false);
+  const scanLockRef = useRef(false);
+  const isOperatingRef = useRef(false);
 
   const onScanSuccessRef = useRef(onScanSuccess);
   useEffect(() => { onScanSuccessRef.current = onScanSuccess; }, [onScanSuccess]);
 
-  // Stop scanner safely, clearing leftover DOM nodes
+  // Parada segura del escáner y liberación de pistas de vídeo
   const stopScannerSafely = useCallback(async (scanner, containerId) => {
-    if (!scanner) return;
-    try {
-      if (typeof scanner.getState === 'function') {
-        const state = scanner.getState();
-        if (state === 2 || state === 3) {
+    if (scanner) {
+      try {
+        const isScanning = typeof scanner.isScanning === 'boolean' 
+          ? scanner.isScanning 
+          : (typeof scanner.getState === 'function' && scanner.getState() === 2);
+        if (isScanning) {
           await scanner.stop();
         }
-      } else if (scanner.isScanning) {
-        await scanner.stop();
+      } catch (error_) {
+        console.debug('Safe scanner stop exception:', error_);
       }
-    } catch (err) {
-      console.debug('Safe scanner stop suppressed exception', err);
     }
+
     try {
       if (containerId) {
         const el = document.getElementById(containerId);
-        if (el) el.innerHTML = '';
+        if (el) {
+          const videos = el.querySelectorAll('video');
+          videos.forEach(v => {
+            v.onabort = null;
+            v.onerror = null;
+            v.onpause = null;
+            try {
+              v.pause();
+            } catch {}
+            if (v.srcObject && typeof v.srcObject.getTracks === 'function') {
+              v.srcObject.getTracks().forEach(t => {
+                try { t.stop(); } catch (error_) { /* ignore */ }
+              });
+              try {
+                v.srcObject = null;
+              } catch {}
+            }
+          });
+        }
       }
-    } catch { /* ignore */ }
+    } catch (error_) {
+      console.debug('DOM stream teardown ignored:', error_);
+    }
   }, []);
 
-  const loadAvailableCameras = useCallback(async () => {
+  // Enumerar dispositivos de vídeo de forma pasiva y auto-seleccionar por defecto
+  const refreshCameraListSafely = useCallback(async () => {
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.enumerateDevices) return;
     try {
-      const devices = await Html5Qrcode.getCameras();
-      if (!devices || devices.length === 0) return null;
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoInputs = devices.filter(d => d.kind === 'videoinput');
+      if (videoInputs.length > 0) {
+        const formatted = videoInputs.map((d, index) => ({
+          value: d.deviceId,
+          label: formatCameraLabel(d, index)
+        }));
+        setCameras(formatted);
 
-      const camOptions = devices.map(d => ({
-        value: d.id,
-        label: d.label || `${t('common.camera', 'Cámara')} ${d.id}`
-      }));
-      setCameras(camOptions);
-
-      const backCamera = devices.find(d => 
-        d.label.toLowerCase().includes('back') || 
-        d.label.toLowerCase().includes('rear') || 
-        d.label.toLowerCase().includes('trasera') ||
-        d.label.toLowerCase().includes('environment') ||
-        d.label.toLowerCase().includes('externa')
-      );
-
-      return backCamera ? backCamera.id : devices[0].id;
-    } catch (err) {
-      console.debug('Initial getCameras before permission (will retry on start):', err);
-      return null;
-    }
-  }, [t]);
-
-  // Fetch cameras once
-  useEffect(() => {
-    let isMounted = true;
-    loadAvailableCameras().then(defaultCameraId => {
-      if (defaultCameraId && isMounted) {
-        setSelectedCameraId(defaultCameraId);
+        // Auto-seleccionar por defecto si no está seleccionada
+        setSelectedCameraId(currentId => {
+          if (currentId && formatted.some(c => c.value === currentId)) {
+            return currentId;
+          }
+          // Priorizar cámara trasera principal
+          const backCam = formatted.find(c => 
+            c.label.includes('Principal') || 
+            c.label.toLowerCase().includes('trasera') || 
+            c.label.toLowerCase().includes('back')
+          );
+          const autoChosen = backCam ? backCam.value : formatted[0].value;
+          try {
+            localStorage.setItem('da_preferred_camera', autoChosen);
+          } catch {}
+          return autoChosen;
+        });
       }
-    });
-    return () => { isMounted = false; };
-  }, [loadAvailableCameras]);
+    } catch (err) {
+      console.debug('Safe device enumeration deferred:', err);
+    }
+  }, []);
 
-  // Handle scanner lifecycle
+  // Asegurar atributos playsinline y autoplay para WebKit / iOS Safari
+  const enforceVideoPlaybackOnIOS = useCallback((containerId) => {
+    try {
+      const container = document.getElementById(containerId);
+      if (container) {
+        const video = container.querySelector('video');
+        if (video) {
+          video.setAttribute('playsinline', 'true');
+          video.setAttribute('webkit-playsinline', 'true');
+          video.setAttribute('muted', 'true');
+          video.muted = true;
+          video.playsInline = true;
+          video.autoplay = true;
+          if (video.paused) {
+            video.play().catch(e => console.debug('Video auto-play resume:', e));
+          }
+        }
+      }
+    } catch (e) {
+      console.debug('Playsinline enforcement ignored:', e);
+    }
+  }, []);
+
+  // Iniciar instancia de escaneo con resolución en cascada compatible con iOS/Android
+  const executeStart = useCallback(async (scanner, scanConfig, onSuccess) => {
+    // 1. Si el usuario seleccionó un dispositivo concreto por ID
+    if (selectedCameraId) {
+      try {
+        await scanner.start(selectedCameraId, scanConfig, onSuccess, () => {});
+        return;
+      } catch (error_) {
+        console.warn('Selected device start failed, falling back to facingMode:', error_);
+      }
+    }
+
+    // 2. Intentar con facingMode deseado (preferido por iOS/Android)
+    try {
+      await scanner.start({ facingMode }, scanConfig, onSuccess, () => {});
+      return;
+    } catch (error_) {
+      console.debug('Requested facingMode unavailable:', error_);
+    }
+
+    // 3. Fallback a facingMode opuesto
+    const alternateFacing = facingMode === 'environment' ? 'user' : 'environment';
+    try {
+      await scanner.start({ facingMode: alternateFacing }, scanConfig, onSuccess, () => {});
+      return;
+    } catch (error_) {
+      console.debug('Alternate facingMode unavailable:', error_);
+    }
+
+    // 4. Fallback final usando enumerateDevices pasivo
+    if (navigator?.mediaDevices?.enumerateDevices) {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(d => d.kind === 'videoinput');
+      if (videoDevices.length > 0) {
+        await scanner.start(videoDevices[0].deviceId, scanConfig, onSuccess, () => {});
+        return;
+      }
+    }
+
+    throw new Error('No camera hardware found');
+  }, [facingMode, selectedCameraId]);
+
+  // Ciclo de vida del escáner
   useEffect(() => {
-    if (!isScanningEnabled || !elementId) return;
+    if (!isScanningEnabled || !elementId) {
+      setIsScannerReady(false);
+      stopScannerSafely(html5QrcodeRef.current, elementId);
+      return;
+    }
 
     let cancelled = false;
-    scannedRef.current = false;
+    scanLockRef.current = false;
 
     const handleSuccess = (decodedText) => {
-      if (scannedRef.current || cancelled) return;
-      scannedRef.current = true;
+      if (scanLockRef.current || cancelled) return;
+      scanLockRef.current = true;
       triggerHapticAndAudio();
-      stopScannerSafely(html5QrcodeRef.current, elementId);
       onScanSuccessRef.current?.(decodedText);
     };
 
     const startScanner = async () => {
-      if (cancelled) return;
+      if (cancelled || isOperatingRef.current) return;
       const container = document.getElementById(elementId);
       if (!container) return;
 
-      const html5Qrcode = new Html5Qrcode(elementId);
-      html5QrcodeRef.current = html5Qrcode;
-
-      // Use selected camera ID if available, otherwise default to back camera (facingMode: environment)
-      // This immediately triggers the browser permission modal on Android/Samsung without blocking on getCameras()
-      const cameraConfig = selectedCameraId || { facingMode: 'environment' };
+      isOperatingRef.current = true;
 
       try {
-        await html5Qrcode.start(
-          cameraConfig,
-          { fps: 10, qrbox: { width: 250, height: 250 } },
-          handleSuccess,
-          () => {} // Ignore continuous decode errors
-        );
-        if (!cancelled) {
-          setIsScannerReady(true);
-          await loadAvailableCameras();
+        if (html5QrcodeRef.current) {
+          await stopScannerSafely(html5QrcodeRef.current, elementId);
+          html5QrcodeRef.current = null;
         }
-      } catch (err) {
-        console.error('Error starting scanner:', err);
+        if (cancelled) return;
+
+        // Desactivar BarcodeDetector experimental (causa congelación en iOS Safari / WebKit)
+        const html5Qrcode = new Html5Qrcode(elementId, {
+          experimentalFeatures: { useBarCodeDetectorIfSupported: false },
+          verbose: false
+        });
+        html5QrcodeRef.current = html5Qrcode;
+
+        const scanConfig = { 
+          fps: 10,
+          qrbox: (viewfinderWidth, viewfinderHeight) => {
+            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            const edgeSize = Math.floor(minEdge * 0.72);
+            return {
+              width: Math.max(edgeSize, 180),
+              height: Math.max(edgeSize, 180)
+            };
+          },
+          aspectRatio: 1.0,
+          disableFlip: false
+        };
+
+        await executeStart(html5Qrcode, scanConfig, handleSuccess);
+        
+        if (!cancelled) {
+          // Forzar compatibilidad de reproducción inline en iOS
+          enforceVideoPlaybackOnIOS(elementId);
+          setIsScannerReady(true);
+
+          // Actualizar lista de cámaras de forma pasiva y fijar la por defecto
+          refreshCameraListSafely();
+        }
+      } catch (error_) {
+        if (!cancelled) {
+          const isAbort = error_?.name === 'AbortError' || String(error_?.message || '').includes('interrupted');
+          if (isAbort) {
+            console.debug('Camera stream play interrupted cleanly:', error_);
+          } else {
+            console.warn('Camera failed to start:', error_);
+          }
+          setIsScannerReady(false);
+        }
+      } finally {
+        isOperatingRef.current = false;
       }
     };
 
-    const timerId = setTimeout(startScanner, 100);
+    const timerId = setTimeout(startScanner, 180);
 
     return () => {
       cancelled = true;
@@ -163,27 +302,62 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       setIsScannerReady(false);
       stopScannerSafely(html5QrcodeRef.current, elementId);
     };
-  }, [isScanningEnabled, selectedCameraId, elementId, stopScannerSafely, loadAvailableCameras]);
+  }, [isScanningEnabled, facingMode, selectedCameraId, elementId, scannerKey, stopScannerSafely, executeStart, enforceVideoPlaybackOnIOS, refreshCameraListSafely]);
+
+  // Reanuda la detección de QR tras un fallo sin reiniciar el hardware de la cámara
+  const resumeScanning = useCallback(() => {
+    setTimeout(() => {
+      scanLockRef.current = false;
+    }, 1200);
+  }, []);
 
   const resetScannerState = useCallback(() => {
-    scannedRef.current = false;
+    scanLockRef.current = false;
+    setScannerKey(k => k + 1);
   }, []);
 
   const toggleCamera = useCallback(() => {
-    if (cameras.length <= 1) return;
-    const currentIndex = cameras.findIndex(c => c.value === selectedCameraId);
-    const nextIndex = (currentIndex + 1) % cameras.length;
-    setSelectedCameraId(cameras[nextIndex].value);
-  }, [cameras, selectedCameraId]);
+    const nextFacing = facingMode === 'environment' ? 'user' : 'environment';
+    setFacingMode(nextFacing);
+    
+    // Buscar la cámara correspondiente en la lista
+    if (cameras && cameras.length > 0) {
+      const match = cameras.find(c => 
+        nextFacing === 'user' 
+          ? (c.label.toLowerCase().includes('front') || c.label.toLowerCase().includes('delantera'))
+          : (c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('trasera'))
+      );
+      if (match) {
+        setSelectedCameraId(match.value);
+        try { localStorage.setItem('da_preferred_camera', match.value); } catch {}
+      } else {
+        setSelectedCameraId(null);
+      }
+    } else {
+      setSelectedCameraId(null);
+    }
+    
+    setScannerKey(k => k + 1);
+  }, [facingMode, cameras]);
+
+  const handleSelectCamera = useCallback((camId) => {
+    setSelectedCameraId(camId);
+    try {
+      if (camId) localStorage.setItem('da_preferred_camera', camId);
+    } catch {}
+    setScannerKey(k => k + 1);
+  }, []);
 
   return {
     cameras,
     selectedCameraId,
-    setSelectedCameraId,
+    setSelectedCameraId: handleSelectCamera,
     isScannerReady,
+    resumeScanning,
     resetScannerState,
     toggleCamera,
-    hasMultipleCameras: cameras.length > 1,
+    facingMode,
     stopScannerSafely: () => stopScannerSafely(html5QrcodeRef.current, elementId)
   };
 }
+

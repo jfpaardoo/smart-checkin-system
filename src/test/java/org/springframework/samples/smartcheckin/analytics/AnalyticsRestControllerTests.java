@@ -120,9 +120,20 @@ class AnalyticsRestControllerTests {
 	@Test
 	@WithMockUser(authorities = {"ADMIN"})
 	void testGetAllUsersAnalytics() throws Exception {
-		when(analyticsService.getAllUsersAnalytics("john")).thenReturn(List.of());
+		when(analyticsService.getAllUsersAnalytics("john", null)).thenReturn(List.of());
 
 		mockMvc.perform(get(BASE_URL + "/users").param("search", "john")).andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser(authorities = {"ADMIN"})
+	void testGetAllUsersAnalyticsWithCompanyId() throws Exception {
+		when(analyticsService.getAllUsersAnalytics("john", 5)).thenReturn(List.of());
+
+		mockMvc.perform(get(BASE_URL + "/users")
+				.param("search", "john")
+				.param("companyId", "5"))
+				.andExpect(status().isOk());
 	}
 
 	@Test

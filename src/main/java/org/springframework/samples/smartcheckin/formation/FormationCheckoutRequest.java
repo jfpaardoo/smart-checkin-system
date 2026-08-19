@@ -9,4 +9,6 @@ import lombok.Setter;
 public class FormationCheckoutRequest {
     @NotBlank
     private String signature;
+
+    private String token;
 }

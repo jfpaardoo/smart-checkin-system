@@ -86,6 +86,7 @@ public class AuthController {
     private final CompanyService companyService;
     private final HaveIBeenPwnedService haveIBeenPwnedService;
     private final TwoFactorBackupCodeService backupCodeService;
+    private final org.springframework.samples.smartcheckin.auth.session.UserSessionService userSessionService;
     private static final String CAPTCHA_SUCCESS_MESSAGE = "Error: Verificación de seguridad (Captcha) fallida.";
     private static final String HEADER = "X-Forwarded-For";
 
@@ -103,7 +104,8 @@ public class AuthController {
             JwtBlacklistService jwtBlacklistService, EmailNotificationSender emailNotificationSender, PushNotificationSender pushNotificationSender,
             PasswordResetService passwordResetService, JavaMailSender javaMailSender,
             CaptchaService captchaService, CompanyService companyService,
-            HaveIBeenPwnedService haveIBeenPwnedService, TwoFactorBackupCodeService backupCodeService) {
+            HaveIBeenPwnedService haveIBeenPwnedService, TwoFactorBackupCodeService backupCodeService,
+            org.springframework.samples.smartcheckin.auth.session.UserSessionService userSessionService) {
         
         this.userService = userService;
         this.authoritiesService = authoritiesService;
@@ -125,27 +127,45 @@ public class AuthController {
         this.companyService = companyService;
         this.haveIBeenPwnedService = haveIBeenPwnedService;
         this.backupCodeService = backupCodeService;
+        this.userSessionService = userSessionService;
+    }
+
+    private String extractJwtFromRequest(HttpServletRequest req) {
+        String jwt = jwtUtils.getJwtFromCookies(req);
+        if (jwt == null) {
+            String authHeader = req.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                return authHeader.substring(7);
+            }
+        }
+        return jwt;
     }
 
     @PostMapping("/logout")
     public ResponseEntity<MessageResponse> logoutUser(@RequestParam(required = false) String reason) {
-        String jwt = jwtUtils.getJwtFromCookies(request);
-        if (jwt != null) {
-            String currentUsername = null;
-            try {
-                currentUsername = jwtUtils.getUserNameFromJwtToken(jwt);
-            } catch (Exception e) {
-                // Ignore if expired
-            }
-            String clientIp = request.getHeader(HEADER) != null ? request.getHeader(HEADER).split(",")[0].trim() : request.getRemoteAddr();
-            jwtBlacklistService.blacklistToken(jwt);
-            anomalyDetectionService.recordLogout(currentUsername != null ? currentUsername : "anonymous", clientIp, reason != null ? reason : "Manual");
-            ResponseCookie cleanCookie = jwtUtils.getCleanJwtCookie();
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, cleanCookie.toString())
-                    .body(new MessageResponse("Log out successful!"));
+        String jwt = extractJwtFromRequest(request);
+        if (jwt == null) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: No JWT token found in request."));
         }
-        return ResponseEntity.badRequest().body(new MessageResponse("Error: No JWT token found in request."));
+
+        String currentUsername = null;
+        try {
+            currentUsername = jwtUtils.getUserNameFromJwtToken(jwt);
+        } catch (Exception e) {
+            // Ignore if expired
+        }
+        String clientIp = request.getHeader(HEADER) != null ? request.getHeader(HEADER).split(",")[0].trim() : request.getRemoteAddr();
+        jwtBlacklistService.blacklistToken(jwt);
+        if (userSessionService != null) {
+            userSessionService.revokeSessionByToken(jwt);
+        }
+        anomalyDetectionService.recordLogout(currentUsername != null ? currentUsername : "anonymous", clientIp, reason != null ? reason : "Manual");
+        ResponseCookie cleanCookie = jwtUtils.getCleanJwtCookie();
+        var responseBuilder = ResponseEntity.ok();
+        if (cleanCookie != null) {
+            responseBuilder.header(HttpHeaders.SET_COOKIE, cleanCookie.toString());
+        }
+        return responseBuilder.body(new MessageResponse("Log out successful!"));
     }
 
     @PostMapping("/signin")
@@ -270,12 +290,23 @@ public class AuthController {
             return ResponseEntity.badRequest().body(new MessageResponse(CAPTCHA_SUCCESS_MESSAGE));
         }
 
+        boolean userExists = false;
         try {
-            if (userService.findUser(signupRequest.getUsername()) != null) {
-                return ResponseEntity.badRequest().body(new MessageResponse("El nombre de usuario ya se encuentra registrado."));
-            }
-        } catch (ResourceNotFoundException e) {
-            // no hace nada
+            userExists = Boolean.TRUE.equals(userService.existsUser(signupRequest.getUsername())) || userService.findUser(signupRequest.getUsername()) != null;
+        } catch (Exception e) {
+            // User does not exist
+        }
+
+        if (userExists) {
+            return ResponseEntity.badRequest().body(new MessageResponse("El nombre de usuario ya se encuentra registrado."));
+        }
+
+        if (signupRequest.getEmail() != null && Boolean.TRUE.equals(userService.existsByEmail(signupRequest.getEmail()))) {
+            return ResponseEntity.badRequest().body(new MessageResponse("El correo electrónico ya se encuentra registrado."));
+        }
+
+        if (signupRequest.getPersonalCode() != null && Boolean.TRUE.equals(userService.existsByPersonalCode(signupRequest.getPersonalCode()))) {
+            return ResponseEntity.badRequest().body(new MessageResponse("El código personal de 4 dígitos ya se encuentra asignado a otro usuario."));
         }
 
         if (haveIBeenPwnedService.isPasswordPwned(signupRequest.getPassword())) {

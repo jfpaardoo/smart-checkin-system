@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import GlassDropdown from '../../components/GlassDropdown';
 import { useTranslation } from 'react-i18next';
@@ -14,7 +15,13 @@ import AnalyticsEmployeesTab from './components/AnalyticsEmployeesTab';
 import AnalyticsFormationsTab from './components/AnalyticsFormationsTab';
 
 export default function AnalyticsDashboard() {
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'employees' | 'formations'
+  const [searchParams, setSearchParams] = useSearchParams();
+  const rawTab = searchParams.get('tab');
+  const activeTab = ['overview', 'employees', 'formations'].includes(rawTab) ? rawTab : 'overview';
+
+  const handleTabChange = (tab) => {
+    setSearchParams({ tab });
+  };
   const [statistics, setStatistics] = useState([]);
   const [userAnalyticsList, setUserAnalyticsList] = useState([]);
   const [formationAnalyticsList, setFormationAnalyticsList] = useState([]);
@@ -140,7 +147,7 @@ export default function AnalyticsDashboard() {
           <div className="w-full sm:w-auto" style={{ minWidth: '280px' }}>
             <GlassDropdown
               value={activeTab}
-              onChange={(val) => setActiveTab(val)}
+              onChange={handleTabChange}
               options={[
                 { 
                   value: 'overview', 
@@ -187,7 +194,7 @@ export default function AnalyticsDashboard() {
                 </div>
             )}
             <div className="w-full sm:w-auto flex justify-center">
-              <AnalyticsExportMenu />
+              <AnalyticsExportMenu companies={companies} />
             </div>
           </div>
         </div>

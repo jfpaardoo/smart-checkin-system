@@ -27,19 +27,45 @@ const QRGeneratorAdmin = () => {
     const [wsTick, setWsTick] = useState(0);
 
     const [formations] = useFetchState([], `/api/v1/formations`, jwt, null, null);
-
     const [adminCoords, setAdminCoords] = useState(null);
 
     useEffect(() => {
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition((position) => {
+        if (typeof navigator !== 'undefined' && "geolocation" in navigator) {
+            const handleSuccess = (position) => {
                 setAdminCoords({
                     lat: position.coords.latitude,
                     lng: position.coords.longitude
                 });
-            }, (error) => {
-                console.warn("Geolocation not available or permission denied", error);
-            }, { enableHighAccuracy: true });
+            };
+
+            const getPos = (highAccuracy, timeoutMs, maxAge) => {
+                return new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: highAccuracy,
+                        timeout: timeoutMs,
+                        maximumAge: maxAge
+                    });
+                });
+            };
+
+            const locate = async () => {
+                const tiers = [
+                    { high: true, timeout: 4000, maxAge: 15000 },
+                    { high: false, timeout: 6000, maxAge: 60000 },
+                    { high: false, timeout: 8000, maxAge: 600000 }
+                ];
+                for (const tier of tiers) {
+                    try {
+                        const pos = await getPos(tier.high, tier.timeout, tier.maxAge);
+                        handleSuccess(pos);
+                        return;
+                    } catch (error_) {
+                        console.debug("Admin GPS tier deferred:", error_);
+                    }
+                }
+            };
+
+            locate();
         }
     }, []);
 
@@ -120,25 +146,58 @@ const QRGeneratorAdmin = () => {
                     ) : (
                         <div className="d-flex flex-column flex-md-row align-items-center justify-content-center gap-4 gap-lg-5 py-2 my-auto">
                             
-                            <div 
-                                className="qr-code-container qr-code-frame d-flex align-items-center justify-content-center text-center" 
-                                style={{ width: '305px', height: '305px', backgroundColor: '#ffffff', borderRadius: '36px' }}
-                            >
-                                {selectedFormationId ? (
-                                    <div style={fadeStyle}>
-                                        <QRCodeSVG 
-                                            value={buildQrPayload()} 
-                                            size={265} 
-                                            level="M" 
-                                            marginSize={0}
-                                        />
-                                    </div>
-                                ) : (
-                                    <div style={{ color: '#888', fontWeight: '500' }}>
-                                        <p className="mb-0">{t('qr.selectFormationPrompt')}</p>
-                                        <p className="mb-0">{t('qr.selectFormationPrompt2')}</p>
-                                    </div>
-                                )}
+                            <div className="d-flex flex-column align-items-center justify-content-center">
+                                <div 
+                                    className="qr-code-container qr-code-frame d-flex align-items-center justify-content-center text-center" 
+                                    style={{ width: '305px', height: '305px', backgroundColor: '#ffffff', borderRadius: '36px' }}
+                                >
+                                    {selectedFormationId ? (
+                                        <div style={fadeStyle}>
+                                            <QRCodeSVG 
+                                                value={buildQrPayload()} 
+                                                size={265} 
+                                                level="M" 
+                                                marginSize={0}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div style={{ color: '#888', fontWeight: '500' }}>
+                                            <p className="mb-0">{t('qr.selectFormationPrompt')}</p>
+                                            <p className="mb-0">{t('qr.selectFormationPrompt2')}</p>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="mt-3 text-center">
+                                    {adminCoords ? (
+                                        <div 
+                                            className="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill shadow-xs"
+                                            style={{
+                                                background: 'rgba(16, 185, 129, 0.12)',
+                                                border: '1.5px solid rgba(16, 185, 129, 0.4)',
+                                                color: '#065f46',
+                                                fontSize: '0.85rem',
+                                                fontWeight: '700'
+                                            }}
+                                        >
+                                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block' }}></span>
+                                            <span>GPS del Administrador Vinculado</span>
+                                        </div>
+                                    ) : (
+                                        <div 
+                                            className="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill shadow-xs"
+                                            style={{
+                                                background: 'rgba(245, 158, 11, 0.12)',
+                                                border: '1.5px solid rgba(245, 158, 11, 0.4)',
+                                                color: '#92400e',
+                                                fontSize: '0.85rem',
+                                                fontWeight: '700'
+                                            }}
+                                        >
+                                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#f59e0b', display: 'inline-block' }}></span>
+                                            <span>Obteniendo GPS del Administrador...</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="d-flex flex-column align-items-center align-items-md-start text-center text-md-start qr-info-column">

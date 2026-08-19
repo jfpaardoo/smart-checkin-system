@@ -6,31 +6,97 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ---
 
-## [1.0.2](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.0.2) - 2026-08-17
+## [1.1.0](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.1.0) - 2026-08-19
+
+### Añadido (Features)
+- **Control de Versiones y Migraciones de Base de Datos con Flyway**:
+  - Incorporada la infraestructura de migraciones automáticas con `flyway-core` y `flyway-database-postgresql`.
+  - Creado el script de migración inicial de esquema `V1__init_schema.sql` que versiona todas las tablas del sistema (`companies`, `authorities`, `appusers`, `formations`, `formation_attendances`, `checkins`, `audit_logs`, `push_subscriptions`, `user_passkeys`, `password_reset_tokens`, `jwt_blacklisted_tokens`, `cloud_settings`, `platform_statistics`) con restricciones de integridad referencial y datos semilla auditados.
+- **Fichajes Offline con IndexedDB y Auto-Sincronización en PWA**:
+  - Módulo `offlineQueue.js` con almacenamiento local `IndexedDB` para permitir el fichaje mediante código QR en instalaciones sin cobertura de red (almacenes, naves industriales, centros logísticos).
+  - Detección automática del restablecimiento de conexión (`window.ononline`) y sincronización desatendida en segundo plano con notificación toast al usuario.
+- **Filtrado Multi-Empresa en Reportes y Exportaciones de Analítica**:
+  - Parámetro `companyId` integrado en el servicio de analítica (`AnalyticsService`) y en todos los endpoints de exportación en `ExportRestController` (CSV, Excel, PDF para usuarios, asistencias a formaciones y fichajes).
+  - Integrado el componente `GlassDropdown` con diseño Liquid Glass en el menú de exportación del panel analítico (`AnalyticsExportMenu.js`) y en el listado de usuarios (`UserListAdmin.js`).
+- **Sincronización y Persistencia de Filtros en URL**:
+  - Integrado `useSearchParams` en el panel analítico (`AnalyticsDashboard.js`) para sincronizar la pestaña activa (`?tab=overview|employees|formations`), facilitando la compartición y guardado de enlaces a vistas específicas entre administradores.
+- **Observabilidad Cloud y Probes para Contenedores**:
+  - Habilitadas las sondas de salud `liveness` y `readiness` de Spring Boot Actuator para Kubernetes, Docker y plataformas cloud (Render).
+
+### Mejorado (Performance, Seguridad & Refactorización)
+- **Asincronía en Envíos de Correo (`@Async`)**:
+  - Anotado `EmailService.sendEmailWithAttachment` con `@Async("taskExecutor")` para evitar bloqueos del hilo HTTP durante la comunicación SMTP en registros, recuperaciones de contraseña y reportes.
+- **Optimización de Conexiones JPA (`open-in-view=false`)**:
+  - Desactivado Open Session In View para liberar conexiones de base de datos inmediatamente tras la ejecución de los servicios, optimizando el pool HikariCP bajo alta concurrencia.
+- **Sanitización Global de Excepciones del Servidor (500)**:
+  - Enmascarados los mensajes crudos en `ExceptionHandlerController.java` para devolver un mensaje seguro al cliente (`"Ha ocurrido un error interno en el servidor."`) registrando la traza completa únicamente en los logs del servidor.
+- **Resolución Dinámica de Conexiones WebSocket**:
+  - Extraída la función `resolveSocketUrl` en `WebSocketProvider.js` para soportar `REACT_APP_WS_URL`, dominios personalizados y pruebas en redes locales sin URLs hardcodeadas ni ternarias anidadas.
+- **Reducción de Complejidad Cognitiva y Limpieza de Código**:
+  - Refactorizado `AnalyticsService.getAllUsersAnalytics` eliminando sentencias `continue` redundantes y reduciendo la complejidad cognitiva con métodos auxiliares `isEligibleUser` y `matchesSearchQuery`.
+
+---
+
+## [1.0.2](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.0.2) - 2026-08-18
 
 ### Corregido (Bug Fixes) & Mejoras
-- **Persistencia de Sesión y Navegación en Servidor**:
-  - Parametrizado el flag `Secure` de las cookies JWT (`${JWT_COOKIE_SECURE:false}`) en `JwtUtils.java` y `application.properties` para evitar que los navegadores descarten la cookie de sesión en servidores HTTP.
-  - Configurado `SameSite=Lax` en las cookies de autenticación para garantizar la persistencia de la sesión en navegaciones internas entre menús de la aplicación.
+- **Prevención de Cierre de Sesión Involuntario en Escaneo QR**:
+  - Sustituido el código HTTP `401 Unauthorized` por `400 Bad Request` en `CheckinRestController.java` ante códigos QR inválidos, expirados o de formaciones ya registradas, evitando que el interceptor de seguridad de Axios interprete la respuesta como expiración del JWT del usuario y expulse la sesión al login.
+- **Sincronización del Estado de Trabajo (`isWorking`) en Fichaje Global**:
+  - Corregido el método `processCheckinRecord` y el endpoint `checkIn` en `CheckinRestController.java` para actualizar y persistir `user.setIsWorking(type == ENTRADA)` en base de datos, garantizando que el sistema alterne fluidamente entre fichajes de Entrada y solicitudes de Salida con firma obligatoria.
+- **Validación Estricta de Formación en Checkout (Frontend & Backend)**:
+  - **Frontend (`CheckoutModal.js`)**: Comprobación explícita de que el `formationId` contenido en el código QR escaneado coincida con la formación seleccionada (`selectedAtt.formation.id`), mostrando la advertencia *"Este código QR pertenece a otra formación"* y reanudando la cámara sin avanzar a la firma si se escanea un QR erróneo.
+  - **Backend (`FormationService.java`, `FormationRestController.java`, `FormationCheckoutRequest.java`)**: Incorporado el parámetro `token` y validación criptográfica TOTP por ID de formación (`totpService.verifyToken(token, formationId)`) para rechazar peticiones de checkout con tokens ajenos.
+- **Manejador Global de `IllegalArgumentException`**:
+  - Añadido `@ExceptionHandler(IllegalArgumentException.class)` en `ExceptionHandlerController.java` para devolver `400 Bad Request` con mensaje descriptivo ante cualquier violación de regla de negocio, evitando respuestas genéricas `500 Internal Server Error`.
+- **Estandarización de Zonas Horarias (UTC / Local)**:
+  - Forzada la zona horaria UTC en `SmartcheckinApplication.java` mediante `@PostConstruct init() { TimeZone.setDefault(TimeZone.getTimeZone("UTC")); }`, asegurando coherencia temporal idéntica entre entornos de desarrollo local y servidores en la nube (Render).
+  - Unificado el formateo de fechas con `formatDate` en `UserFormationsTable.js` (vista móvil), `ScannerCheckin.js` y `ActiveSessionsTab.js`.
+- **Internacionalización y Soporte Multilingüe Completo (8 Idiomas)**:
+  - Añadidas y sincronizadas todas las claves de traducción de toasts y alertas de escaneo/checkout (`wrongFormationQr`, `gpsMissingWarning`, `useFrontCamera`, `useBackCamera`, `confirmSignature`) en los 8 idiomas soportados: Español (`es`), Inglés (`en`), Portugués (`pt`), Francés (`fr`), Alemán (`de`), Polaco (`pl`), Búlgaro (`bg`) y Rumano (`ro`).
+- **Cámara QR y Soporte Multilente / Multidispositivo (iOS, Android y PC)**:
+  - **Selección Inteligente de Lente Trasera**: Algoritmo `findBestBackCamera` en `useQrScanner.js` que detecta y selecciona por defecto la cámara trasera estándar principal (`0 / main / principal`) en smartphones con múltiples lentes (triple/cuádruple cámara), evitando inicios involuntarios en lentes macro o ultra gran angular.
+  - **Formateo Amigable de Dispositivos**: Nombres limpios y comprensibles en los selectores desplegables (`Cámara Trasera Principal`, `Gran Angular`, `Teleobjetivo`, `Cámara Frontal`).
+  - **Interfaz Compacta y Centrada**: Reubicado el botón de conmutación de cámara en la fila superior junto al desplegable `GlassDropdown`, manteniendo la misma proporción centrada (`aspectRatio: '1 / 1'`) y ajuste `object-fit: cover` en el visor de vídeo tanto en Check-in como en el modal de Checkout.
+  - **Eliminación de Pantallas Negras y Bloqueos de Hardware**: Liberación explícita de los `MediaStreamTrack` y neutralización de los listeners `onabort` antes de transicionar entre lentes, erradicando los errores de consola `Uncaught RenderedCameraImpl video surface onabort()` y `AbortError: The play() request was interrupted`.
+  - **Contenedor Estable durante la Carga**: Establecidas dimensiones fijas e indicador giratorio integrado (*"Iniciando cámara..."*) para prevenir saltos de interfaz o que el cuadro aparezca colapsado/aplastado mientras se conecta el stream de vídeo.
+  - **Protección Nula en Checkout**: Resuelto el error `Cannot read properties of undefined (reading 'length')` en `CheckoutModal.js`.
+- **Enrutamiento SPA y Prevención de Error 403 Forbidden en Recarga (F5)**:
+  - Configurado matcher dinámico en `SecurityConfiguration.java` y forwarder por expresiones regulares en `SpaController.java` para despachar `index.html` ante cualquier ruta web del cliente (presente o futura) sin alterar la protección estricta de los endpoints de la API (`/api/**`, `/ws/**`).
+- **Deduplicación de Sesiones y Revocación en Cierre de Sesión**:
+  - Implementada deduplicación automática por dispositivo en `UserSessionService.java` para evitar acumulación de entradas redundantes de una misma máquina/navegador.
+  - Expiración proactiva de sesiones inactivas (>24h) y revocación explícita del registro de sesión en base de datos al invocar `/api/v1/auth/logout` en `AuthController.java`.
+- **Geolocalización (GPS) Robusta y Prevención de Fichajes sin Coordenadas**:
+  - Estrategia de geolocalización multi-fase en `ScannerCheckin.js` y `QRGeneratorAdmin.js`: si la fijación GPS de alta precisión excede 6 segundos (típico en interiores), conmuta automáticamente a geolocalización por red móvil y Wi-Fi (`enableHighAccuracy: false`).
+  - Añadida cápsula de estado con indicador LED de alto contraste (`GPS Administrador Vinculado`) en `QRGeneratorAdmin.js` para asegurar que el QR proyectado contenga las coordenadas antes del escaneo.
+- **Sistema Automático de Actualizaciones para PWA y Móviles**:
+  - Detección proactiva de nuevas versiones en segundo plano en `PwaUpdateNotification.js` al abrir la app, alternar pestañas (`visibilitychange`) o mediante comprobación periódica cada 15 minutos.
+  - Implementada cápsula de actualización flotante Glassmorphism que permite recargar la app con un solo toque (`SKIP_WAITING`) sin tener que borrar el acceso directo del móvil ni vaciar cachés manualmente.
+  - Configurado `Cache-Control: no-cache, no-store, must-revalidate` en `WebConfig.java` e `index.html` para `index.html` y `sw.js`, permitiendo que el cliente reciba siempre los archivos empaquetados más recientes de forma inmediata.
+- **Diseño Glassmorphism y Accesibilidad**:
+  - Rediseñado el botón "Desconectar cuenta de OneDrive" en `CloudSettingsAdmin.js` con estilo cápsula de cristal translúcido, borde suave y contraste mejorado.
+  - Pantalla de Logout (`frontend/src/auth/logout`) perfectamente centrada en móviles con altura dinámica `100dvh` y botones tipo cápsula idénticos a los de Login y Home.
+- **Persistencia de Sesión y Cookies en iOS WebKit / HTTPS**:
+  - Detección dinámica de HTTPS (`isRequestSecure`: `request.isSecure() || X-Forwarded-Proto: https`) en `JwtUtils.java` para asignar automáticamente el atributo `Secure` en producción, garantizando que iOS Safari y WebKit Standalone (PWA) no descarten la cookie `jwt` en las peticiones `POST` autenticadas de fichaje.
+  - Configurado `SameSite=Lax` y `Path=/` en las cookies de autenticación para garantizar la persistencia de la sesión en navegaciones internas entre menús de la aplicación.
   - Añadido fallback para leer el token desde la cabecera `Authorization: Bearer` en el endpoint `/api/v1/auth/validate`.
-  - **Condicional HSTS en `SecurityConfiguration.java`**: Restringido el envío de la cabecera `Strict-Transport-Security` exclusivamente a conexiones HTTPS reales para evitar que iOS / iPadOS WebKit intente forzar HTTPS y rompa la conexión en servidores HTTP.
-  - **Soporte CORS Flexible**: Configurado `setAllowedOriginPatterns` para admitir orígenes de aplicaciones web PWA y móviles con credenciales.
+  - **Condicional HSTS en `SecurityConfiguration.java`**: Restringido el envío de la cabecera `Strict-Transport-Security` exclusivamente a conexiones HTTPS reales.
+  - **Soporte CORS y Permisos Globales**: Configurado `setAllowedOriginPatterns` y `Permissions-Policy: camera=*, geolocation=*` para garantizar acceso a cámara y GPS en contenedores PWA.
   - **Resiliencia en `PrivateRoute.js`**: Implementada caché de validación en memoria (TTL 30s) y tolerancia a micro-cortes de red/timeouts para que caídas momentáneas de conectividad en móviles no cierren la sesión del usuario.
-- **Compatibilidad de Cámara en Móviles (Samsung Internet / Android)**:
-  - Inicialización directa del escáner en `useQrScanner.js` con `{ facingMode: 'environment' }` (cámara trasera) sin bloquear el ciclo de vida a la espera de `getCameras()`.
-  - Fuerza la aparición inmediata del diálogo modal nativo de permisos de cámara del sistema operativo en dispositivos Samsung y Android donde `enumerateDevices()` no disparaba el prompt.
-- **Permisos de Cámara y Geolocalización en Backend (`Permissions-Policy`)**:
-  - Actualizada la cabecera HTTP de seguridad en `SecurityConfiguration.java` a `camera=(self), geolocation=(self), microphone=(), payment=(), usb=()`.
-  - Permite al navegador solicitar y utilizar la cámara para el escaneo de códigos QR y la geolocalización GPS en los fichajes sin violaciones de política de permisos (`Permissions policy violation / NotAllowedError`).
-- **Permisos y Suscripción a Notificaciones Push**:
-  - Corregida la condición de registro en `NotificationBell.js` evaluando `user.username` en lugar de `user.id` (no presente en el almacenamiento de sesión), asegurando la solicitud nativa de permisos push en el navegador tras iniciar sesión.
-- **Auditoría React Doctor (Puntuación 100/100 en Frontend)**:
-  - **Scroll Pasivo en Móviles**: Incorporada la opción `{ passive: true }` a los eventos `touchstart` en `GlassDropdown.js` y `AnalyticsExportMenu.js` para navegación táctil fluida sin bloquear el hilo principal.
-  - **Accesibilidad (a11y)**: Eliminado `autoFocus` invasivo en `TwoFactorLoginForm.js` y añadida etiqueta `<label htmlFor="disable2faCode">` con `aria-label` en `TwoFactorSettings.js`.
-  - **Rendimiento de Componentes**: Sustituido `useState` por `useRef` para eventos internos (`beforeinstallprompt` y Service Worker) en `PwaInstallPrompt.js`, eliminando re-renderizados innecesarios.
-  - Configuración de reglas de análisis estático en `package.json`.
-- **Estabilidad en Tests E2E Playwright**:
-  - Interceptados endpoints secundarios de credenciales WebAuthn y sesiones en `2fa-flow.spec.js` para evitar redirecciones `401 Unauthorized` a la pantalla de login.
+- **Estabilidad de Arranque y Endpoints en Backend**:
+  - Eliminado el mapeo duplicado del endpoint `@GetMapping("/validate")` en `AuthController.java`, solucionando el fallo `IllegalStateException: Ambiguous mapping` que impedía el despliegue de Spring Boot.
+- **Corrección de Concurrencia en Sesiones y Formaciones (`NonUniqueResultException`)**:
+  - Sustituido `findByTokenHash` por `findFirstByTokenHashOrderByLastActivityAtDesc` y limpieza de registros concurrentes duplicados en `UserSessionService.java`, erradicando el fallo de Hibernate `NonUniqueResultException: 2 results were returned` que provocaba expulsiones inesperadas al login durante la validación de tokens en `AuthTokenFilter`.
+  - Reemplazado `findByFormationAndUser` por `findFirstByFormationAndUserOrderByCheckInDateDesc` en `FormationAttendanceRepository.java` y `FormationService.java` para prevenir errores de base de datos en asistencias duplicadas.
+- **Protección y Flujo de Check-in con QR**:
+  - Protegida la ruta `/checkin` mediante `<PrivateRoute>` en `App.js` para evitar envíos no autenticados (`401 Unauthorized / Full authentication is required`).
+  - Sustituido `fetch` nativo por la instancia estándar de Axios (`api.post`) en `ScannerCheckin.js` para garantizar la transmisión de cookies `HttpOnly` y un formateo consistente de errores.
+  - Implementado overlay de carga flotante centrado (`fixed inset-0`) con `backdrop-blur` en `ScannerCheckin.js`, evitando desplazamientos bruscos del contenedor de la cámara.
+- **Corrección de Registro y Validación de Código de 4 Dígitos**:
+  - Implementada verificación preventiva e individual de `username`, `email` y `personalCode` en `AuthController.java` y `UserRepository.java`.
+  - Corregido el mapeo de errores en `Register.js` que erróneamente informaba de código personal duplicado cuando el conflicto era por email o usuario.
+- **Limpieza Visual y Responsive de Cloudflare Turnstile**:
+  - Eliminado el marco contenedor redundante alrededor de Cloudflare Turnstile en las pantallas de Login, Recuperación de Contraseña y Registro, manteniendo un renderizado limpio, centrado y adaptado a dispositivos móviles.
 
 ---
 

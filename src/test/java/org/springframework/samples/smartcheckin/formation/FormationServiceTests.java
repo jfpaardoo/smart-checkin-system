@@ -17,6 +17,7 @@ import org.springframework.samples.smartcheckin.notification.NotificationContext
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
 import org.springframework.samples.smartcheckin.storage.SignatureStorageService;
+import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.springframework.context.ApplicationEventPublisher;
 
 @SuppressWarnings("null")
@@ -27,6 +28,7 @@ class FormationServiceTests {
     private UserService userService;
     private CloudStorageAdapter cloudStorageAdapter;
     private SignatureStorageService signatureStorageService;
+    private TotpService totpService;
     private FormationService formationService;
 
     private static final String FORMATIONS_DIR = "formations";
@@ -43,8 +45,9 @@ class FormationServiceTests {
         NotificationContext notificationContext = mock(NotificationContext.class);
         signatureStorageService = mock(SignatureStorageService.class);
         ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
+        totpService = mock(TotpService.class);
         
-        formationService = new FormationService(formationRepository, attendanceRepository, userService, cloudStorageAdapter, notificationContext, signatureStorageService, eventPublisher);
+        formationService = new FormationService(formationRepository, attendanceRepository, userService, cloudStorageAdapter, notificationContext, signatureStorageService, eventPublisher, totpService);
     }
 
     @Test
@@ -217,6 +220,37 @@ class FormationServiceTests {
         when(attendanceRepository.findByFormationAndUser(formation, user)).thenReturn(Optional.empty());
 
         assertThrows(IllegalArgumentException.class, () -> formationService.checkoutAttendance(1, "1234", "sig"));
+    }
+
+    @Test
+    void testCheckoutAttendanceInvalidToken() {
+        when(totpService.verifyToken("000000", 1)).thenReturn(false);
+        assertThrows(IllegalArgumentException.class, () -> formationService.checkoutAttendance(1, "1234", "sig", "000000"));
+    }
+
+    @Test
+    void testCheckoutAttendanceValidToken() {
+        Formation formation = new Formation();
+        formation.setId(1);
+        formation.setName("Course 1");
+
+        User user = new User();
+        user.setPersonalCode("1234");
+
+        FormationAttendance att = new FormationAttendance();
+        att.setFormation(formation);
+        att.setUser(user);
+
+        when(totpService.verifyToken("123456", 1)).thenReturn(true);
+        when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
+        when(userService.findByPersonalCode("1234")).thenReturn(user);
+        when(attendanceRepository.findByFormationAndUser(formation, user)).thenReturn(Optional.of(att));
+        when(signatureStorageService.saveSignature(anyString(), anyString())).thenReturn("sig.png");
+
+        Formation result = formationService.checkoutAttendance(1, "1234", "sig", "123456");
+        assertNotNull(result);
+        assertEquals("sig.png", att.getSignature());
+        assertNotNull(att.getCheckOutDate());
     }
 
     @Test
@@ -427,7 +461,7 @@ class FormationServiceTests {
 
         // Instanciamos temporalmente con el mock de push fallido
         FormationService customService = new FormationService(
-            formationRepository, attendanceRepository, userService, cloudStorageAdapter, notificationContextMock, signatureStorageService, eventPublisher
+            formationRepository, attendanceRepository, userService, cloudStorageAdapter, notificationContextMock, signatureStorageService, eventPublisher, totpService
         );
 
         assertDoesNotThrow(() -> customService.addAttendee(1, 10));

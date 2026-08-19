@@ -61,7 +61,8 @@ public class WebAuthnRestController {
 
     @Operation(summary = "Genera el desafío para inicio de sesión con Passkey")
     @PostMapping("/login/options")
-    public ResponseEntity<LoginOptionsResponse> getLoginOptions(@RequestBody(required = false) Map<String, String> body) {
+    public ResponseEntity<LoginOptionsResponse> getLoginOptions(
+            @RequestBody(required = false) Map<String, String> body) {
         String username = body != null ? body.get("username") : null;
         LoginOptionsResponse options = webAuthnService.generateLoginOptions(username);
         return ResponseEntity.ok(options);
@@ -89,7 +90,9 @@ public class WebAuthnRestController {
                 userService.saveUser(user);
             }
 
-            String clientIp = servletRequest.getHeader("X-Forwarded-For") != null ? servletRequest.getHeader("X-Forwarded-For").split(",")[0].trim() : servletRequest.getRemoteAddr();
+            String clientIp = servletRequest.getHeader("X-Forwarded-For") != null
+                    ? servletRequest.getHeader("X-Forwarded-For").split(",")[0].trim()
+                    : servletRequest.getRemoteAddr();
             anomalyDetectionService.recordSuccessfulLogin(user.getUsername(), clientIp, "Passkey / FIDO2");
             if (metricsService != null) {
                 metricsService.incrementPasskeyAuthentication();
@@ -101,7 +104,8 @@ public class WebAuthnRestController {
 
         } catch (Exception e) {
             log.error("Error durante el inicio de sesión con Passkey", e);
-            return ResponseEntity.badRequest().body(new MessageResponse("Error en inicio de sesión biométrico: " + e.getMessage()));
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponse("Error en inicio de sesión biométrico: " + e.getMessage()));
         }
     }
 

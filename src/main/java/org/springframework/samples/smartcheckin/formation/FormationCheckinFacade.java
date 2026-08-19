@@ -129,11 +129,16 @@ public class FormationCheckinFacade {
     }
 
     @Auditable(action = "CHECKOUT_FORMATION", details = "User checked out of formation")
-    public Formation checkoutAttendance(Integer id, String signature) {
+    public Formation checkoutAttendance(Integer id, String signature, String token) {
         User currentUser = userService.findCurrentUser();
-        Formation formation = formationService.checkoutAttendance(id, currentUser.getPersonalCode(), signature);
+        Formation formation = formationService.checkoutAttendance(id, currentUser.getPersonalCode(), signature, token);
         notifyFormationsUpdate(id);
         return formation;
+    }
+
+    @Auditable(action = "CHECKOUT_FORMATION", details = "User checked out of formation")
+    public Formation checkoutAttendance(Integer id, String signature) {
+        return checkoutAttendance(id, signature, null);
     }
 
     @Auditable(action = "FORMATION_ADD_ATTENDEE", details = "Admin added attendee to formation")

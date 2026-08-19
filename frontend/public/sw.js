@@ -1,5 +1,14 @@
 /* eslint-disable no-restricted-globals */
-/* Service Worker for Distribution Academy PWA - v5 */
+/* Service Worker for Distribution Academy PWA - v6 */
+
+self.addEventListener('message', function(event) {
+  if (event.origin && event.origin !== self.location.origin) {
+    return;
+  }
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
 
 self.addEventListener('push', function(event) {
   if (!event.data) return;  
@@ -11,15 +20,15 @@ self.addEventListener('push', function(event) {
       return {
         title: 'Distribution Academy',
         body: event.data.text(),
-        icon: '/favicon.png?v=5'
+        icon: '/favicon.png?v=6'
       };
     }
   })();
 
   const options = {
     body: data.body || '',
-    icon: data.icon || '/favicon.png?v=5',
-    badge: '/favicon.png?v=5',
+    icon: data.icon || '/favicon.png?v=6',
+    badge: '/favicon.png?v=6',
     vibrate: [200, 100, 200],
     tag: 'da-notification-' + Date.now(),
     data: {

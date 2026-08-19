@@ -8,6 +8,7 @@ let toastIdCounter = 0;
 const TOAST_CONFIG = {
   success: { badgeDot: "bg-[#b3c34c]", progressBg: "bg-[#b3c34c]" },
   error: { badgeDot: "bg-red-500", progressBg: "bg-red-500" },
+  warning: { badgeDot: "bg-amber-500", progressBg: "bg-amber-500" },
   info: { badgeDot: "bg-blue-400", progressBg: "bg-blue-400" },
   confirm: { badgeDot: "bg-amber-500", progressBg: "bg-amber-500" },
 };
@@ -28,6 +29,7 @@ export function ToastProvider({ children }) {
   const toastApi = React.useMemo(() => ({
     success: (msg) => addToast("success", msg),
     error: (msg) => addToast("error", msg),
+    warning: (msg) => addToast("warning", msg),
     info: (msg) => addToast("info", msg),
     confirm: (msg, onConfirm) => addToast("confirm", msg, { onConfirm, persistent: true }),
   }), [addToast]);

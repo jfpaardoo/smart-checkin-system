@@ -238,7 +238,7 @@ export default function UserFormationsTable({
                 </span>
 
                 <span>
-                  {new Date(f.formationDate).toLocaleString()}
+                  {formatDate(f.formationDate)}
                 </span>
               </div>
 

@@ -11,7 +11,13 @@ public interface UserSessionRepository extends JpaRepository<UserSession, Intege
 
     List<UserSession> findAllByUsernameAndActiveTrueOrderByLastActivityAtDesc(String username);
 
+    List<UserSession> findAllByUsernameAndDeviceInfoAndActiveTrue(String username, String deviceInfo);
+
     Optional<UserSession> findByTokenHash(String tokenHash);
+
+    Optional<UserSession> findFirstByTokenHashOrderByLastActivityAtDesc(String tokenHash);
+
+    List<UserSession> findAllByTokenHash(String tokenHash);
 
     Optional<UserSession> findByIdAndUsername(Integer id, String username);
 }

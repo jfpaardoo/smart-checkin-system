@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Modal, ModalHeader, ModalBody } from 'reactstrap';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCamera } from '@fortawesome/free-solid-svg-icons';
+import { faCamera, faCameraRotate } from '@fortawesome/free-solid-svg-icons';
 import { useQrScanner } from '../../../hooks/useQrScanner';
 import GlassDropdown from '../../../components/GlassDropdown';
 import ManualCheckinForm from '../../checkin/components/ManualCheckinForm';
@@ -28,14 +28,24 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
     cameras,
     selectedCameraId,
     setSelectedCameraId,
+    toggleCamera,
+    facingMode,
     isScannerReady,
+    resumeScanning,
     resetScannerState,
     stopScannerSafely
   } = useQrScanner('checkout-qr-reader', isOpen && step === 'scan' && !isManualCheckout, (decodedText) => {
     try {
       const parsed = JSON.parse(decodedText);
+      if (parsed?.formationId && selectedAtt?.formation?.id && String(parsed.formationId) !== String(selectedAtt.formation.id)) {
+        toast.error(t('dashboard.wrongFormationQr', 'Este código QR pertenece a otra formación.'));
+        resumeScanning();
+        return;
+      }
       if (parsed?.token) {
         validatedTokenRef.current = parsed.token;
+      } else {
+        validatedTokenRef.current = decodedText;
       }
     } catch (e) {
       console.debug("QR text is not JSON, using raw string:", e);
@@ -56,34 +66,54 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
     onClose();
   };
 
-;
-
   const renderScanStep = () => {
     return (
       <div>
         <h5 className="text-center mb-2 text-sm font-semibold text-slate-800">{t('dashboard.scanStep')}</h5>
         {!isManualCheckout ? (
           <>
-            {cameras.length > 1 && (
-              <div className="mb-2" style={{ maxWidth: '250px', margin: '0 auto' }}>
-                <GlassDropdown
-                  options={cameras}
-                  value={selectedCameraId}
-                  onChange={(camId) => setSelectedCameraId(camId)}
-                  placeholder={t('dashboard.selectCamera')}
-                />
-              </div>
-            )}
+            <div className="mb-2 mx-auto flex items-center justify-center gap-2" style={{ maxWidth: '300px' }}>
+              {cameras && cameras.length > 1 && (
+                <div className="flex-1" style={{ minWidth: 0 }}>
+                  <GlassDropdown
+                    options={cameras}
+                    value={selectedCameraId}
+                    onChange={(camId) => setSelectedCameraId(camId)}
+                    placeholder={t('dashboard.selectCamera', 'Seleccionar cámara')}
+                  />
+                </div>
+              )}
+              <button 
+                type="button" 
+                className="da-btn da-btn-secondary px-2.5 py-2 rounded-full text-xs font-semibold shrink-0 d-inline-flex align-items-center gap-1.5" 
+                onClick={toggleCamera}
+                title={facingMode === 'environment' ? 'Cambiar a frontal' : 'Cambiar a trasera'}
+              >
+                <FontAwesomeIcon icon={faCameraRotate} />
+                <span className="text-[11px]">
+                  {facingMode === 'environment' ? 'Frontal' : 'Trasera'}
+                </span>
+              </button>
+            </div>
 
-            {!isScannerReady && (
-              <div className="p-3 text-center text-muted text-xs">
-                <FontAwesomeIcon icon={faCamera} className="fa-spin mb-1" size="lg" />
-                <p className="mb-0">{t('checkin.startingCamera', 'Iniciando cámara...')}</p>
-              </div>
-            )}
-
-            <div style={{ width: '100%', maxWidth: '300px', borderRadius: '16px', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.5)', boxShadow: '0 8px 20px rgba(0,0,0,0.06)', margin: '0 auto 8px' }}>
-              <div id="checkout-qr-reader" style={{ width: '100%' }} />
+            <div 
+              className="relative mx-auto rounded-2xl overflow-hidden shadow-sm flex items-center justify-center border border-white/20"
+              style={{ 
+                width: '100%', 
+                maxWidth: '280px', 
+                aspectRatio: '1 / 1', 
+                borderRadius: '16px', 
+                margin: '0 auto 8px',
+                backgroundColor: '#000000'
+              }}
+            >
+              {!isScannerReady && (
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-slate-900 text-slate-200 p-3">
+                  <FontAwesomeIcon icon={faCamera} className="fa-spin text-2xl text-emerald-400" />
+                  <p className="text-xs font-semibold text-slate-300 mb-0">{t('checkin.startingCamera', 'Iniciando cámara...')}</p>
+                </div>
+              )}
+              <div id="checkout-qr-reader" style={{ width: '100%', height: '100%' }} />
             </div>
 
             <div className="text-center mt-2">

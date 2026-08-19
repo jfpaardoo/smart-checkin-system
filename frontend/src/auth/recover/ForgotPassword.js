@@ -87,8 +87,7 @@ export default function ForgotPassword() {
               </label>
             </div>
 
-            {/* Contenedor Glassmorphism para Cloudflare */}
-            <div className="flex justify-center items-center mt-2 p-3 rounded-2xl bg-white/30 backdrop-blur-md border border-white/40 shadow-inner">
+            <div className="flex justify-center items-center my-1 w-full overflow-hidden">
                 <Turnstile 
                     key={`${siteKey}-${captchaKey}`}
                     siteKey={siteKey} 

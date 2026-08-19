@@ -57,7 +57,7 @@ class UserSessionServiceTests {
 
     @Test
     void testRegisterNewSession() {
-        when(userSessionRepository.findByTokenHash(anyString())).thenReturn(Optional.empty());
+        when(userSessionRepository.findAllByTokenHash(anyString())).thenReturn(List.of());
         when(userSessionRepository.save(any(UserSession.class))).thenAnswer(i -> i.getArgument(0));
 
         userSessionService.registerOrUpdateSession("newUser", "myToken", "10.0.0.1", "Mozilla/5.0 Firefox");
@@ -104,7 +104,7 @@ class UserSessionServiceTests {
 
     @Test
     void testRegisterExistingSessionUpdates() {
-        when(userSessionRepository.findByTokenHash(session1.getTokenHash())).thenReturn(Optional.of(session1));
+        when(userSessionRepository.findAllByTokenHash(session1.getTokenHash())).thenReturn(List.of(session1));
 
         userSessionService.registerOrUpdateSession("testUser", "token1", "192.168.1.200", "Mozilla/5.0");
 
@@ -119,7 +119,7 @@ class UserSessionServiceTests {
         userSessionService.registerOrUpdateSession("user", null, "ip", "agent");
         verify(userSessionRepository, never()).save(any(UserSession.class));
 
-        when(userSessionRepository.findByTokenHash(anyString())).thenReturn(Optional.empty());
+        when(userSessionRepository.findAllByTokenHash(anyString())).thenReturn(List.of());
         userSessionService.registerOrUpdateSession("user", "token", "ip", null);
         verify(userSessionRepository).save(argThat(s -> "Desconocido".equals(s.getUserAgent())));
     }
@@ -134,13 +134,13 @@ class UserSessionServiceTests {
     void testIsSessionActive() {
         assertFalse(userSessionService.isSessionActive(null));
 
-        when(userSessionRepository.findByTokenHash(session1.getTokenHash())).thenReturn(Optional.of(session1));
+        when(userSessionRepository.findFirstByTokenHashOrderByLastActivityAtDesc(session1.getTokenHash())).thenReturn(Optional.of(session1));
         assertTrue(userSessionService.isSessionActive("token1"));
 
         session1.setActive(false);
         assertFalse(userSessionService.isSessionActive("token1"));
 
-        when(userSessionRepository.findByTokenHash(anyString())).thenReturn(Optional.empty());
+        when(userSessionRepository.findFirstByTokenHashOrderByLastActivityAtDesc(anyString())).thenReturn(Optional.empty());
         assertTrue(userSessionService.isSessionActive("unmigratedToken"));
     }
 

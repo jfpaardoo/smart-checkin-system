@@ -57,28 +57,28 @@ public class SecurityConfiguration {
                                 .includeSubDomains(true)
                                 .maxAgeInSeconds(31536000))
                         .contentSecurityPolicy(csp -> csp.policyDirectives(
-                                "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' https: 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' https: data:; connect-src 'self' https: wss: ws:; frame-src 'self' https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';"))
-                        .addHeaderWriter((request, response) -> {
-                            response.setHeader("Permissions-Policy", "camera=(self), geolocation=(self), microphone=(), payment=(), usb=()");
-                            response.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
-                            response.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-                        }))
+                                "default-src 'self' http: https: data: blob:; script-src 'self' http: https: https://challenges.cloudflare.com 'unsafe-inline'; style-src 'self' http: https: 'unsafe-inline'; img-src 'self' http: https: data: blob:; font-src 'self' http: https: data:; connect-src 'self' http: https: wss: ws:; frame-src 'self' http: https: https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self';"))
+                        .addHeaderWriter((request, response) -> 
+                            response.setHeader("Permissions-Policy", "camera=*, geolocation=*, microphone=(), payment=(), usb=()")
+                        ))
                 .exceptionHandling(exceptionHandling -> exceptionHandling.authenticationEntryPoint(unauthorizedHandler))
 
                 .authorizeHttpRequests(auth -> auth
                         // 1. Peticiones CORS Preflight (OPTIONS)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // 2. Recursos estáticos, consolas, Service Worker y rutas del frontend/errores
+                        // 2. Recursos estáticos, Service Worker y todas las rutas del cliente (SPA)
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                        .requestMatchers(
-                                "/", "/oups", "/index.html", "/manifest.json", "/favicon.ico", "/*.png", "/*.jpg", "/*.svg", "/*.json",
-                                "/static/**", "/locales/**", "/error", "/login", "/register", "/forgot-password", "/reset-password", "/sw.js",
-                                "/.well-known/**", "/security.txt",
-                                "/admin", "/admin/**", "/qr-generator", "/users", "/users/**", "/formations", "/formations/**",
-                                "/companies", "/companies/**", "/analytics", "/analytics/**", "/audit", "/audit/**", "/profile", "/profile/**",
-                                "/cloud-settings", "/cloud-settings/**")
-                        .permitAll()
+                        .requestMatchers(request -> {
+                            String path = request.getServletPath();
+                            if (path == null) return true;
+                            return !path.startsWith("/api/")
+                                    && !path.startsWith("/ws/")
+                                    && !path.startsWith("/actuator/")
+                                    && !path.startsWith("/swagger-ui")
+                                    && !path.startsWith("/v3/api-docs")
+                                    && !path.startsWith("/h2-console");
+                        }).permitAll()
 
                         // 3. Swagger / OpenAPI (solo ADMIN)
                         .requestMatchers(

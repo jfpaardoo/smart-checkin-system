@@ -6,7 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -16,15 +19,25 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
 @RestControllerAdvice
+@SuppressWarnings("null")
 public class ExceptionHandlerController {
+
+	private static final Logger logger = LoggerFactory.getLogger(ExceptionHandlerController.class);
 
 	@ExceptionHandler(Exception.class)
 	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
 	public ResponseEntity<ErrorMessage> globalExceptionHandler(Exception ex, WebRequest request) {
-		ErrorMessage message = new ErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now(ZoneId.systemDefault()), ex.getMessage(),
+		logger.error("Unhandled internal server error occurred for request [{}]: {}", request.getDescription(false), ex.getMessage(), ex);
+
+		ErrorMessage message = new ErrorMessage(
+				HttpStatus.INTERNAL_SERVER_ERROR.value(), 
+				LocalDateTime.now(ZoneId.systemDefault()), 
+				"Ha ocurrido un error interno en el servidor.",
 				request.getDescription(false));
 
-		return new ResponseEntity<>(message, HttpStatus.INTERNAL_SERVER_ERROR);
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(message);
 	}
 
 	@ExceptionHandler(ResourceNotFoundException.class)
@@ -33,7 +46,9 @@ public class ExceptionHandlerController {
 		ErrorMessage message = new ErrorMessage(HttpStatus.NOT_FOUND.value(), LocalDateTime.now(ZoneId.systemDefault()), ex.getMessage(),
 				request.getDescription(false));
 
-		return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(message);
 	}
 
 	@ExceptionHandler(ResourceNotOwnedException.class)
@@ -42,7 +57,9 @@ public class ExceptionHandlerController {
 		ErrorMessage message = new ErrorMessage(HttpStatus.BAD_REQUEST.value(), LocalDateTime.now(ZoneId.systemDefault()), ex.getMessage(),
 				request.getDescription(false));
 
-		return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(message);
 	}
 
 	@ExceptionHandler(value = MethodArgumentNotValidException.class)
@@ -54,7 +71,9 @@ public class ExceptionHandlerController {
 		ErrorMessage message = new ErrorMessage(HttpStatus.BAD_REQUEST.value(), LocalDateTime.now(ZoneId.systemDefault()), fieldError.toString(),
 				request.getDescription(false));
 
-		return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(message);
 	}
 
 	@ExceptionHandler(value = AccessDeniedException.class)
@@ -63,8 +82,24 @@ public class ExceptionHandlerController {
 		ErrorMessage message = new ErrorMessage(HttpStatus.FORBIDDEN.value(), LocalDateTime.now(ZoneId.systemDefault()), ex.getMessage(),
 				request.getDescription(false));
 
-		return new ResponseEntity<>(message, HttpStatus.FORBIDDEN);
+		return ResponseEntity.status(HttpStatus.FORBIDDEN)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(message);
 	}
+
+	@ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorMessage> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
+        ErrorMessage message = new ErrorMessage(
+                HttpStatus.BAD_REQUEST.value(), 
+                LocalDateTime.now(ZoneId.systemDefault()), 
+                ex.getMessage(),
+                request.getDescription(false));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(message);
+    }
 
 	@ExceptionHandler(IllegalStateException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
@@ -75,7 +110,9 @@ public class ExceptionHandlerController {
                 ex.getMessage(),
                 request.getDescription(false));
 
-        return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(message);
     }
 
 	@ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
@@ -97,7 +134,9 @@ public class ExceptionHandlerController {
                 msg,
                 request.getDescription(false));
 
-        return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(message);
     }
 
 }

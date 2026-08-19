@@ -14,6 +14,7 @@ import UserDashboard from "./user/dashboard/UserDashboard";
 import { ToastProvider } from "./components/ToastProvider";
 import SessionTimeoutModal from "./components/SessionTimeoutModal";
 import PwaInstallPrompt from "./components/PwaInstallPrompt";
+import PwaUpdateNotification from "./components/PwaUpdateNotification";
 import { useTranslation } from "react-i18next";
 
 // Lazy-loaded Views (Code-Splitting for lighter initial bundle)
@@ -63,6 +64,7 @@ function App() {
         <AppNavbar />
         <SessionTimeoutModal />
         <PwaInstallPrompt />
+        <PwaUpdateNotification />
         <Suspense fallback={<PageLoadingFallback />}>
           <Routes>
             {/* Rutas Públicas y de Autenticación */}
@@ -70,7 +72,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/logout" element={<Logout />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/checkin" element={<ScannerCheckin />} />
+            <Route path="/checkin" element={<PrivateRoute><ScannerCheckin /></PrivateRoute>} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />

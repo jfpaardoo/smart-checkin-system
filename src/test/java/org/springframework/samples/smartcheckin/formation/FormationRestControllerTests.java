@@ -269,7 +269,7 @@ class FormationRestControllerTests {
     @WithMockUser
     void testCheckoutAttendanceFailure() throws Exception {
         when(userService.findCurrentUser()).thenReturn(user);
-        when(formationService.checkoutAttendance(1, "1234", "sig")).thenThrow(new IllegalArgumentException("Not registered"));
+        when(formationService.checkoutAttendance(eq(1), eq("1234"), eq("sig"), any())).thenThrow(new IllegalArgumentException("Not registered"));
 
         FormationCheckoutRequest req = new FormationCheckoutRequest();
         req.setSignature("sig");
@@ -313,7 +313,7 @@ class FormationRestControllerTests {
                 .file(jsonPart).with(csrf());
         builder.with(request -> { request.setMethod("PUT"); return request; });
 
-        mockMvc.perform(builder).andExpect(status().isInternalServerError());
+        mockMvc.perform(builder).andExpect(status().isBadRequest());
     }
 
     @Test

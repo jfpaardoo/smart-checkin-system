@@ -20,7 +20,7 @@ export default function AnalyticsOverviewTab({ statistics }) {
       });
   }, []);
 
-  const latestTotalCheckins = statistics.length > 0 ? statistics[0].totalCheckins : 0;
+  const totalCheckinsPeriod = statistics.reduce((acc, curr) => acc + (Number(curr.totalCheckins) || 0), 0);
   const latestAttendanceRate = statistics.length > 0 && statistics[0].formationAttendanceRate !== undefined 
       ? Math.round(statistics[0].formationAttendanceRate) 
       : 0;
@@ -44,7 +44,7 @@ export default function AnalyticsOverviewTab({ statistics }) {
             </div>
             <div className="analytics-kpi-content">
                 <h6>{t('analytics.totalCheckins', 'Asistencias Totales')}</h6>
-                <p className="kpi-value">{latestTotalCheckins}</p>
+                <p className="kpi-value">{totalCheckinsPeriod}</p>
             </div>
         </div>
         

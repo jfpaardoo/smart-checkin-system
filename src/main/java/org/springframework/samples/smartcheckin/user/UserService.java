@@ -71,6 +71,14 @@ public class UserService {
         return userRepository.existsByUsername(username);
     }
 
+    public Boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    public Boolean existsByPersonalCode(String personalCode) {
+        return userRepository.existsByPersonalCode(personalCode);
+    }
+
     @Transactional(readOnly = true)
     public Iterable<User> findAll() {
         return userRepository.findAll();
