@@ -126,17 +126,17 @@ export default function AppNavbar() {
 
     return (
         <nav className="da-nav-capsule">
-            <div className="w-full px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-[64px]">
-                    <div className="flex items-center">
-                        <Link to="/" className="flex items-center gap-3 sm:gap-4 group text-white hover:text-white no-underline" onClick={closeAll}>
-                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden flex items-center justify-center shadow-[0_2px_5px_rgba(0,0,0,0.2)] group-hover:scale-105 transition-transform duration-300 shrink-0 bg-white/10 backdrop-blur-md">
-                                <img src="/logo.png" alt={t('common.companyLogo', 'Logo de la empresa')} className="w-[54px] h-[54px] sm:w-[60px] sm:h-[60px] object-cover" />
+            <div className="w-full px-3 sm:px-6 lg:px-8">
+                <div className="flex justify-between items-center h-[60px] sm:h-[64px]">
+                    <div className="flex items-center min-w-0 flex-1">
+                        <Link to="/" className="flex items-center gap-2.5 sm:gap-4 group text-white hover:text-white no-underline min-w-0" onClick={closeAll}>
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden flex items-center justify-center shadow-[0_2px_5px_rgba(0,0,0,0.2)] group-hover:scale-105 transition-transform duration-300 shrink-0 bg-white/10 backdrop-blur-md">
+                                <img src="/logo.png" alt={t('common.companyLogo', 'Logo de la empresa')} className="w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] object-cover" />
                             </div>
-                            <span className="text-[1.4rem] font-semibold tracking-tight hidden sm:block whitespace-nowrap drop-shadow-md">
+                            <span className="text-[1.3rem] lg:text-[1.4rem] font-semibold tracking-tight hidden sm:block whitespace-nowrap drop-shadow-md">
                                 Distribution Academy
                             </span>
-                            <span className="text-lg font-semibold tracking-tight sm:hidden whitespace-nowrap drop-shadow-md">
+                            <span className="text-sm xs:text-base font-semibold tracking-tight sm:hidden truncate drop-shadow-md max-w-[180px]">
                                 Distribution Academy
                             </span>
                         </Link>
@@ -164,7 +164,7 @@ export default function AppNavbar() {
                         </div>
                     </div>
 
-                    <div className="flex items-center md:hidden gap-1 sm:gap-2">
+                    <div className="flex items-center md:hidden gap-1 shrink-0">
                         {user && (
                           <NotificationBell 
                             isMobile={true} 
@@ -177,7 +177,7 @@ export default function AppNavbar() {
                             aria-label={t('nav.toggleMenu', 'Toggle navigation')}
                             className="mobile-menu-btn p-2 rounded-[20px] text-white hover:bg-white/20 focus:outline-none transition-colors"
                         >
-                            {!isNavMobileOpen ? <FaBars className="h-6 w-6" /> : <FaTimes className="h-6 w-6" />}
+                            {!isNavMobileOpen ? <FaBars className="h-5 w-5 sm:h-6 sm:w-6" /> : <FaTimes className="h-5 w-5 sm:h-6 sm:w-6" />}
                         </button>
                     </div>
                 </div>

@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense } from "react";
 import "./App.css";
 import { Route, Routes } from "react-router-dom";
 
@@ -16,34 +16,56 @@ import SessionTimeoutModal from "./components/SessionTimeoutModal";
 import PwaInstallPrompt from "./components/PwaInstallPrompt";
 import PwaUpdateNotification from "./components/PwaUpdateNotification";
 import { useTranslation } from "react-i18next";
+import lazyWithRetry from "./util/lazyWithRetry";
 
-// Lazy-loaded Views (Code-Splitting for lighter initial bundle)
-const UserProfile = lazy(() => import("./user/profile/UserProfile"));
-const SwaggerDocs = lazy(() => import("./public/swagger"));
-const UserListAdmin = lazy(() => import("./admin/users/UserListAdmin"));
-const UserEditAdmin = lazy(() => import("./admin/users/UserEditAdmin"));
-const FormationListAdmin = lazy(() => import("./admin/formations/FormationListAdmin"));
-const FormationEditAdmin = lazy(() => import("./admin/formations/FormationEditAdmin"));
-const FormationDetailsAdmin = lazy(() => import("./admin/formations/FormationDetailsAdmin"));
-const CompanyListAdmin = lazy(() => import("./admin/companies/CompanyListAdmin"));
-const CompanyEditAdmin = lazy(() => import("./admin/companies/CompanyEditAdmin"));
-const QRGeneratorAdmin = lazy(() => import("./admin/qr/QRGeneratorAdmin"));
-const AnalyticsDashboard = lazy(() => import("./admin/analytics/AnalyticsDashboard"));
-const AuditDashboard = lazy(() => import("./admin/audit/AuditDashboard"));
-const CloudSettingsAdmin = lazy(() => import("./admin/settings/CloudSettingsAdmin"));
-const PrivacyPolicy = lazy(() => import("./legal/PrivacyPolicy"));
-const ForgotPassword = lazy(() => import("./auth/recover/ForgotPassword"));
-const ResetPassword = lazy(() => import("./auth/recover/ResetPassword"));
+// Lazy-loaded Views (Code-Splitting with auto-recovery for stale chunks)
+const UserProfile = lazyWithRetry(() => import("./user/profile/UserProfile"));
+const SwaggerDocs = lazyWithRetry(() => import("./public/swagger"));
+const UserListAdmin = lazyWithRetry(() => import("./admin/users/UserListAdmin"));
+const UserEditAdmin = lazyWithRetry(() => import("./admin/users/UserEditAdmin"));
+const FormationListAdmin = lazyWithRetry(() => import("./admin/formations/FormationListAdmin"));
+const FormationEditAdmin = lazyWithRetry(() => import("./admin/formations/FormationEditAdmin"));
+const FormationDetailsAdmin = lazyWithRetry(() => import("./admin/formations/FormationDetailsAdmin"));
+const CompanyListAdmin = lazyWithRetry(() => import("./admin/companies/CompanyListAdmin"));
+const CompanyEditAdmin = lazyWithRetry(() => import("./admin/companies/CompanyEditAdmin"));
+const QRGeneratorAdmin = lazyWithRetry(() => import("./admin/qr/QRGeneratorAdmin"));
+const AnalyticsDashboard = lazyWithRetry(() => import("./admin/analytics/AnalyticsDashboard"));
+const AuditDashboard = lazyWithRetry(() => import("./admin/audit/AuditDashboard"));
+const CloudSettingsAdmin = lazyWithRetry(() => import("./admin/settings/CloudSettingsAdmin"));
+const PrivacyPolicy = lazyWithRetry(() => import("./legal/PrivacyPolicy"));
+const ForgotPassword = lazyWithRetry(() => import("./auth/recover/ForgotPassword"));
+const ResetPassword = lazyWithRetry(() => import("./auth/recover/ResetPassword"));
 
 function ErrorFallback({ error, resetErrorBoundary }) {
   const { t } = useTranslation();
+  const isChunkError = error?.name === 'ChunkLoadError' || (error?.message && error.message.includes('Loading chunk'));
+
+  const handleReload = () => {
+    window.sessionStorage.removeItem('retry-lazy-refreshed');
+    window.location.reload();
+  };
+
   return (
-    <div role="alert" className="p-4 text-center">
-      <p className="fw-bold text-danger">{t('common.somethingWentWrong', 'Algo salió mal:')}</p>
-      <pre className="text-muted">{error.message}</pre>
-      <button type="button" className="btn btn-primary mt-2" onClick={resetErrorBoundary}>
-        {t('common.tryAgain', 'Reintentar')}
-      </button>
+    <div role="alert" className="p-4 text-center max-w-md mx-auto my-8 bg-white/80 backdrop-blur-md rounded-2xl border border-red-200 shadow-md">
+      <p className="fw-bold text-danger text-lg mb-2">
+        {isChunkError ? t('common.appUpdated', 'Nueva versión disponible') : t('common.somethingWentWrong', 'Algo salió mal:')}
+      </p>
+      <p className="text-muted text-sm mb-3">
+        {isChunkError 
+          ? t('common.appUpdatedDesc', 'Se ha desplegado una actualización de la aplicación. Por favor, recarga la página.')
+          : error.message}
+      </p>
+      <div className="flex gap-2 justify-center">
+        {isChunkError ? (
+          <button type="button" className="btn btn-primary" onClick={handleReload}>
+            {t('common.reloadApp', 'Recargar aplicación')}
+          </button>
+        ) : (
+          <button type="button" className="btn btn-primary" onClick={resetErrorBoundary}>
+            {t('common.tryAgain', 'Reintentar')}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

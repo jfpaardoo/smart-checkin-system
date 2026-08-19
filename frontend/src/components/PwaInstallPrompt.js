@@ -11,19 +11,24 @@ export default function PwaInstallPrompt() {
   const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
 
   useEffect(() => {
+    // Limpiar descartes anteriores para garantizar que se muestre siempre
+    try {
+      localStorage.removeItem('da_pwa_dismissed_until');
+    } catch {
+      // Ignore
+    }
+
     // 1. Comprobar si ya está instalada en modo app independiente (standalone)
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const isStandalone = 
+      window.matchMedia('(display-mode: standalone)').matches || 
+      window.navigator.standalone === true || 
+      document.referrer.includes('android-app://');
+
     if (isStandalone) {
       return;
     }
 
-    // 2. Comprobar si el usuario la descartó recientemente (en las últimas 24h)
-    const dismissedUntil = localStorage.getItem('da_pwa_dismissed_until');
-    if (dismissedUntil && Date.now() < Number.parseInt(dismissedUntil, 10)) {
-      return;
-    }
-
-    // 3. Capturar evento de instalación nativa en Android / Chrome / Edge
+    // 2. Capturar evento de instalación nativa en Android / Chrome / Edge / PC
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       deferredPromptRef.current = e;
@@ -32,10 +37,9 @@ export default function PwaInstallPrompt() {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // 4. Detección de iOS Safari (iPhone / iPad)
-    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome|CriOS|FxiOS|EdgiOS/.test(navigator.userAgent);
-    if (isIos && isSafari && !isStandalone) {
+    // 3. Detección de iOS (iPhone / iPad) no instalado
+    const isIos = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && !window.MSStream;
+    if (isIos && !isStandalone) {
       setShowIosPrompt(true);
     }
 
@@ -44,7 +48,7 @@ export default function PwaInstallPrompt() {
     };
   }, []);
 
-  // 5. Detección de nueva versión del Service Worker (Auto-Update como en Play Store)
+  // 4. Detección de nueva versión del Service Worker (Auto-Update como en Play Store)
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready.then((registration) => {
@@ -75,8 +79,7 @@ export default function PwaInstallPrompt() {
   };
 
   const handleDismiss = () => {
-    // Recordar descarte durante 48 horas
-    localStorage.setItem('da_pwa_dismissed_until', String(Date.now() + 48 * 60 * 60 * 1000));
+    // Se oculta solo durante la sesión actual (vuelve a salir en próximas visitas mientras no esté instalada)
     setShowInstallPrompt(false);
     setShowIosPrompt(false);
   };
