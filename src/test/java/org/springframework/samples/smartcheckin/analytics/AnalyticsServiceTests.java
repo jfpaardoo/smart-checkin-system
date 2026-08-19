@@ -304,4 +304,46 @@ class AnalyticsServiceTests {
         assertTrue(res.isPresent());
         assertEquals(0L, res.get().getTotalWorkMinutes());
     }
+
+    @Test
+    void testGetAllUsersAnalyticsWithCompanyFilter() {
+        org.springframework.samples.smartcheckin.company.Company compA = new org.springframework.samples.smartcheckin.company.Company();
+        compA.setId(10);
+        compA.setName("Company A");
+
+        org.springframework.samples.smartcheckin.company.Company compB = new org.springframework.samples.smartcheckin.company.Company();
+        compB.setId(20);
+        compB.setName("Company B");
+
+        User userA = new User();
+        userA.setId(1);
+        userA.setUsername("userA");
+        userA.setFirstName("Alice");
+        userA.setCompany(compA);
+
+        User userB = new User();
+        userB.setId(2);
+        userB.setUsername("userB");
+        userB.setFirstName("Bob");
+        userB.setCompany(compB);
+
+        User userNoComp = new User();
+        userNoComp.setId(3);
+        userNoComp.setUsername("userC");
+        userNoComp.setFirstName("Charlie");
+
+        when(userRepository.findAll()).thenReturn(List.of(userA, userB, userNoComp));
+
+        List<UserAnalyticsDTO> filteredA = analyticsService.getAllUsersAnalytics("", 10);
+        assertEquals(1, filteredA.size());
+        assertEquals("Alice", filteredA.getFirst().getFirstName());
+        assertEquals("Company A", filteredA.getFirst().getCompanyName());
+
+        List<UserAnalyticsDTO> filteredB = analyticsService.getAllUsersAnalytics("", 20);
+        assertEquals(1, filteredB.size());
+        assertEquals("Bob", filteredB.getFirst().getFirstName());
+
+        List<UserAnalyticsDTO> all = analyticsService.getAllUsersAnalytics("");
+        assertEquals(3, all.size());
+    }
 }

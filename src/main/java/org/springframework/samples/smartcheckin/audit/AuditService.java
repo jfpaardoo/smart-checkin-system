@@ -3,12 +3,12 @@ package org.springframework.samples.smartcheckin.audit;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.samples.smartcheckin.metrics.AppMetricsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import jakarta.annotation.PostConstruct;
 
 @Service
 public class AuditService {
@@ -39,7 +39,7 @@ public class AuditService {
         this.hmacSecretKey = hmacSecretKey;
     }
 
-    @PostConstruct
+    @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void initializeLegacyLogsHashChain() {
         List<AuditLog> allLogs = auditLogRepository.findAllByOrderByIdAsc();

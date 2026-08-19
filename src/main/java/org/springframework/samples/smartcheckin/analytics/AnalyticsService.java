@@ -40,28 +40,45 @@ public class AnalyticsService {
 
     @Transactional(readOnly = true)
     public List<UserAnalyticsDTO> getAllUsersAnalytics(String search) {
+        return executeGetAllUsersAnalytics(search, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserAnalyticsDTO> getAllUsersAnalytics(String search, Integer companyId) {
+        return executeGetAllUsersAnalytics(search, companyId);
+    }
+
+    private List<UserAnalyticsDTO> executeGetAllUsersAnalytics(String search, Integer companyId) {
         Iterable<User> users = userRepository.findAll();
         List<UserAnalyticsDTO> dtos = new ArrayList<>();
 
         for (User user : users) {
-            if (user.getAuthority() != null && "ADMIN".equals(user.getAuthority().getAuthority())) {
-                continue; // Exclude ADMIN users from the list
+            if (isEligibleUser(user, companyId)) {
+                dtos.add(buildUserAnalyticsDTO(user, false));
             }
-            dtos.add(buildUserAnalyticsDTO(user, false));
         }
 
         if (search != null && !search.isBlank()) {
             String q = search.toLowerCase().trim();
-            dtos = dtos.stream().filter(u ->
-                (u.getFirstName() != null && u.getFirstName().toLowerCase().contains(q)) ||
-                (u.getLastName() != null && u.getLastName().toLowerCase().contains(q)) ||
-                (u.getUsername() != null && u.getUsername().toLowerCase().contains(q)) ||
-                (u.getPersonalCode() != null && u.getPersonalCode().toLowerCase().contains(q))
-            ).collect(java.util.stream.Collectors.toList());
+            dtos = new ArrayList<>(dtos.stream().filter(u -> matchesSearchQuery(u, q)).toList());
         }
 
         dtos.sort(Comparator.comparing(UserAnalyticsDTO::getFirstName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)));
         return dtos;
+    }
+
+    private boolean isEligibleUser(User user, Integer companyId) {
+        if (user.getAuthority() != null && "ADMIN".equals(user.getAuthority().getAuthority())) {
+            return false;
+        }
+        return companyId == null || (user.getCompany() != null && companyId.equals(user.getCompany().getId()));
+    }
+
+    private boolean matchesSearchQuery(UserAnalyticsDTO u, String q) {
+        return (u.getFirstName() != null && u.getFirstName().toLowerCase().contains(q)) ||
+               (u.getLastName() != null && u.getLastName().toLowerCase().contains(q)) ||
+               (u.getUsername() != null && u.getUsername().toLowerCase().contains(q)) ||
+               (u.getPersonalCode() != null && u.getPersonalCode().toLowerCase().contains(q));
     }
 
     @Transactional(readOnly = true)

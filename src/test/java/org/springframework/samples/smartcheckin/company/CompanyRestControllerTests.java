@@ -55,7 +55,7 @@ class CompanyRestControllerTests {
     private static final String JSON_NAME = "$.name";
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = "ADMIN")
     void shouldFindCompanyById() throws Exception {
         Company c = Company.builder().name("Eurotalia").build();
         c.setId(3);

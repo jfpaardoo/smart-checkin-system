@@ -29,7 +29,7 @@ class ExceptionHandlerControllerTests {
 
 		assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
 		assertNotNull(response.getBody());
-		assertEquals("Global error", response.getBody().getMessage());
+		assertEquals("Ha ocurrido un error interno en el servidor.", response.getBody().getMessage());
 	}
 
 	@Test

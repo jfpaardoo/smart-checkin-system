@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.samples.smartcheckin.user.User;
@@ -78,29 +79,67 @@ public class ExportRestController {
 
     @GetMapping("/users/{format}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<byte[]> exportUsers(@PathVariable String format) throws IOException {
+    public ResponseEntity<byte[]> exportUsers(
+            @PathVariable String format,
+            @RequestParam(required = false) Integer companyId) throws IOException {
         DataExportStrategy strategy = exportFactory.getStrategy(format);
-        List<UserAnalyticsDTO> users = analyticsService.getAllUsersAnalytics("");
+        List<UserAnalyticsDTO> users = analyticsService.getAllUsersAnalytics("", companyId);
         byte[] data = strategy.exportUsers(users);
         return createResponse(data, "empleados_analiticas." + strategy.getFileExtension(), strategy.getContentType());
     }
 
     @GetMapping("/checkins/{format}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<byte[]> exportCheckins(@PathVariable String format) throws IOException {
+    public ResponseEntity<byte[]> exportCheckins(
+            @PathVariable String format,
+            @RequestParam(required = false) Integer companyId) throws IOException {
         DataExportStrategy strategy = exportFactory.getStrategy(format);
         List<Checkin> checkins = (List<Checkin>) checkinRepository.findAll();
+        if (companyId != null) {
+            checkins = checkins.stream()
+                    .filter(c -> c.getUser() != null && c.getUser().getCompany() != null && companyId.equals(c.getUser().getCompany().getId()))
+                    .toList();
+        }
         byte[] data = strategy.exportCheckins(checkins);
         return createResponse(data, "checkins." + strategy.getFileExtension(), strategy.getContentType());
     }
 
     @GetMapping("/formations/{format}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<byte[]> exportFormations(@PathVariable String format) throws IOException {
+    public ResponseEntity<byte[]> exportFormations(
+            @PathVariable String format,
+            @RequestParam(required = false) Integer companyId) throws IOException {
         DataExportStrategy strategy = exportFactory.getStrategy(format);
         List<Formation> formations = (List<Formation>) formationRepository.findAll();
+        if (companyId != null) {
+            formations = filterFormationsByCompany(formations, companyId);
+        }
         byte[] data = strategy.exportFormations(formations);
         return createResponse(data, "formations." + strategy.getFileExtension(), strategy.getContentType());
+    }
+
+    private List<Formation> filterFormationsByCompany(List<Formation> formations, Integer companyId) {
+        List<Formation> result = new ArrayList<>();
+        for (Formation f : formations) {
+            if (f.getAttendances() == null || f.getAttendances().isEmpty()) {
+                continue;
+            }
+            List<FormationAttendance> matching = f.getAttendances().stream()
+                    .filter(att -> att.getUser() != null && att.getUser().getCompany() != null && companyId.equals(att.getUser().getCompany().getId()))
+                    .toList();
+            if (!matching.isEmpty()) {
+                Formation copy = Formation.builder()
+                        .name(f.getName())
+                        .description(f.getDescription())
+                        .formationDate(f.getFormationDate())
+                        .documentUrls(f.getDocumentUrls())
+                        .attendances(new ArrayList<>(matching))
+                        .build();
+                copy.setId(f.getId());
+                result.add(copy);
+            }
+        }
+        return result;
     }
 
     @GetMapping("/audit/{format}")

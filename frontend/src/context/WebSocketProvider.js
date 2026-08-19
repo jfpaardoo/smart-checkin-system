@@ -5,6 +5,18 @@ import tokenService from '../services/token.service';
 
 const WebSocketContext = createContext(null);
 
+const resolveSocketUrl = () => {
+    if (process.env.REACT_APP_WS_URL) {
+        return process.env.REACT_APP_WS_URL;
+    }
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isLocalhost) {
+        return 'http://localhost:8080/ws';
+    }
+    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+    return `${protocol}//${window.location.host}/ws`;
+};
+
 export const WebSocketProvider = ({ children }) => {
     const [stompClient, setStompClient] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
@@ -17,9 +29,7 @@ export const WebSocketProvider = ({ children }) => {
         let client = null;
 
         if (username) {
-            const socketUrl = window.location.hostname === 'localhost'
-                ? 'http://localhost:8080/ws'
-                : 'https://smart-checkin-system.onrender.com/ws';
+            const socketUrl = resolveSocketUrl();
 
             client = new Client({
                 webSocketFactory: () => new SockJS(socketUrl),

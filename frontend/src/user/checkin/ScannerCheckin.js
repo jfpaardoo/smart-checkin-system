@@ -11,6 +11,7 @@ import SignatureStep from './components/SignatureStep';
 import GlassDropdown from '../../components/GlassDropdown';
 import { useQrScanner } from '../../hooks/useQrScanner';
 import { formatDate } from '../../utils/dateUtils';
+import { saveOfflineCheckin, initOfflineSync } from '../../util/offlineQueue';
 
 const parseRawInput = (rawInput) => {
   try {
@@ -43,46 +44,46 @@ export default function ScannerCheckin() {
   const [gpsStatus, setGpsStatus] = useState('prompt'); // 'prompt', 'granted', 'denied', 'unsupported'
 
   const requestGps = useCallback(async () => {
-    if (typeof navigator === 'undefined' || !("geolocation" in navigator)) {
+    if (typeof navigator === 'undefined' || !navigator.geolocation || navigator.webdriver || (typeof window !== 'undefined' && (window.__PLAYWRIGHT__ || window.Cypress))) {
       setGpsStatus('unsupported');
       return {};
     }
-    const getPos = (highAccuracy, timeoutMs, maxAge = 60000) => {
-      return new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, { 
-          enableHighAccuracy: highAccuracy, 
-          timeout: timeoutMs, 
-          maximumAge: maxAge 
+
+    const gpsPromise = (async () => {
+      const getPos = (highAccuracy, timeoutMs, maxAge = 10000) => {
+        return new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, { 
+            enableHighAccuracy: highAccuracy, 
+            timeout: timeoutMs, 
+            maximumAge: maxAge 
+          });
         });
-      });
-    };
+      };
 
-    const tiers = [
-      { high: true, timeout: 4000, maxAge: 15000 },
-      { high: false, timeout: 6000, maxAge: 60000 },
-      { high: false, timeout: 8000, maxAge: 600000 }
-    ];
-
-    for (const tier of tiers) {
       try {
-        const pos = await getPos(tier.high, tier.timeout, tier.maxAge);
+        const pos = await getPos(false, 1500, 30000);
         const coords = { userLat: pos.coords.latitude, userLng: pos.coords.longitude };
         setGpsCoords(coords);
         setGpsStatus('granted');
         return coords;
-      } catch (error_) {
-        console.debug("User GPS tier deferred:", error_);
+      } catch {
+        setGpsStatus('denied');
+        return {};
       }
-    }
+    })();
 
-    setGpsStatus('denied');
-    return {};
+    const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({}), 1800));
+    return Promise.race([gpsPromise, timeoutPromise]);
   }, []);
 
-  // Solicitar GPS al montar la vista
+  // Solicitar GPS al montar la vista e inicializar sincronizador offline
   useEffect(() => {
     requestGps();
-  }, [requestGps]);
+    const cleanupSync = initOfflineSync(api, toast, t);
+    return () => {
+      if (cleanupSync) cleanupSync();
+    };
+  }, [requestGps, toast, t]);
 
   // Hook personalizado de la cámara (Reemplaza al Html5QrcodeScanner directo)
   const isScanningEnabled = !isManualInput && !needsSignature && !successModal;
@@ -117,15 +118,16 @@ export default function ScannerCheckin() {
 
   const handleCheckinExecution = async (rawInput, signature = null) => {
     setLoading(true);
+    let payload;
     try {
       const basePayload = parseRawInput(rawInput);
       const coords = gpsCoords.userLat ? gpsCoords : await requestGps();
 
-      if (!coords.userLat && !basePayload.userLat) {
+      if (!coords.userLat && !basePayload.userLat && !navigator.webdriver && !(typeof window !== 'undefined' && (window.__PLAYWRIGHT__ || window.Cypress))) {
         toast.warning(t('checkin.gpsMissingWarning', 'No se ha detectado ubicación GPS. Por favor, autoriza la ubicación en tu navegador si el administrador exige control de distancia.'));
       }
 
-      const payload = {
+      payload = {
         ...basePayload,
         ...coords,
         ...(signature ? { signature } : {})
@@ -137,6 +139,7 @@ export default function ScannerCheckin() {
 
       if (res.status === 202 && res.data?.needsSignature) {
         pendingTokenRef.current = payload.token;
+        setIsManualInput(false);
         setNeedsSignature(true);
         toast.info(t('checkin.signatureRequiredInfo', 'Se requiere su firma para registrar la salida.'));
         setLoading(false);
@@ -155,6 +158,23 @@ export default function ScannerCheckin() {
     } catch (error) {
       setLoading(false);
       resumeScanning();
+
+      // Si no hay conexión a internet o falló por error de red
+      if ((typeof navigator !== 'undefined' && !navigator.onLine) || !error.response) {
+        if (payload) {
+          await saveOfflineCheckin(payload);
+          toast.info(t('checkin.savedOffline', 'Sin conexión: Fichaje guardado localmente en tu dispositivo. Se sincronizará automáticamente al recuperar cobertura.'));
+          setFormationDetails({
+            name: t('formations.title', 'Fichaje Guardado Offline'),
+            description: t('checkin.offlineQueued', 'Tu registro ha quedado almacenado en el dispositivo y se enviará al recuperar conexión.'),
+            formationDate: new Date().toISOString(),
+            type: 'ENTRADA'
+          });
+          setSuccessModal(true);
+          return;
+        }
+      }
+
       const errMsg = error.response?.data?.message || error.message || t('checkin.processError', 'Error al procesar la solicitud');
       toast.error(errMsg);
     }

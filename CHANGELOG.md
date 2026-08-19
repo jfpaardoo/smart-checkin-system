@@ -6,6 +6,37 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ---
 
+## [1.1.0](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.1.0) - 2026-08-19
+
+### Añadido (Features)
+- **Control de Versiones y Migraciones de Base de Datos con Flyway**:
+  - Incorporada la infraestructura de migraciones automáticas con `flyway-core` y `flyway-database-postgresql`.
+  - Creado el script de migración inicial de esquema `V1__init_schema.sql` que versiona todas las tablas del sistema (`companies`, `authorities`, `appusers`, `formations`, `formation_attendances`, `checkins`, `audit_logs`, `push_subscriptions`, `user_passkeys`, `password_reset_tokens`, `jwt_blacklisted_tokens`, `cloud_settings`, `platform_statistics`) con restricciones de integridad referencial y datos semilla auditados.
+- **Fichajes Offline con IndexedDB y Auto-Sincronización en PWA**:
+  - Módulo `offlineQueue.js` con almacenamiento local `IndexedDB` para permitir el fichaje mediante código QR en instalaciones sin cobertura de red (almacenes, naves industriales, centros logísticos).
+  - Detección automática del restablecimiento de conexión (`window.ononline`) y sincronización desatendida en segundo plano con notificación toast al usuario.
+- **Filtrado Multi-Empresa en Reportes y Exportaciones de Analítica**:
+  - Parámetro `companyId` integrado en el servicio de analítica (`AnalyticsService`) y en todos los endpoints de exportación en `ExportRestController` (CSV, Excel, PDF para usuarios, asistencias a formaciones y fichajes).
+  - Integrado el componente `GlassDropdown` con diseño Liquid Glass en el menú de exportación del panel analítico (`AnalyticsExportMenu.js`) y en el listado de usuarios (`UserListAdmin.js`).
+- **Sincronización y Persistencia de Filtros en URL**:
+  - Integrado `useSearchParams` en el panel analítico (`AnalyticsDashboard.js`) para sincronizar la pestaña activa (`?tab=overview|employees|formations`), facilitando la compartición y guardado de enlaces a vistas específicas entre administradores.
+- **Observabilidad Cloud y Probes para Contenedores**:
+  - Habilitadas las sondas de salud `liveness` y `readiness` de Spring Boot Actuator para Kubernetes, Docker y plataformas cloud (Render).
+
+### Mejorado (Performance, Seguridad & Refactorización)
+- **Asincronía en Envíos de Correo (`@Async`)**:
+  - Anotado `EmailService.sendEmailWithAttachment` con `@Async("taskExecutor")` para evitar bloqueos del hilo HTTP durante la comunicación SMTP en registros, recuperaciones de contraseña y reportes.
+- **Optimización de Conexiones JPA (`open-in-view=false`)**:
+  - Desactivado Open Session In View para liberar conexiones de base de datos inmediatamente tras la ejecución de los servicios, optimizando el pool HikariCP bajo alta concurrencia.
+- **Sanitización Global de Excepciones del Servidor (500)**:
+  - Enmascarados los mensajes crudos en `ExceptionHandlerController.java` para devolver un mensaje seguro al cliente (`"Ha ocurrido un error interno en el servidor."`) registrando la traza completa únicamente en los logs del servidor.
+- **Resolución Dinámica de Conexiones WebSocket**:
+  - Extraída la función `resolveSocketUrl` en `WebSocketProvider.js` para soportar `REACT_APP_WS_URL`, dominios personalizados y pruebas en redes locales sin URLs hardcodeadas ni ternarias anidadas.
+- **Reducción de Complejidad Cognitiva y Limpieza de Código**:
+  - Refactorizado `AnalyticsService.getAllUsersAnalytics` eliminando sentencias `continue` redundantes y reduciendo la complejidad cognitiva con métodos auxiliares `isEligibleUser` y `matchesSearchQuery`.
+
+---
+
 ## [1.0.2](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.0.2) - 2026-08-18
 
 ### Corregido (Bug Fixes) & Mejoras
