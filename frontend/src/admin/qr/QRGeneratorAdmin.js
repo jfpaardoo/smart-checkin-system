@@ -139,35 +139,42 @@ const QRGeneratorAdmin = () => {
 
     return (
         <div className="da-container justify-content-center">
-            <div className="da-card da-card-qr p-4 p-md-5 my-auto mx-auto">
-                <div className="card-body p-2 d-flex flex-column justify-content-center my-auto">
+            <div className="da-card da-card-qr p-3 p-sm-4 p-md-5 my-auto mx-auto w-full">
+                <div className="card-body p-1 p-sm-2 d-flex flex-column justify-content-center my-auto w-full">
                     {loading ? (
                         <QRGhostLoader />
                     ) : (
-                        <div className="d-flex flex-column flex-md-row align-items-center justify-content-center gap-4 gap-lg-5 py-2 my-auto">
+                        <div className="d-flex flex-column flex-md-row align-items-center justify-content-center gap-4 gap-lg-5 py-2 my-auto w-full">
                             
-                            <div className="d-flex flex-column align-items-center justify-content-center">
+                            <div className="d-flex flex-column align-items-center justify-content-center w-full max-w-[320px]">
                                 <div 
-                                    className="qr-code-container qr-code-frame d-flex align-items-center justify-content-center text-center" 
-                                    style={{ width: '305px', height: '305px', backgroundColor: '#ffffff', borderRadius: '36px' }}
+                                    className="qr-code-container qr-code-frame d-flex align-items-center justify-content-center text-center w-full" 
+                                    style={{ 
+                                        maxWidth: '305px', 
+                                        aspectRatio: '1 / 1', 
+                                        backgroundColor: '#ffffff', 
+                                        borderRadius: '32px',
+                                        padding: '16px'
+                                    }}
                                 >
                                     {selectedFormationId ? (
-                                        <div style={fadeStyle}>
+                                        <div style={fadeStyle} className="w-full h-full flex items-center justify-center">
                                             <QRCodeSVG 
                                                 value={buildQrPayload()} 
-                                                size={265} 
+                                                size={240} 
+                                                style={{ width: '100%', height: '100%', maxWidth: '265px', maxHeight: '265px' }}
                                                 level="M" 
                                                 marginSize={0}
                                             />
                                         </div>
                                     ) : (
-                                        <div style={{ color: '#888', fontWeight: '500' }}>
-                                            <p className="mb-0">{t('qr.selectFormationPrompt')}</p>
-                                            <p className="mb-0">{t('qr.selectFormationPrompt2')}</p>
+                                        <div style={{ color: '#888', fontWeight: '500' }} className="p-2">
+                                            <p className="mb-0 text-sm">{t('qr.selectFormationPrompt')}</p>
+                                            <p className="mb-0 text-xs mt-1 text-slate-400">{t('qr.selectFormationPrompt2')}</p>
                                         </div>
                                     )}
                                 </div>
-                                <div className="mt-3 text-center">
+                                <div className="mt-3 text-center w-full">
                                     {adminCoords ? (
                                         <div 
                                             className="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill shadow-xs"

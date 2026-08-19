@@ -35,6 +35,18 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 - **Reducción de Complejidad Cognitiva y Limpieza de Código**:
   - Refactorizado `AnalyticsService.getAllUsersAnalytics` eliminando sentencias `continue` redundantes y reduciendo la complejidad cognitiva con métodos auxiliares `isEligibleUser` y `matchesSearchQuery`.
 
+### Corregido (Bug Fixes) & Resiliencia Frontend
+- **Auto-Recuperación de Chunks y Resiliencia en Despliegues (`lazyWithRetry`)**:
+  - Creado el helper `lazyWithRetry.js` y envueltas todas las vistas perezosas en `App.js` para erradicar los fallos `Loading chunk XX failed` (`ChunkLoadError`) en dispositivos móviles (especialmente Android) tras nuevos despliegues en el servidor.
+  - Añadida detección de errores de empaquetado en `ErrorFallback` con acción de recarga transparente.
+- **Comportamiento Táctil en Desplegables (`GlassDropdown`)**:
+  - Eliminado el listener `touchstart` en `GlassDropdown.js` y `AnalyticsExportMenu.js` que cerraba involuntariamente los menús al iniciar un desplazamiento o scroll vertical en pantallas táctiles.
+- **Adaptabilidad Responsiva en Dispositivos Móviles Estrechos**:
+  - Corregido el desbordamiento horizontal en `AppNavbar.js` (textos fluidos con `truncate` y `min-w-0`) y en el generador de QR (`QRGeneratorAdmin.js`, `qrScanner.css` con dimensiones fluidas `aspect-ratio: 1/1`), asegurando visualización adecuada en terminales Android de 360px o con escalado de fuente del sistema aumentado.
+  - Actualizada la etiqueta `viewport` en `index.html` con `viewport-fit=cover`.
+- **Persistencia de Solicitud de Instalación PWA**:
+  - Ajustado `PwaInstallPrompt.js` para ofrecer siempre el aviso de instalación en Android / PC y la guía de añadir a inicio en iOS mientras la app no esté instalada en modo *standalone*.
+
 ---
 
 ## [1.0.2](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.0.2) - 2026-08-18
