@@ -114,6 +114,7 @@ export default function AnalyticsDashboard() {
   }, [fetchUserAnalytics, fetchFormationAnalytics]));
 
   const handleOpenUserDetail = async (userId) => {
+    if (!userId || userId === 'undefined') return;
     try {
       const res = await api.get(`/analytics/users/${userId}`);
       setSelectedUserAnalytics(res.data);
@@ -144,7 +145,7 @@ export default function AnalyticsDashboard() {
         </div>
 
         <div className="flex flex-col xl:flex-row justify-between items-center w-full gap-4 mb-6 relative z-50">
-          <div className="w-full sm:w-auto" style={{ minWidth: '280px' }}>
+          <div className="w-full sm:w-auto min-w-0 sm:min-w-[240px] max-w-full">
             <GlassDropdown
               value={activeTab}
               onChange={handleTabChange}
@@ -194,7 +195,10 @@ export default function AnalyticsDashboard() {
                 </div>
             )}
             <div className="w-full sm:w-auto flex justify-center">
-              <AnalyticsExportMenu companies={companies} />
+              <AnalyticsExportMenu 
+                companies={companies} 
+                activeFilters={{ startDate, endDate }}
+              />
             </div>
           </div>
         </div>

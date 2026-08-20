@@ -203,4 +203,63 @@ class PdfReportGeneratorTests {
         assertNotNull(pdf);
         assertTrue(pdf.length > 0, PDF_NOT_EMPTY);
     }
+
+    @Test
+    void shouldGenerateUserFormationsPdf() {
+        org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO dto = org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO.builder()
+                .userId(1)
+                .username("jdoe")
+                .personalCode("PC01")
+                .fullName("John Doe")
+                .locator("AV")
+                .companyName("Acme Corp")
+                .formationId(10)
+                .formationName("Java Training")
+                .formationDate(LocalDateTime.now())
+                .status("ASISTIÓ")
+                .checkInDate(LocalDateTime.now())
+                .checkOutDate(LocalDateTime.now().plusHours(2))
+                .durationMinutes(120L)
+                .durationHoursFormatted("2h 0m (2.0h)")
+                .hasSignature(true)
+                .build();
+
+        byte[] pdf = pdfReportGenerator.generateUserFormationsPdf(List.of(dto));
+        assertNotNull(pdf);
+        assertTrue(pdf.length > 0, PDF_NOT_EMPTY);
+    }
+
+    @Test
+    void shouldGenerateSingleUserDossierPdf() {
+        UserAnalyticsDTO user = UserAnalyticsDTO.builder()
+                .userId(1)
+                .username("jdoe")
+                .firstName("John")
+                .lastName("Doe")
+                .personalCode("1001")
+                .locator("LOC01")
+                .authority("USER")
+                .companyName("Logística Sur")
+                .isWorking(true)
+                .attendancePercentage(95.0)
+                .totalFormationMinutes(120L)
+                .formationsAssigned(2)
+                .formationsAttended(2)
+                .build();
+
+        org.springframework.samples.smartcheckin.analytics.UserFormationDetailDTO detail = org.springframework.samples.smartcheckin.analytics.UserFormationDetailDTO.builder()
+                .formationId(10)
+                .formationName("Java Course")
+                .formationDate(LocalDateTime.now())
+                .status("COMPLETED")
+                .checkInDate(LocalDateTime.now())
+                .checkOutDate(LocalDateTime.now().plusHours(2))
+                .durationMinutes(120L)
+                .hasSignature(true)
+                .build();
+
+        byte[] pdf = pdfReportGenerator.generateSingleUserDossierPdf(user, List.of(detail));
+        assertNotNull(pdf);
+        assertTrue(pdf.length > 0, PDF_NOT_EMPTY);
+    }
 }

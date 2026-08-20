@@ -106,15 +106,17 @@ export default function PasskeySettings({ t, toast }) {
         {passkeys.map((pk) => (
           <div 
             key={pk.id} 
-            className="flex items-center justify-between p-3 rounded-2xl bg-white/60 hover:bg-white/80 border border-white/60 transition-colors shadow-2xs gap-3"
+            className="flex items-center justify-between p-2.5 sm:p-3 rounded-2xl bg-white/70 hover:bg-white/90 border border-white/70 transition-colors shadow-2xs gap-2.5 w-full min-w-0"
           >
-            <div className="flex items-center gap-3 min-w-0">
-              {getDeviceIcon(pk.deviceType)}
-              <div className="min-w-0">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <div className="p-2 rounded-xl bg-white/80 border border-white shadow-2xs flex-shrink-0">
+                {getDeviceIcon(pk.deviceType)}
+              </div>
+              <div className="min-w-0 flex-1">
                 <div className="font-bold text-slate-800 text-xs truncate" title={pk.nickname}>
                   {pk.nickname}
                 </div>
-                <div className="text-[10px] text-slate-400">
+                <div className="text-[10px] text-slate-500 truncate mt-0.5">
                   {t('passkeys.created', 'Vinculada:')} {dayjs(pk.createdAt).format('DD/MM/YYYY')} • {pk.deviceType}
                 </div>
               </div>
@@ -136,7 +138,7 @@ export default function PasskeySettings({ t, toast }) {
   };
 
   return (
-    <div className="bg-white/40 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-[32px] p-6 border border-white/60 flex flex-col justify-between h-full">
+    <div className="bg-white/40 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 border border-white/60 flex flex-col justify-between h-full">
       <div>
         {/* Cabecera de la tarjeta */}
         <div className="flex items-center gap-3 mb-3 border-b border-white/40 pb-3">
@@ -144,10 +146,10 @@ export default function PasskeySettings({ t, toast }) {
             <FaFingerprint size={20} className="text-[#73841e]" />
           </div>
           <div>
-            <h3 className="font-extrabold text-slate-800 text-lg m-0">
+            <h3 className="font-extrabold text-slate-800 text-base sm:text-lg m-0 leading-tight">
               {t('passkeys.title', 'Llaves de Acceso (Passkeys & Biometría)')}
             </h3>
-            <p className="text-xs text-slate-500 m-0">
+            <p className="text-xs text-slate-500 m-0 mt-0.5">
               {t('passkeys.subtitle', 'Acceso seguro sin contraseñas mediante Face ID, Touch ID o Windows Hello.')}
             </p>
           </div>
@@ -172,10 +174,10 @@ export default function PasskeySettings({ t, toast }) {
             type="button"
             onClick={handleStartRegister}
             disabled={registering}
-            className="w-full h-11 rounded-full font-bold text-xs text-slate-900 bg-[#b3c34c]/60 backdrop-blur-md border border-white/50 shadow-xs hover:bg-[#b3c34c]/80 transition-colors duration-200 active:scale-95 flex justify-center items-center gap-2 cursor-pointer"
+            className="w-full min-h-[44px] py-2.5 px-4 rounded-2xl font-bold text-xs text-slate-900 bg-[#b3c34c]/70 backdrop-blur-md border border-white/60 shadow-xs hover:bg-[#b3c34c]/90 transition-all duration-200 active:scale-[0.98] flex justify-center items-center gap-2 text-center cursor-pointer"
           >
-            <FaPlus size={11} />
-            <span>{t('passkeys.addBtn', 'Vincular este dispositivo (Passkey)')}</span>
+            <FaPlus size={11} className="flex-shrink-0" />
+            <span className="leading-tight">{t('passkeys.addBtn', 'Vincular este dispositivo (Passkey)')}</span>
           </button>
         </div>
       )}

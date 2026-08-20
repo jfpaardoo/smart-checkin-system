@@ -142,64 +142,63 @@ export default function FormationsTab({ loadingFormations, formations, t }) {
             </Table>
           </div>
 
-          {/* 2. VISTA MÓVIL / TABLET (Tarjetas adaptadas idénticas al Audit) */}
-          <div className="lg:hidden flex flex-col gap-4 mt-2">
+          {/* 2. VISTA MÓVIL / TABLET (Tarjetas adaptadas) */}
+          <div className="lg:hidden flex flex-col gap-3.5 mt-2">
             {formations.map((att) => {
               const isSigned = Boolean(att.signature);
               return (
-                <div key={att.id} className="bg-white/70 backdrop-blur-md shadow-sm rounded-[20px] p-5 border border-white/40 flex flex-col gap-3">
+                <div key={att.id} className="bg-white/80 backdrop-blur-md shadow-xs rounded-2xl p-4 border border-white/60 flex flex-col gap-2.5">
                   
-                  {/* Cabecera: Fecha, Título y Badge */}
-                  <div className="flex justify-between items-start gap-3">
-                    <div>
-                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">
-                        {formatDate(att.formation?.formationDate) || "SIN FECHA"}
-                      </span>
-                      <h3 className="font-bold text-slate-800 m-0 text-base mt-0.5">
-                        {att.formation?.name || "Formación"}
-                      </h3>
-                    </div>
-                    <div className="flex-shrink-0 text-right">
+                  {/* Cabecera: Fecha y Badge */}
+                  <div className="flex justify-between items-center gap-2 border-b border-slate-200/50 pb-2">
+                    <span className="text-[11px] font-bold text-slate-500 tracking-wide">
+                      {formatDate(att.formation?.formationDate) || "SIN FECHA"}
+                    </span>
+                    <div className="flex-shrink-0">
                       {isSigned ? (
-                        <Badge color="success" pill className="px-3 py-1.5 fw-semibold text-xs d-inline-flex align-items-center gap-1">
-                          <FaCheckCircle /> {t('profile.signed', 'Firmado')}
-                        </Badge>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                          <FaCheckCircle className="text-[10px]" /> {t('profile.signed', 'Firmado')}
+                        </span>
                       ) : (
-                        <Badge color="warning" pill className="px-3 py-1.5 fw-semibold text-xs d-inline-flex align-items-center gap-1">
-                          <FaExclamationTriangle /> {t('profile.pendingSignature', 'Pendiente')}
-                        </Badge>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                          <FaExclamationTriangle className="text-[10px]" /> {t('profile.pendingSignature', 'Pendiente')}
+                        </span>
                       )}
                     </div>
                   </div>
 
+                  {/* Título de la Formación */}
+                  <h3 className="font-bold text-slate-800 m-0 text-sm sm:text-base leading-snug break-words">
+                    {att.formation?.name || "Formación"}
+                  </h3>
+
                   {/* Cuerpo: Detalles de Entrada, Salida y Duración */}
-                  <div className="text-xs text-slate-600 bg-white/40 rounded-xl p-3 border border-white/50 shadow-inner flex flex-col gap-2">
-                    <div className="flex justify-between items-center">
-                      <span className="font-semibold text-slate-700">{t('formations.checkin', 'Entrada')}:</span>
-                      <span>{formatDate(att.checkInDate) || '-'}</span>
+                  <div className="text-xs text-slate-600 bg-slate-50/70 rounded-xl p-2.5 border border-slate-200/50 flex flex-col gap-1.5">
+                    <div className="flex flex-col xs:flex-row xs:justify-between xs:items-center gap-0.5">
+                      <span className="font-semibold text-slate-500 text-[11px]">{t('formations.checkin', 'Entrada')}:</span>
+                      <span className="font-medium text-slate-700 text-xs">{formatDate(att.checkInDate) || '-'}</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-semibold text-slate-700">{t('formations.checkout', 'Salida')}:</span>
-                      <span>{formatDate(att.checkOutDate) || '-'}</span>
+                    <div className="flex flex-col xs:flex-row xs:justify-between xs:items-center gap-0.5">
+                      <span className="font-semibold text-slate-500 text-[11px]">{t('formations.checkout', 'Salida')}:</span>
+                      <span className="font-medium text-slate-700 text-xs">{formatDate(att.checkOutDate) || '-'}</span>
                     </div>
-                    <div className="flex justify-between items-center pt-2 mt-1 border-t border-white/60">
-                      <span className="font-semibold text-slate-700">{t('formations.duration', 'Duración')}:</span>
-                      <span className="font-bold text-slate-800">{calculateDuration(att.checkInDate, att.checkOutDate)}</span>
+                    <div className="flex justify-between items-center pt-1.5 mt-0.5 border-t border-slate-200/60">
+                      <span className="font-semibold text-slate-600 text-[11px]">{t('formations.duration', 'Duración')}:</span>
+                      <span className="font-bold text-slate-900 text-xs">{calculateDuration(att.checkInDate, att.checkOutDate)}</span>
                     </div>
                   </div>
 
                   {/* Pie de tarjeta: Botón PDF (Solo si está firmado) */}
                   {isSigned && (
-                    <div className="flex items-center justify-end border-t border-slate-200/50 pt-3">
-                      <Button 
-                        size="sm" 
-                        outline 
-                        color="secondary" 
-                        className="d-inline-flex align-items-center gap-2 rounded-pill px-3 py-1.5 text-xs font-semibold shadow-sm hover:-translate-y-0.5 transition-transform"
+                    <div className="flex items-center justify-end pt-1">
+                      <button 
+                        type="button"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300/80 shadow-xs hover:bg-slate-50 active:scale-[0.98] transition-all cursor-pointer"
                         onClick={() => handleDownloadCertificate(att.id)}
                       >
-                        <FaFilePdf className="text-danger" /> {t('profile.downloadCertificate', 'Descargar PDF')}
-                      </Button>
+                        <FaFilePdf className="text-red-500 text-sm" /> 
+                        <span>{t('profile.downloadCertificate', 'Descargar Certificado PDF')}</span>
+                      </button>
                     </div>
                   )}
                 </div>

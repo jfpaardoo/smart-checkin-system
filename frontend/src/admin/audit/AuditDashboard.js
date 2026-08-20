@@ -322,29 +322,29 @@ export default function AuditDashboard() {
             <div className="lg:hidden flex flex-col gap-3 mt-2">
               {filteredLogs.length > 0 ? (
                 paginatedLogs.map(log => (
-                  <div key={log.id} className={`bg-white/70 backdrop-blur-md shadow-sm rounded-[20px] p-5 border ${log.action === 'SECURITY_ANOMALY' ? 'border-red-400 bg-red-50/70' : 'border-white/40'} flex flex-col gap-3`}>
-                    <div className="flex justify-between items-start gap-3">
-                      <div>
-                        <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+                  <div key={log.id} className={`bg-white/70 backdrop-blur-md shadow-sm rounded-[20px] p-4 sm:p-5 border ${log.action === 'SECURITY_ANOMALY' ? 'border-red-400 bg-red-50/70' : 'border-white/40'} flex flex-col gap-3`}>
+                    <div className="flex flex-col items-start gap-1.5 w-full">
+                      <div className="min-w-0 w-full">
+                        <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block truncate">
                           {dayjs.utc(log.timestamp).local().format('DD/MM/YYYY HH:mm:ss')}
                         </span>
-                        <h3 className="font-bold text-slate-800 m-0 text-base mt-0.5">{log.username || 'Sistema'}</h3>
+                        <h3 className="font-bold text-slate-800 m-0 text-sm sm:text-base mt-0.5 break-words">{log.username || 'Sistema'}</h3>
                       </div>
                       <div>
-                        <Badge color={getActionColor(log.action)} pill className="px-3 py-1.5 fw-semibold text-xs">
+                        <Badge color={getActionColor(log.action)} pill className="px-2.5 py-1 fw-semibold text-[11px] whitespace-nowrap shadow-2xs">
                           {t(`audit.actions.${log.action}`, log.action)}
                         </Badge>
                       </div>
                     </div>
 
-                    <div className="text-xs text-slate-600 bg-white/40 rounded-xl p-3 border border-white/50 shadow-inner">
+                    <div className="text-xs text-slate-600 bg-white/40 rounded-xl p-3 border border-white/50 shadow-inner break-words">
                       <span className="font-semibold text-slate-700 block mb-1">{t('audit.columns.details', 'Detalles')}:</span>
                       {formatDetails(log.action, log.details, t)}
                     </div>
 
-                    <div className="flex items-center justify-between border-t border-slate-200/50 pt-3 text-xs text-slate-500">
-                      <span>{t('audit.columns.ip', 'IP Origen')}:</span>
-                      <code className="text-secondary bg-light px-2 py-0.5 rounded">{log.ipAddress || 'N/A'}</code>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-200/50 pt-2.5 text-xs text-slate-500 gap-1">
+                      <span className="font-semibold">{t('audit.columns.ip', 'IP Origen')}:</span>
+                      <code className="text-secondary bg-light px-2 py-0.5 rounded break-all max-w-full inline-block">{log.ipAddress || 'N/A'}</code>
                     </div>
                   </div>
                 ))

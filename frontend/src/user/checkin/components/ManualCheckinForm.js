@@ -26,7 +26,7 @@ export default function ManualCheckinForm({ onSubmit, onCancel }) {
         {t('checkin.enter6DigitCode', 'Introduce el código de 6 dígitos de la formación.')}
       </p>
       
-      <Form onSubmit={handleManualSubmit} className="mb-4">
+      <Form onSubmit={handleManualSubmit} className="mb-4 w-full">
         <FormGroup className="mb-4">
           <Input
             type="text"
@@ -38,33 +38,33 @@ export default function ManualCheckinForm({ onSubmit, onCancel }) {
               const val = e.target.value.replace(/\D/g, '');
               if (val.length <= 6) setManualCode(val);
             }}
-            className="da-input mx-auto"
+            className="da-input mx-auto max-w-full"
             style={{
-              fontSize: '2.5rem',
+              fontSize: 'clamp(1.5rem, 6vw, 2.3rem)',
               textAlign: 'center',
-              letterSpacing: '12px',
-              width: '260px',
-              padding: '15px'
+              letterSpacing: 'clamp(4px, 1.8vw, 10px)',
+              width: '100%',
+              maxWidth: '260px',
+              padding: '12px 8px',
+              boxSizing: 'border-box'
             }}
             autoFocus
           />
         </FormGroup>
         
-        <div className="d-flex justify-content-center gap-3">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-2.5 w-full max-w-[320px] mx-auto">
           <button
             type="button"
-            className="da-btn da-btn-secondary py-3 px-4"
+            className="da-btn da-btn-secondary py-2.5 px-4 w-full sm:flex-1 text-xs sm:text-sm font-semibold rounded-full"
             onClick={onCancel}
-            style={{ flex: 1, maxWidth: '200px' }}
           >
             {t('checkin.cancel', 'Cancelar')}
           </button>
           
           <button
             type="submit"
-            className="da-btn da-btn-primary py-3 px-4"
+            className="da-btn da-btn-primary py-2.5 px-4 w-full sm:flex-1 text-xs sm:text-sm font-semibold rounded-full"
             disabled={manualCode.length !== 6}
-            style={{ flex: 1, maxWidth: '200px' }}
           >
             {t('checkin.validate', 'Validar Código')}
           </button>

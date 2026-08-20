@@ -187,17 +187,17 @@ export default function CompanyListAdmin() {
                 </p>
               )}
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/30">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-1.5 sm:gap-2 pt-2.5 border-t border-white/30 w-full">
                 <Link
                   to={`/companies/${company.id}`}
-                  className="px-3 py-1.5 rounded-xl bg-white/70 border border-white text-xs font-semibold text-slate-700 hover:bg-white flex items-center gap-1.5 shadow-xs"
+                  className="px-3 py-1.5 rounded-xl bg-white/70 border border-white text-xs font-semibold text-slate-700 hover:bg-white inline-flex items-center justify-center gap-1.5 shadow-xs w-full sm:w-auto text-center"
                 >
                   <FaEdit size={12} /> {t("common.edit", "Editar")}
                 </Link>
                 <button
                   type="button"
                   onClick={() => confirmDelete(company)}
-                  className="px-3 py-1.5 rounded-xl bg-rose-50/80 border border-rose-200 text-xs font-semibold text-rose-600 hover:bg-rose-100 flex items-center gap-1.5 shadow-xs"
+                  className="px-3 py-1.5 rounded-xl bg-rose-50/80 border border-rose-200 text-xs font-semibold text-rose-600 hover:bg-rose-100 inline-flex items-center justify-center gap-1.5 shadow-xs w-full sm:w-auto"
                 >
                   <FaTrash size={12} /> {t("common.delete", "Eliminar")}
                 </button>

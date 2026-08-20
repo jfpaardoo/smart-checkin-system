@@ -39,11 +39,21 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 - **Auto-Recuperación de Chunks y Resiliencia en Despliegues (`lazyWithRetry`)**:
   - Creado el helper `lazyWithRetry.js` y envueltas todas las vistas perezosas en `App.js` para erradicar los fallos `Loading chunk XX failed` (`ChunkLoadError`) en dispositivos móviles (especialmente Android) tras nuevos despliegues en el servidor.
   - Añadida detección de errores de empaquetado en `ErrorFallback` con acción de recarga transparente.
-- **Comportamiento Táctil en Desplegables (`GlassDropdown`)**:
-  - Eliminado el listener `touchstart` en `GlassDropdown.js` y `AnalyticsExportMenu.js` que cerraba involuntariamente los menús al iniciar un desplazamiento o scroll vertical en pantallas táctiles.
-- **Adaptabilidad Responsiva en Dispositivos Móviles Estrechos**:
-  - Corregido el desbordamiento horizontal en `AppNavbar.js` (textos fluidos con `truncate` y `min-w-0`) y en el generador de QR (`QRGeneratorAdmin.js`, `qrScanner.css` con dimensiones fluidas `aspect-ratio: 1/1`), asegurando visualización adecuada en terminales Android de 360px o con escalado de fuente del sistema aumentado.
-  - Actualizada la etiqueta `viewport` en `index.html` con `viewport-fit=cover`.
+- **Rediseño y Centrado de Navbar en Cápsula Glassmorphism (`AppNavbar.js`)**:
+  - Unificación a Tailwind CSS puro con dimensiones elásticas y centrado perfecto (`mx-3 md:mx-auto max-w-[1080px] rounded-[40px]`), eliminando conflictos de compilación de `@apply` y márgenes asimétricos.
+- **Prevención de Desbordamiento Horizontal en Móviles Ultra-Estrechos**:
+  - Corregido `min-width: 300px` en `.da-card` dentro de `responsive.css`, permitiendo que el contenedor se ajuste naturalmente a cualquier resolución móvil.
+  - Añadido `overflow-x: hidden; width: 100%` en `#root` en `App.css` para blindar el viewport contra cualquier desajuste lateral.
+- **Comportamiento Flotante de Desplegables (`GlassDropdown`) y Cámara**:
+  - Desplegables posicionados siempre como menú flotante absoluto (`z-[9999]`) en todas las resoluciones, impidiendo que al abrir el selector de cámara se desplace o empuje el visor de vídeo y los botones hacia abajo.
+- **Adaptabilidad Responsiva Integral en Paneles y Módulos**:
+  - **Login**: Escalado dinámico (`transform: scale(...)`) del widget Cloudflare Turnstile en pantallas estrechas para evitar el ensanchamiento forzado del viewport y mantener el footer centrado.
+  - **Paginación (`GlassPagination`)**: Controles de navegación compactos y elásticos que ocultan botones dobles extremos en móviles sin generar scrollbars.
+  - **Auditoría (`AuditDashboard`)**: Badges de acción protegidos contra saltos de línea letra por letra (`whitespace-nowrap`) y truncado seguro de nombres de usuario.
+  - **Analíticas (`AnalyticsDashboard`, `EmployeeCardList`, `AdvancedExportModal`)**: Eliminación de `minWidth: 280px` rígidos, métricas en cuadrícula adaptable y campos de fecha en columnas responsive.
+  - **Formaciones (`FormationTable`, `FormationDetailsAdmin`)**: Cápsulas de estado con `flex-wrap` y cabecera de detalle reorganizada para evitar solapamiento entre el botón de retroceso y el título.
+  - **Check-in Manual (`ManualCheckinForm`)**: Tipografía y espaciado entre caracteres elásticos (`clamp`) en el campo de código de 6 dígitos para ajustarse a cualquier ancho de pantalla sin desbordar los botones.
+  - **Dashboard de Usuario (`UserFormationsTable`)**: Insignias de estado de formación (`En Curso`, `Completadas`) adaptadas con `flex-wrap` y `shrink-0` para no sobresalir de las tarjetas móviles.
 - **Persistencia de Solicitud de Instalación PWA**:
   - Ajustado `PwaInstallPrompt.js` para ofrecer siempre el aviso de instalación en Android / PC y la guía de añadir a inicio en iOS mientras la app no esté instalada en modo *standalone*.
 

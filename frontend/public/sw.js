@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-/* Service Worker for Distribution Academy PWA - v6 */
+const CURRENT_CACHE_NAME = 'da-cache-v1.1.0';
 
 self.addEventListener('message', function(event) {
   if (event.origin && event.origin !== self.location.origin) {
@@ -7,6 +7,11 @@ self.addEventListener('message', function(event) {
   }
   if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+  if (event.data?.type === 'CLEAR_CACHES') {
+    caches.keys().then(function(names) {
+      return Promise.all(names.map(function(name) { return caches.delete(name); }));
+    });
   }
 });
 
@@ -72,5 +77,19 @@ self.addEventListener('install', function() {
 });
 
 self.addEventListener('activate', function(event) {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys().then(function(cacheNames) {
+      return Promise.all(
+        cacheNames
+          .filter(function(cacheName) {
+            return cacheName !== CURRENT_CACHE_NAME;
+          })
+          .map(function(cacheName) {
+            return caches.delete(cacheName);
+          })
+      );
+    }).then(function() {
+      return self.clients.claim();
+    })
+  );
 });

@@ -13,9 +13,9 @@ export default function PasswordChangeCard({
   const [showNewPassword, setShowNewPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const currentUser = tokenService.getUser();
-  const glassInputClass = "w-full px-4 pt-6 pb-2 rounded-2xl border border-white/50 bg-white/60 focus:border-[#b3c34c] focus:bg-white/90 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition-colors transition-shadow font-medium text-slate-800 shadow-inner peer";
-  const glassLabelClass = "absolute text-sm text-slate-500 transition-transform duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 font-semibold pointer-events-none";
-  const glassButtonClass = "w-full mt-4 py-3.5 rounded-full font-bold text-slate-900 bg-[#b3c34c]/60 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(179,195,76,0.35)] hover:bg-[#b3c34c]/80 hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.55)] transition duration-300 active:scale-95 flex justify-center items-center gap-2";
+  const glassInputClass = "w-full pl-4 pr-11 pt-6 pb-2 rounded-2xl border border-white/50 bg-white/60 focus:border-[#b3c34c] focus:bg-white/90 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition-colors transition-shadow font-medium text-slate-800 shadow-inner peer";
+  const glassLabelClass = "absolute text-sm text-slate-500 transition-transform duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 max-w-[calc(100%-3rem)] truncate peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 font-semibold pointer-events-none";
+  const glassButtonClass = "w-full mt-4 min-h-[44px] py-3 px-4 rounded-2xl font-bold text-xs sm:text-sm text-slate-900 bg-[#b3c34c]/70 backdrop-blur-md border border-white/60 shadow-[0_4px_20px_rgba(179,195,76,0.35)] hover:bg-[#b3c34c]/90 transition duration-300 active:scale-[0.98] flex justify-center items-center gap-2 text-center cursor-pointer";
 
   return (
     <div className="p-6 bg-white/40 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-[32px] border border-white/60 h-full flex flex-col justify-between">

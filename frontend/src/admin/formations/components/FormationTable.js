@@ -91,44 +91,55 @@ export default function FormationTable({ formations, loading }) {
           const inProgress = formation.attendances ? formation.attendances.filter(a => a.checkInDate && !a.checkOutDate).length : 0;
 
           return (
-            <div key={formation.id} className="bg-white/70 backdrop-blur-md shadow-sm rounded-[20px] p-5 border border-white/40">
-              <div className="flex justify-between items-start gap-4 mb-4">
-                <div className="flex-1">
-                  <h3 className="font-bold text-slate-800 m-0 text-[1.1rem] leading-tight">{formation.name}</h3>
-                  <p className="text-xs font-medium text-slate-500 m-0 mt-2">
+            <div key={formation.id} className="bg-white/70 backdrop-blur-md shadow-sm rounded-[20px] p-4 sm:p-5 border border-white/40">
+              <div className="flex justify-between items-start gap-2 mb-3">
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-bold text-slate-800 m-0 text-base sm:text-[1.1rem] leading-tight break-words">{formation.name}</h3>
+                  <p className="text-xs font-medium text-slate-500 m-0 mt-1">
                     {dayjs(formation.formationDate).format('YYYY-MM-DD HH:mm')}
                   </p>
                 </div>
-                <Button
-                  size="sm"
-                  className="da-btn-primary"
-                  style={{ width: '44px', height: '44px', borderRadius: '12px', padding: 0 }}
-                  aria-label={"details-" + formation.id}
-                  tag={Link}
-                  to={"/formations/" + formation.id + "/details"}
-                >
-                  <FontAwesomeIcon icon={faUsers} />
-                </Button>
+                <div className="shrink-0">
+                  <Button
+                    size="sm"
+                    className="da-btn-primary flex items-center justify-center shadow-xs"
+                    style={{ width: '40px', height: '40px', borderRadius: '12px', padding: 0 }}
+                    aria-label={"details-" + formation.id}
+                    tag={Link}
+                    to={"/formations/" + formation.id + "/details"}
+                  >
+                    <FontAwesomeIcon icon={faUsers} />
+                  </Button>
+                </div>
               </div>
 
               {formation.description && (
-                <div className="text-[0.85rem] text-slate-600 bg-white/40 rounded-xl p-3 mb-4 border border-white/50 shadow-inner">
+                <div className="text-xs sm:text-[0.85rem] text-slate-600 bg-white/40 rounded-xl p-3 mb-3 border border-white/50 shadow-inner break-words">
                   {formation.description}
                 </div>
               )}
 
-              {/* Contenedor en fila con formato de cápsulas completas (rounded-full) */}
-              <div className="flex flex-row gap-2 items-center justify-between border-t border-slate-200/50 pt-4">
-                <span className="flex-1 text-center py-2 px-2 bg-slate-200/80 border border-slate-300/50 shadow-sm text-slate-900 rounded-full text-[0.6rem] font-bold uppercase tracking-wider block">
+              {/* Contenedor con cápsulas apiladas verticalmente en móvil y con truncado seguro */}
+              <div className="flex flex-col gap-1.5 w-full border-t border-slate-200/50 pt-3">
+                <span 
+                  className="w-full text-center py-1.5 px-3 bg-slate-200/80 border border-slate-300/50 shadow-2xs text-slate-900 rounded-full text-xs font-bold uppercase tracking-wider block truncate overflow-hidden"
+                  title={`${total} ${t('formations.total')}`}
+                >
                   {total} {t('formations.total')}
                 </span>
                 {completed > 0 && (
-                  <span className="flex-1 text-center py-2 px-2 bg-[#e2ec98]/90 border border-[#d2db85]/50 shadow-sm text-slate-900 rounded-full text-[0.6rem] font-bold uppercase tracking-wider block">
+                  <span 
+                    className="w-full text-center py-1.5 px-3 bg-[#e2ec98]/90 border border-[#d2db85]/50 shadow-2xs text-slate-900 rounded-full text-xs font-bold uppercase tracking-wider block truncate overflow-hidden"
+                    title={`${completed} ${t('formations.completed')}`}
+                  >
                     {completed} {t('formations.completed')}
                   </span>
                 )}
                 {inProgress > 0 && (
-                  <span className="flex-1 text-center py-2 px-2 bg-amber-300/80 border border-amber-400/50 shadow-sm text-slate-900 rounded-full text-[0.6rem] font-bold uppercase tracking-wider block">
+                  <span 
+                    className="w-full text-center py-1.5 px-3 bg-amber-300/80 border border-amber-400/50 shadow-2xs text-slate-900 rounded-full text-xs font-bold uppercase tracking-wider block truncate overflow-hidden"
+                    title={`${inProgress} ${t('formations.inProgress')}`}
+                  >
                     {inProgress} {t('formations.inProgress')}
                   </span>
                 )}

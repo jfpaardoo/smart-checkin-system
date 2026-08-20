@@ -99,33 +99,33 @@ export default function ActiveSessionsTab({ t, toast }) {
         {sessions.map((session) => (
           <div
             key={session.id || session.tokenHash}
-            className={`p-4 rounded-2xl border transition flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 ${
+            className={`p-3.5 sm:p-4 rounded-2xl border transition flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 w-full overflow-hidden ${
               session.isCurrent
                 ? "bg-[#b3c34c]/10 border-[#b3c34c]/40 shadow-xs"
                 : "bg-white/60 border-white/80 hover:bg-white/80"
             }`}
           >
-            <div className="flex items-center gap-3.5">
-              <div className="p-3 rounded-2xl bg-white/80 border border-white shadow-xs flex-shrink-0">
+            <div className="flex items-start sm:items-center gap-3 w-full min-w-0 flex-1">
+              <div className="p-2.5 rounded-xl bg-white/80 border border-white shadow-xs flex-shrink-0 mt-0.5 sm:mt-0">
                 {getDeviceIcon(session.deviceInfo, session.userAgent)}
               </div>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-bold text-slate-800 text-sm">
+              <div className="min-w-0 flex-1 flex flex-col gap-0.5">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="font-bold text-slate-800 text-xs sm:text-sm break-words leading-tight">
                     {session.deviceInfo || t("profile.unknownDevice", "Dispositivo Desconocido")}
                   </span>
                   {session.isCurrent && (
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#b3c34c] text-slate-900 shadow-xs">
+                    <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-[#b3c34c] text-slate-900 shadow-xs flex-shrink-0">
                       {t("profile.currentSessionBadge", "Esta sesión")}
                     </span>
                   )}
                 </div>
-                <div className="text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                <div className="text-[10.5px] text-slate-500 flex flex-col xs:flex-row xs:flex-wrap gap-x-3 gap-y-0.5 leading-tight break-words mt-0.5">
                   <span>
-                    <strong>IP:</strong> {session.ipAddress || "Local / Proxy"}
+                    <strong className="text-slate-600">IP:</strong> {session.ipAddress || "Local / Proxy"}
                   </span>
                   <span>
-                    <strong>{t("profile.lastActive", "Última actividad")}:</strong> {formatDate(session.lastActivityAt)}
+                    <strong className="text-slate-600">{t("profile.lastActive", "Última actividad")}:</strong> {formatDate(session.lastActivityAt)}
                   </span>
                 </div>
               </div>
@@ -136,10 +136,10 @@ export default function ActiveSessionsTab({ t, toast }) {
                 type="button"
                 onClick={() => handleRevokeSession(session.id)}
                 disabled={revokingId === session.id}
-                className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 text-xs font-semibold transition flex items-center gap-1.5 self-end sm:self-center cursor-pointer"
+                className="w-full sm:w-auto justify-center px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer self-stretch sm:self-auto flex-shrink-0"
               >
-                <FaSignOutAlt />
-                {revokingId === session.id ? "..." : t("profile.revokeSession", "Cerrar sesión")}
+                <FaSignOutAlt className="flex-shrink-0" />
+                <span>{revokingId === session.id ? "..." : t("profile.revokeSession", "Cerrar sesión")}</span>
               </button>
             )}
           </div>
@@ -149,28 +149,28 @@ export default function ActiveSessionsTab({ t, toast }) {
   };
 
   return (
-    <div className="p-6 bg-white/40 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-[32px] border border-white/60 mb-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div className="p-4 sm:p-6 bg-white/40 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-[28px] sm:rounded-[32px] border border-white/60 mb-6 overflow-hidden">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
         <div>
           <h5 className="text-xl font-bold flex items-center text-slate-800 drop-shadow-sm mb-1">
-            <FaShieldAlt className="mr-3 text-[#8a9e29] text-2xl" />
-            {t("profile.activeSessionsTitle", "Sesiones Activas y Dispositivos")}
+            <FaShieldAlt className="mr-3 text-[#8a9e29] text-2xl flex-shrink-0" />
+            <span>{t("profile.activeSessionsTitle", "Sesiones Activas y Dispositivos")}</span>
           </h5>
           <p className="text-xs text-slate-500 mb-0">
             {t("profile.activeSessionsSubtitle", "Controla y revoca accesos activos en otros navegadores o dispositivos (OWASP ASVS L3).")}
           </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap sm:flex-nowrap gap-2 w-full sm:w-auto">
           <button
             type="button"
             onClick={fetchSessions}
             disabled={loading}
-            className="px-3 py-2 rounded-xl bg-white/60 hover:bg-white text-slate-700 text-xs font-semibold border border-white/80 transition flex items-center gap-2 shadow-xs cursor-pointer"
+            className="flex-1 sm:flex-none justify-center px-3.5 py-2 rounded-xl bg-white/70 hover:bg-white text-slate-700 text-xs font-semibold border border-white/90 transition flex items-center gap-1.5 shadow-xs cursor-pointer"
             title={t("profile.refreshSessions", "Actualizar sesiones")}
           >
             <FaSyncAlt className={loading ? "animate-spin text-[#8a9e29]" : "text-[#8a9e29]"} />
-            {t("profile.refresh", "Actualizar")}
+            <span>{t("profile.refresh", "Actualizar")}</span>
           </button>
 
           {otherSessionsCount > 0 && (
@@ -178,10 +178,10 @@ export default function ActiveSessionsTab({ t, toast }) {
               type="button"
               onClick={handleRevokeOtherSessions}
               disabled={revokingAll}
-              className="px-4 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 text-xs font-bold border border-rose-200 transition flex items-center gap-2 shadow-xs cursor-pointer"
+              className="flex-1 sm:flex-none justify-center px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200 transition flex items-center gap-1.5 shadow-xs cursor-pointer text-center"
             >
-              <FaSignOutAlt />
-              {revokingAll ? "..." : t("profile.revokeOtherSessions", "Cerrar las demás sesiones")}
+              <FaSignOutAlt className="flex-shrink-0" />
+              <span className="leading-tight">{revokingAll ? "..." : t("profile.revokeOtherSessions", "Cerrar las demás sesiones")}</span>
             </button>
           )}
         </div>

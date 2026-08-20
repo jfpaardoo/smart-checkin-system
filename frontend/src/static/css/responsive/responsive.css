@@ -156,6 +156,7 @@
     margin-bottom: 15px;
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
     backdrop-filter: blur(15px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(15px) saturate(180%) !important;
   }
@@ -219,6 +220,36 @@
     justify-content: center !important;
   }
 
+  .analytics-kpi-row {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .analytics-kpi-card {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    padding: 18px 14px !important;
+    gap: 10px !important;
+  }
+
+  .analytics-kpi-content {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    width: 100% !important;
+  }
+
+  .analytics-kpi-content h6 {
+    text-align: center !important;
+    font-size: 0.75rem !important;
+  }
+
+  .analytics-kpi-content .kpi-value {
+    font-size: 1.6rem !important;
+  }
+
 
   table {
     table-layout: auto !important;
@@ -274,12 +305,13 @@
   .table.stacked-mobile tbody tr {
     display: flex;
     flex-direction: column;
-    margin-bottom: 1rem;
-    background: rgba(255, 255, 255, 0.45) !important;
+    margin-bottom: 1.25rem !important;
+    background: rgba(255, 255, 255, 0.95) !important;
     backdrop-filter: var(--da-glass-blur-med);
     -webkit-backdrop-filter: var(--da-glass-blur-med);
+    border: 1px solid rgba(226, 232, 240, 0.9) !important;
     border-radius: 20px !important;
-    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9), 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04) !important;
     overflow: hidden;
     padding: 0 !important;
   }

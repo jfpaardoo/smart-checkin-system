@@ -128,19 +128,30 @@ export default function Register() {
 
   // Creamos el componente del CAPTCHA con su estética aquí, para inyectarlo en el formulario
   const captchaWidget = (
-    <div className="flex justify-center items-center my-2 w-full overflow-hidden mx-auto">
-      <Turnstile 
-        key={`${siteKey}-${captchaKey}`}
-        siteKey={siteKey} 
-        onSuccess={(token) => setCaptchaToken(token)}
-        onError={() => {
-          if (!isE2E) setCaptchaToken(null);
+    <div className="flex justify-center items-center my-1 w-full overflow-hidden mx-auto">
+      <div 
+        style={{ transform: 'scale(var(--turnstile-scale-reg, 1))', transformOrigin: 'center center' }}
+        ref={el => {
+          if (el) {
+            const parentWidth = el.parentElement?.offsetWidth || 300;
+            const scale = Math.min(1, parentWidth / 310);
+            el.style.setProperty('--turnstile-scale-reg', scale);
+          }
         }}
-        onExpire={() => {
-          if (!isE2E) setCaptchaToken(null);
-        }}
-        options={{ theme: 'light' }}
-      />
+      >
+        <Turnstile 
+          key={`${siteKey}-${captchaKey}`}
+          siteKey={siteKey} 
+          onSuccess={(token) => setCaptchaToken(token)}
+          onError={() => {
+            if (!isE2E) setCaptchaToken(null);
+          }}
+          onExpire={() => {
+            if (!isE2E) setCaptchaToken(null);
+          }}
+          options={{ theme: 'light' }}
+        />
+      </div>
     </div>
   );
 

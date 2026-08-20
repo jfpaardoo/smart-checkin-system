@@ -177,13 +177,13 @@ export default function Login() {
                   type="button"
                   onClick={handlePasskeyLogin}
                   disabled={loading}
-                  className="w-full min-h-[52px] py-2.5 px-4 rounded-full font-bold text-slate-800 bg-white/80 backdrop-blur-md border border-white shadow-[0_8px_25px_0_rgba(0,0,0,0.06)] hover:bg-white hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.35)] transition-colors duration-200 active:scale-95 flex items-center justify-center gap-2.5 box-border cursor-pointer text-xs sm:text-sm text-center"
+                  className="w-full min-h-[48px] py-2.5 px-3.5 rounded-2xl font-bold text-slate-800 bg-white/90 backdrop-blur-md border border-white shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:bg-white hover:shadow-[0_6px_20px_rgba(179,195,76,0.3)] transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 box-border cursor-pointer text-xs sm:text-sm text-center"
                 >
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     <FaFingerprint className="text-[#73841e] text-base sm:text-lg" />
                     <FaKey className="text-[#8fa228] text-xs sm:text-sm" />
                   </div>
-                  <span className="leading-snug">{t('login.passkeyBtn', 'Acceder con Llave de Acceso (Biometría)')}</span>
+                  <span className="leading-tight">{t('login.passkeyBtn', 'Acceder con Llave de Acceso (Biometría)')}</span>
                 </button>
 
                 <div className="flex items-center gap-3 my-2">
@@ -233,15 +233,26 @@ export default function Login() {
                 </label>
               </div>
 
-              <div className="flex justify-center items-center my-1 w-full overflow-hidden">
-                <Turnstile 
-                  key={`${siteKey}-${captchaKey}`}
-                  siteKey={siteKey} 
-                  onSuccess={(token) => setCaptchaToken(token)}
-                  onError={() => setCaptchaToken(null)}
-                  onExpire={() => setCaptchaToken(null)}
-                  options={{ theme: 'light' }}
-                />
+              <div className="flex justify-center items-center my-1 w-full" style={{ overflow: 'hidden' }}>
+                <div style={{ transform: 'scale(var(--turnstile-scale, 1))', transformOrigin: 'center center' }}
+                  ref={el => {
+                    if (el) {
+                      const parentWidth = el.parentElement?.offsetWidth || 300;
+                      const scale = Math.min(1, parentWidth / 310);
+                      el.style.setProperty('--turnstile-scale', scale);
+                      document.documentElement.style.setProperty('--turnstile-scale', scale);
+                    }
+                  }}
+                >
+                  <Turnstile 
+                    key={`${siteKey}-${captchaKey}`}
+                    siteKey={siteKey} 
+                    onSuccess={(token) => setCaptchaToken(token)}
+                    onError={() => setCaptchaToken(null)}
+                    onExpire={() => setCaptchaToken(null)}
+                    options={{ theme: 'light' }}
+                  />
+                </div>
               </div>
 
               <button 
