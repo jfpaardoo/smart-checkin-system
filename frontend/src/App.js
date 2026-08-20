@@ -38,7 +38,7 @@ const ResetPassword = lazyWithRetry(() => import("./auth/recover/ResetPassword")
 
 function ErrorFallback({ error, resetErrorBoundary }) {
   const { t } = useTranslation();
-  const isChunkError = error?.name === 'ChunkLoadError' || (error?.message && error.message.includes('Loading chunk'));
+  const isChunkError = error?.name === 'ChunkLoadError' || (error?.message.includes('Loading chunk'));
 
   const handleReload = () => {
     window.sessionStorage.removeItem('retry-lazy-refreshed');

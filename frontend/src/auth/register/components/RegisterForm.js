@@ -245,7 +245,7 @@ export default function RegisterForm({ form, companies = [], handleChange, handl
         </div>
 
         {/* Cloudflare Turnstile Captcha */}
-        <div className="md:col-span-2 flex flex-col items-center justify-center my-2 p-2 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/40">
+        <div className="md:col-span-2 flex flex-col items-center justify-center my-2 p-2 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/40 overflow-hidden w-full">
           {captchaComponent}
         </div>
 

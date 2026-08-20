@@ -20,6 +20,14 @@ export const lazyWithRetry = (componentImport) =>
       if (!hasBeenForceRefreshed) {
         // Mark that we are reloading to avoid an infinite reload loop
         window.sessionStorage.setItem('retry-lazy-refreshed', 'true');
+        if ('caches' in window) {
+          try {
+            const keys = await window.caches.keys();
+            await Promise.all(keys.map(key => window.caches.delete(key)));
+          } catch (e) {
+            console.warn("Could not purge caches during recovery:", e);
+          }
+        }
         window.location.reload();
         return { default: () => null };
       }

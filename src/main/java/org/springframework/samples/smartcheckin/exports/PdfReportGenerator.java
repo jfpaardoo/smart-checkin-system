@@ -15,6 +15,8 @@ import org.knowm.xchart.PieChartBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.samples.smartcheckin.analytics.UserAnalyticsDTO;
+import org.springframework.samples.smartcheckin.analytics.UserFormationDetailDTO;
+import org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO;
 import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.checkin.Checkin;
 import org.springframework.samples.smartcheckin.checkin.CheckinType;
@@ -555,6 +557,189 @@ public class PdfReportGenerator {
         }
 
         return out.toByteArray();
+    }
+
+    // ─── 6. User Formations Detailed Matrix PDF ───────────────────────────────
+
+    public byte[] generateUserFormationsPdf(List<UserFormationExportDTO> records) {
+        Document document = new Document(PageSize.A4.rotate(), 20, 20, 20, 30);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        try {
+            PdfWriter writer = PdfWriter.getInstance(document, out);
+            writer.setPageEvent(new HeaderFooterPageEvent("Informe Detallado de Asistencias a Formaciones"));
+            document.open();
+
+            addHeaderBanner(document, "Informe de Asistencia a Formaciones por Empleado", DISTRIBUTION_ACADEMY);
+
+            List<UserFormationExportDTO> safeRecords = records != null ? records : List.of();
+            renderUserFormationsKpis(document, safeRecords);
+
+            Paragraph secTitle = new Paragraph("Detalle de Asistencias, Tiempos Dedicados y Sellos de Integridad", FONT_SECTION);
+            secTitle.setSpacingAfter(8);
+            document.add(secTitle);
+
+            renderUserFormationsTable(document, safeRecords);
+
+            document.close();
+        } catch (Exception ex) {
+            logger.error("Error generating User Formations PDF", ex);
+        }
+
+        return out.toByteArray();
+    }
+
+    private void renderUserFormationsKpis(Document document, List<UserFormationExportDTO> records) throws DocumentException {
+        int total = records.size();
+        long attended = records.stream().filter(r -> "ASISTIÓ".equalsIgnoreCase(r.getStatus())).count();
+        long totalMins = records.stream().mapToLong(r -> r.getDurationMinutes() != null ? r.getDurationMinutes() : 0).sum();
+        long signed = records.stream().filter(r -> Boolean.TRUE.equals(r.getHasSignature())).count();
+
+        PdfPTable kpiTable = new PdfPTable(4);
+        kpiTable.setWidthPercentage(100);
+        kpiTable.setSpacingAfter(15);
+        addKpiCard(kpiTable, String.valueOf(total), "Registros Totales");
+        addKpiCard(kpiTable, String.valueOf(attended), "Asistencias Completadas");
+        addKpiCard(kpiTable, (totalMins / 60) + "h " + (totalMins % 60) + "m", "Horas Formativas Totales");
+        addKpiCard(kpiTable, String.valueOf(signed), "Firmas Digitales");
+        document.add(kpiTable);
+    }
+
+    private void renderUserFormationsTable(Document document, List<UserFormationExportDTO> records) throws DocumentException {
+        PdfPTable table = new PdfPTable(10);
+        table.setWidthPercentage(100);
+        table.setWidths(new float[]{1.5f, 0.7f, 1.2f, 1.6f, 1.2f, 1.1f, 1.1f, 1.1f, 0.9f, 0.6f});
+
+        addTableHeader(table, "Empleado", "Sede", HEADER_COMPANY, "Formación", "Fecha Curso", "Entrada", "Salida", "Horas (Min)", "Estado", "Firma");
+
+        int idx = 0;
+        for (UserFormationExportDTO r : records) {
+            boolean isZebra = (idx++ % 2 == 1);
+            renderUserFormationRow(table, r, isZebra);
+        }
+
+        document.add(table);
+    }
+
+    private void renderUserFormationRow(PdfPTable table, UserFormationExportDTO r, boolean isZebra) {
+        String emp = (safe(r.getFullName()) + " (" + safe(r.getPersonalCode()) + ")").trim();
+        String loc = safe(r.getLocator());
+        String comp = safe(r.getCompanyName());
+        String fName = safe(r.getFormationName());
+        String sDate = r.getFormationDate() != null ? r.getFormationDate().format(DATE_FORMATTER) : NOT_AVAILABLE;
+        String cIn = r.getCheckInDate() != null ? r.getCheckInDate().format(DATE_FORMATTER) : NOT_AVAILABLE;
+        String cOut = r.getCheckOutDate() != null ? r.getCheckOutDate().format(DATE_FORMATTER) : NOT_AVAILABLE;
+        String dur = safe(r.getDurationHoursFormatted());
+        String status = safe(r.getStatus());
+        boolean hasSig = Boolean.TRUE.equals(r.getHasSignature());
+
+        Font statusFont = "ASISTIÓ".equalsIgnoreCase(status)
+                ? FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, COLOR_SUCCESS)
+                : ("EN CURSO".equalsIgnoreCase(status) ? FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, COLOR_WARNING) : FONT_TD);
+
+        addTableCell(table, emp, FONT_TD_BOLD, Element.ALIGN_LEFT, isZebra);
+        addTableCell(table, loc, FONT_TD, Element.ALIGN_CENTER, isZebra);
+        addTableCell(table, comp, FONT_TD, Element.ALIGN_LEFT, isZebra);
+        addTableCell(table, fName, FONT_TD, Element.ALIGN_LEFT, isZebra);
+        addTableCell(table, sDate, FONT_TD, Element.ALIGN_CENTER, isZebra);
+        addTableCell(table, cIn, FONT_TD, Element.ALIGN_CENTER, isZebra);
+        addTableCell(table, cOut, FONT_TD, Element.ALIGN_CENTER, isZebra);
+        addTableCell(table, dur, FONT_TD, Element.ALIGN_RIGHT, isZebra);
+        addTableCell(table, status, statusFont, Element.ALIGN_CENTER, isZebra);
+        addTableCell(table, hasSig ? "SÍ" : "NO", hasSig ? FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, COLOR_SUCCESS) : FONT_TD, Element.ALIGN_CENTER, isZebra);
+    }
+
+    // ─── 7. Single User Dossier PDF ───────────────────────────────────────────
+
+    public byte[] generateSingleUserDossierPdf(UserAnalyticsDTO user, List<UserFormationDetailDTO> details) {
+        Document document = new Document(PageSize.A4, 20, 20, 20, 30);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        try {
+            PdfWriter writer = PdfWriter.getInstance(document, out);
+            String userName = user != null ? (safe(user.getFirstName()) + " " + safe(user.getLastName())).trim() : "Empleado";
+            writer.setPageEvent(new HeaderFooterPageEvent("Expediente Formativo - " + userName));
+            document.open();
+
+            addHeaderBanner(document, "Expediente de Formación y Asistencias", "Empleado: " + userName + " (" + (user != null ? safe(user.getPersonalCode()) : "") + ")");
+
+            // User Info Box
+            PdfPTable infoTable = new PdfPTable(2);
+            infoTable.setWidthPercentage(100);
+            infoTable.setWidths(new float[]{1f, 1f});
+            infoTable.setSpacingAfter(15);
+
+            addInfoRow(infoTable, "Empresa / Centro:", user != null && user.getCompanyName() != null ? user.getCompanyName() : NOT_AVAILABLE);
+            addInfoRow(infoTable, "Sede / Localizador:", user != null && user.getLocator() != null ? user.getLocator() : NOT_AVAILABLE);
+            addInfoRow(infoTable, "Rol en el Sistema:", user != null && user.getAuthority() != null ? user.getAuthority() : NOT_AVAILABLE);
+            addInfoRow(infoTable, "Estado de Jornada:", user != null && Boolean.TRUE.equals(user.getIsWorking()) ? "Activo (Trabajando)" : "Inactivo");
+            document.add(infoTable);
+
+            // KPIs
+            PdfPTable kpiTable = new PdfPTable(4);
+            kpiTable.setWidthPercentage(100);
+            kpiTable.setSpacingAfter(15);
+            int assigned = user != null && user.getFormationsAssigned() != null ? user.getFormationsAssigned() : 0;
+            int attended = user != null && user.getFormationsAttended() != null ? user.getFormationsAttended() : 0;
+            double rate = user != null && user.getAttendancePercentage() != null ? user.getAttendancePercentage() : 0.0;
+            long fMins = user != null && user.getTotalFormationMinutes() != null ? user.getTotalFormationMinutes() : 0;
+
+            addKpiCard(kpiTable, String.valueOf(assigned), "Cursos Asignados");
+            addKpiCard(kpiTable, String.valueOf(attended), "Cursos Asistidos");
+            addKpiCard(kpiTable, String.format(java.util.Locale.US, "%.1f%%", rate), "Tasa Asistencia");
+            addKpiCard(kpiTable, (fMins / 60) + "h " + (fMins % 60) + "m", "Tiempo en Formación");
+            document.add(kpiTable);
+
+            Paragraph secTitle = new Paragraph("Historial de Formaciones Realizadas y Firmas Digitales", FONT_SECTION);
+            secTitle.setSpacingAfter(8);
+            document.add(secTitle);
+
+            // Table
+            PdfPTable table = new PdfPTable(6);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{2.2f, 1.3f, 1.1f, 1.1f, 1.1f, 0.8f});
+
+            addTableHeader(table, "Formación", "Fecha Curso", "Entrada", "Salida", "Tiempo", "Firma");
+
+            List<UserFormationDetailDTO> safeDetails = details != null ? details : List.of();
+            int idx = 0;
+            for (UserFormationDetailDTO d : safeDetails) {
+                boolean isZebra = (idx++ % 2 == 1);
+                String fName = safe(d.getFormationName());
+                String sDate = d.getFormationDate() != null ? d.getFormationDate().format(DATE_FORMATTER) : NOT_AVAILABLE;
+                String cIn = d.getCheckInDate() != null ? d.getCheckInDate().format(DATE_FORMATTER) : NOT_AVAILABLE;
+                String cOut = d.getCheckOutDate() != null ? d.getCheckOutDate().format(DATE_FORMATTER) : NOT_AVAILABLE;
+                long mins = d.getDurationMinutes() != null ? d.getDurationMinutes() : 0;
+                String durStr = (mins / 60) + "h " + (mins % 60) + "m";
+                boolean hasSig = Boolean.TRUE.equals(d.getHasSignature());
+
+                addTableCell(table, fName, FONT_TD_BOLD, Element.ALIGN_LEFT, isZebra);
+                addTableCell(table, sDate, FONT_TD, Element.ALIGN_CENTER, isZebra);
+                addTableCell(table, cIn, FONT_TD, Element.ALIGN_CENTER, isZebra);
+                addTableCell(table, cOut, FONT_TD, Element.ALIGN_CENTER, isZebra);
+                addTableCell(table, durStr, FONT_TD, Element.ALIGN_RIGHT, isZebra);
+                addTableCell(table, hasSig ? "FIRMADO" : "PENDIENTE", hasSig ? FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, COLOR_SUCCESS) : FONT_TD, Element.ALIGN_CENTER, isZebra);
+            }
+
+            document.add(table);
+
+            document.close();
+        } catch (Exception ex) {
+            logger.error("Error generating User Dossier PDF", ex);
+        }
+
+        return out.toByteArray();
+    }
+
+    private void addInfoRow(PdfPTable table, String label, String value) {
+        PdfPCell cell = new PdfPCell();
+        cell.setBorder(Rectangle.NO_BORDER);
+        cell.setPadding(3);
+        Paragraph p = new Paragraph();
+        p.add(new Phrase(label + " ", FONT_TD_BOLD));
+        p.add(new Phrase(value, FONT_TD));
+        cell.addElement(p);
+        table.addCell(cell);
     }
 
     private String safe(String value) {

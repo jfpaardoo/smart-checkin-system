@@ -14,6 +14,8 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.samples.smartcheckin.analytics.UserAnalyticsDTO;
+import org.springframework.samples.smartcheckin.analytics.UserFormationDetailDTO;
+import org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO;
 import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.checkin.Checkin;
 import org.springframework.samples.smartcheckin.formation.Formation;
@@ -387,6 +389,167 @@ public class ExcelExportStrategy implements DataExportStrategy {
 
         String rawData = ts + safe(log.getAction()) + safe(log.getUsername()) + safe(log.getIpAddress());
         setStringCell(row.createCell(6), org.springframework.samples.smartcheckin.util.HashUtils.generateHash(rawData), cntrStyle);
+    }
+
+    // ─── 5. Export User Formations Detailed ────────────────────────────────────
+
+    @Override
+    public byte[] exportUserFormations(List<UserFormationExportDTO> records) throws IOException {
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            StyleRegistry styles = new StyleRegistry(workbook);
+            Sheet sheet = workbook.createSheet("User Formations Matrix");
+            sheet.setDisplayGridlines(true);
+
+            String[] headers = {
+                    "User ID", USERNAME_HEADER, PERSONAL_CODE_HEADER, "Full Name", "Email",
+                    "Locator", COMPANY_HEADER, "Role", "Working Status",
+                    "Formation ID", "Formation Name", "Scheduled Date", "Attendance Status",
+                    "Check-in Time", "Check-out Time", "Duration (Minutes)", "Duration (Hours)",
+                    "Signature Present", "Integrity Hash (SHA-256)"
+            };
+            createHeaderRow(sheet, styles, headers);
+
+            int rowIdx = 1;
+            if (records != null) {
+                for (UserFormationExportDTO r : records) {
+                    appendUserFormationExcelRow(sheet.createRow(rowIdx++), r, styles, (rowIdx % 2 == 0));
+                }
+            }
+
+            autoSizeColumns(sheet, headers.length);
+            workbook.write(out);
+            return out.toByteArray();
+        }
+    }
+
+    private void appendUserFormationExcelRow(Row row, UserFormationExportDTO r, StyleRegistry styles, boolean isZebra) {
+        row.setHeightInPoints(18);
+        CellStyle txtStyle = isZebra ? styles.zebraStyle : styles.dataStyle;
+        CellStyle cntrStyle = isZebra ? styles.centerZebraStyle : styles.centerStyle;
+        CellStyle numStyle = isZebra ? styles.numberZebraStyle : styles.numberStyle;
+
+        setNumericCell(row.createCell(0), r.getUserId() != null ? r.getUserId() : 0, numStyle);
+        setStringCell(row.createCell(1), r.getUsername(), txtStyle);
+        setStringCell(row.createCell(2), r.getPersonalCode(), cntrStyle);
+        setStringCell(row.createCell(3), r.getFullName(), txtStyle);
+        setStringCell(row.createCell(4), r.getEmail(), txtStyle);
+        setStringCell(row.createCell(5), r.getLocator(), cntrStyle);
+        setStringCell(row.createCell(6), r.getCompanyName(), txtStyle);
+        setStringCell(row.createCell(7), r.getAuthority(), cntrStyle);
+        setStringCell(row.createCell(8), Boolean.TRUE.equals(r.getIsWorking()) ? YES : NO, cntrStyle);
+
+        setNumericCell(row.createCell(9), r.getFormationId() != null ? r.getFormationId() : 0, numStyle);
+        setStringCell(row.createCell(10), r.getFormationName(), txtStyle);
+        setStringCell(row.createCell(11), r.getFormationDate() != null ? r.getFormationDate().format(DATE_FORMATTER) : NOT_AVAILABLE, cntrStyle);
+        setStringCell(row.createCell(12), r.getStatus() != null ? r.getStatus() : NOT_AVAILABLE, cntrStyle);
+
+        setStringCell(row.createCell(13), r.getCheckInDate() != null ? r.getCheckInDate().format(DATE_FORMATTER) : NOT_AVAILABLE, cntrStyle);
+        setStringCell(row.createCell(14), r.getCheckOutDate() != null ? r.getCheckOutDate().format(DATE_FORMATTER) : NOT_AVAILABLE, cntrStyle);
+        setNumericCell(row.createCell(15), r.getDurationMinutes() != null ? r.getDurationMinutes() : 0, numStyle);
+        setStringCell(row.createCell(16), r.getDurationHoursFormatted() != null ? r.getDurationHoursFormatted() : "0h 0m", cntrStyle);
+
+        boolean hasSig = Boolean.TRUE.equals(r.getHasSignature());
+        setStringCell(row.createCell(17), hasSig ? YES : NO, cntrStyle);
+        setStringCell(row.createCell(18), r.getVerificationHash() != null ? r.getVerificationHash() : NOT_AVAILABLE, cntrStyle);
+    }
+
+    // ─── 6. Export Single User Dossier ─────────────────────────────────────────
+
+    @Override
+    public byte[] exportSingleUserDossier(UserAnalyticsDTO user, List<UserFormationDetailDTO> details) throws IOException {
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            StyleRegistry styles = new StyleRegistry(workbook);
+
+            // Sheet 1: Profile & KPI Summary
+            Sheet summarySheet = workbook.createSheet("Employee Dossier Summary");
+            summarySheet.setDisplayGridlines(true);
+
+            String[] summaryHeaders = {
+                    "Field", "Value"
+            };
+            createHeaderRow(summarySheet, styles, summaryHeaders);
+
+            int sRow = 1;
+            addDossierField(summarySheet.createRow(sRow++), "User ID", String.valueOf(user != null && user.getUserId() != null ? user.getUserId() : 0), styles);
+            addDossierField(summarySheet.createRow(sRow++), "Username", user != null ? user.getUsername() : NOT_AVAILABLE, styles);
+            addDossierField(summarySheet.createRow(sRow++), "Personal Code", user != null ? user.getPersonalCode() : NOT_AVAILABLE, styles);
+            addDossierField(summarySheet.createRow(sRow++), "Full Name", user != null ? (safe(user.getFirstName()) + " " + safe(user.getLastName())).trim() : NOT_AVAILABLE, styles);
+            addDossierField(summarySheet.createRow(sRow++), "Company", user != null && user.getCompanyName() != null ? user.getCompanyName() : NOT_AVAILABLE, styles);
+            addDossierField(summarySheet.createRow(sRow++), "Locator / Sede", user != null && user.getLocator() != null ? user.getLocator() : NOT_AVAILABLE, styles);
+            addDossierField(summarySheet.createRow(sRow++), "Role / Authority", user != null && user.getAuthority() != null ? user.getAuthority() : NOT_AVAILABLE, styles);
+            addDossierField(summarySheet.createRow(sRow++), "Currently Working", user != null && Boolean.TRUE.equals(user.getIsWorking()) ? YES : NO, styles);
+            addDossierField(summarySheet.createRow(sRow++), "Total Shift Checkins", String.valueOf(user != null && user.getTotalCheckins() != null ? user.getTotalCheckins() : 0), styles);
+            addDossierField(summarySheet.createRow(sRow++), "Total Work Minutes", String.valueOf(user != null && user.getTotalWorkMinutes() != null ? user.getTotalWorkMinutes() : 0), styles);
+            addDossierField(summarySheet.createRow(sRow++), "Formations Assigned", String.valueOf(user != null && user.getFormationsAssigned() != null ? user.getFormationsAssigned() : 0), styles);
+            addDossierField(summarySheet.createRow(sRow++), "Formations Attended", String.valueOf(user != null && user.getFormationsAttended() != null ? user.getFormationsAttended() : 0), styles);
+            addDossierField(summarySheet.createRow(sRow++), "Formations Completed", String.valueOf(user != null && user.getFormationsCompleted() != null ? user.getFormationsCompleted() : 0), styles);
+            addDossierField(summarySheet.createRow(sRow++), "Attendance Rate (%)", String.format(java.util.Locale.US, "%.1f%%", user != null && user.getAttendancePercentage() != null ? user.getAttendancePercentage() : 0.0), styles);
+            addDossierField(summarySheet.createRow(sRow++), "Total Formation Minutes", String.valueOf(user != null && user.getTotalFormationMinutes() != null ? user.getTotalFormationMinutes() : 0), styles);
+            long fMins = user != null && user.getTotalFormationMinutes() != null ? user.getTotalFormationMinutes() : 0;
+            addDossierField(summarySheet.createRow(sRow++), "Total Formation Hours", String.format(java.util.Locale.US, "%dh %dm (%.1fh)", fMins / 60, fMins % 60, fMins / 60.0), styles);
+
+            autoSizeColumns(summarySheet, summaryHeaders.length);
+
+            // Sheet 2: Training Sessions & Signatures
+            Sheet detailsSheet = workbook.createSheet("Training Sessions & Signatures");
+            detailsSheet.setDisplayGridlines(true);
+
+            String[] detailHeaders = {
+                    "Formation ID", "Formation Name", "Scheduled Date", "Status",
+                    "Check-in Time", "Check-out Time", "Duration (Minutes)", "Duration (Formatted)",
+                    "Signature Present", "Integrity Verification Hash"
+            };
+            createHeaderRow(detailsSheet, styles, detailHeaders);
+
+            int dRow = 1;
+            if (details != null) {
+                for (UserFormationDetailDTO d : details) {
+                    appendUserDetailRow(detailsSheet.createRow(dRow++), d, styles, (dRow % 2 == 0));
+                }
+            }
+
+            autoSizeColumns(detailsSheet, detailHeaders.length);
+
+            workbook.write(out);
+            return out.toByteArray();
+        }
+    }
+
+    private void addDossierField(Row row, String fieldName, String fieldValue, StyleRegistry styles) {
+        row.setHeightInPoints(18);
+        setStringCell(row.createCell(0), fieldName, styles.zebraStyle);
+        setStringCell(row.createCell(1), fieldValue, styles.dataStyle);
+    }
+
+    private void appendUserDetailRow(Row row, UserFormationDetailDTO d, StyleRegistry styles, boolean isZebra) {
+        row.setHeightInPoints(18);
+        CellStyle txtStyle = isZebra ? styles.zebraStyle : styles.dataStyle;
+        CellStyle cntrStyle = isZebra ? styles.centerZebraStyle : styles.centerStyle;
+        CellStyle numStyle = isZebra ? styles.numberZebraStyle : styles.numberStyle;
+
+        setNumericCell(row.createCell(0), d.getFormationId() != null ? d.getFormationId() : 0, numStyle);
+        setStringCell(row.createCell(1), d.getFormationName(), txtStyle);
+        setStringCell(row.createCell(2), d.getFormationDate() != null ? d.getFormationDate().format(DATE_FORMATTER) : NOT_AVAILABLE, cntrStyle);
+        setStringCell(row.createCell(3), d.getStatus() != null ? d.getStatus() : NOT_AVAILABLE, cntrStyle);
+
+        setStringCell(row.createCell(4), d.getCheckInDate() != null ? d.getCheckInDate().format(DATE_FORMATTER) : NOT_AVAILABLE, cntrStyle);
+        setStringCell(row.createCell(5), d.getCheckOutDate() != null ? d.getCheckOutDate().format(DATE_FORMATTER) : NOT_AVAILABLE, cntrStyle);
+
+        long mins = d.getDurationMinutes() != null ? d.getDurationMinutes() : 0;
+        setNumericCell(row.createCell(6), mins, numStyle);
+        long hours = mins / 60;
+        long remainingMins = mins % 60;
+        setStringCell(row.createCell(7), String.format(java.util.Locale.US, "%dh %dm (%.1fh)", hours, remainingMins, mins / 60.0), cntrStyle);
+
+        boolean hasSig = Boolean.TRUE.equals(d.getHasSignature());
+        setStringCell(row.createCell(8), hasSig ? YES : NO, cntrStyle);
+
+        String hash = NOT_AVAILABLE;
+        if (hasSig && d.getSignature() != null) {
+            hash = org.springframework.samples.smartcheckin.util.HashUtils.generateHash(
+                    String.valueOf(d.getFormationId()) + safe(d.getFormationName()) + d.getSignature());
+        }
+        setStringCell(row.createCell(9), hash, cntrStyle);
     }
 
     // ─── Cell helpers ──────────────────────────────────────────────────────────

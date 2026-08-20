@@ -126,10 +126,10 @@ export default function UserTable({
       {/* 2. VISTA MÓVIL / TABLET */}
       <div className="lg:hidden flex flex-col gap-4 mt-2">
         {users.map((user) => (
-          <div key={user.id} className="bg-white/70 backdrop-blur-md shadow-sm rounded-[20px] p-5 border border-white/40 flex flex-col gap-3">
+          <div key={user.id} className="bg-white/70 backdrop-blur-md shadow-sm rounded-[20px] p-4 sm:p-5 border border-white/40 flex flex-col gap-3 overflow-hidden">
             <div className="flex justify-between items-start gap-3">
-              <div>
-                <div className="flex items-center gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
                   <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Código: {user.personalCode}</span>
                   {user.locator && (
                     <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#b3c34c]/20 text-[#73841e] border border-[#b3c34c]/30">
@@ -137,38 +137,38 @@ export default function UserTable({
                     </span>
                   )}
                 </div>
-                <h3 className="font-bold text-slate-800 m-0 text-lg">{user.firstName} {user.lastName}</h3>
-                <p className="text-xs text-slate-500 m-0 mt-0.5">@{user.username}</p>
+                <h3 className="font-bold text-slate-800 m-0 text-lg break-words">{user.firstName} {user.lastName}</h3>
+                <p className="text-xs text-slate-500 m-0 mt-0.5 break-all">@{user.username}</p>
               </div>
             </div>
 
             {/* Empresa / Centro en vista móvil */}
-            <div className="flex items-center justify-between border-t border-slate-200/50 pt-2.5">
-              <span className="text-xs text-slate-500">{t('users.company', 'Empresa / Centro')}:</span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-200/50 pt-2.5 gap-1.5">
+              <span className="text-xs text-slate-500 font-semibold">{t('users.company', 'Empresa / Centro')}:</span>
               {user.company ? (
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-800 bg-white/60 px-2.5 py-1 rounded-xl border border-white/80 shadow-2xs">
-                  <FaBuilding className="text-[#8fa228]" size={12} />
-                  {user.company.name}
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-800 bg-white/60 px-2.5 py-1 rounded-xl border border-white/80 shadow-2xs max-w-full break-words self-start sm:self-auto">
+                  <FaBuilding className="text-[#8fa228] shrink-0" size={12} />
+                  <span className="truncate">{user.company.name}</span>
                 </span>
               ) : (
-                <span className="text-xs text-slate-400 italic">{t('users.noCompany', 'Sin empresa')}</span>
+                <span className="text-xs text-slate-400 italic self-start sm:self-auto">{t('users.noCompany', 'Sin empresa')}</span>
               )}
             </div>
 
-            <div className="flex items-center justify-between border-t border-slate-200/50 pt-2.5">
-              <span className="text-xs text-slate-500">{t('users.status', 'Estado')}:</span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-200/50 pt-2.5 gap-1.5">
+              <span className="text-xs text-slate-500 font-semibold">{t('users.status', 'Estado')}:</span>
               {activeTab === 'approved' || activeTab === 'admins' || activeTab === 'employees' ? (
-                <span className={`da-badge ${user.isWorking ? 'da-badge-active' : 'da-badge-inactive'}`}>
+                <span className={`da-badge ${user.isWorking ? 'da-badge-active' : 'da-badge-inactive'} self-start sm:self-auto`}>
                   {user.isWorking ? t('users.statusWorking', 'Trabajando') : t('users.statusResting', 'Descansando')}
                 </span>
               ) : (
-                <span className="da-badge da-badge-warning">{t('users.statusPending', 'Pendiente de Aprobación')}</span>
+                <span className="da-badge da-badge-warning self-start sm:self-auto">{t('users.statusPending', 'Pendiente de Aprobación')}</span>
               )}
             </div>
 
-            <div className="flex flex-row gap-2 items-center justify-between border-t border-slate-200/50 pt-3">
+            <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between border-t border-slate-200/50 pt-3">
               {activeTab === 'approved' || activeTab === 'admins' || activeTab === 'employees' ? (
-                <div className="da-table-actions w-full flex gap-2">
+                <div className="da-table-actions w-full flex flex-col sm:flex-row gap-2">
                   <Button
                     size="sm"
                     className="da-btn-blue flex-1 fw-bold shadow-sm"
@@ -188,7 +188,7 @@ export default function UserTable({
                   </Button>
                 </div>
               ) : (
-                <div className="da-table-actions w-full flex gap-2">
+                <div className="da-table-actions w-full flex flex-col sm:flex-row gap-2">
                   <Button
                     size="sm"
                     className="da-btn-primary flex-1 fw-bold shadow-sm"

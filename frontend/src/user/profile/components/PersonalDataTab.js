@@ -120,41 +120,43 @@ export default function PersonalDataTab({ loadingUser, userData, setUserData, t 
         {t('profile.notificationPreferences', 'Preferencias de Notificación')}
       </h5>
       
-      <div className="row g-3">
-        <div className="col-12 col-md-6">
-          <div className="p-3 da-glass-panel d-flex items-center justify-content-between h-100">
-            <div>
-              <div className="fw-bold text-dark d-flex align-items-center gap-2 mb-1">
-                <FaEnvelope className="text-[#8a9e29]" /> {t('profile.emailNotifications', 'Notificaciones por Correo')}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+        <div>
+          <div className="p-3.5 da-glass-panel flex items-center justify-between gap-3 h-full rounded-2xl">
+            <div className="flex-1 min-w-0 pr-1">
+              <div className="font-bold text-slate-800 flex items-center gap-2 mb-1 text-sm sm:text-base">
+                <FaEnvelope className="text-[#8a9e29] flex-shrink-0" /> 
+                <span className="truncate">{t('profile.emailNotifications', 'Notificaciones por Correo')}</span>
               </div>
-              <div className="text-muted small">{t('profile.notifyEmailDesc', 'Recibir avisos en tu bandeja de entrada')}</div>
+              <div className="text-slate-500 text-xs sm:text-sm leading-tight">{t('profile.notifyEmailDesc', 'Recibir avisos en tu bandeja de entrada')}</div>
             </div>
             <button type="button"
               onClick={() => handleToggleNotification('emailNotificationsEnabled')}
               disabled={updating}
               aria-label={t('profile.toggleEmailAria', 'Alternar notificaciones por correo')}
-              className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${userData?.emailNotificationsEnabled ? 'bg-[#b3c34c]' : 'bg-slate-300'}`}
+              className={`relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-[#b3c34c]/50 ${userData?.emailNotificationsEnabled ? 'bg-[#b3c34c]' : 'bg-slate-300'}`}
             >
-              <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${userData?.emailNotificationsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+              <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${userData?.emailNotificationsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
           </div>
         </div>
 
-        <div className="col-12 col-md-6">
-          <div className="p-3 da-glass-panel d-flex items-center justify-content-between h-100">
-            <div>
-              <div className="fw-bold text-dark d-flex align-items-center gap-2 mb-1">
-                <FaMobileAlt className="text-[#8a9e29]" /> {t('profile.pushNotifications', 'Notificaciones Push')}
+        <div>
+          <div className="p-3.5 da-glass-panel flex items-center justify-between gap-3 h-full rounded-2xl">
+            <div className="flex-1 min-w-0 pr-1">
+              <div className="font-bold text-slate-800 flex items-center gap-2 mb-1 text-sm sm:text-base">
+                <FaMobileAlt className="text-[#8a9e29] flex-shrink-0" /> 
+                <span className="truncate">{t('profile.pushNotifications', 'Notificaciones Push')}</span>
               </div>
-              <div className="text-muted small">{t('profile.notifyPushDesc', 'Recibir avisos en tu dispositivo')}</div>
+              <div className="text-slate-500 text-xs sm:text-sm leading-tight">{t('profile.notifyPushDesc', 'Recibir avisos en tu dispositivo')}</div>
             </div>
             <button type="button"
               onClick={() => handleToggleNotification('pushNotificationsEnabled')}
               disabled={updating}
               aria-label={t('profile.togglePushAria', 'Alternar notificaciones push')}
-              className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${userData?.pushNotificationsEnabled ? 'bg-[#b3c34c]' : 'bg-slate-300'}`}
+              className={`relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-[#b3c34c]/50 ${userData?.pushNotificationsEnabled ? 'bg-[#b3c34c]' : 'bg-slate-300'}`}
             >
-              <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${userData?.pushNotificationsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+              <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${userData?.pushNotificationsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
           </div>
         </div>

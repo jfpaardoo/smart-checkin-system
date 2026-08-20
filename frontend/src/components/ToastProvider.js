@@ -37,8 +37,8 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={toastApi}>
       {children}
-      {/* Contenedor adaptado con padding lateral para que en móvil coincida con los márgenes de la navbar */}
-      <div className="fixed top-24 left-0 right-0 z-[9999] flex flex-col items-center pointer-events-none px-4 sm:px-6 lg:px-8">
+      {/* Contenedor adaptado aprovechando el ancho útil como la navbar */}
+      <div className="fixed top-20 left-0 right-0 z-[9999] flex flex-col items-center pointer-events-none px-0">
         {toasts.map((t) => (
           <ToastItem key={t.id} toast={t} onRemove={removeToast} />
         ))}
@@ -50,40 +50,61 @@ export function ToastProvider({ children }) {
 function ToastItem({ toast, onRemove }) {
   const { t } = useTranslation();
   const [exiting, setExiting] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const timerRef = useRef(null);
-  const DURATION = 4200;
+  const DURATION = 4500;
 
   const cfg = TOAST_CONFIG[toast.type] || TOAST_CONFIG.info;
 
-  useEffect(() => {
-    let t1;
-    if (!toast.persistent) {
-      t1 = setTimeout(() => {
-        setExiting(true);
-      }, DURATION);
-      timerRef.current = t1;
-    }
-    return () => {
-      clearTimeout(t1);
-    };
-  }, [toast.id, toast.persistent, onRemove]);
-
-  const handleClose = () => {
+  const startDismissTimer = useCallback(() => {
+    if (toast.persistent) return;
     if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      setExiting(true);
+    }, DURATION);
+  }, [toast.persistent]);
+
+  const pauseDismissTimer = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }, []);
+
+  useEffect(() => {
+    if (!isExpanded) {
+      startDismissTimer();
+    } else {
+      pauseDismissTimer();
+    }
+    return () => pauseDismissTimer();
+  }, [isExpanded, startDismissTimer, pauseDismissTimer]);
+
+  const handleClose = (e) => {
+    if (e) e.stopPropagation();
+    pauseDismissTimer();
     setExiting(true);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = (e) => {
+    if (e) e.stopPropagation();
     if (toast.onConfirm) toast.onConfirm();
     handleClose();
   };
 
+  const toggleExpand = () => {
+    setIsExpanded(prev => !prev);
+  };
+
   return (
     <div
+      onMouseEnter={pauseDismissTimer}
+      onMouseLeave={() => {
+        if (!isExpanded) startDismissTimer();
+      }}
       className={`
-        pointer-events-auto relative overflow-hidden 
-        w-full sm:w-auto sm:max-w-md md:max-w-lg mx-auto
-        da-nav-capsule px-6 py-3 my-2 shadow-[0_12px_35px_0_rgba(31,38,135,0.25)]
+        pointer-events-auto relative overflow-hidden
+        w-[calc(100%-24px)] sm:w-auto sm:max-w-md md:max-w-lg mx-auto
+        bg-slate-800/40 backdrop-blur-xl backdrop-saturate-150 border border-white/20 
+        ${isExpanded ? 'rounded-[22px] px-3.5 py-2.5 sm:px-5 sm:py-3.5 my-1 shadow-[0_16px_45px_0_rgba(31,38,135,0.4)]' : 'rounded-[40px] px-3.5 py-2 sm:px-5 sm:py-2.5 my-1 shadow-[0_8px_32px_0_rgba(31,38,135,0.3)]'}
+        transition-all duration-300 ease-out
       `}
       style={{
         animation: !exiting 
@@ -97,22 +118,34 @@ function ToastItem({ toast, onRemove }) {
         }
       }}
     >
-      <div className="flex items-center justify-between gap-5">
-        <div className="flex items-center gap-3 overflow-hidden">
-          <div className={`w-2 h-2 rounded-full ${cfg.badgeDot} shrink-0 shadow-sm`} />
-          <span className="text-white text-[0.92rem] font-medium tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
+      <div className={`flex ${isExpanded ? 'items-start' : 'items-center'} justify-between gap-2.5 sm:gap-3.5`}>
+        <button
+          type="button"
+          onClick={toggleExpand}
+          title={!isExpanded ? t('common.tapToExpand', 'Toca para expandir el texto') : undefined}
+          aria-expanded={isExpanded}
+          className={`flex ${isExpanded ? 'items-start' : 'items-center'} gap-2 sm:gap-2.5 overflow-hidden flex-1 min-w-0 bg-transparent border-0 p-0 text-left cursor-pointer focus:outline-none`}
+        >
+          <div className={`w-2 h-2 rounded-full ${cfg.badgeDot} shrink-0 shadow-sm ${isExpanded ? 'mt-1.5' : ''}`} />
+          <span 
+            className={`text-white text-[0.85rem] sm:text-[0.92rem] font-medium tracking-tight ${
+              isExpanded 
+                ? 'whitespace-normal break-words leading-relaxed' 
+                : 'whitespace-nowrap overflow-hidden text-ellipsis'
+            }`}
+          >
             {toast.message}
           </span>
-        </div>
+        </button>
 
         {toast.type !== "confirm" && (
           <button
             type="button"
             onClick={handleClose}
             className="
-              flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center
+              flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center
               bg-white/10 hover:bg-white/20 text-white/70 hover:text-white
-              transition duration-200 cursor-pointer border-0 p-0
+              transition duration-200 cursor-pointer border-0 p-0 mt-0.5
             "
             aria-label={t('common.close', 'Cerrar')}
           >
@@ -124,25 +157,25 @@ function ToastItem({ toast, onRemove }) {
       </div>
 
       {toast.type === "confirm" && (
-        <div className="flex gap-2 justify-end mt-2 pt-1.5 border-t border-white/10">
+        <div className="flex gap-2 justify-end mt-3 pt-2 border-t border-white/10">
           <button
             type="button"
             onClick={handleConfirm}
-            className="px-4 py-1 rounded-full text-xs font-semibold text-slate-900 bg-[#b3c34c] hover:bg-[#a2b144] transition cursor-pointer border-0"
+            className="px-4 py-1.5 rounded-full text-xs font-semibold text-slate-900 bg-[#b3c34c] hover:bg-[#a2b144] transition cursor-pointer border-0"
           >
             {t('common.yes', 'Sí')}
           </button>
           <button
             type="button"
             onClick={handleClose}
-            className="px-4 py-1 rounded-full text-xs font-semibold text-white/80 hover:text-white bg-white/10 hover:bg-white/20 border border-white/15 transition cursor-pointer"
+            className="px-4 py-1.5 rounded-full text-xs font-semibold text-white/80 hover:text-white bg-white/10 hover:bg-white/20 border border-white/15 transition cursor-pointer"
           >
             {t('common.no', 'No')}
           </button>
         </div>
       )}
 
-      {!toast.persistent && (
+      {!toast.persistent && !isExpanded && (
         <div className="absolute bottom-0 left-6 right-6 h-[2px] bg-white/10 rounded-full overflow-hidden">
           <div
             className={`h-full ${cfg.progressBg}`}

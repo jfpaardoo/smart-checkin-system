@@ -170,15 +170,17 @@ export default function FormationEditAdmin() {
             </div>
           </div>
 
-          <div className="da-form-actions">
-            <Button className="da-btn-secondary" onClick={() => window.history.back()} disabled={isSaving}>
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-white/30 w-full">
+            <Button className="da-btn-secondary w-full sm:w-auto text-center" onClick={() => window.history.back()} disabled={isSaving}>
               <FontAwesomeIcon icon={faTimes} className="me-1" /> {t('common.cancel')}
             </Button>
-            <Button className="da-btn-primary" type="submit" disabled={isSaving}>
+            <Button className="da-btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-1.5 shadow-md" type="submit" disabled={isSaving}>
               <FontAwesomeIcon icon={faPlus} className="me-1" /> 
-              {isSaving ? t('common.saving') : null}
-              {!isSaving && formation.id ? t('common.save') : null}
-              {!isSaving && !formation.id ? t('formations.createNew') : null}
+              <span>
+                {isSaving ? t('common.saving') : null}
+                {!isSaving && formation.id ? t('common.save') : null}
+                {!isSaving && !formation.id ? t('formations.createNew') : null}
+              </span>
             </Button>
           </div>
         </Form>

@@ -240,13 +240,13 @@ export default function Home() {
       </div>
 
       {/* FOOTER PÚBLICO HOME - POLÍTICA DE PRIVACIDAD */}
-      <div className="text-center mt-4 pb-4" style={{ zIndex: 10 }}>
+      <div className="w-full text-center mt-4 pb-4 px-4 relative z-10">
         <span className="text-muted" style={{ fontSize: '0.85rem' }}>
           &copy; {new Date().getFullYear()} Distribution Academy |{' '}
         </span>
         <Link 
           to="/privacy-policy" 
-          className="text-muted fw-bold text-decoration-none" 
+          className="text-muted fw-bold text-decoration-none inline-block" 
           style={{ fontSize: '0.85rem', transition: 'color 0.2s' }}
           onMouseOver={(e) => e.target.style.color = '#88982a'}
           onMouseOut={(e) => e.target.style.color = '#6c757d'}

@@ -81,6 +81,39 @@
     font-family: 'Inter', system-ui, sans-serif !important;
 }
 
+@media (max-width: 640px) {
+    .analytics-kpi-row {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+        margin-bottom: 16px !important;
+    }
+
+    .analytics-kpi-card {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        padding: 18px 14px !important;
+        gap: 10px !important;
+    }
+
+    .analytics-kpi-content {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        width: 100% !important;
+    }
+
+    .analytics-kpi-content h6 {
+        text-align: center !important;
+        font-size: 0.75rem !important;
+    }
+
+    .analytics-kpi-content .kpi-value {
+        font-size: 1.6rem !important;
+    }
+}
+
 /* Glass Subcards for Charts */
 .analytics-chart-card {
     background: rgba(255, 255, 255, 0.45) !important;

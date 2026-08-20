@@ -1,7 +1,7 @@
 {
   "proxy": "http://localhost:8080",
   "name": "smartcheckin",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "private": true,
   "reactDoctor": {
     "rules": {
@@ -54,6 +54,8 @@
     "tailwindcss": "^3.4.1"
   },
   "scripts": {
+    "prestart": "node scripts/generate-version.js",
+    "prebuild": "node scripts/generate-version.js",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

@@ -17,37 +17,39 @@ export default function EmployeeCardList({ users = [], onOpenUserDetail }) {
   return (
     <div className="lg:hidden flex flex-col gap-3 mt-2">
       {users.map((user) => (
-        <div key={user.userId} className="bg-white/70 backdrop-blur-md shadow-sm rounded-[24px] p-5 border border-white/50 flex flex-col gap-3">
-          <div className="flex justify-between items-start gap-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Código: {user.personalCode}</span>
-                {user.locator && (
-                  <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#b3c34c]/20 text-[#73841e] border border-[#b3c34c]/30">
-                    {user.locator}
-                  </span>
-                )}
-              </div>
-              <h3 className="font-bold text-slate-800 m-0 text-base">{user.firstName} {user.lastName}</h3>
-              <p className="text-xs text-slate-400 m-0">@{user.username}</p>
+        <div key={user.userId} className="bg-white/70 backdrop-blur-md shadow-sm rounded-[24px] p-4 sm:p-5 border border-white/50 flex flex-col gap-3">
+          <div className="flex flex-col items-start gap-1.5 w-full">
+            <div className="flex items-center gap-1.5 flex-wrap w-full">
+              <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Código: {user.personalCode}</span>
+              {user.locator && (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#b3c34c]/20 text-[#73841e] border border-[#b3c34c]/30">
+                  {user.locator}
+                </span>
+              )}
             </div>
+            
+            <div className="w-full min-w-0">
+              <h3 className="font-bold text-slate-800 m-0 text-sm sm:text-base break-words">{user.firstName} {user.lastName}</h3>
+              <p className="text-xs text-slate-400 m-0 truncate">@{user.username}</p>
+            </div>
+
             <div>
-              <span className="da-badge bg-light text-dark border text-xs">{user.authority}</span>
+              <span className="da-badge bg-light text-dark border text-[11px] px-2.5 py-0.5 rounded-full inline-block">{user.authority}</span>
             </div>
           </div>
 
-          <div className="flex items-center justify-between border-t border-slate-200/50 pt-2.5 text-xs text-slate-600">
-            <span className="font-semibold text-slate-500">{t('users.company', 'Empresa')}:</span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-200/50 pt-2.5 text-xs text-slate-600 gap-1">
+            <span className="font-semibold text-slate-500">{t('users.company', 'Empresa / Centro')}:</span>
             {user.companyName ? (
-              <span className="font-bold text-slate-800 flex items-center gap-1.5">
-                <FontAwesomeIcon icon={faBuilding} className="text-[#8fa228]" /> {user.companyName}
+              <span className="font-bold text-slate-800 flex items-center gap-1.5 break-words">
+                <FontAwesomeIcon icon={faBuilding} className="text-[#8fa228] shrink-0" /> {user.companyName}
               </span>
             ) : (
               <span className="italic text-slate-400">{t('users.noCompany', 'Sin empresa')}</span>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-2 border-t border-slate-200/50 pt-2.5 text-xs text-slate-600">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 border-t border-slate-200/50 pt-2.5 text-xs text-slate-600">
             <div>
               <span className="font-semibold text-slate-500">{t('analytics.statAttendance', 'Asistencia:')}</span>{' '}
               <span className={getAttendanceColorClass(user.attendancePercentage)}>{user.attendancePercentage}%</span>
@@ -56,7 +58,7 @@ export default function EmployeeCardList({ users = [], onOpenUserDetail }) {
               <span className="font-semibold text-slate-500">{t('analytics.statTrainingTime', 'T. Formación:')}</span>{' '}
               {formatDuration(user.totalFormationMinutes)}
             </div>
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <span className="font-semibold text-slate-500">{t('analytics.statFormationsCount', 'Formaciones (Asist/Asign):')}</span>{' '}
               {user.formationsAttended} / {user.formationsAssigned}
             </div>

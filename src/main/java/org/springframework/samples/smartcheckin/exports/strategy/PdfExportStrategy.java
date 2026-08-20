@@ -1,6 +1,8 @@
 package org.springframework.samples.smartcheckin.exports.strategy;
 
 import org.springframework.samples.smartcheckin.analytics.UserAnalyticsDTO;
+import org.springframework.samples.smartcheckin.analytics.UserFormationDetailDTO;
+import org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO;
 import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.checkin.Checkin;
 import org.springframework.samples.smartcheckin.exports.PdfReportGenerator;
@@ -40,6 +42,16 @@ public class PdfExportStrategy implements DataExportStrategy {
     }
 
     @Override
+    public byte[] exportUserFormations(List<UserFormationExportDTO> records) throws IOException {
+        return pdfReportGenerator.generateUserFormationsPdf(records);
+    }
+
+    @Override
+    public byte[] exportSingleUserDossier(UserAnalyticsDTO user, List<UserFormationDetailDTO> details) throws IOException {
+        return pdfReportGenerator.generateSingleUserDossierPdf(user, details);
+    }
+
+    @Override
     public String getContentType() {
         return "application/pdf";
     }
@@ -49,3 +61,4 @@ public class PdfExportStrategy implements DataExportStrategy {
         return "pdf";
     }
 }
+

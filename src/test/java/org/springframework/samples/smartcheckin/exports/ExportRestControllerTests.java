@@ -419,12 +419,12 @@ class ExportRestControllerTests {
     @Test
     @WithMockUser(authorities = {"ADMIN"})
     void shouldExportUsersCsvWithCompanyFilter() throws Exception {
-        when(analyticsService.getAllUsersAnalytics("", 5)).thenReturn(List.of());
+        when(analyticsService.getFilteredUsersAnalytics(any(), eq(5), any(), any(), any(), any())).thenReturn(List.of());
 
         mockMvc.perform(get(BASE_URL + USERS_CSV).param("companyId", "5"))
                 .andExpect(status().isOk());
 
-        verify(analyticsService).getAllUsersAnalytics("", 5);
+        verify(analyticsService).getFilteredUsersAnalytics(any(), eq(5), any(), any(), any(), any());
     }
 
     @Test
@@ -453,6 +453,69 @@ class ExportRestControllerTests {
         when(formationRepository.findAll()).thenReturn(List.of(formation));
 
         mockMvc.perform(get(BASE_URL + FORMATIONS_EXCEL).param("companyId", "5"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void shouldExportUserFormationsCsvSuccessfully() throws Exception {
+        when(analyticsService.getFilteredUserFormations(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(List.of());
+
+        mockMvc.perform(get(BASE_URL + "/user-formations/csv")
+                .param("search", "test")
+                .param("companyId", "1")
+                .param("locator", "MG")
+                .param("role", "EMPLOYEE")
+                .param("performance", "HIGH")
+                .param("isWorking", "true")
+                .param("startDate", "2026-08-01")
+                .param("endDate", "2026-08-30")
+                .param("attendanceStatus", "ATTENDED"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void shouldExportUserFormationsExcelSuccessfully() throws Exception {
+        when(analyticsService.getFilteredUserFormations(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(List.of());
+
+        mockMvc.perform(get(BASE_URL + "/user-formations/excel"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void shouldExportUserFormationsPdfSuccessfully() throws Exception {
+        when(analyticsService.getFilteredUserFormations(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(List.of());
+        when(pdfReportGenerator.generateUserFormationsPdf(any())).thenReturn(new byte[]{1, 2, 3});
+
+        mockMvc.perform(get(BASE_URL + "/user-formations/pdf"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void shouldExportSingleUserDossierSuccessfully() throws Exception {
+        org.springframework.samples.smartcheckin.analytics.UserAnalyticsDTO uDto = org.springframework.samples.smartcheckin.analytics.UserAnalyticsDTO.builder()
+                .userId(1)
+                .username("testuser")
+                .firstName("Test")
+                .lastName("User")
+                .formationDetails(List.of())
+                .build();
+        when(analyticsService.getUserAnalytics(1)).thenReturn(java.util.Optional.of(uDto));
+
+        mockMvc.perform(get(BASE_URL + "/user/1/excel"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get(BASE_URL + "/user/1/csv"))
+                .andExpect(status().isOk());
+
+        when(pdfReportGenerator.generateSingleUserDossierPdf(any(), any())).thenReturn(new byte[]{1, 2, 3});
+        mockMvc.perform(get(BASE_URL + "/user/1/pdf"))
                 .andExpect(status().isOk());
     }
 }

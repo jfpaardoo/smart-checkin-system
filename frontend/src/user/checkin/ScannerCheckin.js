@@ -235,6 +235,7 @@ export default function ScannerCheckin() {
                     value={selectedCameraId}
                     onChange={(camId) => setSelectedCameraId(camId)}
                     placeholder={t('checkin.selectCamera', 'Seleccionar cámara')}
+                    floating={true}
                   />
                 </div>
               )}

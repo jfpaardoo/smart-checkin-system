@@ -50,12 +50,12 @@ function UserEditHeader({ isEdit, t }) {
 function UserEditActionButtons({ isEdit, isSaving, t }) {
   const submitText = isEdit ? t('users.saveUser', 'Guardar') : t('users.addNewUser', 'Crear');
   return (
-    <div className="form-action-group">
-      <button className="da-btn-primary" type="submit" disabled={isSaving}>
-        {isSaving ? t('common.saving') : submitText}
-      </button>
-      <button type="button" onClick={() => window.history.back()} className="da-btn-secondary form-action-link" disabled={isSaving}>
+    <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-white/30 w-full">
+      <button type="button" onClick={() => window.history.back()} className="da-btn-secondary w-full sm:w-auto text-center" disabled={isSaving}>
         {t('users.cancel')}
+      </button>
+      <button className="da-btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-1.5 shadow-md" type="submit" disabled={isSaving}>
+        {isSaving ? t('common.saving') : submitText}
       </button>
     </div>
   );

@@ -218,13 +218,13 @@ export default function UserFormationsTable({
               key={att.id}
               className="bg-white/70 backdrop-blur-md shadow-sm rounded-[20px] p-5 border border-white/40 flex flex-col gap-3"
             >
-              <div className="flex justify-between items-start gap-3">
-                <div>
-                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+              <div className="flex flex-col items-start gap-1.5 w-full">
+                <div className="min-w-0 w-full">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">
                     ID: {f.id}
                   </span>
 
-                  <h3 className="font-bold text-slate-800 m-0 text-base">
+                  <h3 className="font-bold text-slate-800 m-0 text-sm sm:text-base break-words mt-0.5">
                     {f.name}
                   </h3>
                 </div>
@@ -232,12 +232,12 @@ export default function UserFormationsTable({
                 <div>{statusBadge}</div>
               </div>
 
-              <div className="flex items-center justify-between border-t border-slate-200/50 pt-3 text-xs text-slate-600">
+              <div className="flex items-center justify-between border-t border-slate-200/50 pt-2.5 text-xs text-slate-600 flex-wrap gap-1">
                 <span className="font-semibold text-slate-500">
                   {t('dashboard.date')}:
                 </span>
 
-                <span>
+                <span className="font-medium text-slate-700 text-right">
                   {formatDate(f.formationDate)}
                 </span>
               </div>

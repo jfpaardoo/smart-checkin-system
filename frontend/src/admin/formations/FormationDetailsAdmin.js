@@ -46,24 +46,25 @@ export default function FormationDetailsAdmin() {
   return (
     <div className="da-container">
       <div className="da-card">
-        <div className="da-card-header da-admin-header border-0 flex flex-col md:flex-row justify-between items-center gap-4 pb-4 mb-4 border-b border-slate-200/60 relative">
-          {/* Botón Volver absoluto en móvil y alineado en desktop */}
-          <Link
-            to="/formations"
-            className="absolute left-0 top-0 md:static p-2.5 rounded-2xl bg-white/50 border border-white/70 text-slate-600 hover:text-slate-900 hover:bg-white hover:scale-105 active:scale-95 transition shadow-xs flex items-center justify-center shrink-0"
-            title={t("common.back", "Volver")}
-            style={{ textDecoration: 'none' }}
-          >
-            <FontAwesomeIcon icon={faArrowLeft} />
-          </Link>
+        <div className="da-card-header da-admin-header border-0 flex flex-col md:flex-row justify-between items-center gap-4 pb-4 mb-4 border-b border-slate-200/60">
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <Link
+              to="/formations"
+              className="p-2.5 rounded-2xl bg-white/50 border border-white/70 text-slate-600 hover:text-slate-900 hover:bg-white hover:scale-105 active:scale-95 transition shadow-xs flex items-center justify-center shrink-0"
+              title={t("common.back", "Volver")}
+              style={{ textDecoration: 'none' }}
+            >
+              <FontAwesomeIcon icon={faArrowLeft} />
+            </Link>
 
-          <div className="flex flex-col items-center md:items-start text-center md:text-left flex-1 px-8 md:px-0 pt-0.5 md:pt-0">
-            <span className="text-xs font-extrabold uppercase tracking-widest text-[#73841e] bg-[#b3c34c]/20 px-3 py-1 rounded-full border border-[#b3c34c]/30 mb-1.5 inline-block">
-              {t('formationDetails.title', 'Detalles de Formación')}
-            </span>
-            <h2 className="mb-0 text-slate-800 fw-bold text-2xl" style={{ lineHeight: '1.2' }}>
-              {formation.name}
-            </h2>
+            <div className="flex flex-col items-start text-left min-w-0 flex-1">
+              <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-widest text-[#73841e] bg-[#b3c34c]/20 px-2.5 py-0.5 rounded-full border border-[#b3c34c]/30 mb-1 inline-block truncate max-w-full">
+                {t('formationDetails.title', 'Detalles de Formación')}
+              </span>
+              <h2 className="mb-0 text-slate-800 fw-bold text-lg sm:text-2xl break-words max-w-full" style={{ lineHeight: '1.2' }}>
+                {formation.name}
+              </h2>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 w-full md:w-auto mt-2 md:mt-0">

@@ -346,4 +346,87 @@ class AnalyticsServiceTests {
         List<UserAnalyticsDTO> all = analyticsService.getAllUsersAnalytics("");
         assertEquals(3, all.size());
     }
+
+    @Test
+    void testGetFilteredUsersAnalyticsWithAllFilters() {
+        org.springframework.samples.smartcheckin.company.Company compA = new org.springframework.samples.smartcheckin.company.Company();
+        compA.setId(10);
+        compA.setName("Company A");
+
+        Authorities empAuth = new Authorities();
+        empAuth.setAuthority("EMPLOYEE");
+
+        User u1 = new User();
+        u1.setId(1);
+        u1.setUsername("alicedoe");
+        u1.setFirstName("Alice");
+        u1.setLastName("Doe");
+        u1.setPersonalCode("P001");
+        u1.setLocator("MG");
+        u1.setAuthority(empAuth);
+        u1.setCompany(compA);
+        u1.setIsWorking(true);
+
+        when(userRepository.findAll()).thenReturn(List.of(u1));
+
+        List<UserAnalyticsDTO> res = analyticsService.getFilteredUsersAnalytics(
+                "alice", 10, "MG", "EMPLOYEE", "ALL", true
+        );
+        assertEquals(1, res.size());
+        assertEquals("Alice", res.getFirst().getFirstName());
+
+        List<UserAnalyticsDTO> resMismatch = analyticsService.getFilteredUsersAnalytics(
+                "alice", 10, "VF", "EMPLOYEE", "ALL", true
+        );
+        assertEquals(0, resMismatch.size());
+    }
+
+    @Test
+    void testGetFilteredUserFormations() {
+        org.springframework.samples.smartcheckin.company.Company compA = new org.springframework.samples.smartcheckin.company.Company();
+        compA.setId(10);
+        compA.setName("Company A");
+
+        Authorities empAuth = new Authorities();
+        empAuth.setAuthority("EMPLOYEE");
+
+        User u1 = new User();
+        u1.setId(1);
+        u1.setUsername("alicedoe");
+        u1.setFirstName("Alice");
+        u1.setLastName("Doe");
+        u1.setPersonalCode("P001");
+        u1.setLocator("MG");
+        u1.setAuthority(empAuth);
+        u1.setCompany(compA);
+        u1.setIsWorking(true);
+
+        Formation f1 = new Formation();
+        f1.setId(100);
+        f1.setName("Docker 101");
+        f1.setFormationDate(LocalDateTime.of(2026, Month.AUGUST, 15, 9, 0));
+
+        FormationAttendance att = new FormationAttendance();
+        att.setFormation(f1);
+        att.setUser(u1);
+        att.setCheckInDate(LocalDateTime.of(2026, Month.AUGUST, 15, 9, 0));
+        att.setCheckOutDate(LocalDateTime.of(2026, Month.AUGUST, 15, 11, 30));
+        att.setSignature("sig_base64");
+
+        when(userRepository.findAll()).thenReturn(List.of(u1));
+        when(attendanceRepository.findByUserId(1)).thenReturn(List.of(att));
+
+        List<UserFormationExportDTO> records = analyticsService.getFilteredUserFormations(
+                null, 10, "MG", "EMPLOYEE", "ALL", true, null, null, "ATTENDED", null, null
+        );
+
+        assertEquals(1, records.size());
+        UserFormationExportDTO r = records.getFirst();
+        assertEquals("Docker 101", r.getFormationName());
+        assertEquals("Alice Doe", r.getFullName());
+        assertEquals("ASISTIÓ", r.getStatus());
+        assertEquals(150L, r.getDurationMinutes());
+        assertTrue(r.getDurationHoursFormatted().contains("2h 30m"));
+        assertTrue(r.getHasSignature());
+    }
 }

@@ -8,7 +8,54 @@ export default function PwaUpdateNotification() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const waitingWorkerRef = useRef(null);
+  const currentBuildTimeRef = useRef(null);
 
+  // 1. Verificación de version.json periódica y al volver a enfocar la app
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkVersion = async () => {
+      try {
+        const res = await fetch(`/version.json?t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache, no-store' }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        if (!currentBuildTimeRef.current) {
+          currentBuildTimeRef.current = data.buildTime || data.version;
+        } else if (data.buildTime && data.buildTime !== currentBuildTimeRef.current) {
+          if (isMounted) {
+            setUpdateAvailable(true);
+            setDismissed(false);
+          }
+        }
+      } catch (e) {
+        // Ignorar fallos de red silenciosamente
+      }
+    };
+
+    // Comprobar al iniciar
+    checkVersion();
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        checkVersion();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+    const interval = setInterval(checkVersion, 5 * 60 * 1000); // cada 5 minutos
+
+    return () => {
+      isMounted = false;
+      document.removeEventListener('visibilitychange', handleVisibility);
+      clearInterval(interval);
+    };
+  }, []);
+
+  // 2. Detección por Service Worker Lifecycle
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
 
@@ -49,7 +96,7 @@ export default function PwaUpdateNotification() {
 
       const intervalId = setInterval(() => {
         registration.update().catch(() => {});
-      }, 15 * 60 * 1000);
+      }, 10 * 60 * 1000);
 
       return () => {
         document.removeEventListener('visibilitychange', handleVisibilityChange);
@@ -64,12 +111,20 @@ export default function PwaUpdateNotification() {
     };
   }, []);
 
-  const handleApplyUpdate = () => {
+  const handleApplyUpdate = async () => {
     setIsUpdating(true);
-    if (waitingWorkerRef.current) {
-      waitingWorkerRef.current.postMessage({ type: 'SKIP_WAITING' });
-    } else {
-      window.location.reload();
+    try {
+      if ('caches' in window) {
+        const keys = await window.caches.keys();
+        await Promise.all(keys.map(key => window.caches.delete(key)));
+      }
+      if (waitingWorkerRef.current) {
+        waitingWorkerRef.current.postMessage({ type: 'SKIP_WAITING' });
+      }
+    } catch (e) {
+      console.warn("Error purging caches on update:", e);
+    } finally {
+      window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
     }
   };
 

@@ -108,4 +108,27 @@ class PdfExportStrategyTests {
 
         assertThrows(RuntimeException.class, () -> strategy.exportAuditLogs(logs));
     }
+
+    @Test
+    void exportUserFormations_delegatesToPdfReportGenerator() throws Exception {
+        List<org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO> list = List.of();
+        byte[] expected = new byte[]{10, 20};
+        when(pdfReportGenerator.generateUserFormationsPdf(list)).thenReturn(expected);
+
+        byte[] result = strategy.exportUserFormations(list);
+        assertArrayEquals(expected, result);
+        verify(pdfReportGenerator).generateUserFormationsPdf(list);
+    }
+
+    @Test
+    void exportSingleUserDossier_delegatesToPdfReportGenerator() throws Exception {
+        UserAnalyticsDTO u = UserAnalyticsDTO.builder().userId(1).build();
+        List<org.springframework.samples.smartcheckin.analytics.UserFormationDetailDTO> details = List.of();
+        byte[] expected = new byte[]{30, 40};
+        when(pdfReportGenerator.generateSingleUserDossierPdf(u, details)).thenReturn(expected);
+
+        byte[] result = strategy.exportSingleUserDossier(u, details);
+        assertArrayEquals(expected, result);
+        verify(pdfReportGenerator).generateSingleUserDossierPdf(u, details);
+    }
 }

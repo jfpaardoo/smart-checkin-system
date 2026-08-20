@@ -446,4 +446,104 @@ class ExcelExportStrategyTests {
             assertEquals("N/A", row2.getCell(5).getStringCellValue());
         }
     }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // exportUserFormations
+    // ══════════════════════════════════════════════════════════════════════════
+
+    @Test
+    void exportUserFormations_emptyList_returnsHeader() throws Exception {
+        byte[] bytes = strategy.exportUserFormations(Collections.emptyList());
+        assertNotNull(bytes);
+        try (Workbook wb = toWorkbook(bytes)) {
+            Sheet sheet = wb.getSheet("User Formations Matrix");
+            assertNotNull(sheet);
+            assertEquals(0, sheet.getLastRowNum());
+            assertEquals("User ID", sheet.getRow(0).getCell(0).getStringCellValue());
+        }
+    }
+
+    @Test
+    void exportUserFormations_withData_populatesCorrectly() throws Exception {
+        org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO dto = org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO.builder()
+                .userId(1)
+                .username("jdoe")
+                .personalCode("PC01")
+                .fullName("John Doe")
+                .email("jdoe@test.com")
+                .locator("AV")
+                .companyName("Acme Corp")
+                .authority("USER")
+                .isWorking(true)
+                .formationId(10)
+                .formationName("Java Training")
+                .formationDate(LocalDateTime.of(2026, 8, 1, 10, 0))
+                .status("ASISTIÓ")
+                .checkInDate(LocalDateTime.of(2026, 8, 1, 10, 5))
+                .checkOutDate(LocalDateTime.of(2026, 8, 1, 12, 0))
+                .durationMinutes(115L)
+                .durationHoursFormatted("1h 55m (1.9h)")
+                .hasSignature(true)
+                .verificationHash("SHA256:TESTHASH")
+                .build();
+
+        byte[] bytes = strategy.exportUserFormations(List.of(dto));
+        try (Workbook wb = toWorkbook(bytes)) {
+            Sheet sheet = wb.getSheet("User Formations Matrix");
+            Row r = sheet.getRow(1);
+            assertEquals(1.0, r.getCell(0).getNumericCellValue());
+            assertEquals("jdoe", r.getCell(1).getStringCellValue());
+            assertEquals("PC01", r.getCell(2).getStringCellValue());
+            assertEquals("John Doe", r.getCell(3).getStringCellValue());
+            assertEquals("Java Training", r.getCell(10).getStringCellValue());
+            assertEquals("ASISTIÓ", r.getCell(12).getStringCellValue());
+            assertEquals(115.0, r.getCell(15).getNumericCellValue());
+            assertEquals("YES", r.getCell(17).getStringCellValue());
+            assertEquals("SHA256:TESTHASH", r.getCell(18).getStringCellValue());
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // exportSingleUserDossier
+    // ══════════════════════════════════════════════════════════════════════════
+
+    @Test
+    void exportSingleUserDossier_createsBothSheets() throws Exception {
+        UserAnalyticsDTO user = UserAnalyticsDTO.builder()
+                .userId(5)
+                .username("analyst")
+                .personalCode("P005")
+                .firstName("Ana")
+                .lastName("Lyst")
+                .companyName("Beta Inc")
+                .locator("MG")
+                .authority("EMPLOYEE")
+                .isWorking(true)
+                .attendancePercentage(85.5)
+                .totalFormationMinutes(240L)
+                .build();
+
+        org.springframework.samples.smartcheckin.analytics.UserFormationDetailDTO detail = org.springframework.samples.smartcheckin.analytics.UserFormationDetailDTO.builder()
+                .formationId(101)
+                .formationName("Security 101")
+                .formationDate(LocalDateTime.of(2026, 8, 10, 9, 0))
+                .status("COMPLETED")
+                .checkInDate(LocalDateTime.of(2026, 8, 10, 9, 0))
+                .checkOutDate(LocalDateTime.of(2026, 8, 10, 11, 0))
+                .durationMinutes(120L)
+                .hasSignature(true)
+                .signature("base64sig")
+                .build();
+
+        byte[] bytes = strategy.exportSingleUserDossier(user, List.of(detail));
+        try (Workbook wb = toWorkbook(bytes)) {
+            Sheet summary = wb.getSheet("Employee Dossier Summary");
+            assertNotNull(summary);
+            assertTrue(summary.getLastRowNum() > 5);
+
+            Sheet details = wb.getSheet("Training Sessions & Signatures");
+            assertNotNull(details);
+            assertEquals("Security 101", details.getRow(1).getCell(1).getStringCellValue());
+        }
+    }
 }

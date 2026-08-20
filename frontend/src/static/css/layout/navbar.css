@@ -5,7 +5,20 @@
 
 /* la empresa Navbar - Official Capsule Style */
 .da-navbar {
-  @apply flex items-center justify-between relative z-[1050] my-[15px] mx-[20px] px-[30px] py-[10px] rounded-[40px] bg-slate-800/5 backdrop-blur-sm backdrop-saturate-150 border border-white/30 border-t-white/45 shadow-[0_15px_35px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.4)] !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1050;
+  margin: 15px 20px;
+  padding: 10px 30px;
+  border-radius: 40px;
+  background: rgba(30, 41, 59, 0.05);
+  backdrop-filter: blur(8px) saturate(150%);
+  -webkit-backdrop-filter: blur(8px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-top-color: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.4) !important;
 }
 
 .da-navbar-brand {
@@ -43,6 +56,7 @@
     opacity: 0;
     transform: translateY(-8px) scale(0.98);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -50,25 +64,25 @@
 }
 
 /* Light Liquid Glass Dropdown Menu for Forms & Selects */
-.da-select-toggle + .dropdown-menu.da-dropdown-menu,
+.da-select-toggle+.dropdown-menu.da-dropdown-menu,
 .dropdown-menu.da-dropdown-menu.da-light-dropdown {
   background: #ffffff !important;
   @apply border-[1.5px] border-white/95 shadow-[0_16px_40px_rgba(0,0,0,0.15)] rounded-[16px] p-0 !important;
 }
 
-.da-select-toggle + .dropdown-menu.da-dropdown-menu.show,
+.da-select-toggle+.dropdown-menu.da-dropdown-menu.show,
 .dropdown-menu.da-dropdown-menu.da-light-dropdown.show {
   animation: daDropdownFadeSlide 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
   transform-origin: top center !important;
 }
 
-.da-select-toggle + .dropdown-menu.da-dropdown-menu .da-dropdown-item,
+.da-select-toggle+.dropdown-menu.da-dropdown-menu .da-dropdown-item,
 .dropdown-menu.da-dropdown-menu.da-light-dropdown .da-dropdown-item {
   @apply text-slate-800 !important;
 }
 
-.da-select-toggle + .dropdown-menu.da-dropdown-menu .da-dropdown-item:hover,
-.da-select-toggle + .dropdown-menu.da-dropdown-menu .da-dropdown-item.active,
+.da-select-toggle+.dropdown-menu.da-dropdown-menu .da-dropdown-item:hover,
+.da-select-toggle+.dropdown-menu.da-dropdown-menu .da-dropdown-item.active,
 .dropdown-menu.da-dropdown-menu.da-light-dropdown .da-dropdown-item:hover,
 .dropdown-menu.da-dropdown-menu.da-light-dropdown .da-dropdown-item.active {
   @apply bg-[#b3c34c]/35 text-[#2b3a04] font-semibold !important;
@@ -77,10 +91,6 @@
 /* ==========================================
    TAILWIND UTILITY ABSTRACTIONS FOR NAVBAR
    ========================================== */
-
-.da-nav-capsule {
-  @apply sticky top-4 z-40 mx-4 md:mx-6 lg:mx-8 mb-8 rounded-[40px] bg-slate-800/40 backdrop-blur-xl backdrop-saturate-150 border border-white/20 shadow-[0_8px_32px_0_rgba(31,38,135,0.3)] transition-all duration-300;
-}
 
 .da-nav-btn {
   @apply flex items-center gap-2 px-4 py-2 text-white font-medium rounded-[20px] outline-none transition-all duration-300 hover:bg-white/15;

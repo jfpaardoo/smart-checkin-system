@@ -21,6 +21,7 @@ import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
 import org.springframework.samples.smartcheckin.analytics.AnalyticsService;
 import org.springframework.samples.smartcheckin.analytics.UserAnalyticsDTO;
+import org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO;
 import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.audit.AuditLogRepository;
 import org.springframework.samples.smartcheckin.auth.session.UserSession;
@@ -38,6 +39,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -77,13 +79,58 @@ public class ExportRestController {
         this.exportFactory = exportFactory;
     }
 
+    @GetMapping("/user-formations/{format}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<byte[]> exportUserFormations(
+            @PathVariable String format,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer companyId,
+            @RequestParam(required = false) String locator,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String performance,
+            @RequestParam(required = false) Boolean isWorking,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String attendanceStatus,
+            @RequestParam(required = false) Integer formationId,
+            @RequestParam(required = false) Integer userId) throws IOException {
+        DataExportStrategy strategy = exportFactory.getStrategy(format);
+        LocalDateTime start = (startDate != null && !startDate.isBlank()) ? LocalDate.parse(startDate).atStartOfDay() : null;
+        LocalDateTime end = (endDate != null && !endDate.isBlank()) ? LocalDate.parse(endDate).atTime(23, 59, 59) : null;
+
+        List<UserFormationExportDTO> records = analyticsService.getFilteredUserFormations(
+                search, companyId, locator, role, performance, isWorking, start, end, attendanceStatus, formationId, userId
+        );
+        byte[] data = strategy.exportUserFormations(records);
+        return createResponse(data, "asistencias_formaciones_detallado." + strategy.getFileExtension(), strategy.getContentType());
+    }
+
+    @GetMapping("/user/{userId}/{format}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<byte[]> exportSingleUserDossier(
+            @PathVariable Integer userId,
+            @PathVariable String format) throws IOException {
+        DataExportStrategy strategy = exportFactory.getStrategy(format);
+        UserAnalyticsDTO userAnalytics = analyticsService.getUserAnalytics(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+
+        byte[] data = strategy.exportSingleUserDossier(userAnalytics, userAnalytics.getFormationDetails());
+        String cleanUsername = userAnalytics.getUsername() != null ? userAnalytics.getUsername().replaceAll("[^a-zA-Z0-9_]", "_") : "empleado";
+        return createResponse(data, "expediente_formativo_" + cleanUsername + "." + strategy.getFileExtension(), strategy.getContentType());
+    }
+
     @GetMapping("/users/{format}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<byte[]> exportUsers(
             @PathVariable String format,
-            @RequestParam(required = false) Integer companyId) throws IOException {
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer companyId,
+            @RequestParam(required = false) String locator,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String performance,
+            @RequestParam(required = false) Boolean isWorking) throws IOException {
         DataExportStrategy strategy = exportFactory.getStrategy(format);
-        List<UserAnalyticsDTO> users = analyticsService.getAllUsersAnalytics("", companyId);
+        List<UserAnalyticsDTO> users = analyticsService.getFilteredUsersAnalytics(search, companyId, locator, role, performance, isWorking);
         byte[] data = strategy.exportUsers(users);
         return createResponse(data, "empleados_analiticas." + strategy.getFileExtension(), strategy.getContentType());
     }
@@ -92,14 +139,44 @@ public class ExportRestController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<byte[]> exportCheckins(
             @PathVariable String format,
-            @RequestParam(required = false) Integer companyId) throws IOException {
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer companyId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) Integer userId) throws IOException {
         DataExportStrategy strategy = exportFactory.getStrategy(format);
         List<Checkin> checkins = (List<Checkin>) checkinRepository.findAll();
+
         if (companyId != null) {
             checkins = checkins.stream()
                     .filter(c -> c.getUser() != null && c.getUser().getCompany() != null && companyId.equals(c.getUser().getCompany().getId()))
                     .toList();
         }
+        if (userId != null) {
+            checkins = checkins.stream()
+                    .filter(c -> c.getUser() != null && userId.equals(c.getUser().getId()))
+                    .toList();
+        }
+        if (search != null && !search.isBlank()) {
+            String q = search.toLowerCase().trim();
+            checkins = checkins.stream()
+                    .filter(c -> c.getUser() != null && (
+                            (c.getUser().getUsername() != null && c.getUser().getUsername().toLowerCase().contains(q)) ||
+                            (c.getUser().getFirstName() != null && c.getUser().getFirstName().toLowerCase().contains(q)) ||
+                            (c.getUser().getLastName() != null && c.getUser().getLastName().toLowerCase().contains(q)) ||
+                            (c.getUser().getPersonalCode() != null && c.getUser().getPersonalCode().toLowerCase().contains(q))
+                    ))
+                    .toList();
+        }
+        if (startDate != null && !startDate.isBlank()) {
+            LocalDateTime start = LocalDate.parse(startDate).atStartOfDay();
+            checkins = checkins.stream().filter(c -> c.getCheckInDate() != null && !c.getCheckInDate().isBefore(start)).toList();
+        }
+        if (endDate != null && !endDate.isBlank()) {
+            LocalDateTime end = LocalDate.parse(endDate).atTime(23, 59, 59);
+            checkins = checkins.stream().filter(c -> c.getCheckInDate() != null && !c.getCheckInDate().isAfter(end)).toList();
+        }
+
         byte[] data = strategy.exportCheckins(checkins);
         return createResponse(data, "checkins." + strategy.getFileExtension(), strategy.getContentType());
     }
@@ -108,12 +185,31 @@ public class ExportRestController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<byte[]> exportFormations(
             @PathVariable String format,
-            @RequestParam(required = false) Integer companyId) throws IOException {
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer companyId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) throws IOException {
         DataExportStrategy strategy = exportFactory.getStrategy(format);
         List<Formation> formations = (List<Formation>) formationRepository.findAll();
+
         if (companyId != null) {
             formations = filterFormationsByCompany(formations, companyId);
         }
+        if (search != null && !search.isBlank()) {
+            String q = search.toLowerCase().trim();
+            formations = formations.stream()
+                    .filter(f -> f.getName() != null && f.getName().toLowerCase().contains(q))
+                    .toList();
+        }
+        if (startDate != null && !startDate.isBlank()) {
+            LocalDateTime start = LocalDate.parse(startDate).atStartOfDay();
+            formations = formations.stream().filter(f -> f.getFormationDate() != null && !f.getFormationDate().isBefore(start)).toList();
+        }
+        if (endDate != null && !endDate.isBlank()) {
+            LocalDateTime end = LocalDate.parse(endDate).atTime(23, 59, 59);
+            formations = formations.stream().filter(f -> f.getFormationDate() != null && !f.getFormationDate().isAfter(end)).toList();
+        }
+
         byte[] data = strategy.exportFormations(formations);
         return createResponse(data, "formations." + strategy.getFileExtension(), strategy.getContentType());
     }

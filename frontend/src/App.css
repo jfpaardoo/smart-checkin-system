@@ -31,6 +31,11 @@ body {
   overflow-x: hidden;
 }
 
+#root {
+  overflow-x: hidden;
+  width: 100%;
+}
+
 body::before, body::after {
   content: "";
   position: fixed;

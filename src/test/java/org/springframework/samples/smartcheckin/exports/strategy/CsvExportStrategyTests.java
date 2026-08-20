@@ -276,4 +276,81 @@ class CsvExportStrategyTests {
         String csv = new String(result, StandardCharsets.UTF_8);
         assertTrue(csv.lines().count() >= 2);
     }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // exportUserFormations
+    // ══════════════════════════════════════════════════════════════════════════
+
+    @Test
+    void testExportUserFormationsEmptyListReturnsHeader() throws IOException {
+        String csv = new String(strategy.exportUserFormations(Collections.emptyList()), StandardCharsets.UTF_8);
+        assertTrue(csv.contains("UserID,Username,PersonalCode,FullName,Email,Locator,Company,Role,WorkingStatus,FormationID,FormationName,ScheduledDate,AttendanceStatus,CheckInTime,CheckOutTime,DurationMinutes,DurationFormatted,SignaturePresent,IntegrityHash"));
+    }
+
+    @Test
+    void testExportUserFormationsWithDataReturnsFormattedRow() throws IOException {
+        org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO dto = org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO.builder()
+                .userId(1)
+                .username("jdoe")
+                .personalCode("PC01")
+                .fullName("John Doe")
+                .email("jdoe@test.com")
+                .locator("AV")
+                .companyName("Acme Corp")
+                .authority("USER")
+                .isWorking(true)
+                .formationId(10)
+                .formationName("Java Training")
+                .formationDate(LocalDateTime.of(2026, 8, 1, 10, 0))
+                .status("ASISTIÓ")
+                .checkInDate(LocalDateTime.of(2026, 8, 1, 10, 5))
+                .checkOutDate(LocalDateTime.of(2026, 8, 1, 12, 0))
+                .durationMinutes(115L)
+                .durationHoursFormatted("1h 55m (1.9h)")
+                .hasSignature(true)
+                .verificationHash("SHA256:TESTHASH")
+                .build();
+
+        String csv = new String(strategy.exportUserFormations(List.of(dto)), StandardCharsets.UTF_8);
+        assertTrue(csv.contains("1,jdoe,PC01,John Doe,jdoe@test.com,AV,Acme Corp,USER,YES,10,Java Training"));
+        assertTrue(csv.contains("ASISTIÓ"));
+        assertTrue(csv.contains("115"));
+        assertTrue(csv.contains("SHA256:TESTHASH"));
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // exportSingleUserDossier
+    // ══════════════════════════════════════════════════════════════════════════
+
+    @Test
+    void testExportSingleUserDossierReturnsDossierSections() throws IOException {
+        UserAnalyticsDTO user = UserAnalyticsDTO.builder()
+                .userId(5)
+                .username("analyst")
+                .personalCode("P005")
+                .firstName("Ana")
+                .lastName("Lyst")
+                .companyName("Beta Inc")
+                .locator("MG")
+                .authority("EMPLOYEE")
+                .attendancePercentage(85.5)
+                .totalFormationMinutes(240L)
+                .build();
+
+        org.springframework.samples.smartcheckin.analytics.UserFormationDetailDTO detail = org.springframework.samples.smartcheckin.analytics.UserFormationDetailDTO.builder()
+                .formationId(101)
+                .formationName("Security 101")
+                .formationDate(LocalDateTime.of(2026, 8, 10, 9, 0))
+                .status("COMPLETED")
+                .durationMinutes(120L)
+                .hasSignature(true)
+                .signature("sig")
+                .build();
+
+        String csv = new String(strategy.exportSingleUserDossier(user, List.of(detail)), StandardCharsets.UTF_8);
+        assertTrue(csv.contains("# --- EMPLOYEE DOSSIER SUMMARY ---"));
+        assertTrue(csv.contains("Username,analyst"));
+        assertTrue(csv.contains("# --- FORMATION SESSIONS ---"));
+        assertTrue(csv.contains("101,Security 101"));
+    }
 }
