@@ -1,6 +1,7 @@
 import React, { Suspense } from "react";
 import "./App.css";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 
 import { ErrorBoundary } from "react-error-boundary";
 import AppNavbar from "./AppNavbar";
@@ -15,6 +16,7 @@ import { ToastProvider } from "./components/ToastProvider";
 import SessionTimeoutModal from "./components/SessionTimeoutModal";
 import PwaInstallPrompt from "./components/PwaInstallPrompt";
 import PwaUpdateNotification from "./components/PwaUpdateNotification";
+import PageTransition from "./components/PageTransition";
 import { useTranslation } from "react-i18next";
 import lazyWithRetry from "./util/lazyWithRetry";
 
@@ -72,23 +74,29 @@ function ErrorFallback({ error, resetErrorBoundary }) {
 
 function PageLoadingFallback() {
   return (
-    <div className="flex items-center justify-center min-h-[350px] text-slate-500 text-sm font-medium">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lime-600 mr-3"></div>
-      Cargando contenido...
+    <div className="da-container" style={{ paddingTop: '24px' }}>
+      <div className="da-ghost-card">
+        <div className="da-ghost-element da-ghost-title" />
+        <div className="da-ghost-element da-ghost-subtitle" />
+        <div style={{ marginTop: '24px' }}>
+          <div className="da-ghost-element da-ghost-row" />
+          <div className="da-ghost-element da-ghost-row" />
+          <div className="da-ghost-element da-ghost-row" />
+          <div className="da-ghost-element da-ghost-row" />
+        </div>
+      </div>
     </div>
   );
 }
 
-function App() {
+function AnimatedRoutes() {
+  const location = useLocation();
+
   return (
-    <ToastProvider>
-      <ErrorBoundary FallbackComponent={ErrorFallback} >
-        <AppNavbar />
-        <SessionTimeoutModal />
-        <PwaInstallPrompt />
-        <PwaUpdateNotification />
+    <AnimatePresence mode="wait" initial={false}>
+      <PageTransition key={location.pathname}>
         <Suspense fallback={<PageLoadingFallback />}>
-          <Routes>
+          <Routes location={location}>
             {/* Rutas Públicas y de Autenticación */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
@@ -123,6 +131,20 @@ function App() {
             <Route path="/docs" element={<PrivateRoute><SwaggerDocs /></PrivateRoute>} />
           </Routes>
         </Suspense>
+      </PageTransition>
+    </AnimatePresence>
+  );
+}
+
+function App() {
+  return (
+    <ToastProvider>
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+        <AppNavbar />
+        <SessionTimeoutModal />
+        <PwaInstallPrompt />
+        <PwaUpdateNotification />
+        <AnimatedRoutes />
       </ErrorBoundary>
     </ToastProvider>
   );

@@ -136,7 +136,7 @@ export default function GlassDropdown({
 
       {/* Menú: animado en móvil y desktop */}
       <div className={menuContainerClass}>
-        <div className="overflow-hidden sm:overflow-visible">
+        <div className="overflow-hidden sm:overflow-visible rounded-2xl">
           <div className="bg-white/95 backdrop-blur-2xl border border-white/90 shadow-[0_16px_40px_rgba(0,0,0,0.15)] rounded-2xl p-1.5 max-h-56 overflow-y-auto">
             {searchable && (
               <div className="p-1.5 border-b border-slate-100 sticky top-0 bg-white/95 backdrop-blur-md z-10">

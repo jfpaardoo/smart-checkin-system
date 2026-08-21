@@ -7,20 +7,322 @@
     <meta http-equiv="Expires" content="0" />
     <link rel="icon" type="image/png" href="%PUBLIC_URL%/favicon.png?v=6" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#2d2d2d" />
+    <meta name="theme-color" content="#1e2535" />
     <meta
       name="description"
       content="Distribution Academy - Sistema de Gestión de Formación en la Distribución"
     />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/favicon.png?v=5" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/apple-touch-icon.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <title>Distribution Academy</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      #splash-screen {
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(145deg, #1a2133 0%, #1e2a3a 40%, #141d2e 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+        font-family: 'Outfit', sans-serif;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+      }
+
+      #splash-screen.hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      /* Partículas de fondo */
+      .splash-particles {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+      }
+
+      .particle {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(181, 204, 46, 0.12);
+        animation: floatParticle linear infinite;
+      }
+
+      .particle:nth-child(1)  { width: 6px;  height: 6px;  left: 15%; animation-duration: 8s;  animation-delay: 0s;    bottom: -10px; }
+      .particle:nth-child(2)  { width: 4px;  height: 4px;  left: 30%; animation-duration: 12s; animation-delay: 1s;    bottom: -10px; }
+      .particle:nth-child(3)  { width: 8px;  height: 8px;  left: 50%; animation-duration: 10s; animation-delay: 0.5s;  bottom: -10px; }
+      .particle:nth-child(4)  { width: 3px;  height: 3px;  left: 70%; animation-duration: 9s;  animation-delay: 2s;    bottom: -10px; }
+      .particle:nth-child(5)  { width: 5px;  height: 5px;  left: 85%; animation-duration: 11s; animation-delay: 0.8s;  bottom: -10px; }
+      .particle:nth-child(6)  { width: 4px;  height: 4px;  left: 42%; animation-duration: 7s;  animation-delay: 1.5s;  bottom: -10px; }
+      .particle:nth-child(7)  { width: 7px;  height: 7px;  left: 60%; animation-duration: 13s; animation-delay: 3s;    bottom: -10px; }
+      .particle:nth-child(8)  { width: 3px;  height: 3px;  left: 22%; animation-duration: 9s;  animation-delay: 0.3s;  bottom: -10px; }
+
+      @keyframes floatParticle {
+        0%   { transform: translateY(0) rotate(0deg);   opacity: 0; }
+        10%  { opacity: 1; }
+        90%  { opacity: 0.6; }
+        100% { transform: translateY(-110vh) rotate(720deg); opacity: 0; }
+      }
+
+      /* Contenedor de anillos + logo */
+      .splash-logo-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 220px;
+        height: 220px;
+      }
+
+      /* Anillo exterior giratorio */
+      .splash-ring-outer {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        border-top-color: rgba(181, 204, 46, 0.6);
+        border-right-color: rgba(181, 204, 46, 0.2);
+        animation: spinRing 3s linear infinite;
+      }
+
+      .splash-ring-inner {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        right: 15px;
+        bottom: 15px;
+        border-radius: 50%;
+        border: 1.5px solid transparent;
+        border-bottom-color: rgba(181, 204, 46, 0.4);
+        border-left-color: rgba(181, 204, 46, 0.15);
+        animation: spinRing 2s linear infinite reverse;
+      }
+
+      @keyframes spinRing {
+        to { transform: rotate(360deg); }
+      }
+
+      /* Logo contenedor */
+      .splash-logo-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 160px;
+        height: 160px;
+        animation: logoPulse 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      }
+
+      @keyframes logoPulse {
+        0%   { transform: scale(0.3); opacity: 0; }
+        100% { transform: scale(1);   opacity: 1; }
+      }
+
+      /* Círculo del logo */
+      .splash-logo-circle {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, #2d3e55, #1e2a3a 60%, #141d2e);
+        box-shadow:
+          0 0 0 2px rgba(181, 204, 46, 0.25),
+          0 0 40px rgba(181, 204, 46, 0.12),
+          0 20px 60px rgba(0, 0, 0, 0.5),
+          inset 0 1px 0 rgba(255,255,255,0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: glowPulse 2.5s ease-in-out infinite 0.7s;
+      }
+
+      @keyframes glowPulse {
+        0%, 100% { box-shadow: 0 0 0 2px rgba(181,204,46,0.25), 0 0 40px rgba(181,204,46,0.12), 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05); }
+        50%       { box-shadow: 0 0 0 3px rgba(181,204,46,0.45), 0 0 70px rgba(181,204,46,0.25), 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05); }
+      }
+
+      /* Texto DA */
+      .splash-logo-text {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        font-size: 52px;
+        letter-spacing: -1px;
+        color: #b5cc2e;
+        text-shadow: 0 0 20px rgba(181, 204, 46, 0.4);
+        line-height: 1;
+        animation: textShimmer 3s ease-in-out infinite 1s;
+      }
+
+      @keyframes textShimmer {
+        0%, 100% { text-shadow: 0 0 20px rgba(181,204,46,0.4); }
+        50%       { text-shadow: 0 0 35px rgba(181,204,46,0.7), 0 0 60px rgba(181,204,46,0.3); }
+      }
+
+      /* Nombre de la app */
+      .splash-app-name {
+        margin-top: 32px;
+        text-align: center;
+        animation: fadeSlideUp 0.6s ease both;
+        animation-delay: 0.5s;
+      }
+
+      @keyframes fadeSlideUp {
+        0%   { opacity: 0; transform: translateY(16px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+
+      .splash-app-name h1 {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 600;
+        font-size: 22px;
+        color: #e8edf5;
+        letter-spacing: 0.5px;
+      }
+
+      .splash-app-name p {
+        margin-top: 6px;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 300;
+        font-size: 13px;
+        color: rgba(181, 204, 46, 0.7);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      /* Barra de progreso */
+      .splash-progress-container {
+        margin-top: 48px;
+        width: 180px;
+        animation: fadeSlideUp 0.6s ease both;
+        animation-delay: 0.8s;
+      }
+
+      .splash-progress-bar {
+        height: 3px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .splash-progress-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #b5cc2e, #d4e84a);
+        border-radius: 10px;
+        animation: progressLoad 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        animation-delay: 0.9s;
+        box-shadow: 0 0 12px rgba(181, 204, 46, 0.5);
+      }
+
+      @keyframes progressLoad {
+        0%   { width: 0%; }
+        40%  { width: 60%; }
+        70%  { width: 80%; }
+        90%  { width: 90%; }
+        100% { width: 100%; }
+      }
+
+      .splash-progress-label {
+        margin-top: 10px;
+        text-align: center;
+        font-family: 'Outfit', sans-serif;
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.3);
+        letter-spacing: 1px;
+      }
+    </style>
   </head>
   <body>
     <noscript>Necesitas habilitar JavaScript para ejecutar esta aplicación.</noscript>
+
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+      <!-- Partículas flotantes -->
+      <div class="splash-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+      </div>
+
+      <!-- Anillos giratorios + Logo (envueltos juntos) -->
+      <div class="splash-logo-wrapper">
+        <div class="splash-ring-outer"></div>
+        <div class="splash-ring-inner"></div>
+        <div class="splash-logo-container">
+          <div class="splash-logo-circle">
+            <span class="splash-logo-text">DA</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nombre -->
+      <div class="splash-app-name">
+        <h1>Distribution Academy</h1>
+        <p>Formación en Distribución</p>
+      </div>
+
+      <!-- Progreso -->
+      <div class="splash-progress-container">
+        <div class="splash-progress-bar">
+          <div class="splash-progress-fill"></div>
+        </div>
+        <p class="splash-progress-label">Cargando...</p>
+      </div>
+    </div>
+
     <div id="root"></div>
+
+    <script>
+      // Ocultar splash screen cuando React haya montado la app
+      (function() {
+        var splash = document.getElementById('splash-screen');
+        var minDisplayTime = 1800; // ms mínimos para que se vea la animación
+        var startTime = Date.now();
+
+        function hideSplash() {
+          var elapsed = Date.now() - startTime;
+          var delay = Math.max(0, minDisplayTime - elapsed);
+          setTimeout(function() {
+            if (splash) {
+              splash.classList.add('hidden');
+              setTimeout(function() {
+                if (splash && splash.parentNode) {
+                  splash.parentNode.removeChild(splash);
+                }
+              }, 600);
+            }
+          }, delay);
+        }
+
+        // Observar cuando React monte el contenido en #root
+        var observer = new MutationObserver(function(mutations) {
+          for (var i = 0; i < mutations.length; i++) {
+            if (mutations[i].addedNodes.length > 0) {
+              observer.disconnect();
+              hideSplash();
+              return;
+            }
+          }
+        });
+
+        var root = document.getElementById('root');
+        if (root) {
+          observer.observe(root, { childList: true, subtree: true });
+        }
+
+        // Fallback: ocultar tras 5 segundos si algo falla
+        setTimeout(hideSplash, 5000);
+      })();
+    </script>
   </body>
 </html>
