@@ -1134,3 +1134,74 @@ select option {
   border-radius: 24px !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05), inset 0 1px 2px rgba(255, 255, 255, 0.95) !important;
 }
+
+/* ==========================================
+   FLUIDITY ENHANCEMENTS
+   ========================================== */
+
+/* 1. Smooth scroll global */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 2. Staggered table row entrance animations */
+@keyframes da-row-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.da-table tbody tr {
+  animation: da-row-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.da-table tbody tr:nth-child(1)  { animation-delay: 30ms; }
+.da-table tbody tr:nth-child(2)  { animation-delay: 65ms; }
+.da-table tbody tr:nth-child(3)  { animation-delay: 100ms; }
+.da-table tbody tr:nth-child(4)  { animation-delay: 130ms; }
+.da-table tbody tr:nth-child(5)  { animation-delay: 160ms; }
+.da-table tbody tr:nth-child(6)  { animation-delay: 185ms; }
+.da-table tbody tr:nth-child(7)  { animation-delay: 210ms; }
+.da-table tbody tr:nth-child(8)  { animation-delay: 230ms; }
+.da-table tbody tr:nth-child(9)  { animation-delay: 248ms; }
+.da-table tbody tr:nth-child(10) { animation-delay: 265ms; }
+.da-table tbody tr:nth-child(n+11) { animation-delay: 280ms; }
+
+/* 3. Staggered card grid entrance (da-action-card, etc.) */
+@keyframes da-card-pop {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.da-action-card {
+  animation: da-card-pop 0.45s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+}
+
+/* Stagger cards in a grid via :nth-child */
+.da-action-card:nth-child(1) { animation-delay: 40ms !important; }
+.da-action-card:nth-child(2) { animation-delay: 90ms !important; }
+.da-action-card:nth-child(3) { animation-delay: 135ms !important; }
+.da-action-card:nth-child(4) { animation-delay: 175ms !important; }
+.da-action-card:nth-child(5) { animation-delay: 210ms !important; }
+.da-action-card:nth-child(6) { animation-delay: 240ms !important; }
+
+/* 4. Focus-visible ring accesible y con estilo */
+:focus-visible {
+  outline: 2px solid rgba(179, 195, 76, 0.8) !important;
+  outline-offset: 3px !important;
+  border-radius: 8px;
+}
+
+/* 5. Transición suave en links de navegación */
+a {
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+/* 6. Micro-animación en badges al aparecer */
+@keyframes da-badge-pop {
+  from { transform: scale(0.75); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.da-badge, .badge-glass-success, .badge-glass-warning, .badge-glass-secondary {
+  animation: da-badge-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}

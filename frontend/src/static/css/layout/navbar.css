@@ -67,7 +67,7 @@
 .da-select-toggle+.dropdown-menu.da-dropdown-menu,
 .dropdown-menu.da-dropdown-menu.da-light-dropdown {
   background: #ffffff !important;
-  @apply border-[1.5px] border-white/95 shadow-[0_16px_40px_rgba(0,0,0,0.15)] rounded-[16px] p-0 !important;
+  @apply border-[1.5px] border-white/95 shadow-[0_16px_40px_rgba(0,0,0,0.15)] rounded-[16px] p-0 overflow-hidden !important;
 }
 
 .da-select-toggle+.dropdown-menu.da-dropdown-menu.show,
@@ -79,6 +79,17 @@
 .da-select-toggle+.dropdown-menu.da-dropdown-menu .da-dropdown-item,
 .dropdown-menu.da-dropdown-menu.da-light-dropdown .da-dropdown-item {
   @apply text-slate-800 !important;
+  border-radius: 0 !important;
+}
+
+.da-select-toggle+.dropdown-menu.da-dropdown-menu .da-dropdown-item:first-child,
+.dropdown-menu.da-dropdown-menu.da-light-dropdown .da-dropdown-item:first-child {
+  border-radius: 14px 14px 0 0 !important;
+}
+
+.da-select-toggle+.dropdown-menu.da-dropdown-menu .da-dropdown-item:last-child,
+.dropdown-menu.da-dropdown-menu.da-light-dropdown .da-dropdown-item:last-child {
+  border-radius: 0 0 14px 14px !important;
 }
 
 .da-select-toggle+.dropdown-menu.da-dropdown-menu .da-dropdown-item:hover,
@@ -87,6 +98,7 @@
 .dropdown-menu.da-dropdown-menu.da-light-dropdown .da-dropdown-item.active {
   @apply bg-[#b3c34c]/35 text-[#2b3a04] font-semibold !important;
 }
+
 
 /* ==========================================
    TAILWIND UTILITY ABSTRACTIONS FOR NAVBAR
