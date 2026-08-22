@@ -1,6 +1,6 @@
+import React from 'react';
 import useSWR from 'swr';
 import { Link } from 'react-router-dom';
-import { Button } from 'reactstrap';
 import { FaQrcode, FaChartBar, FaUsers, FaGraduationCap, FaUser, FaSignInAlt, FaShieldAlt, FaUserPlus } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import tokenService from '../services/token.service';
@@ -19,7 +19,6 @@ export default function Home() {
   );
 
   const loadingUser = jwt ? isSWRloading : false;
-
   const isAdmin = user?.authority?.authority === 'ADMIN' || user?.roles?.includes('ADMIN');
 
   if (jwt && loadingUser) {
@@ -27,229 +26,246 @@ export default function Home() {
   }
 
   return (
-    <div className="da-container">
-      <div className="da-card home-card text-center py-4 px-4 px-md-5" style={{ maxWidth: '1080px', margin: '1.5rem auto' }}>
+    <div className="da-container flex flex-col items-center justify-center min-h-[calc(100vh-100px)] py-6 px-4">
+      <div className="da-card home-card w-full max-w-5xl text-center p-6 sm:p-8 md:p-10 my-4">
         
-        {/* LOGO & TITLE HEADER (Centrado en móvil, en fila en PC) */}
-        <div className="da-home-header mb-4">
-          <div className="d-flex flex-column flex-md-row align-items-center justify-content-center text-center text-md-start gap-2 gap-md-3">
-            <div className="da-home-logo mb-2 mb-md-0">
-              <img
-                src="/favicon.png"
-                alt={t('common.companyLogo', 'Logo de la empresa')}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.15)' }}
-              />
-            </div>
-            <div>
-              <h2 className="fw-bold mb-0 text-dark" style={{ letterSpacing: '-0.5px' }}>
-                Distribution Academy
-              </h2>
-              <span className="text-muted small fw-semibold d-block mt-1 mt-md-0">
-                {t('home.subtitle', 'Sistema Inteligente de Fichaje y Gestión de Formaciones')}
-              </span>
-            </div>
+        {/* LOGO & TITLE HEADER */}
+        <div className="flex flex-col sm:flex-row items-center justify-center text-center sm:text-left gap-3 sm:gap-4 mb-8 pb-6 border-b border-white/40 dark:border-white/10">
+          <div className="w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center shadow-md border border-white/40 dark:border-white/10 bg-white dark:bg-slate-800 shrink-0 p-1">
+            <img
+              src="/favicon.png"
+              alt={t('common.companyLogo', 'Logo de la empresa')}
+              className="w-full h-full object-contain"
+            />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight mb-1">
+              Distribution Academy
+            </h1>
+            <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 mb-0">
+              {t('home.subtitle', 'Sistema Inteligente de Fichaje y Gestión de Formaciones')}
+            </p>
           </div>
         </div>
 
         {/* LOGGED IN - ADMIN HUB */}
         {jwt && isAdmin && (
-          <div>
-            <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 text-start">
-              <h5 className="fw-bold m-0 text-dark d-flex align-items-center gap-2">
-                <FaShieldAlt style={{ color: 'var(--da-primary)' }} /> {t('home.quickActions', 'Acciones Rápidas')}
-              </h5>
-              <span className="text-muted small">
-                {t('home.sessionStartedAs', 'Sesión iniciada como:')} <strong className="text-dark">@{user?.username}</strong>
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a]">
+                  <FaShieldAlt className="text-lg" />
+                </div>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-0">
+                  {t('home.quickActions', 'Acciones Rápidas')}
+                </h2>
+              </div>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                {t('home.sessionStartedAs', 'Sesión iniciada como:')}{' '}
+                <strong className="text-slate-700 dark:text-slate-200 font-bold">@{user?.username}</strong>
               </span>
             </div>
 
-            <div className="da-home-grid-4">
-              <div>
-                <Link to="/qr-generator" className="text-decoration-none d-block h-100">
-                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
-                    <div className="d-flex flex-column align-items-center">
-                      <div className="da-action-icon-wrapper">
-                        <FaQrcode size={30} />
-                      </div>
-                      <h6 className="fw-bold text-dark mb-1">{t('home.projectQR', 'Generar Código QR')}</h6>
-                      <p className="small text-muted mb-0">{t('home.projectQRDesc', 'Proyectar QR para asistencia a formación')}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Link to="/qr-generator" className="text-decoration-none block h-full group">
+                <div className="da-action-card h-full flex flex-col items-center justify-between text-center p-5 rounded-3xl transition-all duration-300">
+                  <div className="flex flex-col items-center">
+                    <div className="da-action-icon-wrapper mb-3">
+                      <FaQrcode size={28} />
                     </div>
-                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
-                      {t('home.projectQRBtn', 'Proyectar QR →')}
-                    </span>
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-1">
+                      {t('home.projectQR', 'Generar Código QR')}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-0">
+                      {t('home.projectQRDesc', 'Proyectar QR para asistencia a formación')}
+                    </p>
                   </div>
-                </Link>
-              </div>
+                  <span className="da-btn-primary w-full mt-4 py-2 px-3 rounded-xl text-xs font-bold block text-center">
+                    {t('home.projectQRBtn', 'Proyectar QR →')}
+                  </span>
+                </div>
+              </Link>
 
-              <div>
-                <Link to="/analytics" className="text-decoration-none d-block h-100">
-                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
-                    <div className="d-flex flex-column align-items-center">
-                      <div className="da-action-icon-wrapper">
-                        <FaChartBar size={30} />
-                      </div>
-                      <h6 className="fw-bold text-dark mb-1">{t('home.viewAnalytics', 'Analíticas y Reportes')}</h6>
-                      <p className="small text-muted mb-0">{t('home.viewAnalyticsDesc', 'Descargar informes Excel y PDF')}</p>
+              <Link to="/analytics" className="text-decoration-none block h-full group">
+                <div className="da-action-card h-full flex flex-col items-center justify-between text-center p-5 rounded-3xl transition-all duration-300">
+                  <div className="flex flex-col items-center">
+                    <div className="da-action-icon-wrapper mb-3">
+                      <FaChartBar size={28} />
                     </div>
-                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
-                      {t('home.viewDataBtn', 'Ver Datos →')}
-                    </span>
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-1">
+                      {t('home.viewAnalytics', 'Analíticas y Reportes')}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-0">
+                      {t('home.viewAnalyticsDesc', 'Descargar informes Excel y PDF')}
+                    </p>
                   </div>
-                </Link>
-              </div>
+                  <span className="da-btn-primary w-full mt-4 py-2 px-3 rounded-xl text-xs font-bold block text-center">
+                    {t('home.viewDataBtn', 'Ver Datos →')}
+                  </span>
+                </div>
+              </Link>
 
-              <div>
-                <Link to="/formations" className="text-decoration-none d-block h-100">
-                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
-                    <div className="d-flex flex-column align-items-center">
-                      <div className="da-action-icon-wrapper">
-                        <FaGraduationCap size={30} />
-                      </div>
-                      <h6 className="fw-bold text-dark mb-1">{t('home.manageFormations', 'Gestionar Formaciones')}</h6>
-                      <p className="small text-muted mb-0">{t('home.manageFormationsDesc', 'Crear y administrar convocatorias')}</p>
+              <Link to="/formations" className="text-decoration-none block h-full group">
+                <div className="da-action-card h-full flex flex-col items-center justify-between text-center p-5 rounded-3xl transition-all duration-300">
+                  <div className="flex flex-col items-center">
+                    <div className="da-action-icon-wrapper mb-3">
+                      <FaGraduationCap size={28} />
                     </div>
-                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
-                      {t('home.manageBtn', 'Administrar →')}
-                    </span>
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-1">
+                      {t('home.manageFormations', 'Gestionar Formaciones')}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-0">
+                      {t('home.manageFormationsDesc', 'Crear y administrar convocatorias')}
+                    </p>
                   </div>
-                </Link>
-              </div>
+                  <span className="da-btn-primary w-full mt-4 py-2 px-3 rounded-xl text-xs font-bold block text-center">
+                    {t('home.manageBtn', 'Administrar →')}
+                  </span>
+                </div>
+              </Link>
 
-              <div>
-                <Link to="/users" className="text-decoration-none d-block h-100">
-                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
-                    <div className="d-flex flex-column align-items-center">
-                      <div className="da-action-icon-wrapper">
-                        <FaUsers size={30} />
-                      </div>
-                      <h6 className="fw-bold text-dark mb-1">{t('home.manageUsers', 'Gestionar Usuarios')}</h6>
-                      <p className="small text-muted mb-0">{t('home.manageUsersDesc', 'Administrar plantilla de empleados')}</p>
+              <Link to="/users" className="text-decoration-none block h-full group">
+                <div className="da-action-card h-full flex flex-col items-center justify-between text-center p-5 rounded-3xl transition-all duration-300">
+                  <div className="flex flex-col items-center">
+                    <div className="da-action-icon-wrapper mb-3">
+                      <FaUsers size={28} />
                     </div>
-                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
-                      {t('home.viewEmployeesBtn', 'Ver Empleados →')}
-                    </span>
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-1">
+                      {t('home.manageUsers', 'Gestionar Usuarios')}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-0">
+                      {t('home.manageUsersDesc', 'Administrar plantilla de empleados')}
+                    </p>
                   </div>
-                </Link>
-              </div>
+                  <span className="da-btn-primary w-full mt-4 py-2 px-3 rounded-xl text-xs font-bold block text-center">
+                    {t('home.viewEmployeesBtn', 'Ver Empleados →')}
+                  </span>
+                </div>
+              </Link>
             </div>
           </div>
         )}
 
         {/* LOGGED IN - EMPLOYEE HUB */}
         {jwt && !isAdmin && (
-          <div>
-            <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 text-start">
-              <h5 className="fw-bold m-0 text-dark d-flex align-items-center gap-2">
-                <FaUser style={{ color: 'var(--da-primary)' }} /> {t('home.employeeQuickAccess', 'Acceso Rápido')}
-              </h5>
-              <span className="text-muted small">
-                {t('home.sessionStartedAs', 'Sesión iniciada como:')} <strong className="text-dark">@{user?.username}</strong>
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a]">
+                  <FaUser className="text-lg" />
+                </div>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-0">
+                  {t('home.employeeQuickAccess', 'Acceso Rápido')}
+                </h2>
+              </div>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                {t('home.sessionStartedAs', 'Sesión iniciada como:')}{' '}
+                <strong className="text-slate-700 dark:text-slate-200 font-bold">@{user?.username}</strong>
               </span>
             </div>
 
-            <div className="da-home-grid-3">
-              <div>
-                <Link to="/checkin" className="text-decoration-none d-block h-100">
-                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
-                    <div className="d-flex flex-column align-items-center">
-                      <div className="da-action-icon-wrapper">
-                        <FaQrcode size={30} />
-                      </div>
-                      <h6 className="fw-bold text-dark mb-1">{t('home.directQRCheckin', 'Fichaje Directo QR')}</h6>
-                      <p className="small text-muted mb-0">{t('home.directQRCheckinDesc', 'Escanear el código QR del aula para registrar asistencia')}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Link to="/checkin" className="text-decoration-none block h-full group">
+                <div className="da-action-card h-full flex flex-col items-center justify-between text-center p-5 rounded-3xl transition-all duration-300">
+                  <div className="flex flex-col items-center">
+                    <div className="da-action-icon-wrapper mb-3">
+                      <FaQrcode size={28} />
                     </div>
-                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
-                      {t('home.scanQRBtn', 'Escanear QR →')}
-                    </span>
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-1">
+                      {t('home.directQRCheckin', 'Fichaje Directo QR')}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-0">
+                      {t('home.directQRCheckinDesc', 'Escanear el código QR del aula para registrar asistencia')}
+                    </p>
                   </div>
-                </Link>
-              </div>
+                  <span className="da-btn-primary w-full mt-4 py-2 px-3 rounded-xl text-xs font-bold block text-center">
+                    {t('home.scanQRBtn', 'Escanear QR →')}
+                  </span>
+                </div>
+              </Link>
 
-              <div>
-                <Link to="/dashboard" className="text-decoration-none d-block h-100">
-                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
-                    <div className="d-flex flex-column align-items-center">
-                      <div className="da-action-icon-wrapper">
-                        <FaGraduationCap size={30} />
-                      </div>
-                      <h6 className="fw-bold text-dark mb-1">{t('home.myFormationsBtn', 'Ver Mis Formaciones')}</h6>
-                      <p className="small text-muted mb-0">{t('home.myFormationsDesc', 'Historial y estado de tus capacitaciones')}</p>
+              <Link to="/dashboard" className="text-decoration-none block h-full group">
+                <div className="da-action-card h-full flex flex-col items-center justify-between text-center p-5 rounded-3xl transition-all duration-300">
+                  <div className="flex flex-col items-center">
+                    <div className="da-action-icon-wrapper mb-3">
+                      <FaGraduationCap size={28} />
                     </div>
-                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
-                      {t('home.viewFormationsBtn', 'Ver Formaciones →')}
-                    </span>
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-1">
+                      {t('home.myFormationsBtn', 'Ver Mis Formaciones')}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-0">
+                      {t('home.myFormationsDesc', 'Historial y estado de tus capacitaciones')}
+                    </p>
                   </div>
-                </Link>
-              </div>
+                  <span className="da-btn-primary w-full mt-4 py-2 px-3 rounded-xl text-xs font-bold block text-center">
+                    {t('home.viewFormationsBtn', 'Ver Formaciones →')}
+                  </span>
+                </div>
+              </Link>
 
-              <div>
-                <Link to="/profile" className="text-decoration-none d-block h-100">
-                  <div className="da-action-card h-100 d-flex flex-column align-items-center justify-content-between text-center">
-                    <div className="d-flex flex-column align-items-center">
-                      <div className="da-action-icon-wrapper">
-                        <FaUser size={30} />
-                      </div>
-                      <h6 className="fw-bold text-dark mb-1">{t('home.myProfileBtn', 'Ver Mi Perfil')}</h6>
-                      <p className="small text-muted mb-0">{t('home.myProfileDesc', 'Consultar datos personales y cambiar contraseña')}</p>
+              <Link to="/profile" className="text-decoration-none block h-full group">
+                <div className="da-action-card h-full flex flex-col items-center justify-between text-center p-5 rounded-3xl transition-all duration-300">
+                  <div className="flex flex-col items-center">
+                    <div className="da-action-icon-wrapper mb-3">
+                      <FaUser size={28} />
                     </div>
-                    <span className="da-btn-primary w-100 mt-4 text-dark font-weight-bold" style={{ fontSize: '0.88rem' }}>
-                      {t('home.goToProfileBtn', 'Ir a Mi Perfil →')}
-                    </span>
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-1">
+                      {t('home.myProfileBtn', 'Ver Mi Perfil')}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-0">
+                      {t('home.myProfileDesc', 'Consultar datos personales y cambiar contraseña')}
+                    </p>
                   </div>
-                </Link>
-              </div>
+                  <span className="da-btn-primary w-full mt-4 py-2 px-3 rounded-xl text-xs font-bold block text-center">
+                    {t('home.goToProfileBtn', 'Ir a Mi Perfil →')}
+                  </span>
+                </div>
+              </Link>
             </div>
           </div>
         )}
 
         {/* NOT LOGGED IN - GUEST LANDING */}
         {!jwt && (
-          <div className="text-center py-4">
-            <div className="mb-4">
-              <h3 className="fw-bold text-dark mb-2">{t('home.guestWelcomeTitle', 'Portal de Asistencia y Formaciones')}</h3>
-              <p className="text-muted mx-auto fs-6" style={{ maxWidth: '540px' }}>
+          <div className="py-6 flex flex-col items-center justify-center">
+            <div className="mb-6 max-w-xl mx-auto">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+                {t('home.guestWelcomeTitle', 'Portal de Asistencia y Formaciones')}
+              </h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-0">
                 {t('home.guestWelcomeSub', 'Acceso rápido y seguro a convocatorias, control de asistencia QR y firma digital.')}
               </p>
             </div>
 
-            {/* CONTENEDOR FLEX EN COLUMNA CON BOTONES AL 100% DE ANCHO */}
-            <div className="d-flex flex-column align-items-center gap-3 w-100 mx-auto px-2 mt-4" style={{ maxWidth: '280px' }}>
-              <Button
-                tag={Link}
+            {/* CONTENEDOR FLEX EN COLUMNA CON BOTONES SEPARADOS Y ESTILIZADOS */}
+            <div className="flex flex-col items-center gap-3 w-full max-w-xs px-2 mt-2">
+              <Link
                 to="/login"
-                className="da-btn-primary d-flex align-items-center justify-content-center gap-2 rounded-pill shadow-sm border-0 w-100"
-                style={{ padding: '12px 10px', fontSize: '1rem' }}
+                className="da-btn-primary flex items-center justify-center gap-2 rounded-2xl w-full py-3 px-4 text-sm font-bold text-decoration-none shadow-md hover:scale-102 active:scale-98 transition-all"
               >
-                <FaSignInAlt /> 
+                <FaSignInAlt />
                 <span>{t('nav.login', 'Iniciar Sesión')}</span>
-              </Button>
-              
-              <Button
-                tag={Link}
+              </Link>
+
+              <Link
                 to="/register"
-                className="da-btn-secondary d-flex align-items-center justify-content-center gap-2 rounded-pill shadow-sm border-0 w-100"
-                style={{ padding: '12px 10px', fontSize: '1rem' }}
+                className="da-btn-secondary flex items-center justify-center gap-2 rounded-2xl w-full py-3 px-4 text-sm font-bold text-decoration-none shadow-sm hover:scale-102 active:scale-98 transition-all"
               >
-                <FaUserPlus /> 
+                <FaUserPlus />
                 <span>{t('nav.register', 'Solicitar Registro')}</span>
-              </Button>
+              </Link>
             </div>
           </div>
         )}
 
       </div>
 
-      {/* FOOTER PÚBLICO HOME - POLÍTICA DE PRIVACIDAD */}
-      <div className="w-full text-center mt-4 pb-4 px-4 relative z-10">
-        <span className="text-muted" style={{ fontSize: '0.85rem' }}>
-          &copy; {new Date().getFullYear()} Distribution Academy |{' '}
-        </span>
+      {/* FOOTER PÚBLICO HOME */}
+      <div className="w-full text-center mt-2 pb-4 text-xs text-slate-500 dark:text-slate-400">
+        <span>&copy; {new Date().getFullYear()} Distribution Academy | </span>
         <Link 
           to="/privacy-policy" 
-          className="text-muted fw-bold text-decoration-none inline-block" 
-          style={{ fontSize: '0.85rem', transition: 'color 0.2s' }}
-          onMouseOver={(e) => e.target.style.color = '#88982a'}
-          onMouseOut={(e) => e.target.style.color = '#6c757d'}
+          className="font-semibold text-slate-600 dark:text-slate-300 hover:text-[#b3c34c] dark:hover:text-[#d4e84a] text-decoration-none transition-colors ml-1"
         >
           Política de Privacidad
         </Link>

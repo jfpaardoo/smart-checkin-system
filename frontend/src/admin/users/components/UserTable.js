@@ -1,13 +1,10 @@
-import React from "react";
+import React, { memo } from "react";
 import { Link } from "react-router-dom";
-import { Table, Button } from "reactstrap";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faCheck } from '@fortawesome/free-solid-svg-icons';
-import { FaBuilding } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaCheck, FaUser } from 'react-icons/fa';
 import { useTranslation } from "react-i18next";
 import { TableGhostLoader } from "../../../components/GhostLoader";
 
-export default function UserTable({
+function UserTable({
   users,
   activeTab,
   loading,
@@ -24,50 +21,60 @@ export default function UserTable({
   }
 
   return (
-    <div className="w-full relative z-10">
-      {/* 1. VISTA ESCRITORIO (Se oculta en pantallas menores a 1024px - 'lg') */}
-      <div className="hidden lg:block overflow-x-auto">
-        <Table responsive hover aria-label="users" className="da-table align-middle" style={{ tableLayout: 'fixed', minWidth: '900px', width: '100%' }}>
+    <div className="w-full relative z-10 mt-2">
+      {/* 1. VISTA ESCRITORIO (md y superior) */}
+      <div className="hidden md:block overflow-x-auto rounded-3xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.06)]">
+        <table aria-label="users" className="w-full text-left border-collapse align-middle">
           <thead>
-            <tr>
-              <th style={{ width: '11%', paddingLeft: '1rem' }}>{t('users.personalCode', 'Código')}</th>
-              <th style={{ width: '13%' }}>{t('users.username', 'Usuario')}</th>
-              <th style={{ width: '14%' }}>{t('users.firstName', 'Nombre')}</th>
-              <th style={{ width: '14%' }}>{t('users.lastName', 'Apellidos')}</th>
-              <th style={{ width: '18%' }}>{t('users.company', 'Empresa / Centro')}</th>
-              <th style={{ width: '12%', textAlign: 'center' }}>{t('users.status', 'Estado')}</th>
-              <th style={{ width: '18%', textAlign: 'center' }}>{t('users.actions', 'Acciones')}</th>
+            <tr className="border-b border-white/40 dark:border-white/10 bg-white/50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider">
+              <th className="py-4 px-5" style={{ width: '10%' }}>{t('users.personalCode', 'Código')}</th>
+              <th className="py-4 px-5" style={{ width: '25%' }}>{t('users.name', 'Usuario / Nombre')}</th>
+              <th className="py-4 px-5" style={{ width: '22%' }}>{t('users.company', 'Empresa / Centro')}</th>
+              <th className="py-4 px-5 text-center" style={{ width: '18%' }}>{t('users.status', 'Estado')}</th>
+              <th className="py-4 px-5 text-right" style={{ width: '15%' }}>{t('common.actions', 'Acciones')}</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-white/40 dark:divide-white/10 text-sm text-slate-800 dark:text-slate-100">
             {users.map((user) => (
-              <tr key={user.id}>
-                <td style={{ paddingLeft: '1rem' }}>
+              <tr key={user.id} className="hover:bg-white/50 dark:hover:bg-slate-700/50 transition duration-150">
+                <td className="py-4 px-5">
                   <div className="flex items-center gap-1.5">
-                    <span className="fw-bold">{user.personalCode}</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100 font-mono text-xs sm:text-sm">#{user.personalCode}</span>
                     {user.locator && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#b3c34c]/20 text-[#73841e] border border-[#b3c34c]/30 flex-shrink-0">
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a] border border-[#b3c34c]/30 flex-shrink-0">
                         {user.locator}
                       </span>
                     )}
                   </div>
                 </td>
-                <td style={{ wordBreak: 'break-word' }}>{user.username}</td>
-                <td style={{ wordBreak: 'break-word' }}>{user.firstName}</td>
-                <td style={{ wordBreak: 'break-word' }}>{user.lastName}</td>
-                <td>
+                <td className="py-4 px-5">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-2xl bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a] shadow-xs flex-shrink-0">
+                      <FaUser size={15} />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-bold text-slate-800 dark:text-slate-100 tracking-tight leading-tight">
+                        {user.firstName} {user.lastName}
+                      </div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        @{user.username}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td className="py-4 px-5 text-slate-600 dark:text-slate-300">
                   {user.company ? (
-                    <span className="font-semibold text-slate-800 text-xs truncate max-w-[150px] block" title={user.company.name}>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs truncate max-w-[170px] block" title={user.company.name}>
                       {user.company.name}
                     </span>
                   ) : (
-                    <span className="text-slate-400 text-xs italic">{t('users.noCompany', 'Sin empresa')}</span>
+                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">{t('users.noCompany', 'Sin empresa')}</span>
                   )}
                 </td>
-                <td style={{ textAlign: 'center' }}>
+                <td className="py-4 px-5 text-center">
                   <div className="flex justify-center items-center w-full">
                     {activeTab === 'approved' || activeTab === 'admins' || activeTab === 'employees' ? (
-                      <span className={`da-badge ${user.isWorking ? 'da-badge-active' : 'da-badge-inactive'}`} style={{ whiteSpace: 'normal', display: 'inline-block' }}>
+                      <span className={`da-badge ${user.isWorking ? 'da-badge-active' : 'da-badge-inactive'}`}>
                         {user.isWorking ? t('users.statusWorking', 'Trabajando') : t('users.statusResting', 'Descansando')}
                       </span>
                     ) : (
@@ -75,137 +82,129 @@ export default function UserTable({
                     )}
                   </div>
                 </td>
-                <td>
+                <td className="py-4 px-5 text-right">
                   {activeTab === 'approved' || activeTab === 'admins' || activeTab === 'employees' ? (
-                    <div className="da-table-actions">
-                      <Button
-                        size="sm"
-                        className="da-btn-blue w-100 fw-bold shadow-sm"
-                        style={{ borderRadius: '20px' }}
-                        tag={Link}
-                        to={"/users/" + user.id}
+                    <div className="inline-flex gap-2 justify-end items-center">
+                      <Link
+                        to={`/users/${user.id}`}
+                        className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-600 hover:scale-105 active:scale-95 transition shadow-xs inline-flex items-center justify-center cursor-pointer text-decoration-none"
+                        title={t('common.edit', 'Editar')}
+                        aria-label={t('common.edit', 'Editar')}
                       >
-                        <FontAwesomeIcon icon={faEdit} className="me-1" /> {t('users.edit', 'Editar')}
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="da-btn-danger w-100 fw-bold shadow-sm"
-                        style={{ borderRadius: '20px' }}
+                        <FaEdit size={14} />
+                      </Link>
+                      <button
+                        type="button"
                         onClick={() => handleDeleteAction?.(user.id)}
+                        className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 hover:scale-105 active:scale-95 transition shadow-xs cursor-pointer inline-flex items-center justify-center"
+                        title={t('common.delete', 'Eliminar')}
+                        aria-label={t('common.delete', 'Eliminar')}
                       >
-                        <FontAwesomeIcon icon={faTrash} className="me-1" /> {t('users.delete', 'Eliminar')}
-                      </Button>
+                        <FaTrash size={14} />
+                      </button>
                     </div>
                   ) : (
-                    <div className="da-table-actions">
-                      <Button
-                        size="sm"
-                        className="da-btn-primary w-100 fw-bold shadow-sm"
-                        style={{ borderRadius: '20px' }}
+                    <div className="inline-flex gap-2 justify-end items-center">
+                      <button
+                        type="button"
                         onClick={() => onApprove(user.id)}
+                        className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 hover:scale-105 active:scale-95 transition shadow-xs cursor-pointer inline-flex items-center justify-center"
+                        title={t('users.approve', 'Aprobar')}
+                        aria-label={t('users.approve', 'Aprobar')}
                       >
-                        <FontAwesomeIcon icon={faCheck} className="me-1" /> {t('users.approve', 'Aprobar')}
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="da-btn-danger w-100 fw-bold shadow-sm"
-                        style={{ borderRadius: '20px' }}
+                        <FaCheck size={14} />
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => onDelete(user.id)}
+                        className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 hover:scale-105 active:scale-95 transition shadow-xs cursor-pointer inline-flex items-center justify-center"
+                        title={t('users.reject', 'Rechazar')}
+                        aria-label={t('users.reject', 'Rechazar')}
                       >
-                        <FontAwesomeIcon icon={faTrash} className="me-1" /> {t('users.reject', 'Rechazar')}
-                      </Button>
+                        <FaTrash size={14} />
+                      </button>
                     </div>
                   )}
                 </td>
               </tr>
             ))}
           </tbody>
-        </Table>
+        </table>
       </div>
 
       {/* 2. VISTA MÓVIL / TABLET */}
-      <div className="lg:hidden flex flex-col gap-4 mt-2">
+      <div className="md:hidden flex flex-col gap-3 mt-2">
         {users.map((user) => (
-          <div key={user.id} className="bg-white/70 backdrop-blur-md shadow-sm rounded-[20px] p-4 sm:p-5 border border-white/40 flex flex-col gap-3 overflow-hidden">
+          <div key={user.id} className="content-auto bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm rounded-2xl p-4 border border-white/40 dark:border-white/10 flex flex-col gap-3 overflow-hidden transition-all duration-150">
             <div className="flex justify-between items-start gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2 mb-1">
-                  <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Código: {user.personalCode}</span>
-                  {user.locator && (
-                    <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#b3c34c]/20 text-[#73841e] border border-[#b3c34c]/30">
-                      {user.locator}
-                    </span>
-                  )}
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="p-2.5 rounded-2xl bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a] shadow-xs flex-shrink-0">
+                  <FaUser size={15} />
                 </div>
-                <h3 className="font-bold text-slate-800 m-0 text-lg break-words">{user.firstName} {user.lastName}</h3>
-                <p className="text-xs text-slate-500 m-0 mt-0.5 break-all">@{user.username}</p>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                    <span className="text-xs font-bold font-mono text-slate-500 dark:text-slate-400">#{user.personalCode}</span>
+                    {user.locator && (
+                      <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a] border border-[#b3c34c]/30">
+                        {user.locator}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="font-bold text-slate-800 dark:text-slate-100 m-0 text-base break-words leading-tight">{user.firstName} {user.lastName}</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 m-0 mt-0.5">@{user.username}</p>
+                </div>
               </div>
             </div>
 
-            {/* Empresa / Centro en vista móvil */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-200/50 pt-2.5 gap-1.5">
-              <span className="text-xs text-slate-500 font-semibold">{t('users.company', 'Empresa / Centro')}:</span>
-              {user.company ? (
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-800 bg-white/60 px-2.5 py-1 rounded-xl border border-white/80 shadow-2xs max-w-full break-words self-start sm:self-auto">
-                  <FaBuilding className="text-[#8fa228] shrink-0" size={12} />
-                  <span className="truncate">{user.company.name}</span>
-                </span>
-              ) : (
-                <span className="text-xs text-slate-400 italic self-start sm:self-auto">{t('users.noCompany', 'Sin empresa')}</span>
-              )}
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-200/50 pt-2.5 gap-1.5">
-              <span className="text-xs text-slate-500 font-semibold">{t('users.status', 'Estado')}:</span>
+            <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-300 pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
+              <span className="font-semibold">{user.company?.name || t('users.noCompany', 'Sin empresa')}</span>
               {activeTab === 'approved' || activeTab === 'admins' || activeTab === 'employees' ? (
-                <span className={`da-badge ${user.isWorking ? 'da-badge-active' : 'da-badge-inactive'} self-start sm:self-auto`}>
+                <span className={`da-badge ${user.isWorking ? 'da-badge-active' : 'da-badge-inactive'}`}>
                   {user.isWorking ? t('users.statusWorking', 'Trabajando') : t('users.statusResting', 'Descansando')}
                 </span>
               ) : (
-                <span className="da-badge da-badge-warning self-start sm:self-auto">{t('users.statusPending', 'Pendiente de Aprobación')}</span>
+                <span className="da-badge da-badge-warning">{t('users.statusPending', 'Pendiente de Aprobación')}</span>
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center justify-between border-t border-slate-200/50 pt-3">
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
               {activeTab === 'approved' || activeTab === 'admins' || activeTab === 'employees' ? (
-                <div className="da-table-actions w-full flex flex-col sm:flex-row gap-2">
-                  <Button
-                    size="sm"
-                    className="da-btn-blue flex-1 fw-bold shadow-sm"
-                    style={{ borderRadius: '20px' }}
-                    tag={Link}
+                <>
+                  <Link
+                    className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-white text-decoration-none inline-flex items-center justify-center shadow-xs"
                     to={"/users/" + user.id}
+                    title={t('common.edit', 'Editar')}
                   >
-                    <FontAwesomeIcon icon={faEdit} className="me-1" /> {t('users.edit', 'Editar')}
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="da-btn-danger flex-1 fw-bold shadow-sm"
-                    style={{ borderRadius: '20px' }}
+                    <FaEdit size={14} />
+                  </Link>
+                  <button
+                    type="button"
+                    className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 inline-flex items-center justify-center shadow-xs cursor-pointer"
                     onClick={() => handleDeleteAction?.(user.id)}
+                    title={t('common.delete', 'Eliminar')}
                   >
-                    <FontAwesomeIcon icon={faTrash} className="me-1" /> {t('users.delete', 'Eliminar')}
-                  </Button>
-                </div>
+                    <FaTrash size={14} />
+                  </button>
+                </>
               ) : (
-                <div className="da-table-actions w-full flex flex-col sm:flex-row gap-2">
-                  <Button
-                    size="sm"
-                    className="da-btn-primary flex-1 fw-bold shadow-sm"
-                    style={{ borderRadius: '20px' }}
+                <>
+                  <button
+                    type="button"
+                    className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 inline-flex items-center justify-center shadow-xs cursor-pointer"
                     onClick={() => onApprove(user.id)}
+                    title={t('users.approve', 'Aprobar')}
                   >
-                    <FontAwesomeIcon icon={faCheck} className="me-1" /> {t('users.approve', 'Aprobar')}
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="da-btn-danger flex-1 fw-bold shadow-sm"
-                    style={{ borderRadius: '20px' }}
+                    <FaCheck size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 inline-flex items-center justify-center shadow-xs cursor-pointer"
                     onClick={() => onDelete(user.id)}
+                    title={t('users.reject', 'Rechazar')}
                   >
-                    <FontAwesomeIcon icon={faTrash} className="me-1" /> {t('users.reject', 'Rechazar')}
-                  </Button>
-                </div>
+                    <FaTrash size={14} />
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -214,3 +213,5 @@ export default function UserTable({
     </div>
   );
 }
+
+export default memo(UserTable);

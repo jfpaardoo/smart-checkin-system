@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -26,6 +25,7 @@ import dayjs from 'dayjs';
 import { useToast } from '../../../components/ToastProvider';
 import downloadExportFile from '../../../util/downloadExportFile';
 import GlassDropdown from '../../../components/GlassDropdown';
+import GlassModal from '../../../components/GlassModal';
 import api from '../../../services/api';
 
 const PREDEFINED_LOCATORS = [
@@ -75,43 +75,47 @@ const FORMAT_CONFIG = [
     icon: faFileExcel,
     label: 'Excel (.xlsx)',
     sublabel: 'Estilos y fórmulas',
-    activeClass: 'border-emerald-500 bg-emerald-50 text-emerald-900 ring-2 ring-emerald-400/40 shadow-xs',
-    iconColor: 'text-emerald-600'
+    activeClass: 'border-emerald-500 bg-emerald-50 text-emerald-900 ring-2 ring-emerald-400/40 shadow-xs dark:bg-emerald-950/50 dark:text-emerald-200',
+    iconColor: 'text-emerald-600 dark:text-emerald-400'
   },
   {
     id: 'pdf',
     icon: faFilePdf,
     label: 'PDF Ejecutivo',
     sublabel: 'KPIs y sellos',
-    activeClass: 'border-rose-500 bg-rose-50 text-rose-900 ring-2 ring-rose-400/40 shadow-xs',
-    iconColor: 'text-rose-500'
+    activeClass: 'border-rose-500 bg-rose-50 text-rose-900 ring-2 ring-rose-400/40 shadow-xs dark:bg-rose-950/50 dark:text-rose-200',
+    iconColor: 'text-rose-500 dark:text-rose-400'
   },
   {
     id: 'csv',
     icon: faFileCsv,
     label: 'CSV (.csv)',
     sublabel: 'UTF-8 BOM',
-    activeClass: 'border-[#8a9b1c] bg-[#b3c34c]/15 text-[#3b4707] ring-2 ring-[#b3c34c]/40 shadow-xs',
+    activeClass: 'border-[#8a9b1c] bg-[#b3c34c]/15 text-[#3b4707] ring-2 ring-[#b3c34c]/40 shadow-xs dark:text-[#d2db85]',
     iconColor: 'text-[#8a9b1c]'
   }
 ];
 
+const SIMPLE_PARAM_KEYS = ['userId', 'formationId', 'companyId', 'startDate', 'endDate'];
+const FILTER_ALL_KEYS = ['locator', 'role', 'performance', 'attendanceStatus'];
+
+function appendFiltersToParams(params, filters) {
+  for (const key of SIMPLE_PARAM_KEYS) {
+    if (filters[key]) params.append(key, filters[key]);
+  }
+  for (const key of FILTER_ALL_KEYS) {
+    if (filters[key] && filters[key] !== 'ALL') {
+      params.append(key, filters[key]);
+    }
+  }
+  if (filters.isWorking && filters.isWorking !== 'ALL') {
+    params.append('isWorking', String(filters.isWorking === 'WORKING'));
+  }
+}
+
 function buildQueryParams(filters) {
   const params = new URLSearchParams();
-  if (filters.userId) params.append('userId', filters.userId);
-  if (filters.formationId) params.append('formationId', filters.formationId);
-  if (filters.companyId) params.append('companyId', filters.companyId);
-  if (filters.locator && filters.locator !== 'ALL') params.append('locator', filters.locator);
-  if (filters.role && filters.role !== 'ALL') params.append('role', filters.role);
-  if (filters.performance && filters.performance !== 'ALL') params.append('performance', filters.performance);
-  if (filters.isWorking && filters.isWorking !== 'ALL') {
-    params.append('isWorking', filters.isWorking === 'WORKING' ? 'true' : 'false');
-  }
-  if (filters.startDate) params.append('startDate', filters.startDate);
-  if (filters.endDate) params.append('endDate', filters.endDate);
-  if (filters.attendanceStatus && filters.attendanceStatus !== 'ALL') {
-    params.append('attendanceStatus', filters.attendanceStatus);
-  }
+  appendFiltersToParams(params, filters);
   const str = params.toString();
   return str ? `?${str}` : '';
 }
@@ -303,34 +307,65 @@ export default function AdvancedExportModal({
     }
   };
 
+  const modalTitle = (
+    <div className="flex items-center gap-3">
+      <div className="p-2.5 rounded-2xl bg-[#b3c34c]/25 text-[#73841e] text-lg flex items-center justify-center shadow-xs">
+        <FontAwesomeIcon icon={faDownload} />
+      </div>
+      <div>
+        <h5 className="font-bold text-slate-800 dark:text-slate-100 m-0 text-base sm:text-lg">
+          {t('analytics.advancedExportTitle', 'Generador Avanzado de Informes y Exportaciones')}
+        </h5>
+        <p className="text-xs text-slate-500 dark:text-slate-400 m-0">
+          {t('analytics.advancedExportSub', 'Descarga datos detallados de asistencia, horas dedicadas y rendimiento con filtros dinámicos')}
+        </p>
+      </div>
+    </div>
+  );
+
   return (
-    <Modal
+    <GlassModal
       isOpen={isOpen}
       toggle={toggle}
+      title={modalTitle}
+      maxWidth="1100px"
       size="xl"
-      className="modal-dialog-centered advanced-export-modal !max-w-[1150px] w-full"
-      contentClassName="border-0 rounded-[28px] overflow-hidden bg-white/95 backdrop-blur-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)]"
-    >
-      <ModalHeader toggle={toggle} className="border-b border-slate-100/80 px-6 py-4 bg-gradient-to-r from-[#b3c34c]/15 to-transparent">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-[#b3c34c]/25 text-[#73841e] text-lg flex items-center justify-center shadow-xs">
-            <FontAwesomeIcon icon={faDownload} />
+      footer={
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
+          <div className="text-xs text-slate-500 dark:text-slate-400 text-center sm:text-left">
+            <span className="font-bold text-slate-700 dark:text-slate-200">{activeFiltersCount}</span> {t('analytics.filtersActive', 'filtros aplicados')}
           </div>
-          <div>
-            <h5 className="font-bold text-slate-800 m-0 text-lg">
-              {t('analytics.advancedExportTitle', 'Generador Avanzado de Informes y Exportaciones')}
-            </h5>
-            <p className="text-xs text-slate-500 m-0">
-              {t('analytics.advancedExportSub', 'Descarga datos detallados de asistencia, horas dedicadas y rendimiento con filtros dinámicos')}
-            </p>
+
+          <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full sm:w-auto justify-end">
+            <button
+              type="button"
+              disabled={isExporting}
+              onClick={toggle}
+              className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold rounded-xl text-slate-700 dark:text-slate-200 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <FontAwesomeIcon icon={faTimes} className="text-slate-500 dark:text-slate-400" />
+              <span>{t('common.cancel', 'Cancelar')}</span>
+            </button>
+
+            <button
+              type="button"
+              disabled={isExporting}
+              onClick={handleGenerateExport}
+              className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold rounded-xl text-white bg-[#7a8a18] hover:bg-[#687614] border-0 shadow-md active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <FontAwesomeIcon icon={isExporting ? faSpinner : faDownload} spin={isExporting} />
+              <span>
+                {isExporting ? t('common.generating', 'Generando...') : t('analytics.downloadReport', 'Generar y Descargar')}
+              </span>
+            </button>
           </div>
         </div>
-      </ModalHeader>
-
-      <ModalBody className="px-6 py-4 flex flex-col gap-4 max-h-[82vh] overflow-y-auto pb-24 sm:pb-32">
+      }
+    >
+      <div className="flex flex-col gap-4">
         {/* 1. SELECCIÓN DEL TIPO DE REPORTE */}
         <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
             1. {t('analytics.selectReportType', 'Selecciona el Tipo de Informe')}
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
@@ -343,16 +378,16 @@ export default function AdvancedExportModal({
                   onClick={() => setReportType(item.type)}
                   className={`p-3 rounded-2xl border cursor-pointer transition-all duration-200 flex items-start gap-2.5 text-left w-full ${
                     isSelected
-                      ? 'border-[#8a9b1c] bg-[#b3c34c]/15 ring-2 ring-[#b3c34c]/40 shadow-xs'
-                      : 'border-slate-200/80 bg-white hover:bg-slate-50'
+                      ? 'border-[#8a9b1c] bg-[#b3c34c]/15 ring-2 ring-[#b3c34c]/40 shadow-xs dark:bg-[#b3c34c]/25'
+                      : 'border-slate-200/80 dark:border-slate-700/80 bg-white/70 dark:bg-slate-800/70 hover:bg-slate-50 dark:hover:bg-slate-700/50'
                   }`}
                 >
-                  <div className={`p-2 rounded-xl text-base flex-shrink-0 ${isSelected ? 'bg-[#8a9b1c] text-white' : 'bg-slate-100 text-slate-600'}`}>
+                  <div className={`p-2 rounded-xl text-base flex-shrink-0 ${isSelected ? 'bg-[#8a9b1c] text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>
                     <FontAwesomeIcon icon={item.icon} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-bold text-xs text-slate-800 leading-tight">
+                      <span className="font-bold text-xs text-slate-800 dark:text-slate-100 leading-tight">
                         {t(item.titleKey, item.defaultTitle)}
                       </span>
                       {item.badgeKey && (
@@ -361,7 +396,7 @@ export default function AdvancedExportModal({
                         </span>
                       )}
                     </div>
-                    <p className="text-[10.5px] text-slate-500 m-0 mt-1 leading-tight line-clamp-2">
+                    <p className="text-[10.5px] text-slate-500 dark:text-slate-400 m-0 mt-1 leading-tight line-clamp-2">
                       {t(item.descKey, item.defaultDesc)}
                     </p>
                   </div>
@@ -373,7 +408,7 @@ export default function AdvancedExportModal({
 
         {/* 2. SELECCIÓN DEL FORMATO */}
         <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
             2. {t('analytics.selectFormat', 'Formato de Exportación')}
           </label>
           <div className="grid grid-cols-3 gap-2.5">
@@ -387,12 +422,12 @@ export default function AdvancedExportModal({
                   className={`p-2.5 rounded-2xl border text-center transition-all duration-200 flex flex-col items-center justify-center gap-1 cursor-pointer ${
                     isSelected
                       ? fmt.activeClass
-                      : 'border-slate-200/80 bg-white text-slate-700 hover:bg-slate-50'
+                      : 'border-slate-200/80 dark:border-slate-700/80 bg-white/70 dark:bg-slate-800/70 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50'
                   }`}
                 >
                   <FontAwesomeIcon icon={fmt.icon} className={`text-lg ${fmt.iconColor}`} />
                   <span className="font-bold text-xs">{fmt.label}</span>
-                  <span className="text-[10px] text-slate-500 leading-none">{fmt.sublabel}</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 leading-none">{fmt.sublabel}</span>
                 </button>
               );
             })}
@@ -400,9 +435,9 @@ export default function AdvancedExportModal({
         </div>
 
         {/* 3. FILTROS DINÁMICOS */}
-        <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70">
+        <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/70">
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider">
               <FontAwesomeIcon icon={faFilter} className="text-[#8a9b1c]" />
               <span>3. {t('analytics.customizeFilters', 'Filtros Dinámicos')}</span>
               {activeFiltersCount > 0 && (
@@ -415,7 +450,7 @@ export default function AdvancedExportModal({
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="text-[11px] font-bold text-[#73841e] hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-0 p-0"
+                className="text-[11px] font-bold text-[#73841e] dark:text-[#a1b03e] hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-0 p-0"
               >
                 <FontAwesomeIcon icon={faRotateLeft} />
                 {t('common.reset', 'Restablecer')}
@@ -424,11 +459,10 @@ export default function AdvancedExportModal({
           </div>
 
           <div className="flex flex-col gap-3">
-            {/* Fila 1: Selectores Principales con Búsqueda (2 columnas en tablet/desktop) */}
+            {/* Fila 1: Selectores Principales con Búsqueda */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-              {/* Desplegable con Búsqueda: Empleado / Usuario */}
               <div>
-                <label className="text-[11px] font-semibold text-slate-600 mb-1 flex items-center gap-1">
+                <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1">
                   <FontAwesomeIcon icon={faUserCheck} className="text-[#8a9b1c] text-[10px]" />
                   {t('analytics.filterUserSelect', 'Empleado / Usuario (con búsqueda)')}
                 </label>
@@ -442,9 +476,8 @@ export default function AdvancedExportModal({
                 />
               </div>
 
-              {/* Desplegable con Búsqueda: Formación / Convocatoria */}
               <div>
-                <label className="text-[11px] font-semibold text-slate-600 mb-1 flex items-center gap-1">
+                <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1">
                   <FontAwesomeIcon icon={faBookOpen} className="text-[#8a9b1c] text-[10px]" />
                   {t('analytics.filterFormationSelect', 'Formación / Convocatoria (con búsqueda)')}
                 </label>
@@ -459,11 +492,10 @@ export default function AdvancedExportModal({
               </div>
             </div>
 
-            {/* Fila 2: Filtros de Criterios (6 columnas en desktop / 3 en tablet / 1 en móvil) */}
+            {/* Fila 2: Filtros de Criterios */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-              {/* Empresa */}
               <div>
-                <label className="text-[10.5px] font-semibold text-slate-600 mb-1 flex items-center gap-1">
+                <label className="text-[10.5px] font-semibold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1">
                   <FontAwesomeIcon icon={faBuilding} className="text-[#8a9b1c] text-[9px]" />
                   <span className="truncate">{t('analytics.company', 'Empresa')}</span>
                 </label>
@@ -478,9 +510,8 @@ export default function AdvancedExportModal({
                 />
               </div>
 
-              {/* Sede / Localizador */}
               <div>
-                <label className="text-[10.5px] font-semibold text-slate-600 mb-1 flex items-center gap-1">
+                <label className="text-[10.5px] font-semibold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1">
                   <FontAwesomeIcon icon={faMapMarkerAlt} className="text-[#8a9b1c] text-[9px]" />
                   <span className="truncate">{t('analytics.locator', 'Sede')}</span>
                 </label>
@@ -496,9 +527,8 @@ export default function AdvancedExportModal({
                 />
               </div>
 
-              {/* Rol */}
               <div>
-                <label className="text-[10.5px] font-semibold text-slate-600 mb-1 flex items-center gap-1">
+                <label className="text-[10.5px] font-semibold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1">
                   <FontAwesomeIcon icon={faUserTag} className="text-[#8a9b1c] text-[9px]" />
                   <span className="truncate">{t('analytics.role', 'Rol')}</span>
                 </label>
@@ -515,9 +545,8 @@ export default function AdvancedExportModal({
                 />
               </div>
 
-              {/* Rendimiento / Asistencia */}
               <div>
-                <label className="text-[10.5px] font-semibold text-slate-600 mb-1 flex items-center gap-1">
+                <label className="text-[10.5px] font-semibold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1">
                   <FontAwesomeIcon icon={faChartPie} className="text-[#8a9b1c] text-[9px]" />
                   <span className="truncate">{t('analytics.perfRate', 'Tasa')}</span>
                 </label>
@@ -534,9 +563,8 @@ export default function AdvancedExportModal({
                 />
               </div>
 
-              {/* Estado de Asistencia a la Formación */}
               <div>
-                <label className="text-[10.5px] font-semibold text-slate-600 mb-1 flex items-center gap-1">
+                <label className="text-[10.5px] font-semibold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1">
                   <FontAwesomeIcon icon={faGraduationCap} className="text-[#8a9b1c] text-[9px]" />
                   <span className="truncate">{t('analytics.attendanceStatus', 'Asistencia')}</span>
                 </label>
@@ -553,9 +581,8 @@ export default function AdvancedExportModal({
                 />
               </div>
 
-              {/* Estado Laboral */}
               <div>
-                <label className="text-[10.5px] font-semibold text-slate-600 mb-1 flex items-center gap-1">
+                <label className="text-[10.5px] font-semibold text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1">
                   <FontAwesomeIcon icon={faClock} className="text-[#8a9b1c] text-[9px]" />
                   <span className="truncate">{t('analytics.workStatus', 'Estado')}</span>
                 </label>
@@ -573,8 +600,8 @@ export default function AdvancedExportModal({
             </div>
 
             {/* Fila 3: Rango de Fechas */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 pt-2 border-t border-slate-200/60">
-              <label className="text-[11px] font-semibold text-slate-600 flex items-center gap-1 m-0 whitespace-nowrap">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
+              <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-1 m-0 whitespace-nowrap">
                 <FontAwesomeIcon icon={faCalendarAlt} className="text-[#8a9b1c] text-[10px]" />
                 {t('analytics.dateRange', 'Rango de fechas:')}
               </label>
@@ -585,7 +612,7 @@ export default function AdvancedExportModal({
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full min-w-0 px-2.5 py-1 text-xs rounded-xl border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#b3c34c]/50"
+                    className="w-full min-w-0 px-2.5 py-1 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#b3c34c]/50"
                     aria-label={t('analytics.startDate', 'Fecha Inicio')}
                   />
                 </div>
@@ -595,7 +622,7 @@ export default function AdvancedExportModal({
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full min-w-0 px-2.5 py-1 text-xs rounded-xl border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#b3c34c]/50"
+                    className="w-full min-w-0 px-2.5 py-1 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#b3c34c]/50"
                     aria-label={t('analytics.endDate', 'Fecha Fin')}
                   />
                 </div>
@@ -603,37 +630,7 @@ export default function AdvancedExportModal({
             </div>
           </div>
         </div>
-      </ModalBody>
-
-      <ModalFooter className="border-t border-slate-100 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/70">
-        <div className="text-xs text-slate-500 w-full sm:w-auto text-center sm:text-left">
-          <span className="font-bold text-slate-700">{activeFiltersCount}</span> {t('analytics.filtersActive', 'filtros aplicados')}
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full sm:w-auto justify-end">
-          <button
-            type="button"
-            disabled={isExporting}
-            onClick={toggle}
-            className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold rounded-xl text-slate-700 bg-slate-200 hover:bg-slate-300 border border-slate-300 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-          >
-            <FontAwesomeIcon icon={faTimes} className="text-slate-500" />
-            <span>{t('common.cancel', 'Cancelar')}</span>
-          </button>
-
-          <button
-            type="button"
-            disabled={isExporting}
-            onClick={handleGenerateExport}
-            className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold rounded-xl text-white bg-[#7a8a18] hover:bg-[#687614] border-0 shadow-md active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <FontAwesomeIcon icon={isExporting ? faSpinner : faDownload} spin={isExporting} />
-            <span>
-              {isExporting ? t('common.generating', 'Generando...') : t('analytics.downloadReport', 'Generar y Descargar')}
-            </span>
-          </button>
-        </div>
-      </ModalFooter>
-    </Modal>
+      </div>
+    </GlassModal>
   );
 }

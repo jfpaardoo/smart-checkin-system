@@ -1,8 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Table, Button, Form, FormGroup } from "reactstrap";
 import { useTranslation } from "react-i18next";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faFilePdf, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { FaEye, FaFilePdf, FaTrash, FaUser } from "react-icons/fa";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import GlassDropdown from "../../../components/GlassDropdown";
@@ -10,18 +8,6 @@ import GlassSearchBar from "../../../components/GlassSearchBar";
 import GlassPagination from "../../../components/GlassPagination";
 
 dayjs.extend(utc);
-
-// Estilo común para que los 3 botones tengan el mismo ancho y alineación
-const actionButtonStyle = { 
-  width: '100px',
-  height: '34px',
-  padding: '0', 
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '6px',
-  whiteSpace: 'nowrap'
-};
 
 export default function FormationAttendeesTable({
   formation,
@@ -42,9 +28,9 @@ export default function FormationAttendeesTable({
   const [pageSize, setPageSize] = useState(10);
 
   const renderAttendanceBadge = (att) => {
-    if (att.checkOutDate) return <span className="badge-glass-success text-xs">{t('formationDetails.statusCompleted')}</span>;
-    if (att.checkInDate)  return <span className="badge-glass-warning text-dark text-xs">{t('formationDetails.statusInProgress')}</span>;
-    return <span className="badge-glass-secondary text-xs">{t('formationDetails.statusPending')}</span>;
+    if (att.checkOutDate) return <span className="da-badge da-badge-active text-xs">{t('formationDetails.statusCompleted', 'Completada')}</span>;
+    if (att.checkInDate)  return <span className="da-badge da-badge-warning text-xs">{t('formationDetails.statusInProgress', 'En curso')}</span>;
+    return <span className="da-badge da-badge-inactive text-xs">{t('formationDetails.statusPending', 'Pendiente')}</span>;
   };
 
   const attendeeIds = new Set(formation.attendances ? formation.attendances.map(a => a.user.id) : []);
@@ -61,30 +47,31 @@ export default function FormationAttendeesTable({
 
   // Filtrado
   const filteredAttendees = useMemo(() => {
-    return attendees.filter((att) => {
+    return attendees.filter(att => {
       const u = att.user;
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const match = (
-          (u?.firstName?.toLowerCase()?.includes(q)) ||
-          (u?.lastName?.toLowerCase()?.includes(q)) ||
-          (u?.username?.toLowerCase()?.includes(q)) ||
-          (u?.personalCode?.toLowerCase()?.includes(q))
-        );
-        if (!match) return false;
-      }
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch = !q || 
+        u.firstName?.toLowerCase().includes(q) || 
+        u.lastName?.toLowerCase().includes(q) || 
+        u.username?.toLowerCase().includes(q) ||
+        u.personalCode?.toLowerCase().includes(q);
 
-      if (statusFilter !== 'ALL') {
-        if (statusFilter === 'COMPLETED' && !att.checkOutDate) return false;
-        if (statusFilter === 'IN_PROGRESS' && (!att.checkInDate || att.checkOutDate)) return false;
-        if (statusFilter === 'PENDING' && (att.checkInDate || att.checkOutDate)) return false;
-      }
+      if (!matchesSearch) return false;
+
+      if (statusFilter === 'COMPLETED') return !!att.checkOutDate;
+      if (statusFilter === 'IN_PROGRESS') return !!att.checkInDate && !att.checkOutDate;
+      if (statusFilter === 'PENDING') return !att.checkInDate && !att.checkOutDate;
 
       return true;
     });
   }, [attendees, searchQuery, statusFilter]);
 
-  // Paginación
+  // Reset a pág 1 cuando cambien filtros
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, pageSize]);
+
+  // Paginación de asistentes filtrados
   const paginatedAttendees = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
     return filteredAttendees.slice(start, start + pageSize);
@@ -92,35 +79,40 @@ export default function FormationAttendeesTable({
 
   return (
     <>
-      <div className="da-card-header pt-3 flex flex-col md:flex-row justify-between items-center gap-3">
-        <h3>{t('formationDetails.attendeesSection')}</h3>
-        <Form className="formation-add-form d-flex gap-2 align-items-stretch" style={{ height: '42px' }} onSubmit={handleSubmit}>
-          <FormGroup className="mb-0 h-100" style={{ minWidth: '280px', flex: 1, maxWidth: '400px' }}>
+      {/* Selector de Nuevo Asistente */}
+      <div className="p-4 sm:p-5 mt-4 rounded-3xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.06)] relative z-30">
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+          <div className="flex-1 min-w-0">
             <GlassDropdown
-              options={availableUsers.map(u => ({
-                value: u.id,
+              options={availableUsers.map((u) => ({
+                value: String(u.id),
                 label: `${u.firstName} ${u.lastName} (${u.username})`
               }))}
               value={selectedUserId}
               onChange={(val) => setSelectedUserId(String(val))}
-              placeholder={t('formationDetails.selectUserToAdd')}
+              placeholder={t('formationDetails.selectUserToAdd', 'Seleccionar Usuario...')}
               searchable={true}
+              className="w-full"
             />
-          </FormGroup>
-          <Button className="da-btn-primary h-100 d-flex align-items-center justify-content-center px-4" type="submit" disabled={!selectedUserId || isAddingUser}>
-            {isAddingUser ? 'Añadiendo...' : t('formationDetails.addUser')}
-          </Button>
-        </Form>
+          </div>
+          <button 
+            className="da-btn-primary px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm text-slate-950 flex items-center justify-center gap-2 shadow-xs hover:scale-102 active:scale-98 transition-all border-0 cursor-pointer disabled:opacity-50 shrink-0" 
+            type="submit" 
+            disabled={!selectedUserId || isAddingUser}
+          >
+            {isAddingUser ? t('common.saving', 'Añadiendo...') : t('formationDetails.addUser', 'Añadir Usuario')}
+          </button>
+        </form>
       </div>
 
       {attendees.length === 0 ? (
-        <div className="text-center p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.45)', backdropFilter: 'blur(10px)', borderRadius: '20px', border: '1.5px solid rgba(255, 255, 255, 0.8)' }}>
-          <p className="mb-0" style={{ color: '#64748b', fontWeight: 500 }}>{t('formationDetails.noAttendees')}</p>
+        <div className="text-center p-6 mt-4 rounded-3xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/60 dark:border-white/10 text-slate-500 dark:text-slate-400 relative z-10">
+          <p className="mb-0 font-medium">{t('formationDetails.noAttendees', 'No hay asistentes registrados aún.')}</p>
         </div>
       ) : (
-        <div className="w-full">
+        <div className="w-full mt-4 relative z-10">
           {/* Barra de Filtro y Búsqueda de Asistentes */}
-          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-3 mt-2 items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-3 items-center">
             <div className="sm:col-span-8">
               <GlassSearchBar
                 placeholder={t('formationDetails.searchAttendee', 'Buscar asistente por nombre, usuario o código...')}
@@ -143,137 +135,153 @@ export default function FormationAttendeesTable({
             </div>
           </div>
 
-          {/* 1. VISTA ESCRITORIO */}
-          <div className="hidden lg:block overflow-x-auto pb-2">
-            <Table responsive hover className="da-table align-middle" style={{ minWidth: '700px', width: '100%' }}>
+          {/* 1. VISTA ESCRITORIO (md y superior) */}
+          <div className="hidden md:block overflow-x-auto rounded-3xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.06)]">
+            <table className="w-full text-left border-collapse align-middle">
               <thead>
-                <tr>
-                  <th style={{ color: '#2c3e50', paddingLeft: '1rem' }}>{t('formationDetails.personalCode')}</th>
-                  <th style={{ color: '#2c3e50' }}>{t('formationDetails.name')}</th>
-                  <th style={{ color: '#2c3e50' }}>{t('formationDetails.username')}</th>
-                  <th style={{ color: '#2c3e50' }}>{t('formationDetails.checkIn')}</th>
-                  <th style={{ color: '#2c3e50' }}>{t('formationDetails.checkOut')}</th>
-                  <th style={{ color: '#2c3e50' }}>{t('formationDetails.status')}</th>
-                  <th style={{ color: '#2c3e50', paddingRight: '1rem' }} className="text-center">{t('formationDetails.actions')}</th>
+                <tr className="border-b border-white/40 dark:border-white/10 bg-white/50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider">
+                  <th className="py-4 px-5" style={{ width: '10%' }}>{t('formationDetails.personalCode', 'Código')}</th>
+                  <th className="py-4 px-5" style={{ width: '28%' }}>{t('formationDetails.name', 'Asistente')}</th>
+                  <th className="py-4 px-5" style={{ width: '14%' }}>{t('formationDetails.checkIn', 'Check-in')}</th>
+                  <th className="py-4 px-5" style={{ width: '14%' }}>{t('formationDetails.checkOut', 'Check-out')}</th>
+                  <th className="py-4 px-5 text-center" style={{ width: '16%' }}>{t('formationDetails.status', 'Estado')}</th>
+                  <th className="py-4 px-5 text-right" style={{ width: '18%' }}>{t('formationDetails.actions', 'Acciones')}</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-white/40 dark:divide-white/10 text-sm text-slate-800 dark:text-slate-100">
                 {paginatedAttendees.map((att) => {
                   const user = att.user;
                   const isCompleted = !!att.checkOutDate;
                   const hasCheckedIn = !!att.checkInDate;
                   return (
-                    <tr key={att.id || user.id}>
-                      <td style={{ color: '#2c3e50', fontWeight: 600, paddingLeft: '1rem' }}>{user.personalCode}</td>
-                      <td style={{ color: '#2c3e50' }}>{user.firstName} {user.lastName}</td>
-                      <td style={{ color: '#64748b' }}>{user.username}</td>
-                      <td style={{ color: '#64748b' }}>{hasCheckedIn ? dayjs.utc(att.checkInDate).local().format('HH:mm:ss') : '-'}</td>
-                      <td style={{ color: '#64748b' }}>{isCompleted ? dayjs.utc(att.checkOutDate).local().format('HH:mm:ss') : '-'}</td>
-                      <td>{renderAttendanceBadge(att)}</td>
-                      <td className="text-center" style={{ paddingRight: '1rem' }}>
-                        <div className="flex justify-center gap-2 items-center w-full">
+                    <tr key={att.id || user.id} className="hover:bg-white/50 dark:hover:bg-slate-700/50 transition duration-150">
+                      <td className="py-4 px-5 font-bold font-mono text-slate-800 dark:text-slate-100 text-xs sm:text-sm">
+                        #{user.personalCode}
+                      </td>
+                      <td className="py-4 px-5">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2.5 rounded-2xl bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a] shadow-xs flex-shrink-0">
+                            <FaUser size={15} />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-bold text-slate-800 dark:text-slate-100 tracking-tight leading-tight">
+                              {user.firstName} {user.lastName}
+                            </div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                              @{user.username}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-5 text-slate-600 dark:text-slate-300 font-mono text-xs">
+                        {hasCheckedIn ? dayjs.utc(att.checkInDate).local().format('HH:mm:ss') : '-'}
+                      </td>
+                      <td className="py-4 px-5 text-slate-600 dark:text-slate-300 font-mono text-xs">
+                        {isCompleted ? dayjs.utc(att.checkOutDate).local().format('HH:mm:ss') : '-'}
+                      </td>
+                      <td className="py-4 px-5 text-center">
+                        {renderAttendanceBadge(att)}
+                      </td>
+                      <td className="py-4 px-5 text-right">
+                        <div className="inline-flex gap-2 justify-end items-center">
                           {/* Botón 1: Detalles */}
-                          <Button
-                            size="sm"
-                            className="da-btn-primary fw-bold shadow-sm"
-                            style={actionButtonStyle}
+                          <button
+                            type="button"
+                            className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-600 hover:scale-105 active:scale-95 transition shadow-xs inline-flex items-center justify-center cursor-pointer"
                             onClick={() => onViewSignature(att)}
-                            title={t('formationDetails.viewSignature')}
+                            title={t('formationDetails.viewSignature', 'Ver Firma / Detalles')}
+                            aria-label={t('formationDetails.viewSignature', 'Ver Firma / Detalles')}
                           >
-                            <FontAwesomeIcon icon={faEye} size="lg" />
-                            <span>{t('common.details', 'Detalles')}</span>
-                          </Button>
+                            <FaEye size={14} />
+                          </button>
 
                           {/* Botón 2: PDF */}
                           {att.signature && (
-                            <Button
-                              size="sm"
-                              className="da-btn-blue fw-bold shadow-sm"
-                              style={actionButtonStyle}
+                            <button
+                              type="button"
+                              className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 hover:scale-105 active:scale-95 transition shadow-xs inline-flex items-center justify-center cursor-pointer"
                               onClick={() => onDownloadPdf(att.id)}
                               title="PDF"
+                              aria-label="Descargar PDF"
                             >
-                              <FontAwesomeIcon icon={faFilePdf} size="lg" />
-                              <span>PDF</span>
-                            </Button>
+                              <FaFilePdf size={14} />
+                            </button>
                           )}
-                          
-                          {/* Espaciador */}
-                          {!att.signature && <div style={actionButtonStyle} />}
 
                           {/* Botón 3: Eliminar */}
-                          <Button
-                            size="sm"
-                            className="da-btn-danger fw-bold shadow-sm"
-                            style={actionButtonStyle}
+                          <button
+                            type="button"
+                            className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 hover:scale-105 active:scale-95 transition shadow-xs cursor-pointer inline-flex items-center justify-center"
                             onClick={() => handleRemoveUser(user.id)}
                             title={t('formations.delete', 'Eliminar')}
+                            aria-label={t('formations.delete', 'Eliminar')}
                           >
-                            <FontAwesomeIcon icon={faTrash} size="lg" />
-                            <span>{t('formations.delete', 'Eliminar')}</span>
-                          </Button>
+                            <FaTrash size={14} />
+                          </button>
                         </div>
                       </td>
                     </tr>
                   );
                 })}
               </tbody>
-            </Table>
+            </table>
           </div>
 
           {/* 2. VISTA MÓVIL */}
-          <div className="lg:hidden flex flex-col gap-3 mt-2">
+          <div className="md:hidden flex flex-col gap-3 mt-2">
             {paginatedAttendees.map((att) => {
               const user = att.user;
               const isCompleted = !!att.checkOutDate;
               const hasCheckedIn = !!att.checkInDate;
               return (
-                <div key={att.id || user.id} className="bg-white/70 backdrop-blur-md shadow-sm rounded-[16px] p-4 border border-white/50 flex flex-col gap-3">
+                <div key={att.id || user.id} className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm rounded-2xl p-4 border border-white/40 dark:border-white/10 flex flex-col gap-3">
                   <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-bold text-slate-800 m-0 text-base">{user.firstName} {user.lastName}</h4>
-                      <p className="text-xs text-slate-500 m-0 mt-0.5">@{user.username} • Cód: {user.personalCode}</p>
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 rounded-2xl bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a] shadow-xs flex-shrink-0">
+                        <FaUser size={15} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-slate-800 dark:text-slate-100 m-0 text-base leading-tight">{user.firstName} {user.lastName}</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 m-0 mt-0.5">@{user.username} • #{user.personalCode}</p>
+                      </div>
                     </div>
                     <div>{renderAttendanceBadge(att)}</div>
                   </div>
 
-                  <div className="flex justify-between text-xs text-slate-600 bg-white/40 p-2.5 rounded-xl border border-white/40">
+                  <div className="flex justify-between text-xs text-slate-600 dark:text-slate-300 bg-white/40 dark:bg-slate-900/40 p-2.5 rounded-xl border border-white/40 dark:border-white/10 font-mono">
                     <span><strong>{t('formationDetails.checkinTime', 'Entrada:')}</strong> {hasCheckedIn ? dayjs.utc(att.checkInDate).local().format('HH:mm:ss') : '-'}</span>
                     <span><strong>{t('formationDetails.checkoutTime', 'Salida:')}</strong> {isCompleted ? dayjs.utc(att.checkOutDate).local().format('HH:mm:ss') : '-'}</span>
                   </div>
 
-                  <div className={`grid ${att.signature ? 'grid-cols-3' : 'grid-cols-2'} gap-2 pt-2 border-t border-slate-200/50 w-full`}>
-                    <Button
-                      size="sm"
-                      className="da-btn-primary w-full d-flex items-center justify-center gap-1 font-bold shadow-xs"
-                      style={{ padding: '6px 4px', minWidth: 0, height: '36px', borderRadius: '16px', fontSize: '0.78rem' }}
+                  <div className="flex justify-end gap-2 pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
+                    <button
+                      type="button"
+                      className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:bg-white inline-flex items-center justify-center shadow-xs cursor-pointer"
                       onClick={() => onViewSignature(att)}
+                      title={t('common.details', 'Detalles')}
                     >
-                      <FontAwesomeIcon icon={faEye} />
-                      <span className="truncate">{t('common.details', 'Detalles')}</span>
-                    </Button>
+                      <FaEye size={14} />
+                    </button>
 
                     {att.signature && (
-                      <Button
-                        size="sm"
-                        className="da-btn-blue w-full d-flex items-center justify-center gap-1 font-bold shadow-xs"
-                        style={{ padding: '6px 4px', minWidth: 0, height: '36px', borderRadius: '16px', fontSize: '0.78rem' }}
+                      <button
+                        type="button"
+                        className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:bg-rose-500/20 inline-flex items-center justify-center shadow-xs cursor-pointer"
                         onClick={() => onDownloadPdf(att.id)}
+                        title="PDF"
                       >
-                        <FontAwesomeIcon icon={faFilePdf} />
-                        <span className="truncate">PDF</span>
-                      </Button>
+                        <FaFilePdf size={14} />
+                      </button>
                     )}
 
-                    <Button
-                      size="sm"
-                      className="da-btn-danger w-full d-flex items-center justify-center gap-1 font-bold shadow-xs"
-                      style={{ padding: '6px 4px', minWidth: 0, height: '36px', borderRadius: '16px', fontSize: '0.78rem' }}
+                    <button
+                      type="button"
+                      className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:bg-rose-500/20 inline-flex items-center justify-center shadow-xs cursor-pointer"
                       onClick={() => handleRemoveUser(user.id)}
+                      title={t('formations.delete', 'Eliminar')}
                     >
-                      <FontAwesomeIcon icon={faTrash} />
-                      <span className="truncate">{t('formations.delete', 'Eliminar')}</span>
-                    </Button>
+                      <FaTrash size={14} />
+                    </button>
                   </div>
                 </div>
               );

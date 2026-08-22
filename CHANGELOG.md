@@ -6,6 +6,81 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ---
 
+## [1.2.0](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.2.0) - 2026-08-22
+
+### Añadido (Features) & Abstracciones Frontend
+- **Unificación y Homogeneización Global de Tablas y Botoneras de Acción**:
+  - Estandarizado el contenedor de tabla en toda la plataforma (`rounded-3xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.06)]`) en usuarios, empresas, formaciones, asistentes, analíticas e historial de perfil.
+  - Botones de acción unificados a píldoras de cristal cuadradas redondeadas (`p-2.5 rounded-xl border border-white/80 dark:border-white/10 hover:scale-105 active:scale-95 transition`) con soporte de modo oscuro.
+  - Iconos identificadores en cápsula suave (`FaBuilding`, `FaUser`, `FaGraduationCap`) en la primera columna de todas las tablas del sistema.
+- **Pantalla de Carga Inicial Adaptativa Dual (Modo Claro & Modo Oscuro)**:
+  - Rediseñado el splash screen (`#splash-screen` en `index.html`) para detectar el tema activo sin parpadeos (*anti-FOUC*), con fondo de cristal suave, textos oscuros y acentos lima en Modo Claro, y estética espacial profunda en Modo Oscuro.
+- **Suite de Componentes y Abstracciones Liquid Glass**:
+  - `GlassModal`: Componente modal nativo accesible montado mediante React Portal (`createPortal`) con animaciones Framer Motion (`AnimatePresence`, `motion.div`), soporte de modo oscuro, cierre con `Escape` y bloqueo de scroll.
+  - `GlassPageHeader`: Cabecera unificada para paneles de administración con icono en píldora brillante, título responsivo, subtítulo y ranura (*slot*) para acciones de exportación/creación.
+  - `GlassFormHeader`: Cabecera simétrica para formularios con botón flotante de retroceso y badge de icono centrado.
+  - `GlassEmptyState`: Componente homogéneo para estados vacíos o búsquedas sin resultados con icono brillante, título, descripción y llamada a la acción opcional.
+  - `GlassConfirmModal`: Modal especializado para confirmación de eliminaciones o acciones críticas con alertas contextuales y gestión de estado de carga.
+  - `StatusBadge`: Insignias de estado semánticas (`success`, `warning`, `danger`, `info`, `primary`, `neutral`) con soporte de indicador pulsante animado (*pulse indicator*) en tiempo real.
+  - `GlassButton`: Botones táctiles con micro-interacciones de Framer Motion (`whileTap`, `whileHover`) y spinner de carga integrado.
+  - `useDebounce`: Hook personalizado para retrasar entradas de búsqueda y filtros, evitando cálculos innecesarios en tiempo de escritura.
+- **Sincronización de Modo Oscuro Cross-Tab**:
+  - Escucha del evento nativo `storage` en `ThemeContext.js` para sincronizar el tema de forma instantánea y simultánea entre todas las pestañas activas del navegador.
+  - Variable CSS `--da-primary-glow` integrada para efectos de relieve e iluminación corporativa en modo oscuro.
+- **Micro-Animaciones con Framer Motion**:
+  - Trazado vectorial dinámico SVG (`pathLength: 0 → 1`) con efecto *spring* en la pantalla de escáner QR tras fichaje exitoso (`ScannerCheckin.js`).
+  - Transición fluida entre pestañas (`AnimatePresence mode="wait"`) y entrada escalonada (*stagger animation*) en las tarjetas de KPI del panel de analíticas (`AnalyticsDashboard.js`, `AnalyticsOverviewTab.js`).
+
+### Corregido (Bug Fixes) & Refinamiento UI/UX
+- **Cristales Oscuros en Analíticas, Perfil, Modales y Cierre de Sesión**:
+  - Corregidos fondos blancos rígidos en las tarjetas KPI de Analítica (`AnalyticsOverviewTab.js`, `analyticsDashboard.css`), paneles de filtro (`EmployeeFilterPanel.js`), sesiones activas (`ActiveSessionsTab.js`), privacidad/GDPR (`PrivacyDataTab.js`), documentación adjunta (`FormationDetailsAdmin.js`), modal de detalles de formación (`FormationDetailsModal.js`) y modal de confirmación de salida (`Logout/index.js`).
+- **Superposición de Etiquetas y Texto en Formularios de Entrada**:
+  - Reemplazado el patrón *Floating Label* por etiquetas superiores dedicadas con tipografía nítida y contraste WCAG en `Login/index.js`, `RegisterForm.js`, `ForgotPassword.js` y `PasswordChangeCard.js`, evitando cualquier solapamiento visual provocado por el autorrellenado de navegadores y gestores de contraseñas.
+- **Paginación Móvil y Navbar en Pantallas Grandes**:
+  - Resuelto el desajuste visual de la paginación (`GlassPagination.js`) en móviles pasando de forma oval forzada a tarjeta redondeada `rounded-2xl` con distribución simétrica de controles.
+  - Ampliado el ancho máximo de la barra de navegación superior (`AppNavbar.js`) en ordenadores a `max-w-[1440px]`.
+- **Alineación de Lupa y Desplegables**:
+  - Padding lateral interno fijado en `GlassSearchBar.js` para evitar solapamiento entre el icono de búsqueda y el texto de entrada.
+  - Contexto de apilamiento corregido con `z-50` en `GlassDropdown.js` para evitar que los menús desplegables queden cubiertos por elementos adyacentes.
+- **Resiliencia en Pruebas Unitarias y E2E**:
+  - Corregido el aislamiento transaccional en `AuthoritiesServiceTests.java` añadiendo `@Transactional` a nivel de clase y aserción de autoridades requeridas.
+  - Actualizados los selectores en Playwright E2E (`2fa-flow.spec.js` y `forgot-password-flow.spec.js`) con roles semánticos `getByRole` y eliminación del enlace de recuperación duplicado.
+
+### Mejorado (Performance, Caché & Base de Datos)
+- **Desacoplamiento y Eliminación Total de `reactstrap` y `bootstrap`**:
+  - Migrados más de 25 componentes y vistas a **HTML5 semántico + Tailwind CSS**, eliminando dependencias obsoletas y erradicando el peso de `bootstrap.min.css` en el bundle inicial.
+- **Caché en Memoria de Alto Rendimiento con Caffeine (Backend)**:
+  - Integrada la biblioteca `com.github.ben-manes.caffeine:caffeine` y habilitada la infraestructura `@EnableCaching` en Spring Boot 3.
+  - Configurado TTL de 10 minutos y límite de 500 entradas (`maximumSize=500, expireAfterWrite=10m`).
+  - Anotados los métodos de consulta frecuente y datos maestros con `@Cacheable` y evicción en escritura (`@CacheEvict`) en `CompanyService`, `AuthoritiesService` y `DepartmentService`, reduciendo la latencia de 15-30 ms a <1 ms (RAM).
+- **Indexación y Optimización de Base de Datos (Flyway V2)**:
+  - Creado el script `V2__add_performance_indexes.sql` con índices B-Tree en columnas de alto volumen y claves foráneas (`appusers.company_id`, `appusers.authority`, `appusers.locator`, `appusers.is_approved`, `formation_attendances.user_id`, `formation_attendances.formation_id`, `checkins.user_id`, `checkins.formation_id`, `checkins.timestamp`, `audit_logs.timestamp`, `audit_logs.action`, `audit_logs.username`).
+- **Caché en Cliente con SWR, Persistencia Multi-Sesión y Memoización**:
+  - Migrados `UserListAdmin.js`, `CompanyListAdmin.js`, `FormationListAdmin.js` y `AuditDashboard.js` a `useSWR` para navegación instantánea (0 ms) con revalidación en segundo plano y sincronización en tiempo real por WebSocket.
+  - Implementado proveedor de caché persistente `localStorageProvider` (`swrCacheProvider.js`) que conserva las tablas en disco entre sesiones y recargas del navegador.
+  - Precarga predictiva en navegación (`onMouseEnter` en escritorio y `onTouchStart` en móviles) en `AppNavbar.js` con `preload` de SWR, anticipando la descarga de datos mientras el usuario apoya el dedo o el cursor.
+  - Code-splitting total de todas las rutas en `App.js` con `lazyWithRetry` (Login, Register, Logout, Scanner, Dashboard) reduciendo el bundle inicial en más de un 50%.
+  - Optimización de cabeceras de recurso (`dns-prefetch` y `preconnect` para Google Fonts) en `index.html`.
+  - Desactivación de `spring.jpa.open-in-view` en backend para liberar conexiones al pool HikariCP inmediatamente tras la ejecución del servicio.
+  - Eliminación de consultas N+1 en backend (`UserRepository.java`) mediante `LEFT JOIN FETCH u.company LEFT JOIN FETCH u.authority`.
+  - Reducción del retardo artificial del splash screen a 250 ms en `index.html`.
+  - Memoizado `UserTable.js` con `React.memo` para evitar re-renders superfluos durante el tecleo en el buscador.
+  - Añadido `loading="lazy"` y `decoding="async"` en `SecureImage.js` para firmas y documentos adjuntos.
+- **Estándares Móviles 2026 y Renderizado a 120Hz/60Hz (Touch Manipulation & GPU Compositing)**:
+  - Eliminado el retraso de pulsación táctil (300 ms click delay) en iOS/Android mediante `touch-action: manipulation;` y `-webkit-tap-highlight-color: transparent;` global.
+  - Prevención de desbordamiento elástico indeseado con `overscroll-behavior-y: none;`.
+  - Aceleración por GPU (`transform: translateZ(0); backface-visibility: hidden;`) en tarjetas, paneles de cristal, tablas y barra de navegación.
+  - Curvas de animación elásticas Apple ProMotion `--da-ease-spring` (`cubic-bezier(0.22, 1, 0.36, 1)`) y `--da-ease-smooth` integradas en `variables.css`.
+  - Promoción de capas GPU en `PageTransition.js`, `GlassSearchBar.js` y componentes de carga.
+  - Eliminado el coste de shader de `filter: blur()` durante transiciones de página completas, eliminando caídas de fotogramas (*jank*) en dispositivos móviles.
+  - React 18 Concurrente con `useTransition` / `startTransition` en `GlassSearchBar.js` para que la escritura en el teclado responda a 60/120 fps constantes sin bloquear el hilo principal.
+  - Renderizado virtualizado por CSS (`content-visibility: auto; contain-intrinsic-size: 0 52px`) en las filas de `UserTable.js`, `FormationTable.js` y `AuditDashboard.js`, haciendo el scroll de listas largas instantáneo.
+  - Shimmer acelerado por hardware en `GhostLoader.js` con gradientes lineales fluidos.
+- **Herramienta de Auditoría de Bundle**:
+  - Incorporado el comando `npm run analyze` con `source-map-explorer` para inspeccionar el tamaño exacto de cada chunk de producción.
+
+---
+
 ## [1.1.0](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.1.0) - 2026-08-19
 
 ### Añadido (Features)

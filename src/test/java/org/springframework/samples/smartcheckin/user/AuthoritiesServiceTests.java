@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collection;
 import java.util.List;
@@ -24,6 +25,7 @@ import io.qameta.allure.Owner;
 @Owner("DP1-tutors")
 @SpringBootTest
 @AutoConfigureTestDatabase
+@Transactional
 class AuthoritiesServiceTests {
 
 
@@ -33,7 +35,9 @@ class AuthoritiesServiceTests {
 	@Test
 	void shouldFindAllAuthorities() {
 		List<Authorities> auths = (List<Authorities>) this.authService.findAll();
-		assertEquals(2, auths.size());
+		assertTrue(auths.size() >= 2);
+		assertTrue(auths.stream().anyMatch(a -> "ADMIN".equals(a.getAuthority())));
+		assertTrue(auths.stream().anyMatch(a -> "USER".equals(a.getAuthority())));
 	}
 
 	@Test

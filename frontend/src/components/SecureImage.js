@@ -71,7 +71,7 @@ const SecureImage = ({ src, alt, style, className }) => {
         return <div className="text-danger small" style={style}>{t('signature.loadError', 'Error al cargar firma')}</div>;
     }
 
-    return <img src={finalSrc} alt={alt} style={style} className={className} />;
+    return <img src={finalSrc} alt={alt} style={style} className={className} loading="lazy" decoding="async" />;
 };
 
 export default SecureImage;

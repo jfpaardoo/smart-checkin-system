@@ -46,23 +46,16 @@ const SignatureStep = forwardRef(({ onSubmit, onCancel, submitLabel }, ref) => {
 
   return (
     <div className="text-center p-2 w-full">
-      <h5 className="mb-3" style={{ color: '#2c3e50', fontWeight: 600 }}>
+      <h3 className="text-base sm:text-lg font-bold mb-3 text-slate-800 dark:text-slate-100">
         {t('checkin.signStepTitle', 'Por favor, firme abajo para finalizar')}
-      </h5>
+      </h3>
       
       <div 
         ref={containerRef}
-        className="mx-auto mb-3 w-full"
-        style={{ 
-          backgroundColor: '#ffffff', 
-          borderRadius: '20px', 
-          border: '1.5px solid rgba(255, 255, 255, 0.8)', 
-          overflow: 'hidden', 
-          boxShadow: '0 8px 25px rgba(0,0,0,0.05)' 
-        }}
+        className="mx-auto mb-3 w-full bg-white rounded-2xl border border-white/80 shadow-md overflow-hidden"
       >
         <SignatureCanvas 
-          penColor="blue"
+          penColor="#1e3a8a"
           canvasProps={{ className: 'sigCanvas w-full h-[160px] block cursor-crosshair' }}
           ref={sigCanvas}
         />
@@ -71,18 +64,18 @@ const SignatureStep = forwardRef(({ onSubmit, onCancel, submitLabel }, ref) => {
       <div className="text-center mb-4">
         <button 
           type="button" 
-          className="btn btn-link text-muted" 
+          className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 underline bg-transparent border-0 cursor-pointer" 
           onClick={() => sigCanvas.current.clear()}
         >
           {t('dashboard.clearSignature', 'Borrar Firma')}
         </button>
       </div>
 
-      <div className="d-flex justify-content-center gap-3">
+      <div className="flex justify-center items-center gap-3">
         {onCancel && (
           <button 
             type="button" 
-            className="da-btn da-btn-secondary py-3 px-4" 
+            className="da-btn da-btn-secondary py-2.5 px-5 rounded-xl font-semibold text-xs sm:text-sm" 
             onClick={onCancel}
           >
             {t('checkin.cancel', 'Cancelar')}
@@ -90,7 +83,7 @@ const SignatureStep = forwardRef(({ onSubmit, onCancel, submitLabel }, ref) => {
         )}
         <button 
           type="button" 
-          className="da-btn da-btn-primary py-3 px-4" 
+          className="da-btn da-btn-primary py-2.5 px-5 rounded-xl font-bold text-xs sm:text-sm shadow-md" 
           onClick={handleSubmit}
         >
           {submitLabel || t('dashboard.confirmCheckout', 'Confirmar')}

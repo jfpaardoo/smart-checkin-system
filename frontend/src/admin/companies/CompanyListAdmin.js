@@ -1,20 +1,29 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Spinner } from "reactstrap";
+import useSWR from "swr";
 import { FaBuilding, FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import { useToast } from "../../components/ToastProvider";
 import GlassSearchBar from "../../components/GlassSearchBar";
 import GlassPagination from "../../components/GlassPagination";
+import GlassPageHeader from "../../components/GlassPageHeader";
+import GlassEmptyState from "../../components/GlassEmptyState";
+import GlassConfirmModal from "../../components/GlassConfirmModal";
 import { TableGhostLoader } from "../../components/GhostLoader";
 import api from "../../services/api";
+
+const fetcher = (url) => api.get(url).then((res) => (Array.isArray(res.data) ? res.data : []));
 
 export default function CompanyListAdmin() {
   const { t } = useTranslation();
   const toast = useToast();
-  const [companies, setCompanies] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // SWR: Instantáneo desde caché de RAM (0ms) + revalidación en segundo plano
+  const { data: companies = [], isLoading, mutate } = useSWR("/companies", fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 10000,
+  });
   
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -24,23 +33,6 @@ export default function CompanyListAdmin() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [companyToDelete, setCompanyToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
-
-  const fetchCompanies = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await api.get("/companies");
-      setCompanies(Array.isArray(res.data) ? res.data : []);
-    } catch (e) {
-      console.error("Error fetching companies", e);
-      toast.error(t("companies.fetchError", "Error al cargar las empresas."));
-    } finally {
-      setLoading(false);
-    }
-  }, [t, toast]);
-
-  useEffect(() => {
-    fetchCompanies();
-  }, [fetchCompanies]);
 
   const confirmDelete = (company) => {
     setCompanyToDelete(company);
@@ -53,11 +45,12 @@ export default function CompanyListAdmin() {
     try {
       await api.delete(`/companies/${companyToDelete.id}`);
       toast.success(t("companies.deletedSuccess", "Empresa eliminada correctamente."));
-      setCompanies((prev) => prev.filter((c) => c.id !== companyToDelete.id));
+      mutate((prev) => (prev ? prev.filter((c) => c.id !== companyToDelete.id) : []), false);
       setDeleteModalOpen(false);
     } catch (err) {
       console.error("Error deleting company", err);
       toast.error(t("companies.deleteError", "No se pudo eliminar la empresa."));
+      mutate();
     } finally {
       setDeleting(false);
       setCompanyToDelete(null);
@@ -91,38 +84,41 @@ export default function CompanyListAdmin() {
   }, [filteredCompanies, currentPage, pageSize]);
 
   const renderContent = () => {
-    if (loading) {
+    if (isLoading && companies.length === 0) {
       return <TableGhostLoader columns={4} rows={4} />;
     }
 
     if (filteredCompanies.length === 0) {
       return (
-        <div className="text-center py-12 px-4 bg-white/30 backdrop-blur-md rounded-3xl border border-white/50 shadow-sm mt-4">
-          <div className="inline-flex p-4 rounded-full bg-[#b3c34c]/20 text-[#8fa228] mb-3">
-            <FaBuilding size={36} />
-          </div>
-          <h5 className="text-slate-800 font-bold text-lg mb-1">{t("companies.emptyTitle", "No se encontraron empresas")}</h5>
-          <p className="text-slate-500 text-sm max-w-md mx-auto">{t("companies.emptySubtitle", "Añade una nueva empresa o modifica tu término de búsqueda.")}</p>
-        </div>
+        <GlassEmptyState
+          icon={FaBuilding}
+          title={t("companies.emptyTitle", "No se encontraron empresas")}
+          description={t("companies.emptySubtitle", "Añade una nueva empresa o modifica tu término de búsqueda.")}
+          action={
+            <Link to="/companies/new" className="da-btn-primary inline-flex items-center gap-2 text-decoration-none">
+              <FaPlus /> {t("companies.create", "Nueva Empresa")}
+            </Link>
+          }
+        />
       );
     }
 
     return (
       <div className="w-full mt-2">
         {/* VISTA ESCRITORIO (md y superior) */}
-        <div className="hidden md:block overflow-x-auto rounded-3xl border border-white/60 bg-white/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.06)]">
+        <div className="hidden md:block overflow-x-auto rounded-3xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.06)]">
           <table className="w-full text-left border-collapse align-middle">
             <thead>
-              <tr className="border-b border-white/40 bg-white/50 text-slate-700 text-xs font-bold uppercase tracking-wider">
-                <th className="py-4 px-5 text-slate-500" style={{ width: "8%" }}>#</th>
+              <tr className="border-b border-white/40 dark:border-white/10 bg-white/50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider">
+                <th className="py-4 px-5 text-slate-500 dark:text-slate-400" style={{ width: "8%" }}>#</th>
                 <th className="py-4 px-5" style={{ width: "45%" }}>{t("companies.name", "Nombre de Empresa")}</th>
                 <th className="py-4 px-5" style={{ width: "32%" }}>{t("companies.description", "Descripción")}</th>
                 <th className="py-4 px-5 text-right" style={{ width: "15%" }}>{t("common.actions", "Acciones")}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/40 text-sm text-slate-800">
+            <tbody className="divide-y divide-white/40 dark:divide-white/10 text-sm text-slate-800 dark:text-slate-100">
               {paginatedCompanies.map((company) => (
-                <tr key={company.id} className="hover:bg-white/50 transition duration-150">
+                <tr key={company.id} className="hover:bg-white/50 dark:hover:bg-slate-700/50 transition duration-150">
                   <td className="py-4 px-5 font-semibold text-slate-400">
                     #{company.id}
                   </td>
@@ -131,17 +127,17 @@ export default function CompanyListAdmin() {
                       <div className="p-2.5 rounded-2xl bg-[#b3c34c]/20 text-[#8fa228] shadow-xs flex-shrink-0">
                         <FaBuilding size={16} />
                       </div>
-                      <span className="font-bold text-slate-800 tracking-tight">{company.name}</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-100 tracking-tight">{company.name}</span>
                     </div>
                   </td>
-                  <td className="py-4 px-5 text-slate-600">
+                  <td className="py-4 px-5 text-slate-600 dark:text-slate-300">
                     {company.description || <span className="text-slate-400 italic text-xs">{t("common.noDescription", "Sin descripción")}</span>}
                   </td>
                   <td className="py-4 px-5 text-right">
                     <div className="inline-flex gap-2">
                       <Link
                         to={`/companies/${company.id}`}
-                        className="p-2 rounded-xl bg-white/60 border border-white/80 text-slate-700 hover:text-slate-900 hover:bg-white hover:scale-105 active:scale-95 transition shadow-xs"
+                        className="p-2 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:text-slate-900 hover:bg-white hover:scale-105 active:scale-95 transition shadow-xs"
                         title={t("common.edit", "Editar")}
                       >
                         <FaEdit size={14} />
@@ -149,7 +145,7 @@ export default function CompanyListAdmin() {
                       <button
                         type="button"
                         onClick={() => confirmDelete(company)}
-                        className="p-2 rounded-xl bg-white/60 border border-white/80 text-rose-500 hover:text-rose-700 hover:bg-rose-50/80 hover:scale-105 active:scale-95 transition shadow-xs"
+                        className="p-2 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-50/80 hover:scale-105 active:scale-95 transition shadow-xs cursor-pointer"
                         title={t("common.delete", "Eliminar")}
                       >
                         <FaTrash size={14} />
@@ -167,7 +163,7 @@ export default function CompanyListAdmin() {
           {paginatedCompanies.map((company) => (
             <div 
               key={company.id}
-              className="p-4 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/60 shadow-sm hover:shadow-md transition flex flex-col gap-3"
+              className="p-4 rounded-2xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-sm hover:shadow-md transition flex flex-col gap-3"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2.5">
@@ -175,29 +171,29 @@ export default function CompanyListAdmin() {
                     <FaBuilding size={16} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-800 text-sm mb-0">{company.name}</h4>
+                    <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-0">{company.name}</h4>
                     <span className="text-[11px] text-slate-400">ID #{company.id}</span>
                   </div>
                 </div>
               </div>
 
               {company.description && (
-                <p className="text-xs text-slate-600 bg-white/30 p-2.5 rounded-xl border border-white/40 mb-0">
+                <p className="text-xs text-slate-600 dark:text-slate-300 bg-white/30 dark:bg-slate-900/40 p-2.5 rounded-xl border border-white/40 dark:border-white/10 mb-0">
                   {company.description}
                 </p>
               )}
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-1.5 sm:gap-2 pt-2.5 border-t border-white/30 w-full">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-1.5 sm:gap-2 pt-2.5 border-t border-white/30 dark:border-white/10 w-full">
                 <Link
                   to={`/companies/${company.id}`}
-                  className="px-3 py-1.5 rounded-xl bg-white/70 border border-white text-xs font-semibold text-slate-700 hover:bg-white inline-flex items-center justify-center gap-1.5 shadow-xs w-full sm:w-auto text-center"
+                  className="px-3 py-1.5 rounded-xl bg-white/70 dark:bg-slate-700 border border-white dark:border-slate-600 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-white inline-flex items-center justify-center gap-1.5 shadow-xs w-full sm:w-auto text-center text-decoration-none"
                 >
                   <FaEdit size={12} /> {t("common.edit", "Editar")}
                 </Link>
                 <button
                   type="button"
                   onClick={() => confirmDelete(company)}
-                  className="px-3 py-1.5 rounded-xl bg-rose-50/80 border border-rose-200 text-xs font-semibold text-rose-600 hover:bg-rose-100 inline-flex items-center justify-center gap-1.5 shadow-xs w-full sm:w-auto"
+                  className="px-3 py-1.5 rounded-xl bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs font-semibold text-rose-600 dark:text-rose-300 hover:bg-rose-100 inline-flex items-center justify-center gap-1.5 shadow-xs w-full sm:w-auto cursor-pointer"
                 >
                   <FaTrash size={12} /> {t("common.delete", "Eliminar")}
                 </button>
@@ -207,7 +203,7 @@ export default function CompanyListAdmin() {
         </div>
 
         {/* Paginación Liquid Glass */}
-        {!loading && filteredCompanies.length > 0 && (
+        {!isLoading && filteredCompanies.length > 0 && (
           <GlassPagination
             currentPage={currentPage}
             totalItems={filteredCompanies.length}
@@ -224,26 +220,16 @@ export default function CompanyListAdmin() {
   return (
     <div className="da-container">
       <div className="da-card" style={{ maxWidth: "1100px", margin: "2rem auto" }}>
-        <div className="da-card-header da-admin-header border-0 flex flex-col sm:flex-row justify-between items-center mb-5 gap-4 text-center sm:text-left">
-          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-            <div className="p-3.5 rounded-2xl bg-[#b3c34c]/20 text-[#8fa228] shadow-xs flex-shrink-0 mb-1 sm:mb-0">
-              <FaBuilding size={26} />
-            </div>
-            <div>
-              <h2 className="mb-1 text-2xl font-bold text-slate-800">
-                {t("companies.title", "Gestión de Empresas")}
-              </h2>
-              <p className="text-xs text-slate-500 mb-0">
-                {t("companies.subtitle", "Administra las entidades y empresas registradas en la plataforma")}
-              </p>
-            </div>
-          </div>
-          <div className="da-admin-header-actions w-full sm:w-auto">
-            <Button className="da-btn-primary d-flex items-center justify-center gap-2 w-full sm:w-auto shadow-md" tag={Link} to="/companies/new">
+        <GlassPageHeader
+          icon={FaBuilding}
+          title={t("companies.title", "Gestión de Empresas")}
+          subtitle={t("companies.subtitle", "Administra las entidades y empresas registradas en la plataforma")}
+          actions={
+            <Link className="da-btn-primary flex items-center justify-center gap-2 w-full sm:w-auto shadow-md text-decoration-none" to="/companies/new">
               <FaPlus /> {t("companies.create", "Nueva Empresa")}
-            </Button>
-          </div>
-        </div>
+            </Link>
+          }
+        />
 
         {/* Barra de Búsqueda */}
         <div className="mb-4">
@@ -257,28 +243,22 @@ export default function CompanyListAdmin() {
       </div>
 
       {/* Modal de confirmación Liquid Glass */}
-      <Modal isOpen={deleteModalOpen} toggle={() => setDeleteModalOpen(!deleteModalOpen)} centered contentClassName="bg-white/80 backdrop-blur-2xl border border-white/60 rounded-3xl shadow-2xl overflow-hidden">
-        <ModalHeader toggle={() => setDeleteModalOpen(!deleteModalOpen)} className="border-0 pb-0">
-          <span className="font-bold text-slate-800 text-lg">{t("companies.deleteModalTitle", "Eliminar Empresa")}</span>
-        </ModalHeader>
-        <ModalBody className="py-3">
-          <p className="text-slate-700 text-sm">
+      <GlassConfirmModal
+        isOpen={deleteModalOpen}
+        toggle={() => setDeleteModalOpen(!deleteModalOpen)}
+        title={t("companies.deleteModalTitle", "Eliminar Empresa")}
+        message={
+          <p className="mb-0">
             {t("companies.deleteModalPrompt", "¿Estás seguro de que deseas eliminar la empresa")}{" "}
-            <strong className="text-slate-900">"{companyToDelete?.name}"</strong>?
+            <strong className="text-slate-900 dark:text-white">"{companyToDelete?.name}"</strong>?
           </p>
-          <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800">
-            {t("companies.deleteModalWarning", "Los usuarios asignados a esta empresa quedarán desasociados de forma segura sin perder su cuenta.")}
-          </div>
-        </ModalBody>
-        <ModalFooter className="border-0 pt-0">
-          <Button color="secondary" className="rounded-xl px-4 py-2 text-xs font-semibold" onClick={() => setDeleteModalOpen(false)} disabled={deleting}>
-            {t("common.cancel", "Cancelar")}
-          </Button>
-          <Button color="danger" className="rounded-xl px-4 py-2 text-xs font-semibold shadow-md" onClick={handleDelete} disabled={deleting}>
-            {deleting ? <Spinner size="sm" /> : t("common.delete", "Eliminar")}
-          </Button>
-        </ModalFooter>
-      </Modal>
+        }
+        warningMessage={t("companies.deleteModalWarning", "Los usuarios asignados a esta empresa quedarán desasociados de forma segura sin perder su cuenta.")}
+        confirmVariant="danger"
+        confirmText={t("common.delete", "Eliminar")}
+        loading={deleting}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

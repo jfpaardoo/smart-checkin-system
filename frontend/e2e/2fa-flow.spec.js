@@ -89,7 +89,7 @@ test.describe('Flujo de Activación de 2FA y Verificación TOTP (2FA Setup E2E)'
     await page.waitForURL('**/profile', { timeout: 10000 });
 
     // 3. Hacer clic en la pestaña "Seguridad y Contraseña"
-    const securityTab = page.locator('.da-nav-pills .nav-link').filter({ hasText: /seguridad|security/i }).first();
+    const securityTab = page.getByRole('button', { name: /seguridad|security/i });
     await expect(securityTab).toBeVisible({ timeout: 15000 });
     await securityTab.click();
 

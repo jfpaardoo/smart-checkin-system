@@ -16,6 +16,8 @@
 package org.springframework.samples.smartcheckin.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,7 @@ public class AuthoritiesService {
 	}
 
 	@Transactional(readOnly = true)
+	@Cacheable(value = "authorities")
 	public Iterable<Authorities> findAll() {
 		return this.authoritiesRepository.findAll();
 	}
@@ -44,6 +47,7 @@ public class AuthoritiesService {
 	}
 
 	@Transactional
+	@CacheEvict(value = "authorities", allEntries = true)
 	public void saveAuthorities(Authorities authorities) throws DataAccessException {
 		authoritiesRepository.save(authorities);
 	}

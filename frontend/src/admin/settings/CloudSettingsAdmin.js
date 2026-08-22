@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Button } from "reactstrap";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import tokenService from "../../services/token.service";
@@ -81,29 +80,30 @@ export default function CloudSettingsAdmin() {
       <div className="da-card p-4 p-md-5 mx-auto" style={{ maxWidth: '800px', marginTop: '2rem' }}>
         
         {/* Cabecera y botón de Backup */}
-        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mb-4 text-center text-md-start">
-          <h2 className="mb-0 text-dark fw-bold d-flex flex-column flex-md-row align-items-center">
-            <FaCloudUploadAlt className="mb-2 mb-md-0 me-md-2" style={{ color: 'var(--da-primary)' }} />
+        <div className="flex flex-col md:flex-row justify-between items-center gap-3 mb-4 text-center md:text-left">
+          <h2 className="mb-0 text-slate-800 dark:text-slate-100 font-bold flex flex-col md:flex-row items-center">
+            <FaCloudUploadAlt className="mb-2 md:mb-0 me-md-2" style={{ color: 'var(--da-primary)' }} />
             <span>{t('cloudSettings.title', 'Ajustes de Nube')}</span>
           </h2>
-          <Button 
-            className="da-btn-primary d-flex align-items-center justify-content-center gap-2" 
+          <button 
+            type="button"
+            className="da-btn-primary flex items-center justify-center gap-2 border-0 cursor-pointer disabled:opacity-50" 
             onClick={handleBackup} 
             disabled={backingUp || !isConnected}
           >
             <FaDatabase /> {backingUp ? t('cloudSettings.backingUp', 'Respaldando...') : t('cloudSettings.forceBackupBtn', 'Forzar Backup DB')}
-          </Button>
+          </button>
         </div>
 
         {/* Descripción */}
-        <p className="text-muted mb-4 text-center text-md-start border-bottom pb-4">
+        <p className="text-slate-500 dark:text-slate-400 mb-4 text-center md:text-left border-b border-slate-200 dark:border-slate-700 pb-4 text-sm">
           {t('cloudSettings.description', 'Conecta Distribution Academy con Microsoft OneDrive para almacenar la documentación de las formaciones y copias de seguridad de forma automática.')}
         </p>
 
         {/* Zona de Estado y Conexión (Glassmorphism & Cápsula) */}
         <div className="text-center my-4 py-4">
           <div 
-            className="d-inline-flex align-items-center gap-2 px-4 py-2 mb-4 rounded-pill shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-2 mb-4 rounded-full shadow-sm"
             style={{
               background: isConnected ? 'rgba(40, 167, 69, 0.1)' : 'rgba(255, 193, 7, 0.15)',
               backdropFilter: 'blur(10px)',
@@ -115,12 +115,12 @@ export default function CloudSettingsAdmin() {
           >
             {isConnected ? (
               <>
-                <FaCheckCircle className="text-success" />
+                <FaCheckCircle className="text-emerald-500" />
                 <span>{t('cloudSettings.statusConnected', 'OneDrive Conectado')}</span>
               </>
             ) : (
               <>
-                <FaExclamationTriangle className="text-warning" />
+                <FaExclamationTriangle className="text-amber-500" />
                 <span>{t('cloudSettings.statusDisconnected', 'OneDrive No Conectado')}</span>
               </>
             )}
@@ -131,7 +131,7 @@ export default function CloudSettingsAdmin() {
               <button 
                 type="button"
                 onClick={handleDisconnect}
-                className="d-inline-flex align-items-center gap-2 px-4 py-2 rounded-pill shadow-sm transition"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full shadow-sm transition"
                 style={{
                   background: 'rgba(246, 222, 225, 0.08)',
                   backdropFilter: 'blur(10px)',
@@ -155,14 +155,14 @@ export default function CloudSettingsAdmin() {
                 <span>{t('cloudSettings.disconnectBtn', 'Desconectar cuenta de OneDrive')}</span>
               </button>
             ) : (
-              <Button 
+              <button 
+                type="button"
                 onClick={handleConnectOneDrive}
-                className="da-btn-primary px-5 py-3 rounded-pill fw-bold shadow-sm d-inline-flex align-items-center gap-2"
-                style={{ fontSize: '1.05rem' }}
+                className="da-btn-primary px-5 py-3 rounded-full font-bold shadow-sm inline-flex items-center gap-2 border-0 cursor-pointer text-base"
               >
                 <FaWindows />
                 {t('cloudSettings.connectBtn', 'Conectar con Microsoft OneDrive')}
-              </Button>
+              </button>
             )}
           </div>
         </div>

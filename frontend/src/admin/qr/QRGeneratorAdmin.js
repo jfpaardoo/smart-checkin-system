@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { CardTitle, FormGroup, Label } from 'reactstrap';
 import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -9,6 +8,8 @@ import { QRGhostLoader } from '../../components/GhostLoader';
 import useFetchState from '../../util/useFetchState';
 import api from '../../services/api';
 import GlassDropdown from '../../components/GlassDropdown';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faQrcode } from '@fortawesome/free-solid-svg-icons';
 
 const QRGeneratorAdmin = () => {
     const { t } = useTranslation();
@@ -110,8 +111,6 @@ const QRGeneratorAdmin = () => {
         setWsTick(prev => prev + 1);
     });
 
-
-
     const buildQrPayload = () => {
         const payload = { 
             token: totpToken, 
@@ -138,24 +137,20 @@ const QRGeneratorAdmin = () => {
     };
 
     return (
-        <div className="da-container justify-content-center">
-            <div className="da-card da-card-qr p-3 p-sm-4 p-md-5 my-auto mx-auto w-full">
-                <div className="card-body p-1 p-sm-2 d-flex flex-column justify-content-center my-auto w-full">
+        <div className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center p-4 min-h-[calc(100vh-140px)]">
+            <div className="w-full rounded-3xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.08)] p-6 sm:p-8 md:p-10 my-auto">
+                <div className="w-full">
                     {loading ? (
                         <QRGhostLoader />
                     ) : (
-                        <div className="d-flex flex-column flex-md-row align-items-center justify-content-center gap-4 gap-lg-5 py-2 my-auto w-full">
+                        <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-10 py-2 w-full">
                             
-                            <div className="d-flex flex-column align-items-center justify-content-center w-full max-w-[320px]">
+                            {/* Left QR Frame */}
+                            <div className="flex flex-col items-center">
                                 <div 
-                                    className="qr-code-container qr-code-frame d-flex align-items-center justify-content-center text-center w-full" 
-                                    style={{ 
-                                        maxWidth: '305px', 
-                                        aspectRatio: '1 / 1', 
-                                        backgroundColor: '#ffffff', 
-                                        borderRadius: '32px',
-                                        padding: '16px'
-                                    }}
+                                    className={`qr-frame-box flex items-center justify-center shadow-lg border border-white/80 dark:border-white/10 w-full max-w-[280px] sm:max-w-[305px] aspect-square rounded-[32px] p-4 transition-all duration-300 ${
+                                        selectedFormationId ? 'bg-white' : 'bg-white/60 dark:bg-slate-800/60 backdrop-blur-md'
+                                    }`}
                                 >
                                     {selectedFormationId ? (
                                         <div style={fadeStyle} className="w-full h-full flex items-center justify-center">
@@ -168,56 +163,45 @@ const QRGeneratorAdmin = () => {
                                             />
                                         </div>
                                     ) : (
-                                        <div style={{ color: '#888', fontWeight: '500' }} className="p-2">
-                                            <p className="mb-0 text-sm">{t('qr.selectFormationPrompt')}</p>
-                                            <p className="mb-0 text-xs mt-1 text-slate-400">{t('qr.selectFormationPrompt2')}</p>
+                                        <div className="p-4 text-center">
+                                            <div className="w-12 h-12 rounded-2xl bg-[#b3c34c]/20 border border-[#b3c34c]/40 flex items-center justify-center mx-auto mb-3">
+                                                <FontAwesomeIcon icon={faQrcode} className="text-[#73841e] dark:text-[#d4e84a] text-xl" />
+                                            </div>
+                                            <p className="mb-0 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200">{t('qr.selectFormationPrompt', 'Selecciona una formación')}</p>
+                                            <p className="mb-0 text-[11px] mt-1 text-slate-500 dark:text-slate-400">{t('qr.selectFormationPrompt2', 'para generar el código QR dinámico')}</p>
                                         </div>
                                     )}
                                 </div>
                                 <div className="mt-3 text-center w-full">
                                     {adminCoords ? (
                                         <div 
-                                            className="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill shadow-xs"
-                                            style={{
-                                                background: 'rgba(16, 185, 129, 0.12)',
-                                                border: '1.5px solid rgba(16, 185, 129, 0.4)',
-                                                color: '#065f46',
-                                                fontSize: '0.85rem',
-                                                fontWeight: '700'
-                                            }}
+                                            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 shadow-xs"
                                         >
-                                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block' }}></span>
+                                            <span className="w-2 h-2 rounded-full inline-block bg-emerald-500"></span>
                                             <span>GPS del Administrador Vinculado</span>
                                         </div>
                                     ) : (
                                         <div 
-                                            className="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill shadow-xs"
-                                            style={{
-                                                background: 'rgba(245, 158, 11, 0.12)',
-                                                border: '1.5px solid rgba(245, 158, 11, 0.4)',
-                                                color: '#92400e',
-                                                fontSize: '0.85rem',
-                                                fontWeight: '700'
-                                            }}
+                                            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-500/15 border border-amber-500/30 text-amber-800 dark:text-amber-300 shadow-xs"
                                         >
-                                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#f59e0b', display: 'inline-block' }}></span>
+                                            <span className="w-2 h-2 rounded-full inline-block bg-amber-500 animate-ping"></span>
                                             <span>Obteniendo GPS del Administrador...</span>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="d-flex flex-column align-items-center align-items-md-start text-center text-md-start qr-info-column">
-                                <CardTitle tag="h2" className="qr-title">
+                            <div className="flex flex-col items-center md:items-start text-center md:text-left qr-info-column w-full max-w-sm">
+                                <h2 className="qr-title text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">
                                     {t('qr.title')}
-                                </CardTitle>
-                                <p className="qr-subtitle mb-4">
+                                </h2>
+                                <p className="qr-subtitle mb-4 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                                     {t('qr.subtitle')}
                                 </p>
 
-                                <div className="w-100 mb-3 text-start">
-                                    <FormGroup>
-                                        <Label for="formationId" style={{fontWeight: 600, color: '#555'}}>{t('qr.selectFormation')}</Label>
+                                <div className="w-full mb-3 text-left">
+                                    <div className="mb-3">
+                                        <label htmlFor="formationId" className="block mb-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{t('qr.selectFormation')}</label>
                                         <GlassDropdown
                                             options={formations.map(f => ({ value: f.id, label: f.name }))}
                                             value={selectedFormationId || ''}
@@ -226,14 +210,14 @@ const QRGeneratorAdmin = () => {
                                             }}
                                             placeholder={t('qr.selectFormationPlaceholder')}
                                         />
-                                    </FormGroup>
+                                    </div>
                                 </div>
 
                                 {!!selectedFormationId && (
-                                    <div className="w-100 text-center text-md-start mt-2">
+                                    <div className="w-full text-center md:text-left mt-2">
                                         <div className="mb-3">
                                             <span 
-                                                className="token-display" 
+                                                className="token-display inline-block" 
                                                 style={{ 
                                                     fontSize: '2.2rem', 
                                                     padding: '5px 20px',
@@ -267,7 +251,7 @@ const QRGeneratorAdmin = () => {
                                             />
                                         </div>
                                         
-                                        <p className="qr-footer-text mt-1">
+                                        <p className="qr-footer-text mt-1 text-xs text-slate-400">
                                             {t('qr.totpSecurity')}
                                         </p>
                                     </div>

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Form, FormGroup, Input } from 'reactstrap';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../../components/ToastProvider';
 
@@ -26,9 +25,9 @@ export default function ManualCheckinForm({ onSubmit, onCancel }) {
         {t('checkin.enter6DigitCode', 'Introduce el código de 6 dígitos de la formación.')}
       </p>
       
-      <Form onSubmit={handleManualSubmit} className="mb-4 w-full">
-        <FormGroup className="mb-4">
-          <Input
+      <form onSubmit={handleManualSubmit} className="mb-4 w-full">
+        <div className="mb-4">
+          <input
             type="text"
             inputMode="numeric"
             maxLength={6}
@@ -50,7 +49,7 @@ export default function ManualCheckinForm({ onSubmit, onCancel }) {
             }}
             autoFocus
           />
-        </FormGroup>
+        </div>
         
         <div className="flex flex-col sm:flex-row justify-center items-center gap-2.5 w-full max-w-[320px] mx-auto">
           <button
@@ -69,7 +68,7 @@ export default function ManualCheckinForm({ onSubmit, onCancel }) {
             {t('checkin.validate', 'Validar Código')}
           </button>
         </div>
-      </Form>
+      </form>
     </div>
   );
 }

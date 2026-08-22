@@ -2,6 +2,25 @@
    DISTRIBUTION ACADEMY - COMMON ABSTRACTIONS
    ========================================== */
 
+/* 2026 Mobile & Touch Performance Standards (0ms Touch Response) */
+html, body {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  overscroll-behavior-y: none;
+}
+
+button, a, input, select, textarea, .da-btn, .da-nav-btn {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+}
+
+/* GPU Hardware Layering for Silky 120Hz/60Hz Scrolling */
+.da-card, .da-glass-panel, .da-table, nav {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
 /* ==========================================
    TAILWIND UTILITY ABSTRACTIONS FOR HOME
    ========================================== */
@@ -189,6 +208,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
+  animation: da-card-pop 0.45s cubic-bezier(0.16, 1, 0.3, 1) both !important;
 }
 
 .da-action-card:hover, .da-glass-panel:hover {
@@ -720,7 +740,7 @@
   width: 240px !important;
 }
 
-/* Skeleton Shimmer Loaders */
+/* Skeleton Shimmer Loaders (60Hz & 120Hz High-FPS Hardware Accelerated) */
 @keyframes da-ghost-shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -734,8 +754,11 @@
     rgba(255, 255, 255, 0.25) 63%
   ) !important;
   background-size: 200% 100% !important;
-  animation: da-ghost-shimmer 1.5s infinite ease-in-out !important;
+  animation: da-ghost-shimmer 1.4s infinite var(--da-ease-smooth) !important;
   border-radius: 12px;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: background-position;
 }
 
 .da-ghost-element-dark {
@@ -746,8 +769,11 @@
     rgba(0, 0, 0, 0.06) 63%
   ) !important;
   background-size: 200% 100% !important;
-  animation: da-ghost-shimmer 1.5s infinite ease-in-out !important;
+  animation: da-ghost-shimmer 1.4s infinite var(--da-ease-smooth) !important;
   border-radius: 12px;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: background-position;
 }
 
 .da-ghost-row {
@@ -1151,6 +1177,8 @@ html {
 }
 
 .da-table tbody tr {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 52px;
   animation: da-row-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
@@ -1170,10 +1198,6 @@ html {
 @keyframes da-card-pop {
   from { opacity: 0; transform: translateY(20px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.da-action-card {
-  animation: da-card-pop 0.45s cubic-bezier(0.16, 1, 0.3, 1) both !important;
 }
 
 /* Stagger cards in a grid via :nth-child */
@@ -1204,4 +1228,401 @@ a {
 
 .da-badge, .badge-glass-success, .badge-glass-warning, .badge-glass-secondary {
   animation: da-badge-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ==========================================
+   DARK MODE — COMPONENT OVERRIDES
+   ========================================== */
+
+/* Cards */
+.dark .da-card {
+  background: linear-gradient(135deg, rgba(30,41,59,0.75), rgba(15,23,42,0.60)) !important;
+  border-color: rgba(255,255,255,0.10) !important;
+  border-top-color: rgba(255,255,255,0.15) !important;
+  border-left-color: rgba(255,255,255,0.12) !important;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.35), inset 0 1.5px 3px rgba(255,255,255,0.08) !important;
+  color: #e2e8f0 !important;
+}
+
+.dark .da-card:hover {
+  box-shadow: 0 35px 80px rgba(0,0,0,0.45), 0 0 40px rgba(179,195,76,0.1), inset 0 2px 4px rgba(255,255,255,0.10) !important;
+}
+
+/* Action cards */
+.dark .da-action-card,
+.dark .da-glass-panel {
+  background: rgba(30,41,59,0.65) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.3), inset 0 1.5px 2px rgba(255,255,255,0.07) !important;
+}
+
+.dark .da-action-card:hover,
+.dark .da-glass-panel:hover {
+  background: linear-gradient(135deg, rgba(40,55,80,0.90), rgba(25,35,60,0.80)) !important;
+  border-color: rgba(179,195,76,0.4) !important;
+  box-shadow: 0 25px 55px rgba(179,195,76,0.15), inset 0 1.5px 2px rgba(255,255,255,0.10) !important;
+}
+
+/* Texto en cards oscuras */
+.dark .da-card-header h2,
+.dark .da-card h2,
+.dark .da-card h3,
+.dark .da-card h4,
+.dark .da-card p,
+.dark .da-card span:not([class*="badge"]) {
+  color: #e2e8f0;
+}
+
+/* Tablas */
+.dark .table.da-table tbody td {
+  background: rgba(30,41,59,0.60) !important;
+  border-top-color: rgba(255,255,255,0.08) !important;
+  border-bottom-color: rgba(255,255,255,0.04) !important;
+  color: #e2e8f0 !important;
+}
+
+.dark .table.da-table tbody tr:hover td {
+  background: rgba(40,55,80,0.80) !important;
+  border-bottom-color: rgba(179,195,76,0.3) !important;
+}
+
+.dark .table.da-table tbody tr td:first-child {
+  border-left-color: rgba(255,255,255,0.10) !important;
+}
+
+.dark .table.da-table tbody tr td:last-child {
+  border-right-color: rgba(255,255,255,0.06) !important;
+}
+
+.dark .table.da-table thead th {
+  color: #94a3b8 !important;
+}
+
+/* Inputs */
+.dark .form-control,
+.dark .form-select {
+  background: rgba(15,23,42,0.70) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+  color: #e2e8f0 !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.3), 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+
+.dark .form-control:focus,
+.dark .form-select:focus {
+  background: rgba(30,41,59,0.85) !important;
+  border-color: rgba(179,195,76,0.7) !important;
+  box-shadow: 0 0 0 3px rgba(179,195,76,0.25), inset 0 1px 2px rgba(0,0,0,0.2) !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .form-control::placeholder {
+  color: #64748b !important;
+}
+
+/* Search bar */
+.dark .da-glass-search-input {
+  background: rgba(15,23,42,0.70) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: #e2e8f0 !important;
+}
+
+.dark .da-glass-search-input:focus {
+  background: rgba(30,41,59,0.90) !important;
+  border-color: rgba(179,195,76,0.7) !important;
+  box-shadow: inset 0 1.5px 2px rgba(0,0,0,0.2), 0 0 0 4px rgba(179,195,76,0.2) !important;
+}
+
+/* Formation info box */
+.dark .formation-info-box {
+  background: rgba(15,23,42,0.60) !important;
+  border-color: rgba(255,255,255,0.10) !important;
+}
+
+.dark .formation-info-box h4 {
+  color: #e2e8f0;
+}
+
+.dark .formation-info-box p {
+  color: #94a3b8;
+}
+
+/* Badges */
+.dark .da-badge-active {
+  background: rgba(179,195,76,0.20) !important;
+  color: #e4f575 !important;
+  border-color: rgba(179,195,76,0.35) !important;
+}
+
+.dark .da-badge-inactive {
+  background: rgba(100,116,139,0.20) !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(100,116,139,0.25) !important;
+}
+
+/* Ghost loaders en dark */
+.dark .da-ghost-element {
+  background: linear-gradient(
+    90deg,
+    rgba(30,41,59,0.6) 25%,
+    rgba(51,65,85,0.8) 37%,
+    rgba(30,41,59,0.6) 63%
+  ) !important;
+  background-size: 200% 100% !important;
+}
+
+.dark .da-ghost-card {
+  background: rgba(15,23,42,0.70);
+  border-color: rgba(255,255,255,0.08);
+}
+
+/* Scrollbar en dark */
+.dark ::-webkit-scrollbar-track {
+  background: rgba(15,23,42,0.5);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(179,195,76,0.35);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(179,195,76,0.55);
+}
+
+/* Token display (QR) */
+.dark .token-display {
+  background: rgba(15,23,42,0.80);
+  color: #e2e8f0;
+}
+
+/* Nav pills */
+.dark .da-nav-pills .nav-link {
+  background-color: rgba(255,255,255,0.08);
+  color: #e4f575 !important;
+}
+
+.dark .da-nav-pills .nav-link:hover {
+  background-color: rgba(255,255,255,0.15);
+}
+
+/* Glass card small & Panels */
+.dark .da-glass-card-sm {
+  background: rgba(30, 41, 59, 0.65) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .da-action-icon-wrapper {
+  background: rgba(179, 195, 76, 0.20) !important;
+  border: 1.5px solid rgba(179, 195, 76, 0.45) !important;
+  color: #e4f575 !important;
+  box-shadow: 0 0 15px rgba(179, 195, 76, 0.15) !important;
+}
+
+.dark .da-action-card:hover .da-action-icon-wrapper {
+  background: rgba(179, 195, 76, 0.35) !important;
+  color: #f5ff99 !important;
+}
+
+.dark .profile-header-container,
+.dark .home-card {
+  background: rgba(15, 23, 42, 0.70) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+/* ==========================================
+   DARK MODE — TEXTO GLOBAL (fix visibilidad)
+   ========================================== */
+
+/* Títulos y texto general que usan colores oscuros hardcodeados */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: #e2e8f0;
+}
+
+.dark p:not([class*="text-"]) {
+  color: #cbd5e1;
+}
+
+.dark label {
+  color: #cbd5e1;
+}
+
+/* Textos con clases de Tailwind slate en dark */
+.dark .text-slate-900 { color: #f1f5f9 !important; }
+.dark .text-slate-800 { color: #e2e8f0 !important; }
+.dark .text-slate-700 { color: #cbd5e1 !important; }
+.dark .text-slate-600 { color: #94a3b8 !important; }
+.dark .text-slate-500 { color: #94a3b8 !important; }
+.dark .text-gray-900  { color: #f1f5f9 !important; }
+.dark .text-gray-800  { color: #e2e8f0 !important; }
+.dark .text-gray-700  { color: #cbd5e1 !important; }
+.dark .text-gray-600  { color: #94a3b8 !important; }
+
+/* Colores específicos de la app que aparecen hardcodeados */
+.dark [style*="color: #1e293b"],
+.dark [style*="color: #2c3e50"],
+.dark [style*="color: #333"],
+.dark [style*="color: #555"],
+.dark [style*="color: #444"] {
+  color: #e2e8f0 !important;
+}
+
+/* ==========================================
+   GLOBAL LIQUID GLASS CAPSULE INPUTS
+   ========================================== */
+.da-input,
+.da-textarea,
+.form-control,
+.form-select,
+input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(.da-glass-search-input),
+textarea,
+select {
+  border-radius: 16px !important;
+  padding: 10px 16px !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  background: rgba(255, 255, 255, 0.70) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.80) !important;
+  color: #1e293b !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02), 0 2px 8px rgba(0, 0, 0, 0.03) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  outline: none !important;
+}
+
+.da-input:focus,
+.da-textarea:focus,
+.form-control:focus,
+.form-select:focus,
+input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(.da-glass-search-input):focus,
+textarea:focus,
+select:focus {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: #b3c34c !important;
+  box-shadow: 0 0 0 3px rgba(179, 195, 76, 0.25), 0 4px 16px rgba(179, 195, 76, 0.15) !important;
+}
+
+/* Dark Mode Capsule Inputs */
+.dark .da-input,
+.dark .da-textarea,
+.dark .form-control,
+.dark .form-select,
+.dark input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(.da-glass-search-input),
+.dark textarea,
+.dark select {
+  color: #f1f5f9 !important;
+  background: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 16px !important;
+  padding: 10px 16px !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25) !important;
+}
+
+.dark .da-input:focus,
+.dark .da-textarea:focus,
+.dark .form-control:focus,
+.dark .form-select:focus,
+.dark input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(.da-glass-search-input):focus,
+.dark textarea:focus,
+.dark select:focus {
+  color: #ffffff !important;
+  background: rgba(30, 41, 59, 0.85) !important;
+  border-color: #d4e84a !important;
+  box-shadow: 0 0 0 3px rgba(179, 195, 76, 0.3), 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Specific Search Bar Input Overrides */
+.da-glass-search-input {
+  border-radius: 50px !important;
+  padding: 12px 48px 12px 52px !important;
+}
+
+
+/* Fondos blancos puros en cards de Bootstrap */
+.dark .card {
+  background: rgba(20,30,50,0.80) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  color: #e2e8f0 !important;
+}
+
+.dark .card-body,
+.dark .card-header,
+.dark .card-footer {
+  color: #e2e8f0 !important;
+  background: transparent !important;
+}
+
+/* ==========================================
+   BOOTSTRAP CLASS OVERRIDES IN DARK MODE
+   ========================================== */
+
+.dark .text-dark {
+  color: #f1f5f9 !important;
+}
+
+.dark .text-muted,
+.dark .text-secondary {
+  color: #94a3b8 !important;
+}
+
+.dark .text-body {
+  color: #e2e8f0 !important;
+}
+
+.dark .bg-light {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: #f8fafc !important;
+}
+
+.dark .bg-white {
+  background-color: rgba(30, 41, 59, 0.85) !important;
+}
+
+.dark .border-light {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Modals en Dark Mode */
+.dark .modal-content {
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(40px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #e2e8f0 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+}
+
+.dark .modal-header,
+.dark .modal-footer {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Pills activas: texto oscuro legible sobre verde lima */
+.dark .da-nav-pills .nav-link.active {
+  background: var(--da-primary) !important;
+  color: #1e293b !important;
+  box-shadow: 0 4px 14px rgba(179, 195, 76, 0.35) !important;
+}
+
+.dark .da-nav-pills .nav-link.active svg {
+  color: #1e293b !important;
+}
+
+/* QR frame en modo oscuro */
+.dark .qr-code-frame {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+}
+
+/* Botones principales verde lima: texto oscuro para alto contraste */
+.dark .da-btn-primary,
+.dark .btn-primary,
+.dark .badge.bg-primary {
+  color: #1e293b !important;
+  font-weight: 600;
 }

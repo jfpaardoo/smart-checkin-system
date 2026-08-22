@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
 import GlassDropdown from '../../components/GlassDropdown';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +14,12 @@ import AnalyticsExportMenu from './components/AnalyticsExportMenu';
 import AnalyticsOverviewTab from './components/AnalyticsOverviewTab';
 import AnalyticsEmployeesTab from './components/AnalyticsEmployeesTab';
 import AnalyticsFormationsTab from './components/AnalyticsFormationsTab';
+
+const tabContentVariants = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.25, ease: 'easeOut' } },
+  exit: { opacity: 0, y: -12, transition: { duration: 0.15, ease: 'easeIn' } }
+};
 
 export default function AnalyticsDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -134,10 +141,10 @@ export default function AnalyticsDashboard() {
               <FontAwesomeIcon icon={faChartLine} />
             </div>
             <div>
-              <h2 className="mb-1 text-2xl font-bold text-slate-800">
+              <h2 className="mb-1 text-2xl font-bold text-slate-800 dark:text-slate-100">
                 {t('analytics.title', 'Panel de Analíticas')}
               </h2>
-              <p className="text-xs text-slate-500 mb-0">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-0">
                 {t('analytics.subtitle', 'Métricas de productividad, control horario y seguimiento de formación')}
               </p>
             </div>
@@ -153,8 +160,8 @@ export default function AnalyticsDashboard() {
                 { 
                   value: 'overview', 
                   label: (
-                    <span className="fw-bold" style={{ color: '#2c3e50' }}>
-                      <FontAwesomeIcon icon={faChartLine} className="me-2" style={{ color: 'var(--da-primary)' }} />
+                    <span className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                      <FontAwesomeIcon icon={faChartLine} style={{ color: 'var(--da-primary)' }} />
                       {t('analytics.overviewTab', 'Platform Overview')}
                     </span>
                   )
@@ -162,8 +169,8 @@ export default function AnalyticsDashboard() {
                 { 
                   value: 'employees', 
                   label: (
-                    <span className="fw-bold" style={{ color: '#2c3e50' }}>
-                      <FontAwesomeIcon icon={faUsers} className="me-2" style={{ color: 'var(--da-primary)' }} />
+                    <span className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                      <FontAwesomeIcon icon={faUsers} style={{ color: 'var(--da-primary)' }} />
                       {t('analytics.employeesTab', 'Employee Control')}
                     </span>
                   )
@@ -171,8 +178,8 @@ export default function AnalyticsDashboard() {
                 { 
                   value: 'formations', 
                   label: (
-                    <span className="fw-bold" style={{ color: '#2c3e50' }}>
-                      <FontAwesomeIcon icon={faGraduationCap} className="me-2" style={{ color: 'var(--da-primary)' }} />
+                    <span className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                      <FontAwesomeIcon icon={faGraduationCap} style={{ color: 'var(--da-primary)' }} />
                       {t('analytics.formationsTab', 'Rendimiento Formaciones')}
                     </span>
                   )
@@ -185,12 +192,12 @@ export default function AnalyticsDashboard() {
             {activeTab === 'overview' && (
                 <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
                   <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <FontAwesomeIcon icon={faCalendarAlt} className="text-muted hidden sm:block" />
-                    <input type="date" id="startDate" name="startDate" className="form-control form-control-sm w-full sm:w-auto" value={startDate} onChange={(e) => setStartDate(e.target.value)} aria-label={t('analytics.startDate', 'Fecha inicio')} />
+                    <FontAwesomeIcon icon={faCalendarAlt} className="text-slate-400 hidden sm:block" />
+                    <input type="date" id="startDate" name="startDate" className="da-input py-1.5 px-3 text-xs w-full sm:w-auto" value={startDate} onChange={(e) => setStartDate(e.target.value)} aria-label={t('analytics.startDate', 'Fecha inicio')} />
                   </div>
-                  <span className="text-muted hidden sm:block"> - </span>
+                  <span className="text-slate-400 hidden sm:block"> - </span>
                   <div className="w-full sm:w-auto">
-                    <input type="date" id="endDate" name="endDate" className="form-control form-control-sm w-full sm:w-auto" value={endDate} onChange={(e) => setEndDate(e.target.value)} aria-label={t('analytics.endDate', 'Fecha fin')} />
+                    <input type="date" id="endDate" name="endDate" className="da-input py-1.5 px-3 text-xs w-full sm:w-auto" value={endDate} onChange={(e) => setEndDate(e.target.value)} aria-label={t('analytics.endDate', 'Fecha fin')} />
                   </div>
                 </div>
             )}
@@ -203,20 +210,50 @@ export default function AnalyticsDashboard() {
           </div>
         </div>
 
-        {activeTab === 'overview' && (
-          <AnalyticsOverviewTab statistics={statistics} />
-        )}
+        <AnimatePresence mode="wait">
+          {activeTab === 'overview' && (
+            <motion.div
+              key="overview"
+              variants={tabContentVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="w-full"
+            >
+              <AnalyticsOverviewTab statistics={statistics} />
+            </motion.div>
+          )}
 
-        {activeTab === 'employees' && (
-          <AnalyticsEmployeesTab 
-            userAnalyticsList={userAnalyticsList} 
-            companies={companies}
-            onOpenUserDetail={handleOpenUserDetail} 
-          />
-        )}
-        {activeTab === 'formations' && (
-          <AnalyticsFormationsTab formations={formationAnalyticsList} />
-        )}
+          {activeTab === 'employees' && (
+            <motion.div
+              key="employees"
+              variants={tabContentVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="w-full"
+            >
+              <AnalyticsEmployeesTab 
+                userAnalyticsList={userAnalyticsList} 
+                companies={companies}
+                onOpenUserDetail={handleOpenUserDetail} 
+              />
+            </motion.div>
+          )}
+
+          {activeTab === 'formations' && (
+            <motion.div
+              key="formations"
+              variants={tabContentVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="w-full"
+            >
+              <AnalyticsFormationsTab formations={formationAnalyticsList} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <UserAnalyticsDetailModal 

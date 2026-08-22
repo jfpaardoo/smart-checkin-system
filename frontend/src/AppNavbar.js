@@ -3,9 +3,27 @@ import { Link, useLocation } from 'react-router-dom';
 import { FaUsers, FaBuilding, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen, FaChartLine, FaIdCard, FaUserPlus, FaSignInAlt, FaShieldAlt, FaCloudUploadAlt, FaBars, FaTimes, FaBell, FaCheck } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import tokenService from './services/token.service';
+import { useTheme } from './context/ThemeContext';
 
 import LanguageSwitcher from './components/LanguageSwitcher';
 import NotificationBell from './components/NotificationBell';
+import { preload } from 'swr';
+import api from './services/api';
+
+const swrFetcher = (url) => api.get(url).then((res) => res.data);
+
+const prefetchRouteData = (route) => {
+    if (route === '/users') {
+        preload('/users', swrFetcher);
+        preload('/users/pending', swrFetcher);
+    } else if (route === '/companies') {
+        preload('/companies', swrFetcher);
+    } else if (route === '/formations') {
+        preload('/formations', swrFetcher);
+    } else if (route === '/audit') {
+        preload('/audit', swrFetcher);
+    }
+};
 
 const LANGUAGES = [
     { code: 'es', label: 'Español' },
@@ -18,6 +36,59 @@ const LANGUAGES = [
     { code: 'ro', label: 'Română' },
 ];
 
+/** Botón sol/luna para cambiar entre modo claro y oscuro */
+function ThemeToggleButton() {
+    const { isDark, toggleTheme } = useTheme();
+    return (
+        <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            title={isDark ? 'Modo claro' : 'Modo oscuro'}
+            className="relative p-2 rounded-[20px] text-white hover:bg-white/15 focus:outline-none transition-all duration-300 group"
+        >
+            <span
+                className="block transition-all duration-500"
+                style={{
+                    transform: isDark ? 'rotate(0deg) scale(1)' : 'rotate(30deg) scale(0.85)',
+                    opacity: isDark ? 1 : 0,
+                    position: isDark ? 'relative' : 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                {/* Sol */}
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+            </span>
+            <span
+                className="block transition-all duration-500"
+                style={{
+                    transform: isDark ? 'rotate(-30deg) scale(0.85)' : 'rotate(0deg) scale(1)',
+                    opacity: isDark ? 0 : 1,
+                    position: isDark ? 'absolute' : 'relative',
+                    inset: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                }}
+            >
+                {/* Luna */}
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </span>
+        </button>
+    );
+}
+
 function AdminDropdownMenu({ isOpen, toggleMenu, closeAll, t }) {
     return (
         <div className="relative dropdown-container">
@@ -28,11 +99,11 @@ function AdminDropdownMenu({ isOpen, toggleMenu, closeAll, t }) {
             </button>
             <div className={`da-nav-dropdown-container left-0 w-[240px] transition-all duration-300 origin-top-left ${isOpen ? 'opacity-100 scale-100 translate-y-0 visible' : 'opacity-0 scale-95 -translate-y-4 invisible pointer-events-none'}`}>
                 <div className="py-1" role="menu">
-                    <Link to="/users" className="da-nav-dropdown-item" onClick={closeAll}><FaUsers className="text-white/60" /> {t('nav.manageUsers')}</Link>
-                    <Link to="/companies" className="da-nav-dropdown-item" onClick={closeAll}><FaBuilding className="text-white/60" /> {t('nav.manageCompanies', 'Empresas')}</Link>
-                    <Link to="/formations" className="da-nav-dropdown-item" onClick={closeAll}><FaGraduationCap className="text-white/60" /> {t('nav.manageFormations')}</Link>
+                    <Link to="/users" className="da-nav-dropdown-item" onMouseEnter={() => prefetchRouteData('/users')} onClick={closeAll}><FaUsers className="text-white/60" /> {t('nav.manageUsers')}</Link>
+                    <Link to="/companies" className="da-nav-dropdown-item" onMouseEnter={() => prefetchRouteData('/companies')} onClick={closeAll}><FaBuilding className="text-white/60" /> {t('nav.manageCompanies', 'Empresas')}</Link>
+                    <Link to="/formations" className="da-nav-dropdown-item" onMouseEnter={() => prefetchRouteData('/formations')} onClick={closeAll}><FaGraduationCap className="text-white/60" /> {t('nav.manageFormations')}</Link>
                     <Link to="/analytics" className="da-nav-dropdown-item" onClick={closeAll}><FaChartLine className="text-white/60" /> {t('nav.analytics')}</Link>
-                    <Link to="/audit" className="da-nav-dropdown-item" onClick={closeAll}><FaShieldAlt className="text-white/60" /> {t('nav.audit', 'Auditoría')}</Link>
+                    <Link to="/audit" className="da-nav-dropdown-item" onMouseEnter={() => prefetchRouteData('/audit')} onClick={closeAll}><FaShieldAlt className="text-white/60" /> {t('nav.audit', 'Auditoría')}</Link>
                     <Link to="/admin/cloud-settings" className="da-nav-dropdown-item" onClick={closeAll}><FaCloudUploadAlt className="text-white/60" /> {t('nav.cloudSettings', 'Ajustes de Nube')}</Link>
                     <div className="border-t border-white/20 my-1 mx-2"></div>
                     <Link to="/qr-generator" className="da-nav-dropdown-item" onClick={closeAll}><FaQrcode className="text-white/60" /> {t('nav.qrGenerator')}</Link>
@@ -83,11 +154,11 @@ function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggl
                     <div className="py-2 border-b border-white/10 mb-3">
                         <div className="text-[10px] font-extrabold text-white/40 mb-3 uppercase tracking-widest">{t('nav.administration')}</div>
                         <div className="space-y-1">
-                            <Link to="/users" className="da-nav-dropdown-item" onClick={closeAll}><FaUsers className="text-white/60" /> {t('nav.manageUsers')}</Link>
-                            <Link to="/companies" className="da-nav-dropdown-item" onClick={closeAll}><FaBuilding className="text-white/60" /> {t('nav.manageCompanies', 'Empresas')}</Link>
-                            <Link to="/formations" className="da-nav-dropdown-item" onClick={closeAll}><FaGraduationCap className="text-white/60" /> {t('nav.manageFormations')}</Link>
+                            <Link to="/users" className="da-nav-dropdown-item" onTouchStart={() => prefetchRouteData('/users')} onMouseEnter={() => prefetchRouteData('/users')} onClick={closeAll}><FaUsers className="text-white/60" /> {t('nav.manageUsers')}</Link>
+                            <Link to="/companies" className="da-nav-dropdown-item" onTouchStart={() => prefetchRouteData('/companies')} onMouseEnter={() => prefetchRouteData('/companies')} onClick={closeAll}><FaBuilding className="text-white/60" /> {t('nav.manageCompanies', 'Empresas')}</Link>
+                            <Link to="/formations" className="da-nav-dropdown-item" onTouchStart={() => prefetchRouteData('/formations')} onMouseEnter={() => prefetchRouteData('/formations')} onClick={closeAll}><FaGraduationCap className="text-white/60" /> {t('nav.manageFormations')}</Link>
                             <Link to="/analytics" className="da-nav-dropdown-item" onClick={closeAll}><FaChartLine className="text-white/60" /> {t('nav.analytics')}</Link>
-                            <Link to="/audit" className="da-nav-dropdown-item" onClick={closeAll}><FaShieldAlt className="text-white/60" /> {t('nav.audit', 'Auditoría')}</Link>
+                            <Link to="/audit" className="da-nav-dropdown-item" onTouchStart={() => prefetchRouteData('/audit')} onMouseEnter={() => prefetchRouteData('/audit')} onClick={closeAll}><FaShieldAlt className="text-white/60" /> {t('nav.audit', 'Auditoría')}</Link>
                             <Link to="/admin/cloud-settings" className="da-nav-dropdown-item" onClick={closeAll}><FaCloudUploadAlt className="text-white/60" /> {t('nav.cloudSettings', 'Ajustes de Nube')}</Link>
                             <div className="border-t border-white/20 my-1 mx-2"></div>
                             <Link to="/qr-generator" className="da-nav-dropdown-item" onClick={closeAll}><FaQrcode className="text-white/60" /> {t('nav.qrGenerator')}</Link>
@@ -111,12 +182,15 @@ function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggl
                         </div>
                     )}
 
-                    <div className="pt-4 flex flex-col items-center border-t border-white/10 mt-2 text-white">
-                        <LanguageSwitcher
-                            isMobile={true}
-                            isOpen={mobileLangOpen}
-                            onToggle={toggleMobileLang}
-                        />
+                    <div className="pt-4 flex flex-col border-t border-white/10 mt-2 text-white">
+                        <div className="flex items-center justify-between w-full">
+                            <LanguageSwitcher
+                                isMobile={true}
+                                isOpen={mobileLangOpen}
+                                onToggle={toggleMobileLang}
+                            />
+                            <ThemeToggleButton />
+                        </div>
                         <div className={`w-full transition-all duration-300 overflow-hidden ${mobileLangOpen ? 'max-h-60 mt-3 opacity-100' : 'max-h-0 opacity-0'}`}>
                             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-2 space-y-1 border border-white/10 max-h-48 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                                 {LANGUAGES.map(({ code, label }) => {
@@ -212,7 +286,7 @@ export default function AppNavbar() {
     const isMobileDrawerOpen = isNavMobileOpen || isNotifOpen;
 
     return (
-        <nav className={`sticky top-3 z-40 mx-auto w-[calc(100%-24px)] max-w-[1080px] mb-6 sm:mb-8 rounded-[40px] bg-slate-800/40 backdrop-blur-xl backdrop-saturate-150 border border-white/20 shadow-[0_8px_32px_0_rgba(31,38,135,0.3)] transition-all duration-300 ${isMobileDrawerOpen ? 'overflow-hidden md:overflow-visible' : 'md:overflow-visible'}`}>
+        <nav className={`sticky top-3 z-40 mx-auto w-[calc(100%-24px)] md:w-[calc(100%-48px)] max-w-[1440px] mb-6 sm:mb-8 rounded-[40px] bg-slate-800/40 backdrop-blur-xl backdrop-saturate-150 border border-white/20 shadow-[0_8px_32px_0_rgba(31,38,135,0.3)] transition-all duration-300 ${isMobileDrawerOpen ? 'overflow-hidden md:overflow-visible' : 'md:overflow-visible'}`}>
             <div className="w-full px-3.5 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-[58px] sm:h-[64px]">
                     <div className="flex items-center min-w-0 flex-1">
@@ -271,6 +345,7 @@ export default function AppNavbar() {
                                 onToggle={(e) => toggleMenu('lang', e)}
                             />
                         </div>
+                        <ThemeToggleButton />
                     </div>
 
                     {/* Mobile Hamburger & Bell Toggle */}

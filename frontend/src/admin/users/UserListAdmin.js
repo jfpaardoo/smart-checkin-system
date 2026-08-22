@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Button } from "reactstrap";
+import useSWR from "swr";
 import { useTranslation } from "react-i18next";
-import deleteFromList from "../../util/deleteFromList";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUsers, faFileCsv, faFileExcel, faFilePdf, faPlus, faFilter, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import GlassSearchBar from "../../components/GlassSearchBar";
 import GlassDropdown from "../../components/GlassDropdown";
+import GlassPageHeader from "../../components/GlassPageHeader";
 import GlassPagination from "../../components/GlassPagination";
 import { useToast } from "../../components/ToastProvider";
 import downloadExportFile from "../../util/downloadExportFile";
@@ -14,6 +14,8 @@ import { useSubscription } from "../../hooks/useSubscription";
 import api from "../../services/api";
 import UserTable from "./components/UserTable";
 import UserListTabs from "./components/UserListTabs";
+
+const swrFetcher = (url) => api.get(url).then(res => res.data);
 
 const matchesUserSearch = (user, query) => {
   if (!query?.trim()) return true;
@@ -45,11 +47,7 @@ export default function UserListAdmin() {
   const { t } = useTranslation();
   const toast = useToast();
 
-  const [users, setUsers] = useState([]);
-  const [pendingUsers, setPendingUsers] = useState([]);
-  const [companies, setCompanies] = useState([]);
   const [activeTab, setActiveTab] = useState('approved');
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   
   // Filtros avanzados
@@ -61,47 +59,32 @@ export default function UserListAdmin() {
   const [pageSize, setPageSize] = useState(10);
   const [exportingType, setExportingType] = useState(null);
 
-  const fetchUsers = useCallback(async (query = '') => {
-    setLoading(true);
-    try {
-      const params = query ? `?search=${encodeURIComponent(query)}` : '';
-      const res = await api.get(`/users${params}`);
-      setUsers(Array.isArray(res.data) ? res.data : []);
-    } catch (error) {
-      console.error("Failed to fetch users", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // SWR Hooks for caching and optimistic revalidation
+  const usersUrl = searchQuery ? `/users?search=${encodeURIComponent(searchQuery)}` : '/users';
+  const { data: usersData, mutate: mutateUsers, isLoading: usersLoading } = useSWR(usersUrl, swrFetcher, {
+    revalidateOnFocus: true,
+    dedupingInterval: 3000
+  });
 
-  const fetchPendingUsers = useCallback(async () => {
-    try {
-      const res = await api.get('/users/pending');
-      setPendingUsers(Array.isArray(res.data) ? res.data : []);
-    } catch (error) {
-      console.error("Failed to fetch pending users", error);
-    }
-  }, []);
+  const { data: pendingUsersData, mutate: mutatePending } = useSWR('/users/pending', swrFetcher, {
+    revalidateOnFocus: true,
+    dedupingInterval: 3000
+  });
 
-  const fetchCompanies = useCallback(async () => {
-    try {
-      const res = await api.get('/companies');
-      setCompanies(Array.isArray(res.data) ? res.data : []);
-    } catch (error) {
-      console.error("Failed to fetch companies", error);
-    }
-  }, []);
+  const { data: companiesData } = useSWR('/companies', swrFetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000
+  });
 
-  useEffect(() => {
-    fetchUsers(searchQuery);
-    fetchPendingUsers();
-    fetchCompanies();
-  }, [fetchUsers, fetchPendingUsers, fetchCompanies, searchQuery]);
+  const users = useMemo(() => Array.isArray(usersData) ? usersData : [], [usersData]);
+  const pendingUsers = useMemo(() => Array.isArray(pendingUsersData) ? pendingUsersData : [], [pendingUsersData]);
+  const companies = useMemo(() => Array.isArray(companiesData) ? companiesData : [], [companiesData]);
+  const loading = usersLoading && users.length === 0;
 
   const handleWsMessage = useCallback(() => {
-    fetchUsers(searchQuery);
-    fetchPendingUsers();
-  }, [fetchUsers, fetchPendingUsers, searchQuery]);
+    mutateUsers();
+    mutatePending();
+  }, [mutateUsers, mutatePending]);
 
   useSubscription('/topic/users', handleWsMessage);
 
@@ -109,8 +92,8 @@ export default function UserListAdmin() {
     try {
       await api.put(`/users/${id}/approve`);
       toast.success(t('users.approvedSuccess', 'Empleado aprobado y activado con éxito.'));
-      fetchPendingUsers();
-      fetchUsers(searchQuery);
+      mutatePending();
+      mutateUsers();
     } catch (err) {
       const msg = err.response?.data?.message || t('users.approveError', 'Error al aprobar empleado.');
       toast.error(msg);
@@ -118,23 +101,23 @@ export default function UserListAdmin() {
   };
 
   const handleReject = async (id) => {
-    deleteFromList(
-      `/users/${id}`,
-      id,
-      [pendingUsers, setPendingUsers],
-      toast,
-      { entityName: t('users.registrationRequest', 'Solicitud de registro'), t }
-    );
+    try {
+      await api.delete(`/users/${id}`);
+      toast.success(t('common.deletedSuccess', 'Registro eliminado correctamente'));
+      mutatePending();
+    } catch (err) {
+      toast.error(err.response?.data?.message || t('common.deleteError', 'Error al eliminar'));
+    }
   };
 
   const handleDelete = async (id) => {
-    deleteFromList(
-      `/users/${id}`,
-      id,
-      [users, setUsers],
-      toast,
-      { entityName: t('users.userEntity', 'Usuario'), t }
-    );
+    try {
+      await api.delete(`/users/${id}`);
+      toast.success(t('common.deletedSuccess', 'Usuario eliminado correctamente'));
+      mutateUsers();
+    } catch (err) {
+      toast.error(err.response?.data?.message || t('common.deleteError', 'Error al eliminar'));
+    }
   };
 
   // Conteo de roles para las pestañas
@@ -185,67 +168,68 @@ export default function UserListAdmin() {
       <div className="da-card">
         
         {/* Cabecera Liquid Glass */}
-        <div className="da-card-header da-admin-header border-0 flex flex-col md:flex-row justify-between items-center gap-4 mb-4 text-center sm:text-left">
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 w-full md:w-auto">
-              <div className="p-3.5 rounded-2xl bg-[#b3c34c]/20 border border-[#b3c34c]/40 text-[#73841e] text-2xl flex-shrink-0 flex items-center justify-center shadow-xs">
-                <FontAwesomeIcon icon={faUsers} />
-              </div>
-              <div>
-                <h2 className="mb-1 text-2xl font-bold text-slate-800">
-                  {t('users.title', 'Gestión de Empleados y Usuarios')}
-                </h2>
-                <p className="text-xs text-slate-500 mb-0">
-                  {t('users.subtitle', 'Administra los roles, centros asociados, estado de actividad y solicitudes de registro')}
-                </p>
-              </div>
-            </div>
-            
-            <div className="da-admin-header-actions flex flex-wrap gap-2 w-full md:w-auto justify-end">
-                {/* Botón CSV */}
-                <Button 
-                  disabled={!!exportingType}
-                  className="da-btn-primary btn-icon-expand btn-expand-lg bg-[#b3c34c]/80 hover:bg-[#b3c34c] text-slate-900 border-0 shadow-sm disabled:opacity-50" 
-                  onClick={() => {
-                    const companyQuery = selectedCompany && selectedCompany !== 'NONE' ? `?companyId=${selectedCompany}` : '';
-                    handleDownloadExport(`users/csv${companyQuery}`, 'usuarios.csv', 'csv');
-                  }}
-                >
-                    <FontAwesomeIcon icon={exportingType === 'csv' ? faSpinner : faFileCsv} spin={exportingType === 'csv'} />
-                    <span className="btn-expand-label ms-1">{t('analytics.exportCsv', 'Exportar CSV')}</span>
-                </Button>
-                
-                {/* Botón PDF */}
-                <Button 
-                  disabled={!!exportingType}
-                  className="da-btn-secondary btn-icon-expand btn-expand-lg bg-red-500/20 hover:bg-red-500/30 text-red-700 border border-red-200/60 backdrop-blur-xl shadow-xs transition duration-300 hover:-translate-y-0.5 disabled:opacity-50" 
-                  onClick={() => {
-                    const companyQuery = selectedCompany && selectedCompany !== 'NONE' ? `?companyId=${selectedCompany}` : '';
-                    handleDownloadExport(`users/pdf${companyQuery}`, 'usuarios.pdf', 'pdf');
-                  }}
-                >
-                    <FontAwesomeIcon icon={exportingType === 'pdf' ? faSpinner : faFilePdf} spin={exportingType === 'pdf'} className="text-red-600" />
-                    <span className="btn-expand-label ms-1 font-semibold">{t('analytics.exportPdf', 'Exportar PDF')}</span>
-                </Button>
+        <GlassPageHeader
+          icon={<FontAwesomeIcon icon={faUsers} />}
+          title={t('users.title', 'Gestión de Empleados y Usuarios')}
+          subtitle={t('users.subtitle', 'Administra los roles, centros asociados, estado de actividad y solicitudes de registro')}
+          actions={
+            <>
+              {/* Botón CSV */}
+              <button 
+                type="button"
+                disabled={!!exportingType}
+                className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-[#73841e] dark:text-[#d4e84a] hover:text-[#525f0e] dark:hover:text-white hover:bg-white dark:hover:bg-slate-600 hover:scale-105 active:scale-95 transition shadow-xs inline-flex items-center justify-center cursor-pointer disabled:opacity-50" 
+                onClick={() => {
+                  const companyQuery = selectedCompany && selectedCompany !== 'NONE' ? `?companyId=${selectedCompany}` : '';
+                  handleDownloadExport(`users/csv${companyQuery}`, 'usuarios.csv', 'csv');
+                }}
+                title={t('analytics.exportCsv', 'Exportar CSV')}
+                aria-label={t('analytics.exportCsv', 'Exportar CSV')}
+              >
+                  <FontAwesomeIcon icon={exportingType === 'csv' ? faSpinner : faFileCsv} spin={exportingType === 'csv'} size="lg" />
+              </button>
+              
+              {/* Botón PDF */}
+              <button 
+                type="button"
+                disabled={!!exportingType}
+                className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 hover:scale-105 active:scale-95 transition shadow-xs inline-flex items-center justify-center cursor-pointer disabled:opacity-50" 
+                onClick={() => {
+                  const companyQuery = selectedCompany && selectedCompany !== 'NONE' ? `?companyId=${selectedCompany}` : '';
+                  handleDownloadExport(`users/pdf${companyQuery}`, 'usuarios.pdf', 'pdf');
+                }}
+                title={t('analytics.exportPdf', 'Exportar PDF')}
+                aria-label={t('analytics.exportPdf', 'Exportar PDF')}
+              >
+                  <FontAwesomeIcon icon={exportingType === 'pdf' ? faSpinner : faFilePdf} spin={exportingType === 'pdf'} size="lg" />
+              </button>
 
-                {/* Botón Excel */}
-                <Button 
-                  disabled={!!exportingType}
-                  className="da-btn-secondary btn-icon-expand btn-expand-lg bg-slate-500/30 hover:bg-slate-500/50 text-slate-800 border border-white/60 backdrop-blur-xl shadow-[0_8px_20px_0_rgba(31,38,135,0.07)] transition duration-300 hover:-translate-y-0.5 disabled:opacity-50" 
-                  onClick={() => {
-                    const companyQuery = selectedCompany && selectedCompany !== 'NONE' ? `?companyId=${selectedCompany}` : '';
-                    handleDownloadExport(`users/excel${companyQuery}`, 'usuarios.xlsx', 'excel');
-                  }}
-                >
-                    <FontAwesomeIcon icon={exportingType === 'excel' ? faSpinner : faFileExcel} spin={exportingType === 'excel'} className="text-slate-700" />
-                    <span className="btn-expand-label ms-1 font-semibold">{t('analytics.exportExcel', 'Exportar Excel')}</span>
-                </Button>
+              {/* Botón Excel */}
+              <button 
+                type="button"
+                disabled={!!exportingType}
+                className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 hover:scale-105 active:scale-95 transition shadow-xs inline-flex items-center justify-center cursor-pointer disabled:opacity-50" 
+                onClick={() => {
+                  const companyQuery = selectedCompany && selectedCompany !== 'NONE' ? `?companyId=${selectedCompany}` : '';
+                  handleDownloadExport(`users/excel${companyQuery}`, 'usuarios.xlsx', 'excel');
+                }}
+                title={t('analytics.exportExcel', 'Exportar Excel')}
+                aria-label={t('analytics.exportExcel', 'Exportar Excel')}
+              >
+                  <FontAwesomeIcon icon={exportingType === 'excel' ? faSpinner : faFileExcel} spin={exportingType === 'excel'} size="lg" />
+              </button>
 
-                {/* Botón Principal Añadir */}
-                <Button className="da-btn-primary shadow-[0_0_15px_rgba(179,195,76,0.6)]" tag={Link} to="/users/new">
-                    <FontAwesomeIcon icon={faPlus} className="me-1" /> {t('users.addUser', 'Añadir Empleado')}
-                </Button>
-            </div>
-        </div>
+              {/* Botón Principal Añadir */}
+              <Link 
+                className="da-btn-primary px-4 py-2 rounded-2xl font-bold text-xs sm:text-sm text-slate-950 inline-flex items-center gap-2 shadow-md hover:scale-102 active:scale-98 transition-all text-decoration-none" 
+                to="/users/new"
+              >
+                  <FontAwesomeIcon icon={faPlus} />
+                  <span>{t('users.addUser', 'Añadir Empleado')}</span>
+              </Link>
+            </>
+          }
+        />
 
         {/* Pestañas de Roles y Solicitudes */}
         <div className="mb-4">
@@ -260,7 +244,7 @@ export default function UserListAdmin() {
         </div>
 
         {/* Barra de Filtros y Búsqueda Liquid Glass */}
-        <div className="p-4 rounded-[28px] bg-white/30 backdrop-blur-md border border-white/50 shadow-xs mb-4 grid grid-cols-1 md:grid-cols-12 gap-3 items-center relative z-30">
+        <div className="p-4 rounded-[28px] bg-white/30 dark:bg-slate-800/30 backdrop-blur-md border border-white/50 dark:border-white/10 shadow-xs mb-4 grid grid-cols-1 md:grid-cols-12 gap-3 items-center relative z-30">
           {/* Buscador */}
           <div className="md:col-span-6">
             <GlassSearchBar 
@@ -302,7 +286,7 @@ export default function UserListAdmin() {
                 className="w-full"
               />
             ) : (
-              <div className="text-xs text-slate-500 italic flex items-center gap-1.5 px-2">
+              <div className="text-xs text-slate-500 dark:text-slate-400 italic flex items-center gap-1.5 px-2">
                 <FontAwesomeIcon icon={faFilter} className="text-[#8fa228]" />
                 {t('users.pendingFilterHint', 'Mostrando solicitudes que esperan validación')}
               </div>

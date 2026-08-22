@@ -37,7 +37,7 @@ export default function EmployeeFilterPanel({
   );
 
   return (
-    <div className="p-4 rounded-[28px] bg-white/30 backdrop-blur-md border border-white/50 shadow-xs mb-4 flex flex-col gap-3 relative z-20">
+    <div className="p-4 rounded-3xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.06)] mb-4 flex flex-col gap-3 relative z-20">
       {/* Fila 1 de Filtros */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center relative z-20">
         <div className="md:col-span-6">

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Form, FormGroup, Label, Input, Spinner } from "reactstrap";
-import { FaBuilding, FaSave, FaArrowLeft } from "react-icons/fa";
+import { FaBuilding, FaSave } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import { useToast } from "../../components/ToastProvider";
 import { CardGhostLoader } from "../../components/GhostLoader";
+import GlassFormHeader from "../../components/GlassFormHeader";
+import GlassButton from "../../components/GlassButton";
 import api from "../../services/api";
 
 export default function CompanyEditAdmin() {
@@ -83,35 +84,22 @@ export default function CompanyEditAdmin() {
   return (
     <div className="da-container">
       <div className="da-card" style={{ maxWidth: "760px", margin: "2rem auto", padding: "40px" }}>
-        {/* Cabecera simétrica Liquid Glass con botón atrás y badge centrado */}
-        <div className="relative mb-6 pb-4 border-b border-white/30 text-center">
-          <Link
-            to="/companies"
-            className="absolute left-0 top-0 p-2.5 rounded-2xl bg-white/50 border border-white/70 text-slate-600 hover:text-slate-900 hover:bg-white hover:scale-105 active:scale-95 transition shadow-xs flex items-center justify-center"
-            title={t("common.back", "Volver")}
-          >
-            <FaArrowLeft size={16} />
-          </Link>
-          <div className="inline-flex items-center justify-center p-3.5 rounded-2xl bg-[#b3c34c]/20 text-[#8fa228] shadow-xs mb-2">
-            <FaBuilding size={26} />
-          </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mb-1">
-            {isNew ? t("companies.newTitle", "Nueva Empresa") : t("companies.editTitle", "Editar Empresa")}
-          </h2>
-          <p className="text-xs text-slate-500 mb-0">
-            {isNew
-              ? t("companies.newSubtitle", "Registra una nueva empresa o centro de trabajo en la plataforma")
-              : t("companies.editSubtitle", "Modifica los datos y descripción de la empresa")}
-          </p>
-        </div>
+        <GlassFormHeader
+          icon={FaBuilding}
+          title={isNew ? t("companies.newTitle", "Nueva Empresa") : t("companies.editTitle", "Editar Empresa")}
+          subtitle={isNew
+            ? t("companies.newSubtitle", "Registra una nueva empresa o centro de trabajo en la plataforma")
+            : t("companies.editSubtitle", "Modifica los datos y descripción de la empresa")}
+          backUrl="/companies"
+        />
 
-        <Form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Nombre */}
-          <FormGroup className="mb-0">
-            <Label for="name" className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 block">
+          <div>
+            <label htmlFor="name" className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1.5 block">
               {t("companies.nameLabel", "Nombre de la Empresa")} *
-            </Label>
-            <Input
+            </label>
+            <input
               type="text"
               name="name"
               id="name"
@@ -119,46 +107,46 @@ export default function CompanyEditAdmin() {
               value={company.name || ""}
               onChange={handleChange}
               required
-              className="w-full bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl p-3 text-sm text-slate-800 outline-none focus:border-[#b3c34c] focus:bg-white/70 transition shadow-sm"
+              className="da-input w-full"
             />
-          </FormGroup>
+          </div>
 
           {/* Descripción */}
-          <FormGroup className="mb-0">
-            <Label for="description" className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 block">
+          <div>
+            <label htmlFor="description" className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1.5 block">
               {t("companies.descriptionLabel", "Descripción / Observaciones")}
-            </Label>
-            <Input
-              type="textarea"
+            </label>
+            <textarea
               rows={3}
               name="description"
               id="description"
               placeholder={t("companies.descriptionPlaceholder", "Información adicional sobre la actividad o localización del centro...")}
               value={company.description || ""}
               onChange={handleChange}
-              className="w-full bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl p-3 text-sm text-slate-800 outline-none focus:border-[#b3c34c] focus:bg-white/70 transition shadow-sm resize-none"
+              className="da-input w-full resize-none"
             />
-          </FormGroup>
+          </div>
 
           {/* Botones de acción */}
-          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-white/30 w-full">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-white/30 dark:border-white/10 w-full">
             <Link
               to="/companies"
-              className="da-btn-secondary px-6 py-2.5 text-sm font-semibold inline-flex items-center justify-center rounded-2xl w-full sm:w-auto text-center"
-              style={{ textDecoration: 'none' }}
+              className="da-btn-secondary px-6 py-2.5 text-sm font-semibold inline-flex items-center justify-center rounded-2xl w-full sm:w-auto text-center text-decoration-none"
             >
               {t("common.cancel", "Cancelar")}
             </Link>
-            <button
+            <GlassButton
               type="submit"
-              className="da-btn-primary px-6 py-2.5 inline-flex items-center justify-center gap-2 text-sm font-semibold shadow-md transition hover:-translate-y-0.5 w-full sm:w-auto"
-              disabled={saving}
+              variant="primary"
+              loading={saving}
+              loadingText={t("common.saving", "Guardando...")}
+              icon={FaSave}
+              className="px-6 py-2.5 text-sm font-semibold rounded-2xl shadow-md w-full sm:w-auto"
             >
-              {saving ? <Spinner size="sm" /> : <FaSave />}
-              <span>{isNew ? t("companies.createBtn", "Crear Empresa") : t("companies.saveBtn", "Guardar Cambios")}</span>
-            </button>
+              {isNew ? t("companies.createBtn", "Crear Empresa") : t("companies.saveBtn", "Guardar Cambios")}
+            </GlassButton>
           </div>
-        </Form>
+        </form>
       </div>
     </div>
   );

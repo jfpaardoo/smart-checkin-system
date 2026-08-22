@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faQrcode, faKeyboard, faCalendarCheck, faSpinner, faLocationDot, faCheckCircle, faCameraRotate, faCamera } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '../../components/ToastProvider';
@@ -9,6 +9,7 @@ import api from '../../services/api';
 import ManualCheckinForm from './components/ManualCheckinForm';
 import SignatureStep from './components/SignatureStep';
 import GlassDropdown from '../../components/GlassDropdown';
+import GlassModal from '../../components/GlassModal';
 import { useQrScanner } from '../../hooks/useQrScanner';
 import { formatDate } from '../../utils/dateUtils';
 import { saveOfflineCheckin, initOfflineSync } from '../../util/offlineQueue';
@@ -185,9 +186,9 @@ export default function ScannerCheckin() {
       {/* Overlay de carga */}
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm">
-          <div className="bg-white/95 backdrop-blur-xl rounded-[28px] p-8 border border-white shadow-2xl text-center flex flex-col items-center gap-4 max-w-[320px] w-full mx-4 animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-[28px] p-8 border border-white/40 dark:border-white/10 shadow-2xl text-center flex flex-col items-center gap-4 max-w-[320px] w-full mx-4 animate-in fade-in zoom-in-95 duration-200">
             <FontAwesomeIcon icon={faSpinner} className="fa-spin text-4xl" style={{ color: 'var(--da-primary)' }} />
-            <p className="text-slate-800 font-bold mb-0 text-base">
+            <p className="text-slate-800 dark:text-slate-100 font-bold mb-0 text-base">
               {t('checkin.processing', 'Procesando registro...')}
             </p>
           </div>
@@ -199,16 +200,16 @@ export default function ScannerCheckin() {
         <div style={{ display: isScanningEnabled ? 'block' : 'none' }}>
           <div className="text-center mb-6">
             <FontAwesomeIcon icon={faQrcode} size="3x" style={{ color: 'var(--da-primary)' }} className="mb-4" />
-            <h2 className="text-slate-800 font-bold text-2xl sm:text-3xl mb-2">
+            <h2 className="text-slate-800 dark:text-slate-100 font-bold text-2xl sm:text-3xl mb-2">
               {t('checkin.scanQr', 'Escanear el QR')}
             </h2>
-            <p className="text-slate-600 text-sm sm:text-base mb-3">
+            <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base mb-3">
               {t('checkin.qrSubtitle', 'Enfoca el código QR de la formación con tu cámara')}
             </p>
 
             <div className="flex items-center justify-center gap-2 mb-3 mx-auto max-w-[380px]">
               {gpsStatus === 'granted' ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
                   <FontAwesomeIcon icon={faCheckCircle} className="text-emerald-500" />
                   {t('checkin.gpsActive', 'Ubicación GPS verificada')}
                 </span>
@@ -216,7 +217,7 @@ export default function ScannerCheckin() {
                 <button
                   type="button"
                   onClick={requestGps}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition shadow-2xs cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 transition shadow-2xs cursor-pointer"
                   title={t('checkin.enableGpsTooltip', 'Pulsa para conceder permiso de ubicación')}
                 >
                   <FontAwesomeIcon icon={faLocationDot} className="text-amber-600" />
@@ -292,10 +293,10 @@ export default function ScannerCheckin() {
           <div>
             <div className="text-center mb-6">
               <FontAwesomeIcon icon={faKeyboard} size="3x" style={{ color: 'var(--da-primary)' }} className="mb-4" />
-              <h2 className="text-slate-800 font-bold text-3xl mb-2">
+              <h2 className="text-slate-800 dark:text-slate-100 font-bold text-3xl mb-2">
                 {t('checkin.manualCheckin', 'Check-in Manual')}
               </h2>
-              <p className="text-slate-600 text-lg">
+              <p className="text-slate-600 dark:text-slate-300 text-lg">
                 {t('checkin.manualSubtitle', 'Introduce el código que te proporcionó el administrador')}
               </p>
             </div>
@@ -315,41 +316,57 @@ export default function ScannerCheckin() {
         )}
       </div>
 
-      <Modal isOpen={successModal} toggle={handleCloseSuccess} centered className="da-glass-modal">
-        <ModalHeader toggle={handleCloseSuccess} className="border-0 pb-0">
-          <span className="text-slate-800 font-bold">{t('checkin.successTitle', '¡Proceso Completado!')}</span>
-        </ModalHeader>
-        <ModalBody className="text-center py-5">
-          <div className="mb-4">
-            <div className="d-inline-flex align-items-center justify-content-center rounded-circle shadow-sm border border-slate-100" style={{ width: '80px', height: '80px', backgroundColor: 'rgba(179, 195, 76, 0.1)', color: 'var(--da-primary)' }}>
-              <FontAwesomeIcon icon={faQrcode} size="3x" />
-            </div>
+      <GlassModal
+        isOpen={successModal}
+        toggle={handleCloseSuccess}
+        title={t('checkin.successTitle', '¡Proceso Completado!')}
+        size="sm"
+        footer={
+          <button 
+            type="button" 
+            className="da-btn da-btn-primary px-8 py-2.5 rounded-full text-base font-bold w-full sm:w-auto" 
+            onClick={handleCloseSuccess}
+          >
+            {t('checkin.close', 'Cerrar')}
+          </button>
+        }
+      >
+        <div className="text-center py-4">
+          <div className="mb-4 flex justify-center">
+            {/* Framer Motion Check Success Animation */}
+            <motion.div
+              initial={{ scale: 0, rotate: -45 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', damping: 15, stiffness: 300, delay: 0.1 }}
+              className="inline-flex items-center justify-center rounded-full shadow-lg p-4"
+              style={{ backgroundColor: 'rgba(179, 195, 76, 0.2)', border: '2px solid var(--da-primary)' }}
+            >
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--da-primary)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <motion.path
+                  d="M20 6L9 17l-5-5"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 0.45, ease: 'easeOut', delay: 0.25 }}
+                />
+              </svg>
+            </motion.div>
           </div>
-          <h4 className="font-bold text-slate-800 mb-2 text-xl">
+          <h4 className="font-bold text-slate-800 dark:text-slate-100 mb-2 text-xl">
             {formationDetails?.description}
           </h4>
-          <p className="text-slate-600 mb-3">
+          <p className="text-slate-600 dark:text-slate-300 mb-3">
             {t('checkin.formationLabel', 'Formación')}: <strong>{formationDetails?.name}</strong>
           </p>
           {formationDetails?.formationDate && (
-            <div className="p-3 mx-auto bg-slate-50 rounded-xl border border-slate-200 inline-block shadow-sm">
-              <p className="mb-0 font-medium text-slate-700">
+            <div className="p-3 mx-auto bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 inline-block shadow-sm">
+              <p className="mb-0 font-medium text-slate-700 dark:text-slate-200 text-sm">
                 <FontAwesomeIcon icon={faCalendarCheck} className="me-2" style={{ color: 'var(--da-primary)' }} />
                 {t('checkin.dateLabel', 'Fecha')}: {formatDate(formationDetails.formationDate)}
               </p>
             </div>
           )}
-        </ModalBody>
-        <ModalFooter className="border-0 pt-0 justify-content-center">
-          <button 
-            type="button" 
-            className="da-btn da-btn-primary px-8 py-3 rounded-full text-lg font-bold" 
-            onClick={handleCloseSuccess}
-          >
-            {t('checkin.close', 'Cerrar')}
-          </button>
-        </ModalFooter>
-      </Modal>
+        </div>
+      </GlassModal>
     </div>
   );
 }

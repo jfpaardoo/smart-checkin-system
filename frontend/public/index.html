@@ -16,15 +16,34 @@
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <title>Distribution Academy</title>
+    <!-- Anti-FOUC: aplica el tema ANTES de que React cargue para evitar parpadeo -->
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('da-theme');
+          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (stored === 'dark' || (!stored && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (err) {
+          console.debug('Theme initialization info:', err);
+        }
+      })();
+    </script>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
 
+      /* =======================================================
+         SPLASH SCREEN - DUAL THEME (LIGHT & DARK MODE SUPPORT)
+         ======================================================= */
       #splash-screen {
         position: fixed;
         inset: 0;
-        background: linear-gradient(145deg, #1a2133 0%, #1e2a3a 40%, #141d2e 100%);
+        background: linear-gradient(145deg, #f0f4f9 0%, #e2e8f2 50%, #d5dfec 100%);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -32,6 +51,10 @@
         z-index: 99999;
         font-family: 'Outfit', sans-serif;
         transition: opacity 0.5s ease, visibility 0.5s ease;
+      }
+
+      html.dark #splash-screen {
+        background: linear-gradient(145deg, #1a2133 0%, #1e2a3a 40%, #141d2e 100%);
       }
 
       #splash-screen.hidden {
@@ -50,8 +73,12 @@
       .particle {
         position: absolute;
         border-radius: 50%;
-        background: rgba(181, 204, 46, 0.12);
+        background: rgba(181, 204, 46, 0.18);
         animation: floatParticle linear infinite;
+      }
+
+      html.dark .particle {
+        background: rgba(181, 204, 46, 0.12);
       }
 
       .particle:nth-child(1)  { width: 6px;  height: 6px;  left: 15%; animation-duration: 8s;  animation-delay: 0s;    bottom: -10px; }
@@ -85,9 +112,9 @@
         position: absolute;
         inset: 0;
         border-radius: 50%;
-        border: 2px solid transparent;
-        border-top-color: rgba(181, 204, 46, 0.6);
-        border-right-color: rgba(181, 204, 46, 0.2);
+        border: 2.5px solid transparent;
+        border-top-color: rgba(181, 204, 46, 0.75);
+        border-right-color: rgba(181, 204, 46, 0.25);
         animation: spinRing 3s linear infinite;
       }
 
@@ -98,9 +125,9 @@
         right: 15px;
         bottom: 15px;
         border-radius: 50%;
-        border: 1.5px solid transparent;
-        border-bottom-color: rgba(181, 204, 46, 0.4);
-        border-left-color: rgba(181, 204, 46, 0.15);
+        border: 2px solid transparent;
+        border-bottom-color: rgba(181, 204, 46, 0.5);
+        border-left-color: rgba(181, 204, 46, 0.2);
         animation: spinRing 2s linear infinite reverse;
       }
 
@@ -129,21 +156,36 @@
         width: 140px;
         height: 140px;
         border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, #ffffff, #eaf0f8 60%, #dae4f2);
+        box-shadow:
+          0 0 0 2px rgba(181, 204, 46, 0.4),
+          0 0 35px rgba(181, 204, 46, 0.2),
+          0 16px 40px rgba(0, 0, 0, 0.1),
+          inset 0 1px 2px rgba(255,255,255,1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: glowPulseLight 2.5s ease-in-out infinite 0.7s;
+      }
+
+      html.dark .splash-logo-circle {
         background: radial-gradient(circle at 35% 35%, #2d3e55, #1e2a3a 60%, #141d2e);
         box-shadow:
           0 0 0 2px rgba(181, 204, 46, 0.25),
           0 0 40px rgba(181, 204, 46, 0.12),
           0 20px 60px rgba(0, 0, 0, 0.5),
           inset 0 1px 0 rgba(255,255,255,0.05);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        animation: glowPulse 2.5s ease-in-out infinite 0.7s;
+        animation: glowPulseDark 2.5s ease-in-out infinite 0.7s;
       }
 
-      @keyframes glowPulse {
-        0%, 100% { box-shadow: 0 0 0 2px rgba(181,204,46,0.25), 0 0 40px rgba(181,204,46,0.12), 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05); }
-        50%       { box-shadow: 0 0 0 3px rgba(181,204,46,0.45), 0 0 70px rgba(181,204,46,0.25), 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05); }
+      @keyframes glowPulseLight {
+        0%, 100% { box-shadow: 0 0 0 2px rgba(181,204,46,0.35), 0 0 30px rgba(181,204,46,0.15), 0 16px 40px rgba(0,0,0,0.08); }
+        50%       { box-shadow: 0 0 0 3px rgba(181,204,46,0.55), 0 0 50px rgba(181,204,46,0.28), 0 16px 40px rgba(0,0,0,0.1); }
+      }
+
+      @keyframes glowPulseDark {
+        0%, 100% { box-shadow: 0 0 0 2px rgba(181,204,46,0.25), 0 0 40px rgba(181,204,46,0.12), 0 20px 60px rgba(0,0,0,0.5); }
+        50%       { box-shadow: 0 0 0 3px rgba(181,204,46,0.45), 0 0 70px rgba(181,204,46,0.25), 0 20px 60px rgba(0,0,0,0.5); }
       }
 
       /* Texto DA */
@@ -152,15 +194,20 @@
         font-weight: 700;
         font-size: 52px;
         letter-spacing: -1px;
-        color: #b5cc2e;
-        text-shadow: 0 0 20px rgba(181, 204, 46, 0.4);
+        color: #7b8e19;
+        text-shadow: 0 0 15px rgba(181, 204, 46, 0.4);
         line-height: 1;
         animation: textShimmer 3s ease-in-out infinite 1s;
       }
 
+      html.dark .splash-logo-text {
+        color: #b5cc2e;
+        text-shadow: 0 0 20px rgba(181, 204, 46, 0.4);
+      }
+
       @keyframes textShimmer {
-        0%, 100% { text-shadow: 0 0 20px rgba(181,204,46,0.4); }
-        50%       { text-shadow: 0 0 35px rgba(181,204,46,0.7), 0 0 60px rgba(181,204,46,0.3); }
+        0%, 100% { opacity: 0.95; }
+        50%       { opacity: 1; filter: drop-shadow(0 0 8px rgba(181,204,46,0.6)); }
       }
 
       /* Nombre de la app */
@@ -178,20 +225,30 @@
 
       .splash-app-name h1 {
         font-family: 'Outfit', sans-serif;
-        font-weight: 600;
+        font-weight: 700;
         font-size: 22px;
-        color: #e8edf5;
+        color: #1e293b;
         letter-spacing: 0.5px;
+      }
+
+      html.dark .splash-app-name h1 {
+        color: #e8edf5;
+        font-weight: 600;
       }
 
       .splash-app-name p {
         margin-top: 6px;
         font-family: 'Outfit', sans-serif;
-        font-weight: 300;
+        font-weight: 600;
         font-size: 13px;
-        color: rgba(181, 204, 46, 0.7);
+        color: #708216;
         letter-spacing: 2px;
         text-transform: uppercase;
+      }
+
+      html.dark .splash-app-name p {
+        color: rgba(181, 204, 46, 0.8);
+        font-weight: 300;
       }
 
       /* Barra de progreso */
@@ -204,18 +261,27 @@
 
       .splash-progress-bar {
         height: 3px;
-        background: rgba(255,255,255,0.08);
+        background: rgba(0, 0, 0, 0.08);
         border-radius: 10px;
         overflow: hidden;
+      }
+
+      html.dark .splash-progress-bar {
+        background: rgba(255, 255, 255, 0.08);
       }
 
       .splash-progress-fill {
         height: 100%;
         width: 0%;
-        background: linear-gradient(90deg, #b5cc2e, #d4e84a);
+        background: linear-gradient(90deg, #9bb01e, #b5cc2e);
         border-radius: 10px;
         animation: progressLoad 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         animation-delay: 0.9s;
+        box-shadow: 0 0 10px rgba(181, 204, 46, 0.4);
+      }
+
+      html.dark .splash-progress-fill {
+        background: linear-gradient(90deg, #b5cc2e, #d4e84a);
         box-shadow: 0 0 12px rgba(181, 204, 46, 0.5);
       }
 
@@ -232,8 +298,14 @@
         text-align: center;
         font-family: 'Outfit', sans-serif;
         font-size: 11px;
-        color: rgba(255, 255, 255, 0.3);
+        color: #64748b;
         letter-spacing: 1px;
+        font-weight: 500;
+      }
+
+      html.dark .splash-progress-label {
+        color: rgba(255, 255, 255, 0.3);
+        font-weight: 400;
       }
     </style>
   </head>
@@ -286,7 +358,7 @@
       // Ocultar splash screen cuando React haya montado la app
       (function() {
         var splash = document.getElementById('splash-screen');
-        var minDisplayTime = 1800; // ms mínimos para que se vea la animación
+        var minDisplayTime = 250; // Transición instantánea en cuanto React monta #root
         var startTime = Date.now();
 
         function hideSplash() {
@@ -296,18 +368,18 @@
             if (splash) {
               splash.classList.add('hidden');
               setTimeout(function() {
-                if (splash && splash.parentNode) {
-                  splash.parentNode.removeChild(splash);
+                if (splash) {
+                  splash.remove();
                 }
-              }, 600);
+              }, 400);
             }
           }, delay);
         }
 
         // Observar cuando React monte el contenido en #root
         var observer = new MutationObserver(function(mutations) {
-          for (var i = 0; i < mutations.length; i++) {
-            if (mutations[i].addedNodes.length > 0) {
+          for (var mutation of mutations) {
+            if (mutation.addedNodes.length > 0) {
               observer.disconnect();
               hideSplash();
               return;
