@@ -51,40 +51,36 @@ export default function ForgotPassword() {
     };
 
     const glassButtonClass = "w-full mt-2 h-[52px] rounded-full font-bold text-slate-900 bg-[#b3c34c]/80 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(179,195,76,0.35)] hover:bg-[#b3c34c] hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.55)] transition-colors duration-200 active:scale-95 flex justify-center items-center gap-2 box-border cursor-pointer";
-    
-    // Clases para la animación del Floating Label
-    const inputClass = "block w-full px-4 pt-6 pb-2 rounded-2xl border border-white/50 bg-white/50 backdrop-blur-sm focus:border-[#b3c34c] focus:bg-white/80 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition-colors duration-200 text-slate-800 shadow-inner peer";
-    const labelClass = "absolute text-sm font-semibold text-slate-500 transition-transform transition-colors duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-focus:text-[#b3c34c] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 cursor-text pointer-events-none";
 
     return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-80px)] w-full px-4 overflow-hidden">
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] w-full px-4 py-8 overflow-y-auto">
         
-        <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 mb-8 drop-shadow-sm text-center">
+        <h1 className="text-3xl md:text-4xl font-extrabold text-slate-800 dark:text-slate-100 mb-6 drop-shadow-sm text-center">
           {t('recover.forgotTitle', 'Recuperar Contraseña')}
         </h1>
         
-        <div className="w-full max-w-md bg-white/40 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-[32px] p-6 md:p-8 border border-white/60">
-          <p className="mb-6 text-sm text-center text-slate-600 font-medium">
+        <div className="w-full max-w-md bg-white/70 dark:bg-slate-900/75 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.45)] rounded-[32px] p-6 md:p-8 border border-white/60 dark:border-white/10">
+          <p className="mb-6 text-sm text-center text-slate-600 dark:text-slate-300 font-medium">
             {t('recover.forgotSubtitle', 'Introduce tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.')}
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             
-            {/* Input animado */}
-            <div className="relative w-full">
+            {/* Input Correo */}
+            <div className="flex flex-col w-full text-left">
+              <label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5 ml-1">
+                {t('recover.emailLabel', 'Correo Electrónico')} <span className="text-rose-500">*</span>
+              </label>
               <input
                 type="email"
                 id="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder=" "
+                placeholder="ejemplo@empresa.com"
                 disabled={loading}
-                className={inputClass}
+                className="w-full px-4 py-3 rounded-2xl border border-white/60 dark:border-white/10 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm focus:border-[#b3c34c] dark:focus:border-[#d4e84a] focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition-all duration-200 text-slate-800 dark:text-slate-100 shadow-inner text-sm font-medium"
               />
-              <label htmlFor="email" className={labelClass}>
-                {t('recover.emailLabel', 'Correo Electrónico')} <span className="text-red-500">*</span>
-              </label>
             </div>
 
             <div className="flex justify-center items-center my-1 w-full overflow-hidden">

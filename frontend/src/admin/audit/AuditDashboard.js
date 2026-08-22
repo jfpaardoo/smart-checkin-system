@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import useSWR from 'swr';
 import api from '../../services/api';
-import { Table, Badge } from 'reactstrap';
 import { FaShieldAlt, FaDownload, FaCheckCircle, FaExclamationTriangle, FaLock, FaSpinner } from 'react-icons/fa';
 import { TableGhostLoader } from '../../components/GhostLoader';
 import GlassSearchBar from '../../components/GlassSearchBar';
 import GlassDropdown from '../../components/GlassDropdown';
 import GlassPagination from '../../components/GlassPagination';
+import GlassPageHeader from '../../components/GlassPageHeader';
+import StatusBadge from '../../components/StatusBadge';
 import downloadExportFile from '../../util/downloadExportFile';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -13,16 +15,17 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '../../components/ToastProvider';
 import { useWebSocket } from '../../context/WebSocketProvider';
 
+const fetcher = (url) => api.get(url).then((res) => (Array.isArray(res.data) ? res.data : []));
+
 dayjs.extend(utc);
 
-const getActionColor = (action) => {
-  if (action.includes('SECURITY_ANOMALY')) return 'danger';
+const getActionBadgeVariant = (action = '') => {
+  if (action.includes('SECURITY_ANOMALY') || action.includes('DELETE')) return 'danger';
   if (action.includes('FAILED')) return 'warning';
-  if (action.includes('SAVE') || action.includes('CREATE') || action.includes('UPDATE')) return 'primary';
-  if (action.includes('DELETE')) return 'danger';
+  if (action.includes('SAVE') || action.includes('CREATE') || action.includes('UPDATE')) return 'info';
   if (action.includes('SUCCESS') || action.includes('APPROVE')) return 'success';
-  if (action.includes('FORMATION') || action.includes('2FA')) return 'info';
-  return 'secondary';
+  if (action.includes('FORMATION') || action.includes('2FA')) return 'primary';
+  return 'neutral';
 };
 
 const formatDetails = (action, details, t) => {
@@ -55,135 +58,138 @@ const matchesAuditCategory = (action = '', category = 'ALL') => {
   if (category === 'CRUD') return action.includes('CREATE') || action.includes('UPDATE') || action.includes('DELETE') || action.includes('APPROVE');
   return true;
 };
+
 const getIntegrityButtonConfig = (result, isVerifying, t) => {
   if (isVerifying) {
     return {
-      className: 'bg-white/80 hover:bg-white text-slate-800 border-white',
-      icon: <output className="spinner-border spinner-border-sm text-[#b3c34c] inline-block" aria-hidden="true" style={{ width: '12px', height: '12px' }} />,
+      className: 'bg-white/80 dark:bg-slate-800/80 hover:bg-white text-slate-800 dark:text-slate-100 border-white dark:border-slate-700',
+      icon: <FaSpinner className="animate-spin text-[#b3c34c] inline-block" />,
       label: t('audit.verifying', 'Verificando SHA-256...')
     };
   }
   if (result?.valid) {
     return {
-      className: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100',
+      className: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-200 dark:border-emerald-800',
       icon: <FaCheckCircle className="text-emerald-500" />,
       label: t('audit.integrityVerified', 'Cadena Íntegra')
     };
   }
   if (result && !result.valid) {
     return {
-      className: 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100',
+      className: 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-200 dark:border-rose-800',
       icon: <FaExclamationTriangle className="text-rose-500" />,
       label: t('audit.integrityTamperedAlert', 'Cadena Alterada')
     };
   }
   return {
-    className: 'bg-white/80 hover:bg-white text-slate-800 border-white',
-    icon: <FaLock className="text-[#b3c34c]" />,
-    label: t('audit.verifyChain', 'Verificar Integridad')
+    className: 'bg-white/80 dark:bg-slate-800/80 hover:bg-white text-slate-800 dark:text-slate-100 border-white dark:border-slate-700',
+    icon: <FaShieldAlt className="text-[#b3c34c]" />,
+    label: t('audit.verifyChain', 'Verificar SHA-256')
   };
 };
 
 export default function AuditDashboard() {
-  const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
+  const toast = useToast();
   const [searchTerm, setSearchTerm] = useState('');
-  const [actionCategory, setActionCategory] = useState('ALL');
-  const [verifying, setVerifying] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [integrityResult, setIntegrityResult] = useState(null);
-  const [exportingType, setExportingType] = useState(null);
-  
+  const [verifying, setVerifying] = useState(false);
+  const [exportingType, setExportingType] = useState(null); // 'csv' | 'pdf' | null
+
+  // SWR: Carga instantánea desde RAM (0ms) + revalidación en segundo plano
+  const { data: logs = [], isLoading, mutate } = useSWR('/audit', fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 10000,
+  });
+
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
-  const toast = useToast();
-  const { t } = useTranslation();
-  const { stompClient, isConnected } = useWebSocket();
 
-  const handleDownloadCsv = async () => {
-    if (exportingType) return;
-    setExportingType('csv');
+  // Suscripción WebSocket a eventos de auditoría en tiempo real
+  const handleWebSocketMessage = useCallback((message) => {
     try {
-      await downloadExportFile('audit/csv', 'audit_logs.csv', toast, t);
-    } finally {
-      setExportingType(null);
+      const newLog = JSON.parse(message.body);
+      mutate((prevLogs) => {
+        const current = Array.isArray(prevLogs) ? prevLogs : [];
+        if (current.some(l => l.id === newLog.id)) return current;
+        return [newLog, ...current];
+      }, false);
+      if (newLog.action === 'SECURITY_ANOMALY') {
+        toast.error(`${t('audit.anomalyDetected', 'Anomalía de seguridad detectada')}: ${newLog.username} (${newLog.details})`);
+      }
+    } catch (e) {
+      console.error("Error processing websocket audit message", e);
     }
-  };
+  }, [t, toast, mutate]);
 
-  const handleDownloadPdf = async () => {
-    if (exportingType) return;
-    setExportingType('pdf');
-    try {
-      const filename = `audit-log-${new Date().toISOString().split('T')[0]}.pdf`;
-      await downloadExportFile('audit/pdf', filename, toast, t);
-    } finally {
-      setExportingType(null);
-    }
-  };
+  const { client, connected } = useWebSocket();
 
-  const fetchLogs = useCallback(async () => {
-    try {
-      const response = await api.get('/audit');
-      setLogs(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-      console.error("Error fetching audit logs", error);
-      toast.error(t('audit.fetchError', 'Error al cargar los registros de auditoría'));
-    } finally {
-      setLoading(false);
-    }
-  }, [toast, t]);
+  useEffect(() => {
+    if (!client || !connected) return;
+    const subscription = client.subscribe('/topic/audit', handleWebSocketMessage);
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [client, connected, handleWebSocketMessage]);
 
   const handleVerifyIntegrity = async () => {
     setVerifying(true);
     try {
       const res = await api.get('/audit/verify-integrity');
       setIntegrityResult(res.data);
-      if (res.data.valid) {
-        const count = res.data.verifiedLogsCount ?? res.data.verifiedCount ?? 0;
-        toast.success(t('audit.integrityValid', 'Integridad criptográfica SHA-256 verificada. Los {{count}} registros de la cadena son auténticos e intactos.', { count }));
+      if (res.data?.valid) {
+        toast.success(t('audit.integritySuccess', 'La cadena criptográfica SHA-256 es 100% íntegra y no ha sido manipulada.'));
       } else {
-        const logId = res.data.brokenLogId ?? '';
-        toast.error(t('audit.integrityTampered', '¡Alerta! Se ha detectado alteración en el registro de auditoría #{{logId}}.', { logId }));
+        toast.error(t('audit.integrityError', 'ALERTA: Se ha detectado una alteración o salto en la cadena de bloques del log de auditoría.'));
       }
     } catch (err) {
-      console.error("Verification error:", err);
-      toast.error(t('common.networkError', 'Error al verificar la integridad criptográfica'));
+      console.error("Error verifying integrity", err);
+      toast.error(t('audit.integrityCheckFailed', 'Error al verificar la integridad criptográfica.'));
     } finally {
       setVerifying(false);
     }
   };
 
-  useEffect(() => {
-    fetchLogs();
-  }, [fetchLogs]);
-
-  useEffect(() => {
-    let auditSub = null;
-    if (isConnected && stompClient) {
-      auditSub = stompClient.subscribe('/topic/audit', () => {
-        fetchLogs();
-      });
+  const handleDownloadCsv = async () => {
+    setExportingType('csv');
+    try {
+      const res = await api.get('/audit/export/csv', { responseType: 'blob' });
+      downloadExportFile(res.data, 'audit_logs.csv');
+      toast.success(t('audit.exportSuccess', 'Archivo exportado correctamente'));
+    } catch (err) {
+      console.error("Error exporting audit csv", err);
+      toast.error(t('audit.exportError', 'Error al exportar los registros de auditoría'));
+    } finally {
+      setExportingType(null);
     }
+  };
 
-    return () => {
-      if (auditSub) {
-        auditSub.unsubscribe();
-      }
-    };
-  }, [isConnected, stompClient, fetchLogs]);
+  const handleDownloadPdf = async () => {
+    setExportingType('pdf');
+    try {
+      const res = await api.get('/audit/export/pdf', { responseType: 'blob' });
+      downloadExportFile(res.data, 'audit_logs.pdf');
+      toast.success(t('audit.exportSuccess', 'Archivo exportado correctamente'));
+    } catch (err) {
+      console.error("Error exporting audit pdf", err);
+      toast.error(t('audit.exportError', 'Error al exportar los registros de auditoría'));
+    } finally {
+      setExportingType(null);
+    }
+  };
 
-  // Filtrado de logs
   const filteredLogs = useMemo(() => {
-    return logs.filter((log) => 
-      matchesAuditSearch(log, searchTerm) &&
-      matchesAuditCategory(log.action, actionCategory)
-    );
-  }, [logs, searchTerm, actionCategory]);
+    return logs
+      .filter((log) => matchesAuditSearch(log, searchTerm))
+      .filter((log) => matchesAuditCategory(log.action, categoryFilter));
+  }, [logs, searchTerm, categoryFilter]);
 
   // Reset de página al cambiar filtros
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, actionCategory, pageSize]);
+  }, [searchTerm, categoryFilter, pageSize]);
 
   // Paginación
   const paginatedLogs = useMemo(() => {
@@ -196,59 +202,51 @@ export default function AuditDashboard() {
   return (
     <div className="da-container">
       <div className="da-card">
-        
         {/* Cabecera con botones de exportación y verificación */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4 border-0 text-center sm:text-left">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 w-full sm:w-auto">
-            <div className="p-3.5 rounded-2xl bg-[#b3c34c]/20 border border-[#b3c34c]/40 text-[#73841e] text-2xl flex-shrink-0 flex items-center justify-center shadow-xs mb-1 sm:mb-0">
-              <FaShieldAlt />
+        <GlassPageHeader
+          icon={FaShieldAlt}
+          title={
+            <div className="flex items-center gap-2">
+              <span>{t('audit.title', 'Registro de Auditoría y Seguridad')}</span>
+              <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#b3c34c]/20 text-[#73841e] border border-[#b3c34c]/30">
+                <FaLock className="text-[10px]" /> SHA-256 Chain
+              </span>
             </div>
-            <div>
-              <div className="flex items-center gap-2 justify-center sm:justify-start">
-                <h2 className="text-2xl font-bold text-slate-800 m-0">
-                  {t('audit.title', 'Registro de Auditoría y Seguridad')}
-                </h2>
-                <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#b3c34c]/20 text-[#73841e] border border-[#b3c34c]/30">
-                  <FaLock className="text-[10px]" /> SHA-256 Chain
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 m-0 mt-0.5">
-                {t('audit.subtitle', 'Trazabilidad en tiempo real de accesos, eventos y acciones del sistema')}
-              </p>
+          }
+          subtitle={t('audit.subtitle', 'Trazabilidad en tiempo real de accesos, eventos y acciones del sistema')}
+          actions={
+            <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto justify-center">
+              <button 
+                type="button" 
+                className={`inline-flex items-center justify-center px-4 py-2 font-semibold text-xs rounded-full transition border shadow-[0_8px_25px_rgba(0,0,0,0.06)] backdrop-blur-xl active:scale-95 hover:-translate-y-0.5 gap-2 w-full sm:w-auto cursor-pointer ${integrityBtn.className}`}
+                onClick={handleVerifyIntegrity}
+                disabled={verifying}
+                title={t('audit.verifyChainTooltip', 'Verificar integridad criptográfica SHA-256 de todos los registros de auditoría')}
+              >
+                {integrityBtn.icon}
+                <span>{integrityBtn.label}</span>
+              </button>
+              <button 
+                type="button" 
+                disabled={!!exportingType}
+                className="inline-flex items-center justify-center px-4 py-2 bg-white/80 dark:bg-slate-800/80 hover:bg-white text-slate-800 dark:text-slate-100 font-semibold text-xs rounded-full transition border border-white dark:border-slate-700 shadow-[0_8px_25px_rgba(0,0,0,0.06)] backdrop-blur-xl active:scale-95 hover:-translate-y-0.5 gap-2 w-full sm:w-auto disabled:opacity-50 cursor-pointer" 
+                onClick={handleDownloadCsv}
+              >
+                {exportingType === 'csv' ? <FaSpinner className="animate-spin text-[#b3c34c]" /> : <FaDownload className="text-[#b3c34c]" />} 
+                <span>{t('audit.exportCSV', 'Exportar a CSV')}</span>
+              </button>
+              <button 
+                type="button" 
+                disabled={!!exportingType}
+                className="inline-flex items-center justify-center px-4 py-2 bg-white/80 dark:bg-slate-800/80 hover:bg-white text-slate-800 dark:text-slate-100 font-semibold text-xs rounded-full transition border border-white dark:border-slate-700 shadow-[0_8px_25px_rgba(0,0,0,0.06)] backdrop-blur-xl active:scale-95 hover:-translate-y-0.5 gap-2 w-full sm:w-auto disabled:opacity-50 cursor-pointer" 
+                onClick={handleDownloadPdf}
+              >
+                {exportingType === 'pdf' ? <FaSpinner className="animate-spin text-[#b3c34c]" /> : <FaDownload className="text-[#b3c34c]" />} 
+                <span>{t('audit.exportPDF', 'Exportar a PDF')}</span>
+              </button>
             </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto justify-center">
-            <button 
-              type="button" 
-              className={`inline-flex items-center justify-center px-4 py-2 font-semibold text-xs rounded-full transition border shadow-[0_8px_25px_rgba(0,0,0,0.06)] backdrop-blur-xl active:scale-95 hover:-translate-y-0.5 gap-2 w-full sm:w-auto ${integrityBtn.className}`}
-              onClick={handleVerifyIntegrity}
-              disabled={verifying}
-              title={t('audit.verifyChainTooltip', 'Verificar integridad criptográfica SHA-256 de todos los registros de auditoría')}
-            >
-              {integrityBtn.icon}
-              <span>{integrityBtn.label}</span>
-            </button>
-            <button 
-              type="button" 
-              disabled={!!exportingType}
-              className="inline-flex items-center justify-center px-4 py-2 bg-white/80 hover:bg-white text-slate-800 font-semibold text-xs rounded-full transition border border-white shadow-[0_8px_25px_rgba(0,0,0,0.06)] backdrop-blur-xl active:scale-95 hover:-translate-y-0.5 gap-2 w-full sm:w-auto disabled:opacity-50" 
-              onClick={handleDownloadCsv}
-            >
-              {exportingType === 'csv' ? <FaSpinner className="animate-spin text-[#b3c34c]" /> : <FaDownload className="text-[#b3c34c]" />} 
-              <span>{t('audit.exportCSV', 'Exportar a CSV')}</span>
-            </button>
-            <button 
-              type="button" 
-              disabled={!!exportingType}
-              className="inline-flex items-center justify-center px-4 py-2 bg-white/80 hover:bg-white text-slate-800 font-semibold text-xs rounded-full transition border border-white shadow-[0_8px_25px_rgba(0,0,0,0.06)] backdrop-blur-xl active:scale-95 hover:-translate-y-0.5 gap-2 w-full sm:w-auto disabled:opacity-50" 
-              onClick={handleDownloadPdf}
-            >
-              {exportingType === 'pdf' ? <FaSpinner className="animate-spin text-[#b3c34c]" /> : <FaDownload className="text-[#b3c34c]" />} 
-              <span>{t('audit.exportPDF', 'Exportar a PDF')}</span>
-            </button>
-          </div>
-        </div>
+          }
+        />
 
         {/* Barra de Filtros y Búsqueda */}
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-4 items-center relative z-30">
@@ -261,95 +259,101 @@ export default function AuditDashboard() {
           <div className="sm:col-span-4">
             <GlassDropdown
               options={[
-                { value: 'ALL', label: t('audit.filterAll', 'Todos los eventos') },
-                { value: 'SECURITY', label: t('audit.filterSecurity', 'Seguridad y Anomalías') },
-                { value: 'AUTH', label: t('audit.filterAuth', 'Inicios de sesión y 2FA') },
-                { value: 'CHECKIN', label: t('audit.filterCheckin', 'Fichajes / Check-in') },
-                { value: 'CRUD', label: t('audit.filterCrud', 'Modificaciones / Altas / Bajas') }
+                { value: 'ALL', label: t('audit.categories.all', 'Todos los eventos') },
+                { value: 'SECURITY', label: t('audit.categories.security', 'Seguridad y Anomalías') },
+                { value: 'AUTH', label: t('audit.categories.auth', 'Autenticación y 2FA') },
+                { value: 'CHECKIN', label: t('audit.categories.checkin', 'Fichajes (Entrada/Salida)') },
+                { value: 'CRUD', label: t('audit.categories.crud', 'Gestión de Registros (CRUD)') }
               ]}
-              value={actionCategory}
-              onChange={(val) => setActionCategory(val)}
-              placeholder={t('audit.filterCategory', 'Filtrar por categoría')}
+              value={categoryFilter}
+              onChange={(val) => setCategoryFilter(val)}
+              placeholder={t('audit.categories.filterPlaceholder', 'Filtrar por categoría')}
               className="w-full"
             />
           </div>
         </div>
 
-        {loading ? (
+        {isLoading && logs.length === 0 ? (
           <TableGhostLoader rows={8} columns={5} />
         ) : (
           <>
-            {/* 1. VISTA ESCRITORIO */}
-            <div className="hidden lg:block overflow-x-auto pb-2 relative z-10">
-              <Table responsive hover className="da-table align-middle" style={{ tableLayout: 'fixed', minWidth: '850px', width: '100%', wordBreak: 'break-word' }}>
+            {/* 1. VISTA ESCRITORIO (lg y superior) */}
+            <div className="hidden lg:block overflow-x-auto rounded-3xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.06)]">
+              <table className="w-full text-left border-collapse align-middle">
                 <thead>
-                  <tr>
-                    <th style={{ width: '16%' }}>{t('audit.columns.date', 'Fecha y Hora')}</th>
-                    <th style={{ width: '17%' }}>{t('audit.columns.action', 'Acción')}</th>
-                    <th style={{ width: '15%' }}>{t('audit.columns.user', 'Usuario')}</th>
-                    <th style={{ width: '32%' }}>{t('audit.columns.details', 'Detalles')}</th>
-                    <th style={{ width: '20%' }}>{t('audit.columns.ip', 'IP Origen')}</th>
+                  <tr className="border-b border-white/40 dark:border-white/10 bg-white/50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider">
+                    <th className="py-4 px-5 text-slate-500 dark:text-slate-400" style={{ width: '15%' }}>{t('audit.columns.timestamp', 'Fecha/Hora')}</th>
+                    <th className="py-4 px-5" style={{ width: '18%' }}>{t('audit.columns.action', 'Acción')}</th>
+                    <th className="py-4 px-5" style={{ width: '15%' }}>{t('audit.columns.user', 'Usuario')}</th>
+                    <th className="py-4 px-5" style={{ width: '38%' }}>{t('audit.columns.details', 'Detalles')}</th>
+                    <th className="py-4 px-5" style={{ width: '14%' }}>{t('audit.columns.ip', 'IP')}</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {paginatedLogs.map(log => (
-                    <tr key={log.id} className={log.action === 'SECURITY_ANOMALY' ? 'table-danger border-danger' : ''}>
-                      <td className={`small fw-medium ${log.action === 'SECURITY_ANOMALY' ? 'text-danger fw-bold' : 'text-muted'}`}>
-                        {dayjs.utc(log.timestamp).local().format('DD/MM/YYYY HH:mm:ss')}
+                <tbody className="divide-y divide-white/40 dark:divide-white/10 text-sm text-slate-800 dark:text-slate-100">
+                  {paginatedLogs.map((log) => (
+                    <tr key={log.id} className="hover:bg-white/50 dark:hover:bg-slate-700/50 transition duration-150">
+                      <td className="py-3 px-5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        {dayjs.utc(log.timestamp).local().format('YYYY-MM-DD HH:mm:ss')}
                       </td>
-                      <td>
-                        <Badge color={getActionColor(log.action)} pill className="px-3 py-2 fw-semibold text-wrap" style={{ wordBreak: 'break-all', minWidth: '100px' }}>
+                      <td className="py-3 px-5">
+                        <StatusBadge
+                          variant={getActionBadgeVariant(log.action)}
+                          pulse={log.action.includes('SECURITY_ANOMALY')}
+                        >
                           {t(`audit.actions.${log.action}`, log.action)}
-                        </Badge>
+                        </StatusBadge>
                       </td>
-                      <td className="fw-bold text-dark">{log.username}</td>
-                      <td className="text-muted small">{formatDetails(log.action, log.details, t)}</td>
-                      <td><code className="text-secondary bg-light px-2 py-1 rounded">{log.ipAddress || 'N/A'}</code></td>
+                      <td className="py-3 px-5 font-bold text-slate-800 dark:text-slate-100">{log.username}</td>
+                      <td className="py-3 px-5 text-slate-600 dark:text-slate-300 text-xs">{formatDetails(log.action, log.details, t)}</td>
+                      <td className="py-3 px-5"><code className="text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs">{log.ipAddress || 'N/A'}</code></td>
                     </tr>
                   ))}
                   {filteredLogs.length === 0 && (
                     <tr>
-                      <td colSpan="5" className="text-center py-5 text-muted">
+                      <td colSpan="5" className="text-center py-5 text-slate-500">
                         {t('audit.noRecords', 'No se encontraron registros de auditoría.')}
                       </td>
                     </tr>
                   )}
                 </tbody>
-              </Table>
+              </table>
             </div>
 
             {/* 2. VISTA MÓVIL / TABLET */}
             <div className="lg:hidden flex flex-col gap-3 mt-2">
               {filteredLogs.length > 0 ? (
                 paginatedLogs.map(log => (
-                  <div key={log.id} className={`bg-white/70 backdrop-blur-md shadow-sm rounded-[20px] p-4 sm:p-5 border ${log.action === 'SECURITY_ANOMALY' ? 'border-red-400 bg-red-50/70' : 'border-white/40'} flex flex-col gap-3`}>
+                  <div key={log.id} className={`bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm rounded-[20px] p-4 sm:p-5 border ${log.action === 'SECURITY_ANOMALY' ? 'border-red-400 bg-red-50/70 dark:bg-rose-950/40' : 'border-white/40 dark:border-white/10'} flex flex-col gap-3`}>
                     <div className="flex flex-col items-start gap-1.5 w-full">
                       <div className="min-w-0 w-full">
                         <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block truncate">
                           {dayjs.utc(log.timestamp).local().format('DD/MM/YYYY HH:mm:ss')}
                         </span>
-                        <h3 className="font-bold text-slate-800 m-0 text-sm sm:text-base mt-0.5 break-words">{log.username || 'Sistema'}</h3>
+                        <h3 className="font-bold text-slate-800 dark:text-slate-100 m-0 text-sm sm:text-base mt-0.5 break-words">{log.username || 'Sistema'}</h3>
                       </div>
                       <div>
-                        <Badge color={getActionColor(log.action)} pill className="px-2.5 py-1 fw-semibold text-[11px] whitespace-nowrap shadow-2xs">
+                        <StatusBadge
+                          variant={getActionBadgeVariant(log.action)}
+                          pulse={log.action.includes('SECURITY_ANOMALY')}
+                        >
                           {t(`audit.actions.${log.action}`, log.action)}
-                        </Badge>
+                        </StatusBadge>
                       </div>
                     </div>
 
-                    <div className="text-xs text-slate-600 bg-white/40 rounded-xl p-3 border border-white/50 shadow-inner break-words">
-                      <span className="font-semibold text-slate-700 block mb-1">{t('audit.columns.details', 'Detalles')}:</span>
+                    <div className="text-xs text-slate-600 dark:text-slate-300 bg-white/40 dark:bg-slate-900/40 rounded-xl p-3 border border-white/50 dark:border-white/10 shadow-inner break-words">
+                      <span className="font-semibold text-slate-700 dark:text-slate-200 block mb-1">{t('audit.columns.details', 'Detalles')}:</span>
                       {formatDetails(log.action, log.details, t)}
                     </div>
 
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-200/50 pt-2.5 text-xs text-slate-500 gap-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-200/50 dark:border-slate-700/50 pt-2.5 text-xs text-slate-500 dark:text-slate-400 gap-1">
                       <span className="font-semibold">{t('audit.columns.ip', 'IP Origen')}:</span>
-                      <code className="text-secondary bg-light px-2 py-0.5 rounded break-all max-w-full inline-block">{log.ipAddress || 'N/A'}</code>
+                      <code className="text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded break-all max-w-full inline-block">{log.ipAddress || 'N/A'}</code>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-slate-500 bg-white/40 rounded-2xl">
+                <div className="text-center py-8 text-slate-500 bg-white/40 dark:bg-slate-800/40 rounded-2xl">
                   {t('audit.noRecords', 'No se encontraron registros de auditoría.')}
                 </div>
               )}

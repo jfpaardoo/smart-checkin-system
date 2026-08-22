@@ -115,3 +115,70 @@
 .da-nav-dropdown-item {
   @apply flex items-center gap-3 px-[18px] py-[10px] my-1 text-[0.95rem] font-medium text-white bg-transparent rounded-[20px] no-underline transition-all duration-300 hover:bg-white/20 hover:backdrop-blur-md hover:translate-x-1 hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_4px_12px_rgba(0,0,0,0.15)];
 }
+
+/* ==========================================
+   DARK MODE — NAVBAR OVERRIDES
+   ========================================== */
+
+html.dark .da-navbar {
+  background: rgba(10, 15, 30, 0.65);
+  border-color: rgba(255, 255, 255, 0.10);
+  border-top-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.35), inset 0 1px 1px rgba(255,255,255,0.08) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* GlassDropdown — solo el panel flotante del menú */
+html.dark .da-glass-dropdown-panel {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border-color: rgba(255,255,255,0.10) !important;
+}
+
+html.dark .da-glass-dropdown-panel button {
+  color: #cbd5e1 !important;
+}
+
+html.dark .da-glass-dropdown-panel button:hover {
+  background: rgba(51, 65, 85, 0.6) !important;
+  color: #e2e8f0 !important;
+}
+
+html.dark .da-glass-dropdown-panel input {
+  background: rgba(15,23,42,0.70) !important;
+  border-color: rgba(255,255,255,0.15) !important;
+  color: #e2e8f0 !important;
+}
+
+html.dark .da-glass-dropdown-panel .border-slate-100 {
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+/* GlassDropdown toggle button en dark */
+html.dark .da-glass-dropdown-trigger {
+  background: rgba(15,23,42,0.70) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: #e2e8f0 !important;
+}
+
+html.dark .da-glass-dropdown-trigger:hover {
+  background: rgba(30,41,59,0.90) !important;
+}
+
+/* Light dropdowns de Bootstrap en dark */
+html.dark .da-select-toggle+.dropdown-menu.da-dropdown-menu,
+html.dark .dropdown-menu.da-dropdown-menu.da-light-dropdown {
+  background: rgba(15,23,42,0.95) !important;
+  border-color: rgba(255,255,255,0.10) !important;
+}
+
+html.dark .da-select-toggle+.dropdown-menu.da-dropdown-menu .da-dropdown-item,
+html.dark .dropdown-menu.da-dropdown-menu.da-light-dropdown .da-dropdown-item {
+  color: #cbd5e1 !important;
+}
+
+html.dark .da-select-toggle+.dropdown-menu.da-dropdown-menu .da-dropdown-item:hover,
+html.dark .dropdown-menu.da-dropdown-menu.da-light-dropdown .da-dropdown-item:hover {
+  background: rgba(179,195,76,0.20) !important;
+  color: #d4e84a !important;
+}

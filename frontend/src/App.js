@@ -2,16 +2,11 @@ import React, { Suspense } from "react";
 import "./App.css";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
-
+import { SWRConfig } from "swr";
 import { ErrorBoundary } from "react-error-boundary";
 import AppNavbar from "./AppNavbar";
 import Home from "./home";
 import PrivateRoute from "./privateRoute";
-import Login from "./auth/login";
-import Logout from "./auth/logout";
-import Register from "./auth/register/Register";
-import ScannerCheckin from "./user/checkin/ScannerCheckin";
-import UserDashboard from "./user/dashboard/UserDashboard";
 import { ToastProvider } from "./components/ToastProvider";
 import SessionTimeoutModal from "./components/SessionTimeoutModal";
 import PwaInstallPrompt from "./components/PwaInstallPrompt";
@@ -19,8 +14,14 @@ import PwaUpdateNotification from "./components/PwaUpdateNotification";
 import PageTransition from "./components/PageTransition";
 import { useTranslation } from "react-i18next";
 import lazyWithRetry from "./util/lazyWithRetry";
+import { localStorageProvider } from "./util/swrCacheProvider";
 
 // Lazy-loaded Views (Code-Splitting with auto-recovery for stale chunks)
+const Login = lazyWithRetry(() => import("./auth/login"));
+const Logout = lazyWithRetry(() => import("./auth/logout"));
+const Register = lazyWithRetry(() => import("./auth/register/Register"));
+const ScannerCheckin = lazyWithRetry(() => import("./user/checkin/ScannerCheckin"));
+const UserDashboard = lazyWithRetry(() => import("./user/dashboard/UserDashboard"));
 const UserProfile = lazyWithRetry(() => import("./user/profile/UserProfile"));
 const SwaggerDocs = lazyWithRetry(() => import("./public/swagger"));
 const UserListAdmin = lazyWithRetry(() => import("./admin/users/UserListAdmin"));
@@ -138,15 +139,17 @@ function AnimatedRoutes() {
 
 function App() {
   return (
-    <ToastProvider>
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <AppNavbar />
-        <SessionTimeoutModal />
-        <PwaInstallPrompt />
-        <PwaUpdateNotification />
-        <AnimatedRoutes />
-      </ErrorBoundary>
-    </ToastProvider>
+    <SWRConfig value={{ provider: localStorageProvider, revalidateOnFocus: false, dedupingInterval: 10000 }}>
+      <ToastProvider>
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <AppNavbar />
+          <SessionTimeoutModal />
+          <PwaInstallPrompt />
+          <PwaUpdateNotification />
+          <AnimatedRoutes />
+        </ErrorBoundary>
+      </ToastProvider>
+    </SWRConfig>
   );
 }
 

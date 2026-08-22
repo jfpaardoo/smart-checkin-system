@@ -1,6 +1,8 @@
 package org.springframework.samples.smartcheckin.company;
 
 import java.util.List;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.lang.NonNull;
 import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
 import org.springframework.samples.smartcheckin.user.User;
@@ -22,6 +24,7 @@ public class CompanyService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "companies")
     public List<Company> findAll() {
         return companyRepository.findAll();
     }
@@ -39,11 +42,13 @@ public class CompanyService {
     }
 
     @Transactional
+    @CacheEvict(value = "companies", allEntries = true)
     public Company save(@NonNull Company company) {
         return companyRepository.save(company);
     }
 
     @Transactional
+    @CacheEvict(value = "companies", allEntries = true)
     public void delete(@NonNull Integer id) {
         Company company = companyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(COMPANY_RESOURCE, "id", id));

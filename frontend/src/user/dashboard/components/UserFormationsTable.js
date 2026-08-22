@@ -1,8 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Table, Button } from 'reactstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye } from '@fortawesome/free-solid-svg-icons';
+import { FaEye, FaSignOutAlt, FaGraduationCap } from 'react-icons/fa';
 import { TableGhostLoader } from '../../../components/GhostLoader';
 import GlassPagination from '../../../components/GlassPagination';
 import GlassDropdown from '../../../components/GlassDropdown';
@@ -54,17 +52,9 @@ export default function UserFormationsTable({
 
   if (!attendances || attendances.length === 0) {
     return (
-      <div
-        className="text-center p-4"
-        style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.45)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          border: '1.5px solid rgba(255, 255, 255, 0.8)'
-        }}
-      >
-        <p className="mb-0" style={{ color: '#64748b', fontWeight: 500 }}>
-          {t('dashboard.noFormations')}
+      <div className="text-center p-6 rounded-3xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/60 dark:border-white/10 text-slate-500 dark:text-slate-400">
+        <p className="mb-0 font-medium">
+          {t('dashboard.noFormations', 'No tienes formaciones asignadas.')}
         </p>
       </div>
     );
@@ -89,99 +79,85 @@ export default function UserFormationsTable({
         </div>
       </div>
 
-      {/* ESCRITORIO */}
-      <div className="hidden lg:block overflow-x-auto pb-2">
-        <Table
-          responsive
-          hover
-          className="da-table align-middle"
-          style={{ minWidth: '600px', width: '100%' }}
-        >
+      {/* 1. VISTA ESCRITORIO (md y superior) */}
+      <div className="hidden md:block overflow-x-auto rounded-3xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.06)]">
+        <table className="w-full text-left border-collapse align-middle">
           <thead>
-            <tr>
-              <th style={{ color: '#2c3e50', paddingLeft: '1rem' }}>
-                {t('dashboard.formation')}
-              </th>
-              <th style={{ color: '#2c3e50' }}>
-                {t('dashboard.date')}
-              </th>
-              <th style={{ color: '#2c3e50' }}>
-                {t('dashboard.status')}
-              </th>
-              <th
-                style={{ color: '#2c3e50', paddingRight: '1rem' }}
-                className="text-center"
-              >
-                {t('dashboard.action')}
-              </th>
+            <tr className="border-b border-white/40 dark:border-white/10 bg-white/50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider">
+              <th className="py-4 px-5" style={{ width: '40%' }}>{t('dashboard.formation', 'Formación')}</th>
+              <th className="py-4 px-5" style={{ width: '25%' }}>{t('dashboard.date', 'Fecha')}</th>
+              <th className="py-4 px-5 text-center" style={{ width: '20%' }}>{t('dashboard.status', 'Estado')}</th>
+              <th className="py-4 px-5 text-right" style={{ width: '15%' }}>{t('dashboard.action', 'Acciones')}</th>
             </tr>
           </thead>
 
-          <tbody>
+          <tbody className="divide-y divide-white/40 dark:divide-white/10 text-sm text-slate-800 dark:text-slate-100">
             {paginatedAttendances.map((att) => {
               const f = att.formation;
 
               let statusBadge = null;
-
               if (att.checkOutDate) {
                 statusBadge = (
-                  <span className="badge-glass-success">
-                    {t('dashboard.statusCompleted')}
+                  <span className="da-badge da-badge-active">
+                    {t('dashboard.statusCompleted', 'Completada')}
                   </span>
                 );
               } else if (att.checkInDate) {
                 statusBadge = (
-                  <span className="badge-glass-warning text-dark">
-                    {t('dashboard.statusInProgress')}
+                  <span className="da-badge da-badge-warning">
+                    {t('dashboard.statusInProgress', 'En curso')}
                   </span>
                 );
               }
 
               return (
-                <tr key={att.id}>
-                  <td
-                    style={{
-                      color: '#2c3e50',
-                      fontWeight: 600,
-                      paddingLeft: '1rem'
-                    }}
-                  >
-                    {f.name}{' '}
-                    <small className="text-muted">
-                      (ID: {f.id})
-                    </small>
+                <tr key={att.id} className="hover:bg-white/50 dark:hover:bg-slate-700/50 transition duration-150">
+                  <td className="py-4 px-5">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 rounded-2xl bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a] shadow-xs flex-shrink-0">
+                        <FaGraduationCap size={16} />
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-800 dark:text-slate-100 tracking-tight">
+                          {f.name}
+                        </div>
+                        <div className="text-xs text-slate-400 dark:text-slate-500 font-mono">
+                          ID: {f.id}
+                        </div>
+                      </div>
+                    </div>
                   </td>
 
-                  <td style={{ color: '#64748b' }}>
-                    <span className="text-sm font-medium text-slate-700">
-                      {formatDate(f.formationDate)}
-                    </span>
+                  <td className="py-4 px-5 text-slate-600 dark:text-slate-300 font-medium text-xs sm:text-sm">
+                    {formatDate(f.formationDate)}
                   </td>
 
-                  <td>{statusBadge}</td>
+                  <td className="py-4 px-5 text-center">
+                    {statusBadge}
+                  </td>
 
-                  <td
-                    className="text-center"
-                    style={{ paddingRight: '1rem' }}
-                  >
-                    <div className="flex justify-center gap-2">
-                      <Button
-                        size="sm"
-                        className="da-btn-primary fw-bold shadow-sm !rounded-full px-4 py-1.5 inline-flex items-center justify-center gap-1.5 text-xs"
+                  <td className="py-4 px-5 text-right">
+                    <div className="inline-flex gap-2 justify-end items-center">
+                      <button
+                        type="button"
+                        className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-600 hover:scale-105 active:scale-95 transition shadow-xs inline-flex items-center justify-center cursor-pointer"
                         onClick={() => onOpenDetails(att)}
+                        title={t('dashboard.viewDetails', 'Ver Detalles')}
+                        aria-label={t('dashboard.viewDetails', 'Ver Detalles')}
                       >
-                        <FontAwesomeIcon icon={faEye} />
-                        {t('dashboard.viewDetails')}
-                      </Button>
+                        <FaEye size={14} />
+                      </button>
 
                       {!att.checkOutDate && (
-                        <Button
-                          size="sm"
-                          className="da-btn-secondary fw-bold shadow-sm !rounded-full px-4 py-1.5 text-xs"
+                        <button
+                          type="button"
+                          className="p-2.5 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 text-amber-800 dark:text-amber-300 border border-amber-400/30 hover:scale-105 active:scale-95 transition shadow-xs inline-flex items-center justify-center cursor-pointer"
                           onClick={() => onCheckout(att)}
+                          title={t('dashboard.checkout', 'Hacer Checkout')}
+                          aria-label={t('dashboard.checkout', 'Hacer Checkout')}
                         >
-                          {t('dashboard.checkout')}
-                        </Button>
+                          <FaSignOutAlt size={14} />
+                        </button>
                       )}
                     </div>
                   </td>
@@ -189,77 +165,65 @@ export default function UserFormationsTable({
               );
             })}
           </tbody>
-        </Table>
+        </table>
       </div>
 
-      {/* MÓVIL */}
-      <div className="lg:hidden flex flex-col gap-4 mt-2">
+      {/* 2. VISTA MÓVIL */}
+      <div className="md:hidden flex flex-col gap-3 mt-2">
         {paginatedAttendances.map((att) => {
           const f = att.formation;
 
           let statusBadge = null;
-
           if (att.checkOutDate) {
             statusBadge = (
-              <span className="badge-glass-success">
-                {t('dashboard.statusCompleted')}
+              <span className="da-badge da-badge-active">
+                {t('dashboard.statusCompleted', 'Completada')}
               </span>
             );
           } else if (att.checkInDate) {
             statusBadge = (
-              <span className="badge-glass-warning text-dark">
-                {t('dashboard.statusInProgress')}
+              <span className="da-badge da-badge-warning">
+                {t('dashboard.statusInProgress', 'En curso')}
               </span>
             );
           }
 
           return (
-            <div
-              key={att.id}
-              className="bg-white/70 backdrop-blur-md shadow-sm rounded-[20px] p-5 border border-white/40 flex flex-col gap-3"
-            >
-              <div className="flex flex-col items-start gap-1.5 w-full">
-                <div className="min-w-0 w-full">
-                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest block">
-                    ID: {f.id}
-                  </span>
-
-                  <h3 className="font-bold text-slate-800 m-0 text-sm sm:text-base break-words mt-0.5">
-                    {f.name}
-                  </h3>
+            <div key={att.id} className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm rounded-2xl p-4 border border-white/40 dark:border-white/10 flex flex-col gap-3">
+              <div className="flex justify-between items-start gap-3">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="p-2.5 rounded-2xl bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a] shadow-xs flex-shrink-0">
+                    <FaGraduationCap size={16} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 m-0 text-base leading-tight break-words">{f.name}</h3>
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 m-0 mt-0.5">
+                      {formatDate(f.formationDate)}
+                    </p>
+                  </div>
                 </div>
-
                 <div>{statusBadge}</div>
               </div>
 
-              <div className="flex items-center justify-between border-t border-slate-200/50 pt-2.5 text-xs text-slate-600 flex-wrap gap-1">
-                <span className="font-semibold text-slate-500">
-                  {t('dashboard.date')}:
-                </span>
-
-                <span className="font-medium text-slate-700 text-right">
-                  {formatDate(f.formationDate)}
-                </span>
-              </div>
-
-              <div className="border-t border-slate-200/50 pt-3 flex flex-col gap-2">
-                <Button
-                  size="sm"
-                  className="da-btn-primary fw-bold shadow-sm !rounded-full px-5 py-2 inline-flex items-center justify-center gap-2 text-xs w-full"
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
+                <button
+                  type="button"
+                  className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:bg-white inline-flex items-center justify-center shadow-xs cursor-pointer"
                   onClick={() => onOpenDetails(att)}
+                  title={t('dashboard.viewDetails', 'Ver Detalles')}
                 >
-                  <FontAwesomeIcon icon={faEye} />
-                  {t('dashboard.viewDetails')}
-                </Button>
+                  <FaEye size={14} />
+                </button>
 
                 {!att.checkOutDate && (
-                  <Button
-                    size="sm"
-                    className="da-btn-secondary fw-bold shadow-sm !rounded-full px-5 py-2 text-xs w-full"
+                  <button
+                    type="button"
+                    className="p-2.5 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 text-amber-800 dark:text-amber-300 border border-amber-400/30 inline-flex items-center justify-center shadow-xs cursor-pointer"
                     onClick={() => onCheckout(att)}
+                    title={t('dashboard.checkout', 'Hacer Checkout')}
                   >
-                    {t('dashboard.checkout')}
-                  </Button>
+                    <FaSignOutAlt size={14} />
+                  </button>
                 )}
               </div>
             </div>
@@ -267,7 +231,7 @@ export default function UserFormationsTable({
         })}
       </div>
 
-      {/* Paginación Liquid Glass */}
+      {/* Paginación */}
       {filteredAttendances.length > 0 && (
         <GlassPagination
           currentPage={currentPage}
@@ -275,7 +239,7 @@ export default function UserFormationsTable({
           pageSize={pageSize}
           onPageChange={(p) => setCurrentPage(p)}
           onPageSizeChange={(s) => setPageSize(s)}
-          pageSizeOptions={[5, 10, 20]}
+          pageSizeOptions={[5, 10, 20, 50]}
         />
       )}
     </div>

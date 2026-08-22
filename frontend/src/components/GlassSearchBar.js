@@ -1,26 +1,29 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Input } from 'reactstrap';
+import React, { useState, useEffect, useRef, useTransition } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faTimes, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'react-i18next';
 
 /**
  * GlassSearchBar - Reusable Liquid Glass Capsule Search Bar
  * 
- * Optimized with 350ms debounce and stable ref handling to prevent infinite re-render loops.
+ * Optimizado para pantallas de 60Hz y 120Hz:
+ * - Utiliza React 18 `useTransition` para que la escritura en el input nunca pierda fotogramas
+ * - Debounce adaptable y cancelación inmediata al borrar
+ * - GPU layer y renderizado acelerado
  */
 export default function GlassSearchBar({ 
     value = '', 
     onSearch, 
     placeholder, 
     className = '', 
-    debounceMs = 350,
+    debounceMs = 280,
     style = {} 
 }) {
     const { t } = useTranslation();
     const effectivePlaceholder = placeholder || t('common.search', 'Buscar...');
     const [searchTerm, setSearchTerm] = useState(value);
     const [prevValueProp, setPrevValueProp] = useState(value);
+    const [isPending, startTransition] = useTransition();
 
     // Derive state if the external value prop changes
     if (value !== prevValueProp) {
@@ -36,7 +39,7 @@ export default function GlassSearchBar({
         onSearchRef.current = onSearch;
     }, [onSearch]);
 
-    // 350ms Debounce effect
+    // Non-blocking concurrent debounce effect
     useEffect(() => {
         if (isFirstRender.current) {
             isFirstRender.current = false;
@@ -45,7 +48,9 @@ export default function GlassSearchBar({
 
         const handler = setTimeout(() => {
             if (onSearchRef.current) {
-                onSearchRef.current(searchTerm);
+                startTransition(() => {
+                    onSearchRef.current(searchTerm);
+                });
             }
         }, debounceMs);
 
@@ -55,16 +60,25 @@ export default function GlassSearchBar({
     const handleClear = () => {
         setSearchTerm('');
         if (onSearchRef.current) {
-            onSearchRef.current('');
+            startTransition(() => {
+                onSearchRef.current('');
+            });
         }
     };
 
     return (
-        <div className={`da-search-bar-wrapper ${className}`} style={style}>
-            <FontAwesomeIcon icon={faSearch} className="da-search-bar-icon" />
-            <Input
+        <div className={`da-search-bar-wrapper relative w-full flex items-center gpu-layer ${className}`} style={style}>
+            <FontAwesomeIcon 
+                icon={isPending ? faSpinner : faSearch} 
+                spin={isPending}
+                className={`absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10 ${
+                    isPending ? 'text-[#b3c34c]' : 'text-[#73841e] dark:text-[#d4e84a]'
+                }`} 
+            />
+            <input
                 type="text"
-                className="da-glass-search-input"
+                className="da-glass-search-input w-full"
+                style={{ paddingLeft: '48px', paddingRight: '42px' }}
                 placeholder={effectivePlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -72,9 +86,10 @@ export default function GlassSearchBar({
             {searchTerm && (
                 <button 
                     type="button" 
-                    className="da-search-clear-btn" 
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 bg-transparent border-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer z-10 p-1 active:scale-90 transition-transform duration-150" 
                     onClick={handleClear}
                     title={t('common.clearSearch', 'Limpiar búsqueda')}
+                    aria-label={t('common.clearSearch', 'Limpiar búsqueda')}
                 >
                     <FontAwesomeIcon icon={faTimes} />
                 </button>

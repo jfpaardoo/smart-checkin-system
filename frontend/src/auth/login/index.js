@@ -7,12 +7,14 @@ import tokenService from "../../services/token.service";
 import { FaSignInAlt, FaKey, FaFingerprint } from "react-icons/fa";
 import { isWebAuthnSupported, loginWithPasskey } from "../../util/webauthnUtil";
 import { useCaptchaSiteKey } from "../../hooks/useCaptchaSiteKey";
+import { useTheme } from "../../context/ThemeContext";
 import TwoFactorLoginForm from "./components/TwoFactorLoginForm";
 
 export default function Login() {
   const { t } = useTranslation();
   const toast = useToast();
   const siteKey = useCaptchaSiteKey();
+  const { isDark } = useTheme();
   
   const navigate = useNavigate();
   const [requires2FA, setRequires2FA] = useState(false);
@@ -38,7 +40,6 @@ export default function Login() {
       } else if (reason === "multi_tab_logout") {
         toast.info(t('session.multiTabLogoutNotice', 'Has cerrado sesión en otra pestaña.'));
       }
-      // Limpiar el parámetro 'reason' de la URL sin recargar la página para que no reaparezca al refrescar
       const cleanUrl = window.location.pathname;
       window.history.replaceState({}, document.title, cleanUrl);
     }
@@ -152,53 +153,52 @@ export default function Login() {
     }
   }
 
-  const glassButtonClass = "w-full mt-2 h-[52px] rounded-full font-bold text-slate-900 bg-[#b3c34c]/60 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(179,195,76,0.35)] hover:bg-[#b3c34c]/80 hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.55)] transition-colors duration-200 active:scale-95 flex justify-center items-center gap-2 box-border cursor-pointer";
-  
-  // Clases modificadas para dejar espacio extra arriba (pt-6) para la animación
-  const inputClass = "block w-full px-4 pt-6 pb-2 rounded-2xl border border-white/50 bg-white/50 backdrop-blur-sm focus:border-[#b3c34c] focus:bg-white/80 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition-colors duration-200 text-slate-800 shadow-inner peer";
-  // Clases que manejan la animación (se hacen pequeñas y suben al hacer focus)
-  const labelClass = "absolute text-sm font-semibold text-slate-500 transition-transform transition-colors duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] left-4 peer-focus:text-[#b3c34c] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 cursor-text pointer-events-none";
+  const glassButtonClass = "w-full mt-2 h-[50px] rounded-2xl font-bold text-slate-950 dark:text-slate-950 bg-[#b3c34c] hover:bg-[#a3b33d] shadow-[0_8px_25px_rgba(179,195,76,0.35)] transition-all duration-200 active:scale-95 flex justify-center items-center gap-2 cursor-pointer border-0";
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] w-full px-4 py-8 overflow-y-auto">
       
-      <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 mb-8 drop-shadow-sm text-center">
-        {t('login.title', 'Iniciar Sesión')}
-      </h1>
-      
-      <div className="w-full max-w-md bg-white/40 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-[32px] p-6 md:p-8 border border-white/60">
+      <div className="w-full max-w-md bg-white/50 dark:bg-slate-900/60 backdrop-blur-2xl shadow-2xl rounded-[32px] p-6 sm:p-8 border border-white/60 dark:border-white/10">
+        
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 dark:text-slate-100 mb-6 drop-shadow-sm text-center">
+          {t('login.title', 'Iniciar Sesión')}
+        </h1>
+
         {!requires2FA ? (
           <div className="flex flex-col gap-4">
             
-            {/* Opción rápida: Iniciar Sesión con Passkey / Biometría */}
+            {/* Iniciar Sesión con Passkey */}
             {isPasskeySupported && (
               <div className="flex flex-col gap-2">
                 <button
                   type="button"
                   onClick={handlePasskeyLogin}
                   disabled={loading}
-                  className="w-full min-h-[48px] py-2.5 px-3.5 rounded-2xl font-bold text-slate-800 bg-white/90 backdrop-blur-md border border-white shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:bg-white hover:shadow-[0_6px_20px_rgba(179,195,76,0.3)] transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 box-border cursor-pointer text-xs sm:text-sm text-center"
+                  className="w-full min-h-[48px] py-2.5 px-3.5 rounded-2xl font-bold text-slate-800 dark:text-slate-200 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/80 dark:border-white/10 shadow-sm hover:bg-white dark:hover:bg-slate-700 hover:shadow-md transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer text-xs sm:text-sm text-center"
                 >
                   <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <FaFingerprint className="text-[#73841e] text-base sm:text-lg" />
-                    <FaKey className="text-[#8fa228] text-xs sm:text-sm" />
+                    <FaFingerprint className="text-[#73841e] dark:text-[#d4e84a] text-base sm:text-lg" />
+                    <FaKey className="text-[#8fa228] dark:text-[#d4e84a] text-xs sm:text-sm" />
                   </div>
                   <span className="leading-tight">{t('login.passkeyBtn', 'Acceder con Llave de Acceso (Biometría)')}</span>
                 </button>
 
                 <div className="flex items-center gap-3 my-2">
-                  <div className="h-px bg-white/60 flex-1"></div>
-                  <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+                  <div className="h-px bg-white/40 dark:bg-white/10 flex-1"></div>
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
                     {t('common.or', 'o con credenciales')}
                   </span>
-                  <div className="h-px bg-white/60 flex-1"></div>
+                  <div className="h-px bg-white/40 dark:bg-white/10 flex-1"></div>
                 </div>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              {/* Input Usuario animado */}
-              <div className="relative w-full">
+              {/* Input Usuario */}
+              <div className="flex flex-col w-full text-left">
+                <label htmlFor="username" className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5 ml-1">
+                  {t('login.usernameOrEmail', 'Usuario o Correo Electrónico')} <span className="text-rose-500">*</span>
+                </label>
                 <input
                   type="text"
                   id="username"
@@ -206,17 +206,22 @@ export default function Login() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   disabled={loading}
-                  placeholder=" "
+                  placeholder={t('login.usernamePlaceholder', 'Introduce tu usuario o correo')}
                   autoComplete="username"
-                  className={inputClass}
+                  className="w-full px-4 py-3 rounded-2xl border border-white/60 dark:border-white/10 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm focus:border-[#b3c34c] dark:focus:border-[#d4e84a] focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition-all duration-200 text-slate-800 dark:text-slate-100 shadow-inner text-sm font-medium"
                 />
-                <label htmlFor="username" className={labelClass}>
-                  {t('login.usernameOrEmail', 'Usuario o Correo Electrónico')} <span className="text-red-500">*</span>
-                </label>
               </div>
 
-              {/* Input Contraseña animado */}
-              <div className="relative w-full">
+              {/* Input Contraseña */}
+              <div className="flex flex-col w-full text-left">
+                <div className="flex justify-between items-center mb-1.5 ml-1">
+                  <label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    {t('login.password', 'Contraseña')} <span className="text-rose-500">*</span>
+                  </label>
+                  <Link to="/forgot-password" className="text-xs text-[#68771b] dark:text-[#d4e84a] hover:underline font-semibold">
+                    {t('login.forgotPassword', '¿Olvidaste tu contraseña?')}
+                  </Link>
+                </div>
                 <input
                   type="password"
                   id="password"
@@ -224,16 +229,13 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
-                  placeholder=" "
+                  placeholder="••••••••"
                   autoComplete="current-password"
-                  className={inputClass}
+                  className="w-full px-4 py-3 rounded-2xl border border-white/60 dark:border-white/10 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm focus:border-[#b3c34c] dark:focus:border-[#d4e84a] focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition-all duration-200 text-slate-800 dark:text-slate-100 shadow-inner text-sm font-medium"
                 />
-                <label htmlFor="password" className={labelClass}>
-                  {t('login.password', 'Contraseña')} <span className="text-red-500">*</span>
-                </label>
               </div>
 
-              <div className="flex justify-center items-center my-1 w-full" style={{ overflow: 'hidden' }}>
+              <div className="flex justify-center items-center my-1 w-full overflow-hidden rounded-2xl">
                 <div style={{ transform: 'scale(var(--turnstile-scale, 1))', transformOrigin: 'center center' }}
                   ref={el => {
                     if (el) {
@@ -245,12 +247,12 @@ export default function Login() {
                   }}
                 >
                   <Turnstile 
-                    key={`${siteKey}-${captchaKey}`}
+                    key={`${siteKey}-${captchaKey}-${isDark ? 'dark' : 'light'}`}
                     siteKey={siteKey} 
                     onSuccess={(token) => setCaptchaToken(token)}
                     onError={() => setCaptchaToken(null)}
                     onExpire={() => setCaptchaToken(null)}
-                    options={{ theme: 'light' }}
+                    options={{ theme: isDark ? 'dark' : 'light' }}
                   />
                 </div>
               </div>
@@ -261,7 +263,7 @@ export default function Login() {
                 className={`${glassButtonClass} disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <FaSignInAlt />
-                {loading ? t('common.loading', 'Iniciando...') : t('login.title', 'Iniciar Sesión')}
+                <span>{loading ? t('common.loading', 'Iniciando...') : t('login.title', 'Iniciar Sesión')}</span>
               </button>
             </form>
           </div>
@@ -276,20 +278,12 @@ export default function Login() {
         )}
       </div>
 
-      <div className="flex flex-col gap-3 mt-10 mb-4 text-center text-sm text-slate-500 z-10">
-        <div>
-          <Link 
-            to="/forgot-password" 
-            className="font-bold text-slate-600 hover:text-[#b3c34c] transition-colors duration-300"
-          >
-            {t('login.forgotPassword', '¿Has olvidado tu contraseña?')}
-          </Link>
-        </div>
+      <div className="flex flex-col gap-2 mt-8 text-center text-xs text-slate-500 dark:text-slate-400 z-10">
         <div>
           &copy; {new Date().getFullYear()} Distribution Academy |{' '}
           <Link 
             to="/privacy-policy" 
-            className="font-bold text-slate-600 hover:text-[#b3c34c] transition-colors duration-300"
+            className="font-semibold text-slate-600 dark:text-slate-300 hover:text-[#73841e] dark:hover:text-[#d4e84a] transition-colors"
           >
             {t('login.privacyPolicy', 'Política de Privacidad')}
           </Link>

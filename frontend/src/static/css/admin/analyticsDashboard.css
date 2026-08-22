@@ -171,3 +171,60 @@
 .dropdown-toggle-rotate[aria-expanded="true"]::after {
     transform: rotate(180deg);
 }
+
+/* DARK MODE OVERRIDES */
+.dark .analytics-kpi-card {
+    background: rgba(15, 23, 42, 0.65) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.10) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), inset 0 1px 1.5px rgba(255, 255, 255, 0.06) !important;
+}
+
+.dark .analytics-kpi-content h6 {
+    color: #94a3b8 !important;
+}
+
+.dark .analytics-kpi-content .kpi-value {
+    color: #f1f5f9 !important;
+}
+
+.dark .analytics-kpi-icon {
+    background: rgba(30, 41, 59, 0.75) !important;
+    color: #e4f575 !important;
+    border: 1px solid rgba(179, 195, 76, 0.35) !important;
+}
+
+.dark .analytics-kpi-icon.blue {
+    background: rgba(30, 41, 59, 0.75) !important;
+    color: #93c5fd !important;
+    border: 1px solid rgba(59, 130, 246, 0.35) !important;
+}
+
+.dark .analytics-kpi-icon.green {
+    background: rgba(30, 41, 59, 0.75) !important;
+    color: #6ee7b7 !important;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
+}
+
+.dark .analytics-chart-card {
+    background: rgba(15, 23, 42, 0.65) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.10) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), inset 0 1px 1.5px rgba(255, 255, 255, 0.08) !important;
+    color: #f1f5f9 !important;
+}
+
+.dark .analytics-chart-title {
+    color: #f1f5f9 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.dark .recharts-default-tooltip {
+    background: rgba(15, 23, 42, 0.90) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #f1f5f9 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .recharts-legend-item-text {
+    color: #e2e8f0 !important;
+}
+

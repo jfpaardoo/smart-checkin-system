@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaShieldAlt, FaKey, FaRedo } from "react-icons/fa";
+import { FaShieldAlt, FaRedo } from "react-icons/fa";
 import api from "../../../services/api";
 import TwoFactorBackupCodesView from "./TwoFactorBackupCodesView";
 import { TwoFactorSetupStart, TwoFactorSetupVerify } from "./TwoFactorSetupStep";
@@ -121,23 +121,23 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
     URL.revokeObjectURL(url);
   };
 
-  const glassButtonClass = "w-full mt-4 py-3 rounded-2xl font-bold text-slate-800 bg-[#b3c34c]/80 hover:bg-[#b3c34c] shadow-[0_4px_15px_rgba(179,195,76,0.3)] transition-colors duration-200 active:scale-95 text-center flex items-center justify-center gap-2 cursor-pointer border border-white/40";
-  const glassButtonDangerClass = "w-full py-3 rounded-2xl font-bold text-white bg-red-500/80 hover:bg-red-600 shadow-[0_4px_15px_rgba(239,68,68,0.3)] transition-colors duration-200 active:scale-95 text-center flex items-center justify-center gap-2 cursor-pointer border border-white/40";
-  const glassButtonSecondaryClass = "py-3 px-6 rounded-2xl font-bold text-slate-700 bg-white/60 hover:bg-white/90 shadow-sm transition-colors duration-200 active:scale-95 text-center flex items-center justify-center gap-2 cursor-pointer border border-white/50";
-  const glassButtonPrimarySmallClass = "py-2.5 px-4 rounded-xl font-bold text-slate-800 text-sm bg-[#b3c34c]/80 hover:bg-[#b3c34c] shadow-sm transition-colors duration-200 active:scale-95 text-center flex items-center justify-center gap-2 cursor-pointer border border-white/40";
+  const glassButtonClass = "da-btn-primary w-full py-3 px-4 rounded-2xl font-bold text-xs sm:text-sm text-slate-950 flex items-center justify-center gap-2 shadow-md hover:scale-102 active:scale-98 transition-all cursor-pointer border-0";
+  const glassButtonDangerClass = "w-full py-3 px-4 rounded-2xl font-bold text-xs sm:text-sm text-white bg-rose-600 hover:bg-rose-700 shadow-md transition-all active:scale-98 text-center flex items-center justify-center gap-2 cursor-pointer border-0";
+  const glassButtonSecondaryClass = "py-3 px-6 rounded-2xl font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-200 bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-700 border border-white/60 dark:border-white/10 shadow-xs transition-all active:scale-98 text-center flex items-center justify-center gap-2 cursor-pointer";
+  const glassButtonPrimarySmallClass = "da-btn-primary py-2.5 px-4 rounded-xl font-bold text-xs text-slate-950 shadow-xs transition-all active:scale-98 text-center flex items-center justify-center gap-1.5 cursor-pointer border-0";
 
   const renderActiveState = () => (
     <div className="flex flex-col gap-4">
       <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-600 font-bold text-xl">
+        <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold text-xl">
           ✓
         </div>
         <div>
-          <h6 className="font-bold text-slate-800 text-sm mb-0">
+          <h6 className="font-bold text-slate-800 dark:text-slate-100 text-sm mb-0">
             {t('profile.twoFactorActive', '2FA está actualmente activado')}
           </h6>
-          <p className="text-slate-500 text-xs mb-0">
-            {t('profile.twoFactorMethodLabel', 'Método:')} <strong className="text-slate-700">{userData.twoFactorType === 'EMAIL' ? t('profile.twoFactorEmailOption', 'Correo Electrónico') : t('profile.twoFactorAppOption', 'App de Autenticación')}</strong>
+          <p className="text-slate-500 dark:text-slate-400 text-xs mb-0">
+            {t('profile.twoFactorMethodLabel', 'Método:')} <strong className="text-slate-700 dark:text-slate-200">{userData.twoFactorType === 'EMAIL' ? t('profile.twoFactorEmailOption', 'Correo Electrónico') : t('profile.twoFactorAppOption', 'App de Autenticación')}</strong>
           </p>
         </div>
       </div>
@@ -148,37 +148,31 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
           onClick={handleRegenerateBackupCodes}
           disabled={loading2FA}
         >
-          <FaRedo className="text-xs" />
-          {t('profile.regenerateBackupCodes', 'Nuevos Códigos Backup')}
+          <FaRedo size={12} />
+          <span>{t('profile.regenerateBackupCodes', 'Regenerar Códigos')}</span>
         </button>
-
-        {!showDisablePrompt && (
-          <button type="button"
-            className="py-2.5 px-4 rounded-xl font-bold text-red-600 hover:text-red-700 text-sm bg-red-500/10 hover:bg-red-500/20 transition duration-200 flex items-center justify-center gap-2 border border-red-200"
-            onClick={() => setShowDisablePrompt(true)}
-            disabled={loading2FA}
-          >
-            <FaKey className="text-xs" />
-            {t('profile.disable2FA', 'Desactivar 2FA')}
-          </button>
-        )}
+        <button type="button"
+          className="px-4 py-2.5 rounded-xl font-bold text-xs text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer border-0 bg-transparent"
+          onClick={() => setShowDisablePrompt(true)}
+          disabled={loading2FA}
+        >
+          {t('profile.disable2FA', 'Desactivar 2FA')}
+        </button>
       </div>
 
       {showDisablePrompt && (
-        <div className="mt-3 p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-red-200 flex flex-col gap-3">
-          <label htmlFor="disable2faCode" className="text-xs text-slate-600 mb-0">
-            {t('profile.disable2FAPrompt', 'Introduce el código de 6 dígitos actual para confirmar la desactivación:')}
-          </label>
+        <div className="mt-4 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex flex-col gap-3">
+          <p className="text-xs font-semibold text-rose-700 dark:text-rose-300 mb-0">
+            {t('profile.disablePromptMsg', 'Para desactivar 2FA, introduce un código de verificación actual:')}
+          </p>
           <input
-            id="disable2faCode"
             type="text"
             inputMode="numeric"
             maxLength="6"
             placeholder="000000"
-            aria-label={t('profile.disable2FAPrompt', 'Introduce el código de 6 dígitos actual para confirmar la desactivación')}
             value={disableCode}
             onChange={(e) => setDisableCode(e.target.value.replace(/\D/g, ""))}
-            className="w-full text-center text-xl tracking-[0.3rem] py-2 rounded-xl border border-white/60 bg-white/70 focus:border-red-400 outline-none transition font-mono"
+            className="w-full text-center text-xl tracking-[0.3rem] py-2.5 rounded-xl border border-white/60 dark:border-white/10 bg-white/70 dark:bg-slate-800/70 text-slate-800 dark:text-slate-100 focus:border-rose-400 outline-none transition font-mono"
           />
           <div className="flex gap-3">
             <button type="button"
@@ -247,12 +241,18 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
   };
 
   return (
-    <div className="p-6 bg-white/40 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-[32px] border border-white/60 mb-6 h-full flex flex-col justify-between">
+    <div className="bg-white/50 dark:bg-slate-900/60 backdrop-blur-2xl shadow-xl rounded-3xl border border-white/60 dark:border-white/10 p-5 sm:p-6 flex flex-col justify-between h-full">
       <div>
-        <h5 className="text-xl font-bold mb-4 flex items-center text-slate-800 drop-shadow-sm">
-          <FaShieldAlt className="mr-3 text-[#8a9e29] text-2xl" /> 
-          {t('profile.twoFactorTitle', 'Autenticación de Doble Factor (2FA)')}
-        </h5>
+        <div className="flex items-center gap-3 mb-4 pb-3 border-b border-white/40 dark:border-white/10">
+          <div className="w-10 h-10 rounded-2xl bg-[#b3c34c]/20 border border-[#b3c34c]/40 flex items-center justify-center shrink-0 shadow-2xs">
+            <FaShieldAlt size={18} className="text-[#73841e] dark:text-[#d4e84a]" />
+          </div>
+          <div>
+            <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-base sm:text-lg m-0 leading-tight">
+              {t('profile.twoFactorTitle', 'Autenticación de Doble Factor (2FA)')}
+            </h3>
+          </div>
+        </div>
 
         {renderContent()}
       </div>

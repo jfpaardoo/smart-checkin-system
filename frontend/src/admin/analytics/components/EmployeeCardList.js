@@ -1,5 +1,4 @@
 import React from 'react';
-import { Button } from 'reactstrap';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faBuilding } from '@fortawesome/free-solid-svg-icons';
@@ -17,7 +16,7 @@ export default function EmployeeCardList({ users = [], onOpenUserDetail }) {
   return (
     <div className="lg:hidden flex flex-col gap-3 mt-2">
       {users.map((user) => (
-        <div key={user.userId} className="bg-white/70 backdrop-blur-md shadow-sm rounded-[24px] p-4 sm:p-5 border border-white/50 flex flex-col gap-3">
+        <div key={user.userId} className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm rounded-[24px] p-4 sm:p-5 border border-white/50 dark:border-white/10 flex flex-col gap-3">
           <div className="flex flex-col items-start gap-1.5 w-full">
             <div className="flex items-center gap-1.5 flex-wrap w-full">
               <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Código: {user.personalCode}</span>
@@ -29,7 +28,7 @@ export default function EmployeeCardList({ users = [], onOpenUserDetail }) {
             </div>
             
             <div className="w-full min-w-0">
-              <h3 className="font-bold text-slate-800 m-0 text-sm sm:text-base break-words">{user.firstName} {user.lastName}</h3>
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 m-0 text-sm sm:text-base break-words">{user.firstName} {user.lastName}</h3>
               <p className="text-xs text-slate-400 m-0 truncate">@{user.username}</p>
             </div>
 
@@ -38,10 +37,10 @@ export default function EmployeeCardList({ users = [], onOpenUserDetail }) {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-200/50 pt-2.5 text-xs text-slate-600 gap-1">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-t border-slate-200/50 dark:border-slate-700/50 pt-2.5 text-xs text-slate-600 dark:text-slate-300 gap-1">
             <span className="font-semibold text-slate-500">{t('users.company', 'Empresa / Centro')}:</span>
             {user.companyName ? (
-              <span className="font-bold text-slate-800 flex items-center gap-1.5 break-words">
+              <span className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5 break-words">
                 <FontAwesomeIcon icon={faBuilding} className="text-[#8fa228] shrink-0" /> {user.companyName}
               </span>
             ) : (
@@ -49,7 +48,7 @@ export default function EmployeeCardList({ users = [], onOpenUserDetail }) {
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 border-t border-slate-200/50 pt-2.5 text-xs text-slate-600">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 border-t border-slate-200/50 dark:border-slate-700/50 pt-2.5 text-xs text-slate-600 dark:text-slate-300">
             <div>
               <span className="font-semibold text-slate-500">{t('analytics.statAttendance', 'Asistencia:')}</span>{' '}
               <span className={getAttendanceColorClass(user.attendancePercentage)}>{user.attendancePercentage}%</span>
@@ -64,15 +63,15 @@ export default function EmployeeCardList({ users = [], onOpenUserDetail }) {
             </div>
           </div>
 
-          <div className="border-t border-slate-200/50 pt-3 flex justify-end">
-            <Button 
-              size="sm" 
-              className="da-btn-blue font-bold shadow-sm !rounded-2xl px-5 py-2 inline-flex items-center justify-center gap-2 text-xs w-full sm:w-auto"
+          <div className="border-t border-slate-200/50 dark:border-slate-700/50 pt-3 flex justify-end">
+            <button 
+              type="button" 
+              className="da-btn-blue font-bold shadow-sm !rounded-2xl px-5 py-2 inline-flex items-center justify-center gap-2 text-xs w-full sm:w-auto border-0"
               onClick={() => onOpenUserDetail(user.userId)}
             >
               <FontAwesomeIcon icon={faEye} />
               {t('analytics.viewDetails', 'Ver Detalles')}
-            </Button>
+            </button>
           </div>
         </div>
       ))}

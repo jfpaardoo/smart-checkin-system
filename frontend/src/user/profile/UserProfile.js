@@ -1,5 +1,4 @@
 import React, { useState, useRef } from "react";
-import { Nav, NavItem, NavLink, TabContent, TabPane, Modal, ModalHeader, ModalBody, ModalFooter, Spinner } from "reactstrap";
 import { FaUser, FaGraduationCap, FaShieldAlt, FaTrash } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
@@ -8,6 +7,7 @@ import ProfileHeader from "./components/ProfileHeader";
 import PersonalDataTab from "./components/PersonalDataTab";
 import FormationsTab from "./components/FormationsTab";
 import PasswordSecurityTab from "./components/PasswordSecurityTab";
+import GlassModal from "../../components/GlassModal";
 import { useUserProfileData } from "./hooks/useUserProfileData";
 import { usePasswordSecurity } from "./hooks/usePasswordSecurity";
 import api from "../../services/api";
@@ -79,101 +79,116 @@ export default function UserProfile() {
     }
   };
 
+  const deleteModalTitle = (
+    <div className="flex items-center text-red-600 font-bold">
+      <FaTrash className="mr-2 inline-block" />
+      <span className="text-slate-900 dark:text-slate-100 font-semibold">{t("profile.deleteConfirmTitle", "Eliminar Cuenta Permanentemente")}</span>
+    </div>
+  );
+
   return (
     <div className="da-container">
       <div className="mx-auto w-full max-w-[1000px]">
         <ProfileHeader userData={userData} formations={formations} t={t} />
 
-        <div className="px-1 px-md-3">
-          <Nav pills className="da-nav-pills border-0 mb-4 justify-content-center flex-column flex-md-row gap-3">
-            <NavItem className="w-full md:w-auto">
-              <NavLink 
-                className={`px-4 py-2 d-flex flex-column align-items-center justify-content-center text-center w-full md:min-w-[240px] transition-all da-glass-panel ${activeTab === "1" ? "active" : ""}`} 
-                onClick={() => toggleTab("1")} 
-                style={{ cursor: "pointer" }}
-              >
-                <FaUser className="mb-1" size={18} />
-                <span className="fw-semibold">{t("profile.personalData", "Datos Personales")}</span>
-              </NavLink>
-            </NavItem>
-            <NavItem className="w-full md:w-auto">
-              <NavLink 
-                className={`px-4 py-2 d-flex flex-column align-items-center justify-content-center text-center w-full md:min-w-[240px] transition-all da-glass-panel ${activeTab === "2" ? "active" : ""}`} 
-                onClick={() => toggleTab("2")} 
-                style={{ cursor: "pointer" }}
-              >
-                <FaGraduationCap className="mb-1" size={18} />
-                <span className="fw-semibold">{t("profile.myFormations", "Mis Formaciones")}</span>
-              </NavLink>
-            </NavItem>
-            <NavItem className="w-full md:w-auto">
-              <NavLink 
-                className={`px-4 py-2 d-flex flex-column align-items-center justify-content-center text-center w-full md:min-w-[240px] transition-all da-glass-panel ${activeTab === "3" ? "active" : ""}`} 
-                onClick={() => toggleTab("3")} 
-                style={{ cursor: "pointer" }}
-              >
-                <FaShieldAlt className="mb-1" size={18} />
-                <span className="fw-semibold">{t("profile.securityPassword", "Seguridad y Contraseña")}</span>
-              </NavLink>
-            </NavItem>
-          </Nav>
+        <div className="px-1 mb-6">
+          <nav className="flex flex-col sm:flex-row justify-center gap-3 w-full" aria-label="Profile tabs">
+            <button 
+              type="button"
+              className={`px-4 py-3 flex flex-row sm:flex-col items-center justify-center gap-2 text-center w-full sm:min-w-[180px] rounded-2xl transition-all duration-200 cursor-pointer ${activeTab === "1" ? "bg-white dark:bg-slate-800 text-[#73841e] dark:text-[#d4e84a] shadow-md ring-2 ring-[#b3c34c]/60 font-bold" : "bg-white/40 dark:bg-slate-900/40 text-slate-600 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800/60 border border-white/50 dark:border-white/10 font-semibold"}`} 
+              onClick={() => toggleTab("1")} 
+            >
+              <FaUser size={18} className={activeTab === "1" ? "text-[#73841e] dark:text-[#d4e84a]" : "text-slate-400"} />
+              <span className="text-xs sm:text-sm">{t("profile.personalData", "Datos Personales")}</span>
+            </button>
+            <button 
+              type="button"
+              className={`px-4 py-3 flex flex-row sm:flex-col items-center justify-center gap-2 text-center w-full sm:min-w-[180px] rounded-2xl transition-all duration-200 cursor-pointer ${activeTab === "2" ? "bg-white dark:bg-slate-800 text-[#73841e] dark:text-[#d4e84a] shadow-md ring-2 ring-[#b3c34c]/60 font-bold" : "bg-white/40 dark:bg-slate-900/40 text-slate-600 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800/60 border border-white/50 dark:border-white/10 font-semibold"}`} 
+              onClick={() => toggleTab("2")} 
+            >
+              <FaGraduationCap size={18} className={activeTab === "2" ? "text-[#73841e] dark:text-[#d4e84a]" : "text-slate-400"} />
+              <span className="text-xs sm:text-sm">{t("profile.myFormations", "Mis Formaciones")}</span>
+            </button>
+            <button 
+              type="button"
+              className={`px-4 py-3 flex flex-row sm:flex-col items-center justify-center gap-2 text-center w-full sm:min-w-[180px] rounded-2xl transition-all duration-200 cursor-pointer ${activeTab === "3" ? "bg-white dark:bg-slate-800 text-[#73841e] dark:text-[#d4e84a] shadow-md ring-2 ring-[#b3c34c]/60 font-bold" : "bg-white/40 dark:bg-slate-900/40 text-slate-600 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800/60 border border-white/50 dark:border-white/10 font-semibold"}`} 
+              onClick={() => toggleTab("3")} 
+            >
+              <FaShieldAlt size={18} className={activeTab === "3" ? "text-[#73841e] dark:text-[#d4e84a]" : "text-slate-400"} />
+              <span className="text-xs sm:text-sm">{t("profile.securityPassword", "Seguridad y Contraseña")}</span>
+            </button>
+          </nav>
         </div>
 
-        <TabContent activeTab={activeTab} className="p-0 border-0 bg-transparent">
-          <TabPane tabId="1" className="da-fade-in">
-            <PersonalDataTab loadingUser={loadingUser} userData={userData} setUserData={setUserData} t={t} />
-          </TabPane>
-          <TabPane tabId="2" className="da-fade-in">
-            <FormationsTab loadingFormations={loadingFormations} formations={formations} t={t} />
-          </TabPane>
-          <TabPane tabId="3" className="da-fade-in">
-            <PasswordSecurityTab 
-              {...passwordProps} 
-              userData={userData} 
-              setUserData={setUserData} 
-              t={t} 
-              toast={toast}
-              handleExportData={handleExportData}
-              isExporting={isExporting}
-              handleDeleteAccount={handleDeleteAccount}
-              isDeleting={isDeleting}
-            />
-          </TabPane>
-        </TabContent>
+        <div className="p-0 border-0 bg-transparent">
+          {activeTab === "1" && (
+            <div className="da-fade-in">
+              <PersonalDataTab loadingUser={loadingUser} userData={userData} setUserData={setUserData} t={t} />
+            </div>
+          )}
+          {activeTab === "2" && (
+            <div className="da-fade-in">
+              <FormationsTab loadingFormations={loadingFormations} formations={formations} t={t} />
+            </div>
+          )}
+          {activeTab === "3" && (
+            <div className="da-fade-in">
+              <PasswordSecurityTab 
+                {...passwordProps} 
+                userData={userData} 
+                setUserData={setUserData} 
+                t={t} 
+                toast={toast}
+                handleExportData={handleExportData}
+                isExporting={isExporting}
+                handleDeleteAccount={handleDeleteAccount}
+                isDeleting={isDeleting}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
-      <Modal isOpen={deleteModalOpen} toggle={() => setDeleteModalOpen(false)} centered contentClassName="!bg-white/95 !backdrop-blur-md !border !border-gray-100 !rounded-2xl !shadow-2xl">
-        <ModalHeader toggle={() => setDeleteModalOpen(false)} className="border-b-0 pb-0 flex items-center text-red-600 font-bold">
-          <FaTrash className="mr-2 inline-block" />
-          <span className="text-gray-900 font-semibold">{t("profile.deleteConfirmTitle", "Eliminar Cuenta Permanentemente")}</span>
-        </ModalHeader>
-        <ModalBody className="text-center px-6 py-4">
+      <GlassModal
+        isOpen={deleteModalOpen}
+        toggle={() => setDeleteModalOpen(false)}
+        title={deleteModalTitle}
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-3 w-full">
+            <button type="button" className="px-4 py-2 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-0 cursor-pointer" onClick={() => setDeleteModalOpen(false)}>
+              {t("common.cancel", "Cancelar")}
+            </button>
+            <button
+              type="button"
+              className="flex items-center px-4 py-2 rounded-xl text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm shadow-red-600/20 border-0 cursor-pointer"
+              disabled={deleteConfirmationText.trim().toUpperCase() !== t("profile.deletePlaceholder", "ELIMINAR").toUpperCase() || isDeleting}
+              onClick={confirmDeleteAccount}
+            >
+              {isDeleting ? (
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : <FaTrash className="mr-2" />}
+              {t("profile.deleteConfirmBtn", "Eliminar Cuenta")}
+            </button>
+          </div>
+        }
+      >
+        <div className="text-center py-2">
           <FaTrash size={44} className="text-red-500/80 mx-auto mb-3" />
-          <h5 className="font-bold text-gray-800 text-lg mb-1">{t("profile.areYouSure", "¿Estás completamente seguro?")}</h5>
-          <p className="text-gray-500 text-sm">{t("profile.deleteWarningText", "Esta acción eliminará permanentemente todos tus datos.")}</p>
+          <h5 className="font-bold text-slate-800 dark:text-slate-100 text-lg mb-1">{t("profile.areYouSure", "¿Estás completamente seguro?")}</h5>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">{t("profile.deleteWarningText", "Esta acción eliminará permanentemente todos tus datos.")}</p>
           <input
-            className="w-full mt-4 px-4 py-2.5 text-center text-gray-800 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-0 focus:border-red-500 hover:border-gray-400 transition-colors shadow-none placeholder:text-gray-400"
+            className="w-full mt-4 px-4 py-2.5 text-center text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors shadow-none placeholder:text-slate-400"
             placeholder={t("profile.deletePlaceholder", "ELIMINAR")}
             aria-label={t("profile.deleteConfirmationAria", "Escribe ELIMINAR para confirmar")}
             value={deleteConfirmationText}
             onChange={(e) => setDeleteConfirmationText(e.target.value)}
           />
-        </ModalBody>
-        <ModalFooter className="border-t-0 flex justify-end gap-3 px-6 pb-6 pt-2">
-          <button type="button" className="px-4 py-2 rounded-xl text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors" onClick={() => setDeleteModalOpen(false)}>
-            {t("common.cancel", "Cancelar")}
-          </button>
-          <button
-            type="button"
-            className="flex items-center px-4 py-2 rounded-xl text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm shadow-red-600/20"
-            disabled={deleteConfirmationText.trim().toUpperCase() !== t("profile.deletePlaceholder", "ELIMINAR").toUpperCase() || isDeleting}
-            onClick={confirmDeleteAccount}
-          >
-            {isDeleting ? <Spinner size="sm" className="mr-2" /> : <FaTrash className="mr-2" />}
-            {t("profile.deleteConfirmBtn", "Eliminar Cuenta")}
-          </button>
-        </ModalFooter>
-      </Modal>
+        </div>
+      </GlassModal>
     </div>
   );
 }

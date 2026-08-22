@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Table } from 'reactstrap';
 import GlassSearchBar from '../../../components/GlassSearchBar';
 import GlassDropdown from '../../../components/GlassDropdown';
 import GlassPagination from '../../../components/GlassPagination';
+
+import { FaGraduationCap } from 'react-icons/fa';
 
 const getProgressColor = (percentage) => {
   if (percentage >= 80) return 'bg-emerald-500';
@@ -40,28 +41,35 @@ const FormationTableRow = ({ formation, t }) => {
   const progressColor = getProgressColor(attendancePercentage);
 
   return (
-    <tr key={formation.formationId} className="hover:bg-white/50 transition duration-150">
-      <td style={{ paddingLeft: '1.25rem' }} className="font-bold text-slate-800">
-        {formationName}
+    <tr key={formation.formationId} className="hover:bg-white/50 dark:hover:bg-slate-700/50 transition duration-150">
+      <td className="py-4 px-5">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-2xl bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a] shadow-xs flex-shrink-0">
+            <FaGraduationCap size={15} />
+          </div>
+          <span className="font-bold text-slate-800 dark:text-slate-100 tracking-tight">
+            {formationName}
+          </span>
+        </div>
       </td>
-      <td className="text-slate-600">
+      <td className="py-4 px-5 text-slate-600 dark:text-slate-300 font-medium text-xs sm:text-sm">
         {formattedDate}
       </td>
-      <td className="text-center font-semibold text-slate-700">
+      <td className="py-4 px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
         {totalExpected}
       </td>
-      <td className="text-center font-semibold text-slate-700">
+      <td className="py-4 px-5 text-center font-semibold text-slate-700 dark:text-slate-200">
         {totalAttended}
       </td>
-      <td>
+      <td className="py-4 px-5">
         <div className="flex items-center gap-3">
-          <div className="w-full bg-slate-200/60 rounded-full h-2.5 backdrop-blur-sm overflow-hidden">
+          <div className="w-full bg-slate-200/60 dark:bg-slate-700/60 rounded-full h-2.5 backdrop-blur-sm overflow-hidden">
             <div
               className={`h-2.5 rounded-full ${progressColor} transition-all duration-500 ease-in-out`}
               style={{ width: `${Math.min(100, Math.max(0, attendancePercentage))}%` }}
             ></div>
           </div>
-          <span className="text-xs font-bold text-slate-700 min-w-[3rem]">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-200 min-w-[3rem]">
             {attendancePercentage}%
           </span>
         </div>
@@ -117,7 +125,7 @@ export default function AnalyticsFormationsTab({ formations = DEFAULT_ARRAY }) {
   return (
     <div className="w-full mt-4">
       {/* Barra de Filtros y Búsqueda Liquid Glass */}
-      <div className="p-4 rounded-[28px] bg-white/30 backdrop-blur-md border border-white/50 shadow-xs mb-4 grid grid-cols-1 md:grid-cols-12 gap-3 items-center relative z-20">
+      <div className="p-4 rounded-[28px] bg-white/30 dark:bg-slate-800/30 backdrop-blur-md border border-white/50 dark:border-white/10 shadow-xs mb-4 grid grid-cols-1 md:grid-cols-12 gap-3 items-center relative z-20">
         <div className="md:col-span-6">
           <GlassSearchBar 
             placeholder={t('formations.searchPlaceholderShort', 'Buscar formación por nombre o título...')}
@@ -157,29 +165,29 @@ export default function AnalyticsFormationsTab({ formations = DEFAULT_ARRAY }) {
       </div>
 
       {filteredFormations.length === 0 ? (
-        <div className="text-center p-8 text-slate-500 bg-white/40 rounded-3xl border border-white/40 mt-4">
+        <div className="text-center p-8 text-slate-500 bg-white/40 dark:bg-slate-800/40 rounded-3xl border border-white/40 dark:border-white/10 mt-4">
           <p className="mb-0 text-sm font-semibold">{t('analytics.noFormations', 'No hay datos de formaciones que coincidan con los filtros.')}</p>
         </div>
       ) : (
         <>
           {/* 1. VISTA ESCRITORIO */}
-          <div className="hidden lg:block overflow-x-auto pb-2 rounded-3xl border border-white/60 bg-white/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.06)] relative z-10">
-            <Table responsive hover aria-label="formations analytics" className="da-table align-middle w-full mb-0" style={{ tableLayout: 'fixed', minWidth: '850px', fontSize: '0.88rem' }}>
+          <div className="hidden lg:block overflow-x-auto rounded-3xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.06)] relative z-10">
+            <table aria-label="formations analytics" className="w-full text-left border-collapse align-middle">
               <thead>
-                <tr className="border-b border-white/40 bg-white/50 text-slate-700 text-xs font-bold uppercase tracking-wider">
-                  <th style={{ width: '30%', paddingLeft: '1.25rem' }}>{t('analytics.formationName', 'Nombre')}</th>
-                  <th style={{ width: '18%' }}>{t('analytics.formationDate', 'Fecha')}</th>
-                  <th style={{ width: '16%' }} className="text-center">{t('analytics.totalExpected', 'Esperados')}</th>
-                  <th style={{ width: '16%' }} className="text-center">{t('analytics.totalAttended', 'Asistentes')}</th>
-                  <th style={{ width: '20%' }}>{t('analytics.attendanceRate', 'Tasa de Asistencia')}</th>
+                <tr className="border-b border-white/40 dark:border-white/10 bg-white/50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider">
+                  <th className="py-4 px-5" style={{ width: '32%' }}>{t('analytics.formationName', 'Nombre')}</th>
+                  <th className="py-4 px-5" style={{ width: '18%' }}>{t('analytics.formationDate', 'Fecha')}</th>
+                  <th className="py-4 px-5 text-center" style={{ width: '15%' }}>{t('analytics.totalExpected', 'Esperados')}</th>
+                  <th className="py-4 px-5 text-center" style={{ width: '15%' }}>{t('analytics.totalAttended', 'Asistentes')}</th>
+                  <th className="py-4 px-5" style={{ width: '20%' }}>{t('analytics.attendanceRate', 'Tasa de Asistencia')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/40 text-slate-800">
+              <tbody className="divide-y divide-white/40 dark:divide-white/10 text-sm text-slate-800 dark:text-slate-100">
                 {paginatedFormations.map((f) => (
                   <FormationTableRow key={f.formationId} formation={f} t={t} />
                 ))}
               </tbody>
-            </Table>
+            </table>
           </div>
 
           {/* 2. VISTA MÓVIL / TABLET */}
@@ -190,28 +198,28 @@ export default function AnalyticsFormationsTab({ formations = DEFAULT_ARRAY }) {
               const progressColor = getProgressColor(attendancePercentage);
 
               return (
-                <div key={f.formationId} className="bg-white/70 backdrop-blur-md shadow-sm rounded-[24px] p-5 border border-white/50 flex flex-col gap-3">
+                <div key={f.formationId} className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm rounded-[24px] p-5 border border-white/50 dark:border-white/10 flex flex-col gap-3">
                   <div>
-                    <h3 className="font-bold text-slate-800 m-0 text-base">{formationName}</h3>
-                    <p className="text-xs text-slate-500 m-0 mt-0.5">{formattedDate}</p>
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 m-0 text-base">{formationName}</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 m-0 mt-0.5">{formattedDate}</p>
                   </div>
                   
-                  <div className="flex items-center justify-between border-t border-slate-200/50 pt-2.5 text-xs">
-                    <span className="font-semibold text-slate-500">{t('analytics.totalExpected', 'Empleados Esperados')}:</span>
-                    <span className="font-bold text-slate-800">{totalExpected}</span>
+                  <div className="flex items-center justify-between border-t border-slate-200/50 dark:border-slate-700/50 pt-2.5 text-xs">
+                    <span className="font-semibold text-slate-500 dark:text-slate-400">{t('analytics.totalExpected', 'Empleados Esperados')}:</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100">{totalExpected}</span>
                   </div>
                   
-                  <div className="flex items-center justify-between border-t border-slate-200/50 pt-2.5 text-xs">
-                    <span className="font-semibold text-slate-500">{t('analytics.totalAttended', 'Asistentes')}:</span>
-                    <span className="font-bold text-slate-800">{totalAttended}</span>
+                  <div className="flex items-center justify-between border-t border-slate-200/50 dark:border-slate-700/50 pt-2.5 text-xs">
+                    <span className="font-semibold text-slate-500 dark:text-slate-400">{t('analytics.totalAttended', 'Asistentes')}:</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100">{totalAttended}</span>
                   </div>
 
-                  <div className="flex flex-col gap-1 border-t border-slate-200/50 pt-2.5">
+                  <div className="flex flex-col gap-1 border-t border-slate-200/50 dark:border-slate-700/50 pt-2.5">
                     <div className="flex justify-between items-center mb-1 text-xs">
-                      <span className="font-semibold text-slate-500">{t('analytics.attendanceRate', 'Tasa de Asistencia')}</span>
-                      <span className="font-bold text-slate-800">{attendancePercentage}%</span>
+                      <span className="font-semibold text-slate-500 dark:text-slate-400">{t('analytics.attendanceRate', 'Tasa de Asistencia')}</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-100">{attendancePercentage}%</span>
                     </div>
-                    <div className="w-full bg-slate-200/60 rounded-full h-2.5 backdrop-blur-sm overflow-hidden">
+                    <div className="w-full bg-slate-200/60 dark:bg-slate-700/60 rounded-full h-2.5 backdrop-blur-sm overflow-hidden">
                       <div className={`h-2.5 rounded-full ${progressColor} transition-all duration-500 ease-in-out`} style={{ width: `${attendancePercentage}%` }}></div>
                     </div>
                   </div>

@@ -1,5 +1,7 @@
 package org.springframework.samples.smartcheckin.user;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,11 +20,13 @@ public class DepartmentService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "departments")
     public List<Department> getAllDepartments() {
         return (List<Department>) departmentRepository.findAll();
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "departments", key = "'root'")
     public List<Department> getRootDepartments() {
         return departmentRepository.findByParentDepartmentIsNull();
     }
@@ -33,11 +37,13 @@ public class DepartmentService {
     }
 
     @Transactional
+    @CacheEvict(value = "departments", allEntries = true)
     public Department saveDepartment(@NonNull Department department) {
         return departmentRepository.save(department);
     }
 
     @Transactional
+    @CacheEvict(value = "departments", allEntries = true)
     public void deleteDepartment(@NonNull Integer id) {
         departmentRepository.deleteById(id);
     }

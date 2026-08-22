@@ -26,17 +26,18 @@ public interface UserRepository extends  CrudRepository<User, Integer>{
     @NonNull
     Optional<User> findById(@NonNull Integer id);
 
-    @Query("SELECT u FROM User u WHERE u.authority.authority = :auth")
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.company LEFT JOIN FETCH u.authority WHERE u.authority.authority = :auth")
     Iterable<User> findAllByAuthority(String auth);
 
-    @Query("SELECT u FROM User u WHERE u.isApproved = false AND u.username NOT LIKE 'GDPR_DEL_%'")
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.company LEFT JOIN FETCH u.authority WHERE u.isApproved = false AND u.username NOT LIKE 'GDPR_DEL_%'")
     List<User> findAllPendingUsers();
 
-    @Query("SELECT u FROM User u WHERE u.isApproved = true AND u.username NOT LIKE 'GDPR_DEL_%'")
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.company LEFT JOIN FETCH u.authority WHERE u.isApproved = true AND u.username NOT LIKE 'GDPR_DEL_%'")
     List<User> findAllApprovedUsers();
 
-    @Query("SELECT u FROM User u WHERE u.isApproved = true AND u.authority.authority = :auth AND u.username NOT LIKE 'GDPR_DEL_%'")
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.company LEFT JOIN FETCH u.authority WHERE u.isApproved = true AND u.authority.authority = :auth AND u.username NOT LIKE 'GDPR_DEL_%'")
     List<User> findAllApprovedUsersByAuthority(String auth);
 
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.company LEFT JOIN FETCH u.authority WHERE u.company.id = :companyId")
     List<User> findByCompanyId(Integer companyId);
 }

@@ -19,7 +19,6 @@
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.4.3",
     "axios": "^1.19.0",
-    "bootstrap": "^5.3.3",
     "dayjs": "^1.11.21",
     "framer-motion": "^13.1.1",
     "html5-qrcode": "^2.3.8",
@@ -36,7 +35,6 @@
     "react-icons": "^4.12.0",
     "react-router-dom": "^6.30.4",
     "react-signature-canvas": "^1.1.0-alpha.2",
-    "reactstrap": "^9.1.6",
     "recharts": "^3.10.1",
     "sockjs-client": "^1.6.1",
     "swagger-ui-react": "5.19.0",
@@ -51,6 +49,7 @@
     "postcss": "^8.5.25",
     "prettier": "^3.4.2",
     "react-scripts": "5.0.1",
+    "source-map-explorer": "^2.5.3",
     "source-map-loader": "^4.0.1",
     "tailwindcss": "^3.4.1"
   },
@@ -62,6 +61,7 @@
     "test": "react-scripts test",
     "test:e2e": "playwright test --test-dir=e2e",
     "coverage": "react-scripts test --coverage --watchAll --collectCoverageFrom='!src/{index,reportWebVitals,error-page,App}.{js,jsx}'",
+    "analyze": "source-map-explorer 'build/static/js/*.js'",
     "eject": "react-scripts eject",
     "doctor": "npx react-doctor@latest"
   },

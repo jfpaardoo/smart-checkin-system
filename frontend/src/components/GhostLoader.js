@@ -11,31 +11,30 @@ const getColumnWidth = (colIndex, columns) => {
  */
 export const TableGhostLoader = ({ rows = 4, columns = 5 }) => {
     return (
-        <div className="w-100 py-3">
-            <div className="d-flex justify-content-between align-items-center mb-4">
+        <div className="w-full py-3">
+            <div className="flex justify-between items-center mb-4">
                 <div className="da-ghost-element-dark da-ghost-title" style={{ width: '220px', height: '36px' }}></div>
-                <div className="da-ghost-element-dark" style={{ width: '120px', height: '38px', borderRadius: '20px' }}></div>
+                <div className="da-ghost-element-dark rounded-2xl" style={{ width: '120px', height: '38px' }}></div>
             </div>
-            <div className="d-flex flex-column gap-2">
+            <div className="flex flex-col gap-2">
                 {Array.from({ length: rows }).map((_, rowIndex) => {
                     const rowKey = `ghost-row-${rowIndex}`;
                     return (
                         <div 
                             key={rowKey} 
-                            className="da-ghost-element-dark da-ghost-row d-flex align-items-center px-4"
+                            className="da-ghost-element-dark da-ghost-row flex items-center px-4"
                             style={{ opacity: 1 - rowIndex * 0.15 }}
                         >
-                            <div className="d-flex w-100 justify-content-between align-items-center">
+                            <div className="flex w-full justify-between items-center">
                                 {Array.from({ length: columns }).map((_, colIndex) => {
                                     const colKey = `${rowKey}-col-${colIndex}`;
                                     return (
                                         <div 
                                             key={colKey} 
-                                            className="da-ghost-element" 
+                                            className="da-ghost-element rounded-lg" 
                                             style={{ 
                                                 height: '16px', 
-                                                width: getColumnWidth(colIndex, columns),
-                                                borderRadius: '8px' 
+                                                width: getColumnWidth(colIndex, columns)
                                             }}
                                         ></div>
                                     );
@@ -54,11 +53,11 @@ export const TableGhostLoader = ({ rows = 4, columns = 5 }) => {
  */
 export const CardGhostLoader = () => {
     return (
-        <div className="da-container justify-content-center">
-            <div className="da-ghost-card my-auto mx-auto" style={{ maxWidth: '750px' }}>
+        <div className="da-container flex items-center justify-center min-h-[60vh]">
+            <div className="da-ghost-card w-full max-w-2xl mx-auto my-auto p-6 sm:p-8">
                 <div className="da-ghost-element-dark da-ghost-title mb-4"></div>
                 <div className="da-ghost-element-dark da-ghost-subtitle mb-4"></div>
-                <div className="d-flex flex-column gap-3 mb-4">
+                <div className="flex flex-col gap-3 mb-4">
                     <div className="da-ghost-element-dark da-ghost-row"></div>
                     <div className="da-ghost-element-dark da-ghost-row" style={{ width: '80%' }}></div>
                     <div className="da-ghost-element-dark da-ghost-row" style={{ width: '60%' }}></div>
@@ -73,15 +72,15 @@ export const CardGhostLoader = () => {
  */
 export const QRGhostLoader = () => {
     return (
-        <div className="d-flex flex-column flex-md-row align-items-center justify-content-center gap-4 gap-lg-5 py-2 my-auto w-100">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-10 py-6 w-full">
             {/* Left QR Frame Skeleton */}
-            <div className="da-ghost-element-dark da-ghost-qr-box"></div>
+            <div className="da-ghost-element-dark da-ghost-qr-box shrink-0"></div>
             {/* Right Side Skeleton Info */}
-            <div className="d-flex flex-column align-items-center align-items-md-start text-center text-md-start w-100" style={{ maxWidth: '320px' }}>
-                <div className="da-ghost-element-dark da-ghost-title w-100" style={{ height: '36px' }}></div>
-                <div className="da-ghost-element-dark da-ghost-subtitle w-100" style={{ height: '20px' }}></div>
-                <div className="da-ghost-element-dark my-3" style={{ width: '180px', height: '54px', borderRadius: '28px' }}></div>
-                <div className="da-ghost-element-dark" style={{ width: '100%', height: '10px', borderRadius: '10px' }}></div>
+            <div className="flex flex-col items-center md:items-start text-center md:text-left w-full max-w-xs">
+                <div className="da-ghost-element-dark da-ghost-title w-full" style={{ height: '36px' }}></div>
+                <div className="da-ghost-element-dark da-ghost-subtitle w-full mt-2" style={{ height: '20px' }}></div>
+                <div className="da-ghost-element-dark my-4 rounded-3xl" style={{ width: '180px', height: '54px' }}></div>
+                <div className="da-ghost-element-dark rounded-full" style={{ width: '100%', height: '10px' }}></div>
             </div>
         </div>
     );

@@ -31,8 +31,8 @@ export default function PwaUpdateNotification() {
             setDismissed(false);
           }
         }
-      } catch (e) {
-        // Ignorar fallos de red silenciosamente
+      } catch (err) {
+        console.debug("PWA version check network info:", err);
       }
     };
 

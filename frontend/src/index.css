@@ -94,3 +94,28 @@ body::after {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
+
+/* ==========================================
+   DARK MODE — BODY & ORBS
+   ========================================== */
+
+/* Transición suave al cambiar tema */
+body {
+  transition: background 0.4s ease, color 0.3s ease;
+}
+
+html.dark body {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  background-attachment: fixed;
+  color: #e2e8f0;
+}
+
+/* Orb superior en dark: verde más tenue */
+html.dark body::before {
+  background: radial-gradient(circle, rgba(179, 195, 76, 0.18) 0%, rgba(179, 195, 76, 0) 70%);
+}
+
+/* Orb inferior en dark: azul muy sutil */
+html.dark body::after {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0) 75%);
+}

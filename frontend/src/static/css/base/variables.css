@@ -32,4 +32,55 @@
   --da-radius-md: 20px;
   --da-radius-sm: 14px;
   --da-radius-pill: 50px;
+
+  /* 60Hz & 120Hz Animation Curves (Apple ProMotion & Standard High-FPS) */
+  --da-ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+  --da-ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --da-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ==========================================
+   DARK MODE TOKEN OVERRIDES
+   Activado con la clase 'dark' en <html>
+   ========================================== */
+.dark {
+  /* Texto */
+  --da-dark: #e2e8f0;
+  --da-dark-hover: #f1f5f9;
+  --da-white: #0f172a;
+  --da-text-muted: #94a3b8;
+
+  /* Bordes */
+  --da-border: rgba(255, 255, 255, 0.10);
+  --da-glass-border: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+
+  /* Fondos glass */
+  --da-glass-bg: linear-gradient(135deg, rgba(30,41,59,0.65), rgba(15,23,42,0.45));
+  --da-glass-card-bg: linear-gradient(135deg, rgba(30,41,59,0.70), rgba(15,23,42,0.50));
+  --da-glass-panel-bg: rgba(15, 23, 42, 0.50);
+
+  /* Sombras */
+  --da-glass-shadow: 0 8px 32px 0 rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.08);
+
+  /* Blur (mismo nivel, más saturación en oscuro) */
+  --da-glass-blur-high: blur(60px) saturate(200%);
+  --da-glass-blur-med:  blur(40px) saturate(180%);
+  --da-glass-blur-low:  blur(20px) saturate(160%);
+
+  /* Primary glow recalibrado para dark (más visible sobre fondos oscuros) */
+  --da-primary-glow: rgba(179, 195, 76, 0.65);
+}
+
+/* GPU Layer Promotion & Rendering Optimizations */
+.gpu-layer {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: transform, opacity;
+}
+
+/* Virtualized Rendering for long tables and cards */
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 54px;
 }
