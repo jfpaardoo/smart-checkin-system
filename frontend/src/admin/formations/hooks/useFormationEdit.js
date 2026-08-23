@@ -8,6 +8,8 @@ const emptyItem = {
   name: "",
   description: "",
   formationDate: "",
+  location: "BA VILLAFRANCA",
+  trainer: "VICTOR PARDO",
   documentUrls: [],
 };
 

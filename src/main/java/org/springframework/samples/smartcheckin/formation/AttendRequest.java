@@ -11,4 +11,6 @@ public class AttendRequest {
     @NotBlank
     @Size(min = 4, max = 4)
     private String personalCode;
+
+    private Boolean withinWorkingHours = true;
 }

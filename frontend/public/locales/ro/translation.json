@@ -214,7 +214,10 @@
     "editSubtitle": "Modifică detaliile, programul și documentația instruirii",
     "filterTime": "Filtrează după dată",
     "newSubtitle": "Creează o nouă sesiune de instruire și încarcă materialele",
-    "subtitle": "Programează sesiuni de instruire, gestionează prezența și materialele didactice"
+    "subtitle": "Programează sesiuni de instruire, gestionează prezența și materialele didactice",
+    "location": "Locație Formare",
+    "trainer": "Formator",
+    "titleUppercase": "FORMARE"
   },
   "formationDetails": {
     "title": "Detalii Formare",
@@ -264,7 +267,29 @@
     "filterStatus": "Filtrează starea",
     "searchAttendee": "Caută participant după nume, utilizator sau cod...",
     "checkinTime": "Intrare:",
-    "checkoutTime": "Ieșire:"
+    "checkoutTime": "Ieșire:",
+    "summaryAndAttendanceRecord": "REZUMAT ȘI REGISTRU DE PREZENȚĂ",
+    "closedBadge": "Finalizată și Certificată",
+    "exportOfficialSheet": "Registru Oficial (FOR 99)",
+    "locationLabel": "Locație",
+    "trainerLabel": "Formator",
+    "statusClosed": "Închisă și Semnată",
+    "statusOpen": "Deschisă",
+    "noDescription": "Fără descriere",
+    "observationsLabel": "Observații / Jurnal Incidente",
+    "trainerSignatureLabel": "Semnătură Formator",
+    "closeAction": "Finalizare Formare",
+    "cannotCloseAlert": "Pentru a finaliza formarea, toți participanții înscriși trebuie să fi efectuat ieșirea și să fi semnat.",
+    "closeModalTitle": "Finalizare și Certificare Formare",
+    "closeNotice": "Toți participanții și-au finalizat prezența. La finalizare, formarea va fi blocată pentru editare și registrul oficial va fi salvat cu semnătura dumneavoastră.",
+    "trainerNameLabel": "Nume Formator",
+    "observationsPlaceholder": "Indicați dacă au existat incidente, probleme tehnice sau mențiuni pe parcursul sesiunii...",
+    "signHint": "Semnați cu mouse-ul sau cu degetul pe ecranul tactil.",
+    "closeSuccess": "Formare finalizată și certificată cu succes.",
+    "closeError": "Eroare la finalizarea formării.",
+    "signatureRequired": "Vă rugăm să aplicați semnătura în calitate de formator pentru a închide sesiunea.",
+    "officialSheetDownloaded": "Registru oficial FOR 99 descărcat și sincronizat cu succes.",
+    "downloadOfficialSheetError": "Eroare la descărcarea registrului oficial FOR 99."
   },
   "qr": {
     "title": "QR Formare",
@@ -358,7 +383,9 @@
     "switchCamera": "Schimbă Camera"
   },
   "common": {
+    "clear": "Șterge",
     "clearFilters": "Șterge filtrele",
+    "downloading": "Se descarcă...",
     "noDescription": "Fără descriere",
     "back": "Înapoi",
     "rowsPerPage": "Pe pag:",

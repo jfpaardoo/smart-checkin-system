@@ -53,22 +53,8 @@ public class FormationCheckinFacade {
     @Transactional(rollbackFor = Exception.class)
     public Formation createFormation(FormationRequest request, List<MultipartFile> files) {
         Formation formation = new Formation();
-        formation.setName(request.getName());
-        formation.setDescription(request.getDescription());
-        formation.setFormationDate(request.getFormationDate());
-
-        if (files != null && !files.isEmpty()) {
-            for (MultipartFile file : files) {
-                if (file != null && !file.isEmpty()) {
-                    try {
-                        String link = cloudStorageAdapter.uploadFile(file, request.getName());
-                        formation.getDocumentUrls().add(link);
-                    } catch (Exception e) {
-                        throw new IllegalStateException("Error al subir el archivo '" + file.getOriginalFilename() + "' a OneDrive: " + e.getMessage(), e);
-                    }
-                }
-            }
-        }
+        mapBasicFields(formation, request);
+        uploadFiles(files, request.getName(), formation.getDocumentUrls());
 
         Formation saved = formationService.saveFormation(formation);
         notifyFormationsUpdate(saved.getId());
@@ -81,11 +67,45 @@ public class FormationCheckinFacade {
         Formation existing = formationService.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Formation not found"));
             
-        existing.setName(request.getName());
-        existing.setDescription(request.getDescription());
-        existing.setFormationDate(request.getFormationDate());
+        mapBasicFields(existing, request);
+        cleanupRemovedDocuments(existing, request.getExistingDocumentUrls());
+        uploadFiles(files, request.getName(), existing.getDocumentUrls());
         
-        List<String> toKeep = request.getExistingDocumentUrls() != null ? request.getExistingDocumentUrls() : List.of();
+        Formation saved = formationService.updateFormation(existing, id);
+        notifyFormationsUpdate(saved.getId());
+        return saved;
+    }
+
+    private void mapBasicFields(Formation formation, FormationRequest request) {
+        formation.setName(request.getName());
+        formation.setDescription(request.getDescription());
+        formation.setFormationDate(request.getFormationDate());
+        if (request.getLocation() != null && !request.getLocation().isBlank()) {
+            formation.setLocation(request.getLocation());
+        }
+        if (request.getTrainer() != null && !request.getTrainer().isBlank()) {
+            formation.setTrainer(request.getTrainer());
+        }
+    }
+
+    private void uploadFiles(List<MultipartFile> files, String formationName, List<String> targetUrls) {
+        if (files == null || files.isEmpty()) {
+            return;
+        }
+        for (MultipartFile file : files) {
+            if (file != null && !file.isEmpty()) {
+                try {
+                    String link = cloudStorageAdapter.uploadFile(file, formationName);
+                    targetUrls.add(link);
+                } catch (Exception e) {
+                    throw new IllegalStateException("Error al subir el archivo '" + file.getOriginalFilename() + "' a OneDrive: " + e.getMessage(), e);
+                }
+            }
+        }
+    }
+
+    private void cleanupRemovedDocuments(Formation existing, List<String> existingDocumentUrls) {
+        List<String> toKeep = existingDocumentUrls != null ? existingDocumentUrls : List.of();
         List<String> removedDocs = new ArrayList<>(existing.getDocumentUrls());
         removedDocs.removeAll(toKeep);
         
@@ -98,34 +118,22 @@ public class FormationCheckinFacade {
         }
 
         existing.getDocumentUrls().retainAll(toKeep);
-        
-        if (files != null) {
-            for (MultipartFile file : files) {
-                if (file != null && !file.isEmpty()) {
-                    try {
-                        String link = cloudStorageAdapter.uploadFile(file, request.getName());
-                        existing.getDocumentUrls().add(link);
-                    } catch (Exception e) {
-                        throw new IllegalStateException("Error al subir el archivo '" + file.getOriginalFilename() + "' a OneDrive: " + e.getMessage(), e);
-                    }
-                }
-            }
-        }
-        
-        Formation saved = formationService.updateFormation(existing, id);
-        notifyFormationsUpdate(saved.getId());
-        return saved;
     }
 
     @Auditable(action = "CHECKIN_FORMATION", details = "User checked into formation")
-    public Formation registerAttendance(Integer id, String personalCode) {
+    public Formation registerAttendance(Integer id, String personalCode, Boolean withinWorkingHours) {
         String code = personalCode;
         if (code == null || code.isBlank()) {
             code = userService.findCurrentUser().getPersonalCode();
         }
-        Formation formation = formationService.registerAttendance(id, code);
+        Formation formation = formationService.registerAttendance(id, code, withinWorkingHours);
         notifyFormationsUpdate(id);
         return formation;
+    }
+
+    @Auditable(action = "CHECKIN_FORMATION", details = "User checked into formation")
+    public Formation registerAttendance(Integer id, String personalCode) {
+        return registerAttendance(id, personalCode, true);
     }
 
     @Auditable(action = "CHECKOUT_FORMATION", details = "User checked out of formation")

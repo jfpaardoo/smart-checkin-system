@@ -55,10 +55,14 @@ public class Formation extends BaseEntity {
     @lombok.Builder.Default
     private List<FormationAttendance> attendances = new ArrayList<>();
 
+    @NotBlank
+    @Size(max = 255)
     @Column(name = "location", length = 255)
     @lombok.Builder.Default
     private String location = "BA VILLAFRANCA";
 
+    @NotBlank
+    @Size(max = 255)
     @Column(name = "trainer", length = 255)
     @lombok.Builder.Default
     private String trainer = "VICTOR PARDO";

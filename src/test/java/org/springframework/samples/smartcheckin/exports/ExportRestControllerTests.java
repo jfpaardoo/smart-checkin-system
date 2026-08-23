@@ -86,6 +86,9 @@ class ExportRestControllerTests {
 	@MockitoBean
 	private OfficialFormationSheetService officialFormationSheetService;
 
+	@MockitoBean
+	private org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter cloudStorageAdapter;
+
 	@Autowired
 	private MockMvc mockMvc;
 
@@ -532,7 +535,7 @@ class ExportRestControllerTests {
 
         mockMvc.perform(get(BASE_URL + "/formations/1/official-sheet"))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("FOR99_")));
+                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("FOR_99 HRS.xls")));
     }
 }
 

@@ -14,8 +14,10 @@ import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFPatriarch;
+import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFTextbox;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -44,6 +46,30 @@ public class OfficialFormationSheetService {
     }
 
     public byte[] generateOfficialSheet(Formation formation) throws IOException {
+        try (InputStream stream = loadTemplateStream();
+             HSSFWorkbook workbook = new HSSFWorkbook(stream)) {
+
+            List<FormationAttendance> attendances = formation.getAttendances() != null ? formation.getAttendances() : List.of();
+            int totalPages = Math.max(1, (int) Math.ceil(attendances.size() / 21.0));
+
+            setupSheets(workbook, formation, totalPages);
+
+            HSSFCellStyle textStyle = createTextStyle(workbook);
+            HSSFCellStyle centerCrossStyle = workbook.createCellStyle();
+            centerCrossStyle.cloneStyleFrom(textStyle);
+            centerCrossStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            for (int p = 0; p < totalPages; p++) {
+                renderPage(workbook.getSheetAt(p), formation, attendances, p, textStyle, centerCrossStyle);
+            }
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            workbook.write(baos);
+            return baos.toByteArray();
+        }
+    }
+
+    private InputStream loadTemplateStream() throws IOException {
         InputStream is = getClass().getResourceAsStream("/templates/template_for99.xls");
         if (is == null) {
             ClassPathResource res = new ClassPathResource("templates/template_for99.xls");
@@ -54,31 +80,47 @@ public class OfficialFormationSheetService {
         if (is == null) {
             throw new IllegalStateException("Plantilla oficial template_for99.xls no encontrada en classpath.");
         }
+        return is;
+    }
 
-        try (InputStream stream = is;
-             HSSFWorkbook workbook = new HSSFWorkbook(stream)) {
-
-            HSSFSheet sheet = workbook.getSheetAt(0);
-
-            if (formation.getFormationDate() != null) {
-                String sheetName = formation.getFormationDate().format(DateTimeFormatter.ofPattern("MMM-yy", Locale.of("es", "ES"))).toUpperCase();
-                workbook.setSheetName(0, sheetName);
-            }
-
-            HSSFPatriarch patriarch = sheet.getDrawingPatriarch();
-            if (patriarch == null) {
-                patriarch = sheet.createDrawingPatriarch();
-            }
-
-            populateCourseInfo(sheet, formation);
-            populateSummary(sheet, formation);
-            populateAttendances(workbook, sheet, patriarch, formation.getAttendances());
-            populateFooter(sheet, patriarch, formation);
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            workbook.write(baos);
-            return baos.toByteArray();
+    private void setupSheets(HSSFWorkbook workbook, Formation formation, int totalPages) {
+        String baseSheetName = "FOR99";
+        if (formation.getFormationDate() != null) {
+            baseSheetName = formation.getFormationDate().format(DateTimeFormatter.ofPattern("MMM-yy", Locale.of("es", "ES"))).toUpperCase();
         }
+
+        for (int p = 1; p < totalPages; p++) {
+            workbook.cloneSheet(0);
+        }
+
+        for (int p = 0; p < totalPages; p++) {
+            String sheetName = totalPages == 1 ? baseSheetName : baseSheetName + " (" + (p + 1) + ")";
+            workbook.setSheetName(p, sheetName);
+        }
+    }
+
+    private void renderPage(HSSFSheet sheet, Formation formation, List<FormationAttendance> attendances,
+                            int pageIndex, HSSFCellStyle textStyle, HSSFCellStyle centerCrossStyle) {
+        HSSFPatriarch patriarch = sheet.getDrawingPatriarch();
+        if (patriarch == null) {
+            patriarch = sheet.createDrawingPatriarch();
+        }
+
+        populateCourseInfo(sheet, formation);
+        populateSummary(sheet, formation);
+
+        int startIdx = pageIndex * 21;
+        int endIdx = Math.min(startIdx + 21, attendances.size());
+        if (startIdx < attendances.size()) {
+            List<FormationAttendance> pageAttendances = attendances.subList(startIdx, endIdx);
+            int startRow = 23;
+            for (int i = 0; i < pageAttendances.size(); i++) {
+                int currentRow = startRow + i;
+                renderAttendanceRow(sheet, patriarch, pageAttendances.get(i), currentRow, textStyle, centerCrossStyle, startIdx + i + 1);
+            }
+        }
+
+        populateFooter(sheet, patriarch, formation);
     }
 
     private void populateCourseInfo(HSSFSheet sheet, Formation formation) {
@@ -114,25 +156,6 @@ public class OfficialFormationSheetService {
         }
     }
 
-    private void populateAttendances(HSSFWorkbook workbook, HSSFSheet sheet, HSSFPatriarch patriarch, List<FormationAttendance> attendances) {
-        if (attendances == null || attendances.isEmpty()) {
-            return;
-        }
-
-        HSSFCellStyle textStyle = createTextStyle(workbook);
-        HSSFCellStyle centerCrossStyle = workbook.createCellStyle();
-        centerCrossStyle.cloneStyleFrom(textStyle);
-        centerCrossStyle.setAlignment(HorizontalAlignment.CENTER);
-
-        int startRow = 23;
-        int maxRows = 21;
-
-        for (int i = 0; i < Math.min(attendances.size(), maxRows); i++) {
-            int currentRow = startRow + i;
-            renderAttendanceRow(sheet, patriarch, attendances.get(i), currentRow, textStyle, centerCrossStyle, i + 1);
-        }
-    }
-
     private void renderAttendanceRow(HSSFSheet sheet, HSSFPatriarch patriarch,
                                      FormationAttendance att, int currentRow,
                                      HSSFCellStyle textStyle, HSSFCellStyle centerCrossStyle, int position) {
@@ -151,13 +174,53 @@ public class OfficialFormationSheetService {
         String personalCode = user.getPersonalCode() != null ? user.getPersonalCode() : String.valueOf(user.getId());
         setStyledCellValue(sheet, currentRow, 17, personalCode, textStyle);
 
-        boolean isWorking = !Boolean.FALSE.equals(user.getIsWorking());
-        int colCheck = isWorking ? 29 : 33;
+        boolean isInsideWork = att.getWithinWorkingHours() != null
+                ? Boolean.TRUE.equals(att.getWithinWorkingHours())
+                : !Boolean.FALSE.equals(user.getIsWorking());
+        int colCheck = isInsideWork ? 29 : 33;
         setStyledCellValue(sheet, currentRow, colCheck, "X", centerCrossStyle);
+        drawCrossInBox(sheet, patriarch, currentRow, isInsideWork);
 
         byte[] signatureBytes = extractSignaturePng(att.getSignature());
         if (signatureBytes.length > 0) {
             insertSignature(sheet, patriarch, signatureBytes, currentRow);
+        }
+    }
+
+    private void drawCrossInBox(HSSFSheet sheet, HSSFPatriarch patriarch, int currentRow, boolean isInsideWork) {
+        try {
+            int col1 = isInsideWork ? 30 : 34;
+            int col2 = isInsideWork ? 31 : 35;
+            int dx1 = isInsideWork ? 916 : 216;
+            int dx2 = isInsideWork ? 904 : 916;
+            int dy1 = 32;
+            int dy2 = 213;
+
+            HSSFClientAnchor anchor = new HSSFClientAnchor(
+                    dx1, dy1, dx2, dy2,
+                    (short) col1, currentRow, (short) col2, currentRow
+            );
+            anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_AND_RESIZE);
+
+            HSSFTextbox textbox = patriarch.createTextbox(anchor);
+            HSSFFont font = sheet.getWorkbook().createFont();
+            font.setFontName("Arial");
+            font.setFontHeightInPoints((short) 10);
+            font.setBold(true);
+
+            HSSFRichTextString rts = new HSSFRichTextString("X");
+            rts.applyFont(font);
+            textbox.setString(rts);
+            textbox.setHorizontalAlignment(HSSFTextbox.HORIZONTAL_ALIGNMENT_CENTERED);
+            textbox.setVerticalAlignment(HSSFTextbox.VERTICAL_ALIGNMENT_CENTER);
+            textbox.setMarginTop(0);
+            textbox.setMarginBottom(0);
+            textbox.setMarginLeft(0);
+            textbox.setMarginRight(0);
+            textbox.setLineStyle(org.apache.poi.hssf.usermodel.HSSFShape.LINESTYLE_NONE);
+            textbox.setNoFill(true);
+        } catch (Exception ignored) {
+            // fallback gracefully
         }
     }
 

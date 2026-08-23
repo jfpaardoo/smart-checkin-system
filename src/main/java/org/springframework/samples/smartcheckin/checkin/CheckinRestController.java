@@ -73,60 +73,76 @@ public class CheckinRestController {
         User user = userService.findCurrentUser();
         Formation targetFormation = resolveFormation(request);
 
-        // Inject cached admin location if missing (Manual Check-in scenario)
         injectAdminLocationIfMissing(request, targetFormation);
 
-        // ==========================================
-        // FLUJO 1: EL CÓDIGO ES DE UNA FORMACIÓN
-        // ==========================================
         if (targetFormation != null) {
-            if (Boolean.TRUE.equals(targetFormation.getIsClosed())) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of(MESSAGE_KEY, "Esta formación ya ha sido finalizada y cerrada. No se admiten nuevos fichajes."));
-            }
-
-            ResponseEntity<Object> locationError = validateLocation(request);
-            if (locationError != null) return locationError;
-
-            try {
-                // Lo registramos en la formación
-                formationService.registerAttendance(targetFormation.getId(), user);
-                // La notificación (push + email) la envía FormationService internamente
-                messagingTemplate.convertAndSend("/topic/formations", "UPDATED");
-                
-                Map<String, Object> responseBody = new HashMap<>();
-                responseBody.put("formationId", targetFormation.getId());
-                responseBody.put("formationName", targetFormation.getName());
-                
-                // Simulamos la info de Entrada para que el Frontend la lea bien
-                Map<String, String> checkinInfo = new HashMap<>();
-                checkinInfo.put("type", "ENTRADA");
-                responseBody.put("checkin", checkinInfo);
-                
-                return new ResponseEntity<>(responseBody, HttpStatus.CREATED);
-                
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of(MESSAGE_KEY, "Error al registrar en formación: " + e.getMessage()));
-            }
+            return processFormationCheckin(targetFormation, user, request);
         }
 
-        // ==========================================
-        // FLUJO 2: EL CÓDIGO NO ES DE FORMACIÓN (Fichaje Global de la fábrica)
-        // ==========================================
-        if (!totpService.verifyToken(request.getToken())) {
+        if (request.getFormationId() != null) {
+            return handleFormationTokenError(request);
+        }
+
+        return processGeneralCheckin(user, request);
+    }
+
+    private ResponseEntity<Object> processFormationCheckin(Formation targetFormation, User user, QrCheckinRequest request) {
+        if (Boolean.TRUE.equals(targetFormation.getIsClosed())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of(MESSAGE_KEY, "Código inválido o expirado."));
+                    .body(Map.of(MESSAGE_KEY, "Esta formación ya ha sido finalizada y cerrada. No se admiten nuevos fichajes."));
         }
 
-        // Si es el global, verificamos distancia si fuera necesario
         ResponseEntity<Object> locationError = validateLocation(request);
         if (locationError != null) return locationError;
 
-        // Calculamos si entra o sale
+        try {
+            formationService.registerAttendance(targetFormation.getId(), user, request.getWithinWorkingHours());
+            messagingTemplate.convertAndSend("/topic/formations", "UPDATED");
+
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("formationId", targetFormation.getId());
+            responseBody.put("formationName", targetFormation.getName());
+
+            Map<String, String> checkinInfo = new HashMap<>();
+            checkinInfo.put("type", "ENTRADA");
+            responseBody.put("checkin", checkinInfo);
+
+            return new ResponseEntity<>(responseBody, HttpStatus.CREATED);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(MESSAGE_KEY, "Error al registrar en formación: " + e.getMessage()));
+        }
+    }
+
+    private ResponseEntity<Object> handleFormationTokenError(QrCheckinRequest request) {
+        List<Formation> all = formationService.findAll();
+        boolean isOtherFormation = all.stream().anyMatch(f -> totpService.verifyToken(request.getToken(), f.getId()));
+        if (isOtherFormation) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(MESSAGE_KEY, "El código o QR escaneado pertenece a otra formación diferente."));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(MESSAGE_KEY, "El código o QR de formación ha expirado o no es válido."));
+    }
+
+    private ResponseEntity<Object> processGeneralCheckin(User user, QrCheckinRequest request) {
+        if (!totpService.verifyToken(request.getToken())) {
+            List<Formation> all = formationService.findAll();
+            boolean isFormationToken = all.stream().anyMatch(f -> totpService.verifyToken(request.getToken(), f.getId()));
+            if (isFormationToken) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of(MESSAGE_KEY, "El código escaneado pertenece a una formación, no al control general de fichaje."));
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(MESSAGE_KEY, "El código o QR ha expirado o no es válido."));
+        }
+
+        ResponseEntity<Object> locationError = validateLocation(request);
+        if (locationError != null) return locationError;
+
         CheckinType type = (Boolean.TRUE.equals(user.getIsWorking())) ? CheckinType.SALIDA : CheckinType.ENTRADA;
-        
-        // Exigimos firma si sale
+
         if (type == CheckinType.SALIDA && isSignatureMissing(request)) {
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .body(Map.of("needsSignature", true, MESSAGE_KEY, "Signature required for checkout"));
@@ -134,7 +150,6 @@ public class CheckinRestController {
 
         Checkin saved = processCheckinRecord(user, type, request.getSignature());
 
-        // Notificación push + email tras fichaje global
         try {
             String notifTitle = type == CheckinType.ENTRADA ? "Entrada registrada" : "Salida registrada";
             String notifBody  = type == CheckinType.ENTRADA

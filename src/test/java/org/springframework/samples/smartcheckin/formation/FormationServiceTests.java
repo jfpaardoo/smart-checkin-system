@@ -102,6 +102,25 @@ class FormationServiceTests {
     }
 
     @Test
+    void testRegisterAttendanceWithWithinWorkingHours() {
+        Formation formation = new Formation();
+        formation.setId(1);
+        formation.setAttendances(new ArrayList<>());
+
+        User user = new User();
+        user.setPersonalCode("1234");
+
+        when(userService.findByPersonalCode("1234")).thenReturn(user);
+        when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
+        when(attendanceRepository.findByFormationAndUser(formation, user)).thenReturn(Optional.empty());
+
+        Formation res = formationService.registerAttendance(1, "1234", false);
+        assertNotNull(res);
+        assertFalse(formation.getAttendances().isEmpty());
+        assertEquals(Boolean.FALSE, formation.getAttendances().get(0).getWithinWorkingHours());
+    }
+
+    @Test
     void testCheckoutAttendance() {
         Formation formation = new Formation();
         formation.setId(1);

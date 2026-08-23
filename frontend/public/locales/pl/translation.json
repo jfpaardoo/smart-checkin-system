@@ -214,7 +214,10 @@
     "editSubtitle": "Modyfikuj dane, harmonogram i dokumentację szkolenia",
     "filterTime": "Filtruj po dacie",
     "newSubtitle": "Utwórz nową sesję szkoleniową i prześlij materiały",
-    "subtitle": "Planuj sesje szkoleniowe, zarządzaj obecnością i materiałami dydaktycznymi"
+    "subtitle": "Planuj sesje szkoleniowe, zarządzaj obecnością i materiałami dydaktycznymi",
+    "location": "Miejsce szkolenia",
+    "trainer": "Trener",
+    "titleUppercase": "SZKOLENIE"
   },
   "formationDetails": {
     "title": "Szczegóły Szkolenia",
@@ -264,7 +267,29 @@
     "filterStatus": "Filtruj status",
     "searchAttendee": "Szukaj uczestnika po imieniu, loginie lub kodzie...",
     "checkinTime": "Wejście:",
-    "checkoutTime": "Wyjście:"
+    "checkoutTime": "Wyjście:",
+    "summaryAndAttendanceRecord": "PODSUMOWANIE I REJESTR OBECNOŚCI",
+    "closedBadge": "Ukończone i Certyfikowane",
+    "exportOfficialSheet": "Oficjalny Rejestr (FOR 99)",
+    "locationLabel": "Miejsce",
+    "trainerLabel": "Trener",
+    "statusClosed": "Zamknięte i Podpisane",
+    "statusOpen": "Otwarte",
+    "noDescription": "Brak opisu",
+    "observationsLabel": "Obserwacje / Rejestr Incydentów",
+    "trainerSignatureLabel": "Podpis Trenera",
+    "closeAction": "Zakończ Szkolenie",
+    "cannotCloseAlert": "Aby zakończyć szkolenie, wszyscy zarejestrowani uczestnicy muszą zakończyć obecność i złożyć podpis.",
+    "closeModalTitle": "Zakończ i Certyfikuj Szkolenie",
+    "closeNotice": "Wszyscy uczestnicy zarejestrowali swoją obecność. Po zakończeniu szkolenie zostanie zablokowane do edycji, a oficjalny rejestr zostanie zapisany z Twoim podpisem.",
+    "trainerNameLabel": "Nazwisko Trenera",
+    "observationsPlaceholder": "Wskaż, czy podczas sesji wystąpiły jakiekolwiek incydenty, problemy techniczne lub uwagi...",
+    "signHint": "Podpisz myszką lub palcem na ekranie dotykowym.",
+    "closeSuccess": "Szkolenie zostało pomyślnie zakończone i certyfikowane.",
+    "closeError": "Błąd podczas zamykania szkolenia.",
+    "signatureRequired": "Proszę złożyć podpis jako trener, aby zamknąć sesję.",
+    "officialSheetDownloaded": "Oficjalny rejestr FOR 99 został pobrany i zsynchronizowany pomyślnie.",
+    "downloadOfficialSheetError": "Błąd podczas pobierania oficjalnego rejestru FOR 99."
   },
   "qr": {
     "title": "QR Szkolenia",
@@ -364,9 +389,11 @@
     "switchCamera": "Przełącz kamerę"
   },
   "common": {
+    "clear": "Wyczyść",
     "clearFilters": "Wyczyść filtry",
+    "downloading": "Pobieranie...",
     "noDescription": "Brak opisu",
-    "back": "Wstecz",
+    "back": "Powrót",
     "rowsPerPage": "Na stronę:",
     "save": "Zapisz",
     "cancel": "Anuluj",

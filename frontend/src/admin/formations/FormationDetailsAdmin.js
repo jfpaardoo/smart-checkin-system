@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQrcode, faPencil, faTrash, faFileLines, faChevronDown, faChevronUp, faArrowLeft, faFileExcel, faCheckDouble, faLock } from "@fortawesome/free-solid-svg-icons";
+import { faQrcode, faPencil, faTrash, faFileLines, faChevronDown, faChevronUp, faArrowLeft, faFileExcel, faCheckDouble, faLock, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import getIdFromUrl from "../../util/getIdFromUrl";
@@ -28,6 +28,7 @@ export default function FormationDetailsAdmin() {
     handleDeleteFormation,
     downloadSignaturePdf,
     downloadOfficialSheet,
+    isDownloadingSheet,
     handleCloseFormation,
     canCloseFormation
   } = useFormationDetails(id);
@@ -56,47 +57,55 @@ export default function FormationDetailsAdmin() {
           <div className="flex items-start sm:items-center gap-3 w-full lg:w-auto">
             <Link
               to="/formations"
-              className="p-2.5 rounded-2xl bg-white/50 dark:bg-slate-800/50 border border-white/70 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 hover:scale-105 active:scale-95 transition shadow-xs flex items-center justify-center shrink-0 text-decoration-none mt-0.5 sm:mt-0"
+              className="p-2.5 rounded-2xl bg-white/50 dark:bg-slate-800/50 border border-white/70 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 hover:scale-105 active:scale-95 transition shadow-xs flex items-center justify-center shrink-0 text-decoration-none mt-1 sm:mt-0"
               title={t("common.back", "Volver")}
             >
               <FontAwesomeIcon icon={faArrowLeft} />
             </Link>
 
             <div className="flex flex-col items-start text-left min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
-                <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-widest text-[#73841e] bg-[#b3c34c]/20 px-2.5 py-0.5 rounded-full border border-[#b3c34c]/30 inline-block truncate max-w-full">
-                  {t('formationDetails.title', 'Detalles de Formación')}
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 max-w-full">
+                <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-[#73841e] dark:text-[#d4e84a] bg-[#b3c34c]/20 px-2.5 sm:px-3 py-0.5 rounded-xl border border-[#b3c34c]/30 inline-flex items-center">
+                  {t('formationDetails.title', 'Detalles de la Formación')}
                 </span>
                 {formation.isClosed && (
-                  <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-widest text-emerald-700 dark:text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30 inline-flex items-center gap-1">
-                    <FontAwesomeIcon icon={faLock} />
+                  <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-500/20 px-2.5 sm:px-3 py-0.5 rounded-xl border border-emerald-500/30 inline-flex items-center gap-1.5">
+                    <FontAwesomeIcon icon={faLock} className="text-xs" />
                     {t('formationDetails.closedBadge', 'Finalizada y Certificada')}
                   </span>
                 )}
               </div>
-              <h2 className="mb-0 text-slate-800 dark:text-slate-100 font-bold text-lg sm:text-2xl break-words max-w-full leading-tight">
+              <h2 className="mb-0 text-slate-800 dark:text-slate-100 font-bold text-xl sm:text-2xl break-words max-w-full leading-tight">
                 {formation.name}
               </h2>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-start sm:justify-end gap-2 w-full lg:w-auto">
+          <div className="flex flex-wrap items-stretch sm:items-center justify-start sm:justify-end gap-2 w-full lg:w-auto">
             {formation.isClosed && (
               <button 
                 type="button"
-                className="da-btn-secondary px-3.5 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 shadow-xs hover:scale-105 active:scale-95 transition-all text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 cursor-pointer w-full sm:w-auto" 
+                disabled={isDownloadingSheet}
+                className="da-btn-excel flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 shadow-xs hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 min-h-[40px]" 
                 onClick={downloadOfficialSheet} 
-                title={t('formationDetails.exportOfficialSheet', 'Exportar Registro Oficial (FOR 99)')}
+                title={t('formationDetails.exportOfficialSheet', 'Registro Oficial (FOR 99)')}
               >
-                <FontAwesomeIcon icon={faFileExcel} className="text-emerald-600 dark:text-emerald-400" />
-                <span>{t('formationDetails.exportOfficialSheet', 'Registro Oficial (FOR 99)')}</span>
+                <FontAwesomeIcon 
+                  icon={isDownloadingSheet ? faSpinner : faFileExcel} 
+                  className={isDownloadingSheet ? "fa-spin" : ""} 
+                />
+                <span className="whitespace-nowrap">
+                  {isDownloadingSheet 
+                    ? t('common.downloading', 'Descargando...') 
+                    : t('formationDetails.exportOfficialSheet', 'Registro Oficial (FOR 99)')}
+                </span>
               </button>
             )}
 
             {!formation.isClosed && (
               <button 
                 type="button"
-                className={`px-3.5 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 border-0 cursor-pointer flex-1 sm:flex-initial ${
+                className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 border-0 cursor-pointer min-h-[40px] ${
                   canCloseFormation
                     ? 'da-btn-primary shadow-md'
                     : 'da-btn-secondary opacity-75 shadow-xs'
@@ -111,39 +120,39 @@ export default function FormationDetailsAdmin() {
                 title={t('formationDetails.closeAction', 'Finalizar Formación')}
               >
                 <FontAwesomeIcon icon={faCheckDouble} />
-                <span>{t('formationDetails.closeAction', 'Finalizar Formación')}</span>
+                <span className="whitespace-nowrap">{t('formationDetails.closeAction', 'Finalizar Formación')}</span>
               </button>
             )}
 
             {!formation.isClosed && (
               <Link 
-                className="da-btn-secondary px-3.5 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 text-decoration-none shadow-xs hover:scale-105 active:scale-95 transition-all text-slate-700 dark:text-slate-200" 
+                className="da-btn-secondary flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 text-decoration-none shadow-xs hover:scale-105 active:scale-95 transition-all min-h-[40px]" 
                 to={`/formations/${id}`} 
                 title={t('formations.edit')}
               >
                 <FontAwesomeIcon icon={faPencil} />
-                <span>{t('formations.edit', 'Editar')}</span>
+                <span className="whitespace-nowrap">{t('formations.edit', 'Editar')}</span>
               </Link>
             )}
 
             <Link 
-              className="da-btn-blue px-3.5 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 text-decoration-none shadow-xs hover:scale-105 active:scale-95 transition-all text-white" 
+              className="da-btn-blue flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 text-decoration-none shadow-xs hover:scale-105 active:scale-95 transition-all min-h-[40px]" 
               to={`/qr-generator?formationId=${id}`} 
               title={t('formationDetails.qrButton')}
             >
               <FontAwesomeIcon icon={faQrcode} />
-              <span>{t('formationDetails.qrButton', 'QR')}</span>
+              <span className="whitespace-nowrap">{t('formationDetails.qrButton', 'QR')}</span>
             </Link>
 
             {!formation.isClosed && (
               <button 
                 type="button"
-                className="da-btn-danger px-3.5 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 shadow-xs hover:scale-105 active:scale-95 transition-all border-0 cursor-pointer text-white" 
+                className="da-btn-danger flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 shadow-xs hover:scale-105 active:scale-95 transition-all border-0 cursor-pointer text-white min-h-[40px]" 
                 onClick={handleDeleteFormation} 
                 title={t('formations.delete')}
               >
                 <FontAwesomeIcon icon={faTrash} />
-                <span>{t('formations.delete', 'Eliminar')}</span>
+                <span className="whitespace-nowrap">{t('formations.delete', 'Eliminar')}</span>
               </button>
             )}
           </div>

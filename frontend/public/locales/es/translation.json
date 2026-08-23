@@ -214,7 +214,10 @@
     "editSubtitle": "Modifica los datos, horario y documentación de la formación",
     "filterTime": "Filtrar por fecha",
     "newSubtitle": "Crea una nueva sesión formativa y sube el material",
-    "subtitle": "Programa sesiones de formación, gestiona asistencias y material didáctico"
+    "subtitle": "Programa sesiones de formación, gestiona asistencias y material didáctico",
+    "location": "Lugar Formación",
+    "trainer": "Formador",
+    "titleUppercase": "FORMACIÓN"
   },
   "formationDetails": {
     "title": "Detalles de la Formación",
@@ -264,7 +267,29 @@
     "filterStatus": "Filtrar estado",
     "searchAttendee": "Buscar asistente por nombre, usuario o código...",
     "checkinTime": "Entrada:",
-    "checkoutTime": "Salida:"
+    "checkoutTime": "Salida:",
+    "summaryAndAttendanceRecord": "SUMARIO Y REGISTRO DE PRESENCIAS",
+    "closedBadge": "Finalizada y Certificada",
+    "exportOfficialSheet": "Registro Oficial (FOR 99)",
+    "locationLabel": "Lugar",
+    "trainerLabel": "Formador",
+    "statusClosed": "Cerrada y Firmada",
+    "statusOpen": "Abierta",
+    "noDescription": "Sin descripción",
+    "observationsLabel": "Observaciones / Registro de Incidencias",
+    "trainerSignatureLabel": "Firma del Formador",
+    "closeAction": "Finalizar Formación",
+    "cannotCloseAlert": "Para finalizar la formación es obligatorio que todos los asistentes inscritos hayan completado el checkout y firmado.",
+    "closeModalTitle": "Finalizar y Certificar Formación",
+    "closeNotice": "Todos los asistentes han completado su asistencia. Al finalizar, la formación quedará bloqueada para edición y se guardará el registro oficial con su firma.",
+    "trainerNameLabel": "Nombre del Formador",
+    "observationsPlaceholder": "Indique si hubo alguna incidencia, incidencias técnicas o puntualizaciones durante la sesión...",
+    "signHint": "Firme con el ratón o el dedo en la pantalla táctil.",
+    "closeSuccess": "Formación finalizada y certificada con éxito.",
+    "closeError": "Error al finalizar la formación.",
+    "signatureRequired": "Por favor, estampe su firma como formador para cerrar la convocatoria.",
+    "officialSheetDownloaded": "Registro oficial FOR 99 descargado y sincronizado con éxito.",
+    "downloadOfficialSheetError": "Error al descargar el registro oficial FOR 99."
   },
   "qr": {
     "title": "QR de Formación",
@@ -361,10 +386,17 @@
     "formationLabel": "Formación",
     "dateLabel": "Fecha",
     "close": "Cerrar",
-    "switchCamera": "Alternar Cámara"
+    "switchCamera": "Alternar Cámara",
+    "schedulePrompt": "En este momento, estoy:",
+    "insideWorkingHours": "Dentro del horario de trabajo",
+    "outsideWorkingHours": "Fuera del horario de trabajo",
+    "insideWorkingHoursShort": "Dentro horario",
+    "outsideWorkingHoursShort": "Fuera horario"
   },
   "common": {
+    "clear": "Limpiar",
     "clearFilters": "Limpiar filtros",
+    "downloading": "Descargando...",
     "noDescription": "Sin descripción",
     "back": "Volver",
     "rowsPerPage": "Por pág:",

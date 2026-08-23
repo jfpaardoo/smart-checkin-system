@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { useToast } from '../../components/ToastProvider';
 import { Turnstile } from '@marsidev/react-turnstile';
+import { useTheme } from '../../context/ThemeContext';
 import RegisterSuccess from './components/RegisterSuccess';
 import RegisterForm from './components/RegisterForm';
 import { useCaptchaSiteKey } from '../../hooks/useCaptchaSiteKey';
@@ -12,6 +13,7 @@ const companiesFetcher = (url) => fetch(url).then((res) => (res.ok ? res.json() 
 export default function Register() {
   const { t } = useTranslation();
   const toast = useToast();
+  const { isDark } = useTheme();
   const siteKey = useCaptchaSiteKey();
 
   const [form, setForm] = useState({
@@ -140,7 +142,7 @@ export default function Register() {
         }}
       >
         <Turnstile 
-          key={`${siteKey}-${captchaKey}`}
+          key={`${siteKey}-${captchaKey}-${isDark ? 'dark' : 'light'}`}
           siteKey={siteKey} 
           onSuccess={(token) => setCaptchaToken(token)}
           onError={() => {
@@ -149,7 +151,7 @@ export default function Register() {
           onExpire={() => {
             if (!isE2E) setCaptchaToken(null);
           }}
-          options={{ theme: 'light' }}
+          options={{ theme: isDark ? 'dark' : 'light' }}
         />
       </div>
     </div>

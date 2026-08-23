@@ -214,7 +214,10 @@
     "editSubtitle": "Schulungsdaten, Zeitplan und Dokumentation bearbeiten",
     "filterTime": "Nach Datum filtern",
     "newSubtitle": "Neue Schulungssitzung erstellen und Materialien hochladen",
-    "subtitle": "Schulungen planen, Anwesenheiten und Lehrmaterialien verwalten"
+    "subtitle": "Schulungen planen, Anwesenheiten und Lehrmaterialien verwalten",
+    "location": "Schulungsort",
+    "trainer": "Trainer",
+    "titleUppercase": "SCHULUNG"
   },
   "formationDetails": {
     "title": "Schulungsdetails",
@@ -264,7 +267,29 @@
     "filterStatus": "Status filtern",
     "searchAttendee": "Teilnehmer nach Name, Benutzername oder Code suchen...",
     "checkinTime": "Eingang:",
-    "checkoutTime": "Ausgang:"
+    "checkoutTime": "Ausgang:",
+    "summaryAndAttendanceRecord": "ZUSAMMENFASSUNG UND ANWESENHEITSLISTE",
+    "closedBadge": "Abgeschlossen und Zertifiziert",
+    "exportOfficialSheet": "Offizielles Protokoll (FOR 99)",
+    "locationLabel": "Ort",
+    "trainerLabel": "Trainer",
+    "statusClosed": "Geschlossen und Unterschrieben",
+    "statusOpen": "Offen",
+    "noDescription": "Keine Beschreibung",
+    "observationsLabel": "Beobachtungen / Vorfallsprotokoll",
+    "trainerSignatureLabel": "Unterschrift des Trainers",
+    "closeAction": "Schulung Beenden",
+    "cannotCloseAlert": "Um die Schulung abzuschließen, müssen alle angemeldeten Teilnehmer den Auslass vollzogen und unterschrieben haben.",
+    "closeModalTitle": "Schulung Beenden & Zertifizieren",
+    "closeNotice": "Alle Teilnehmer haben die Anwesenheit abgeschlossen. Nach dem Beenden wird die Schulung für Bearbeitungen gesperrt und das Protokoll gespeichert.",
+    "trainerNameLabel": "Name des Trainers",
+    "observationsPlaceholder": "Geben Sie an, ob während der Schulung Zwischenfälle oder technische Probleme aufgetreten sind...",
+    "signHint": "Mit der Maus oder dem Finger auf dem Touchscreen unterschreiben.",
+    "closeSuccess": "Schulung erfolgreich beendet und zertifiziert.",
+    "closeError": "Fehler beim Beenden der Schulung.",
+    "signatureRequired": "Bitte leisten Sie Ihre Unterschrift als Trainer, um die Schulung zu schließen.",
+    "officialSheetDownloaded": "Offizielles Protokoll FOR 99 erfolgreich heruntergeladen und synchronisiert.",
+    "downloadOfficialSheetError": "Fehler beim Herunterladen des offiziellen Protokolls FOR 99."
   },
   "qr": {
     "title": "Schulungs-QR",
@@ -364,7 +389,9 @@
     "switchCamera": "Kamera wechseln"
   },
   "common": {
+    "clear": "Löschen",
     "clearFilters": "Filter zurücksetzen",
+    "downloading": "Herunterladen...",
     "noDescription": "Keine Beschreibung",
     "back": "Zurück",
     "rowsPerPage": "Pro Seite:",

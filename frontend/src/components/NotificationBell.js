@@ -19,7 +19,7 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
     <div className="relative notif-dropdown-container inline-flex items-center">
       <button 
         type="button" 
-        className="relative flex items-center justify-center w-10 h-10 text-white hover:bg-white/10 rounded-full transition focus:outline-none cursor-pointer"
+        className="relative flex items-center justify-center w-10 h-10 text-slate-700 dark:text-white hover:bg-white/50 dark:hover:bg-white/10 rounded-full transition focus:outline-none cursor-pointer"
         onClick={handleToggle}
         aria-label={t('notifications.title', 'Notificaciones')}
       >
@@ -36,15 +36,15 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
           className={`da-nav-dropdown-container top-full mt-2 right-0 w-[300px] sm:w-[320px] transition-all duration-300 origin-top-right z-50 ${isOpen ? 'opacity-100 scale-100 translate-y-0 visible' : 'opacity-0 scale-95 -translate-y-4 invisible pointer-events-none'}`}
         >
           <div className="py-1" role="menu">
-            <div className="flex justify-between items-center px-4 py-2 border-b border-white/10 mb-2">
-              <strong className="text-white text-[11px] uppercase tracking-widest flex items-center gap-1.5">
-                <FaBell className="text-[#d4e157] text-xs" />
+            <div className="flex justify-between items-center px-4 py-2 border-b border-slate-300/40 dark:border-white/10 mb-2">
+              <strong className="text-slate-800 dark:text-white text-[11px] uppercase tracking-widest flex items-center gap-1.5">
+                <FaBell className="text-[#8fa228] dark:text-[#d4e157] text-xs" />
                 {t('notifications.title', 'Notificaciones')}
               </strong>
               {notifications.length > 0 && (
                 <button
                   type="button"
-                  className="text-[10px] text-white/60 hover:text-white transition-colors uppercase font-bold cursor-pointer bg-transparent border-0"
+                  className="text-[10px] text-slate-500 hover:text-slate-900 dark:text-white/60 dark:hover:text-white transition-colors uppercase font-bold cursor-pointer bg-transparent border-0"
                   onClick={clearAll}
                 >
                   {t('notifications.clearAll', 'Limpiar todo')}
@@ -54,19 +54,19 @@ export default function NotificationBell({ isMobile = false, isOpen = false, onT
             <div className="max-h-[50vh] overflow-y-auto px-1 space-y-1">
               {notifications.length === 0 ? (
                 <div className="text-center py-6">
-                  <FaBell className="mx-auto mb-2 text-white/20" size={28} />
-                  <div className="text-xs text-white/50">{t('notifications.empty', 'Sin notificaciones')}</div>
+                  <FaBell className="mx-auto mb-2 text-slate-400 dark:text-white/20" size={28} />
+                  <div className="text-xs text-slate-500 dark:text-white/50">{t('notifications.empty', 'Sin notificaciones')}</div>
                 </div>
               ) : (
                 notifications.map(n => (
                   <div 
                     key={n.id} 
-                    className={`block px-3.5 py-2.5 rounded-[18px] transition-all ${!n.read ? 'bg-white/15 text-white shadow-sm' : 'hover:bg-white/10 text-white/80'}`}
+                    className={`block px-3.5 py-2.5 rounded-[18px] transition-all ${!n.read ? 'bg-white/70 dark:bg-white/15 text-slate-900 dark:text-white shadow-sm' : 'hover:bg-white/40 dark:hover:bg-white/10 text-slate-700 dark:text-white/80'}`}
                   >
-                    <div className={`text-xs mb-1 leading-snug break-words ${!n.read ? 'font-bold text-white' : 'font-medium text-white/70'}`}>
+                    <div className={`text-xs mb-1 leading-snug break-words ${!n.read ? 'font-bold text-slate-900 dark:text-white' : 'font-medium text-slate-700 dark:text-white/70'}`}>
                       {n.text}
                     </div>
-                    <div className="text-[10px] text-white/40">
+                    <div className="text-[10px] text-slate-400 dark:text-white/40">
                       {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </div>
                   </div>

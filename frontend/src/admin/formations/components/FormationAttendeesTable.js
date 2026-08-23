@@ -28,9 +28,23 @@ export default function FormationAttendeesTable({
   const [pageSize, setPageSize] = useState(10);
 
   const renderAttendanceBadge = (att) => {
-    if (att.checkOutDate) return <span className="da-badge da-badge-active text-xs">{t('formationDetails.statusCompleted', 'Completada')}</span>;
-    if (att.checkInDate)  return <span className="da-badge da-badge-warning text-xs">{t('formationDetails.statusInProgress', 'En curso')}</span>;
-    return <span className="da-badge da-badge-inactive text-xs">{t('formationDetails.statusPending', 'Pendiente')}</span>;
+    if (att.checkOutDate) return <span className="da-badge da-badge-active text-[11px] sm:text-xs font-bold">{t('formationDetails.statusCompleted', 'Completada')}</span>;
+    if (att.checkInDate)  return <span className="da-badge da-badge-warning text-[11px] sm:text-xs font-bold">{t('formationDetails.statusInProgress', 'En curso')}</span>;
+    return <span className="da-badge da-badge-inactive text-[11px] sm:text-xs font-bold">{t('formationDetails.statusPending', 'Pendiente')}</span>;
+  };
+
+  const renderScheduleBadge = (att) => {
+    if (!att.checkInDate) return null;
+    const isInside = att.withinWorkingHours !== false;
+    return isInside ? (
+      <span className="da-badge bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/20 text-[10px] font-semibold">
+        {t('checkin.insideWorkingHoursShort', 'Dentro horario')}
+      </span>
+    ) : (
+      <span className="da-badge bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20 text-[10px] font-semibold">
+        {t('checkin.outsideWorkingHoursShort', 'Fuera horario')}
+      </span>
+    );
   };
 
   const attendeeIds = new Set(formation.attendances ? formation.attendances.map(a => a.user.id) : []);
@@ -182,7 +196,10 @@ export default function FormationAttendeesTable({
                         {isCompleted ? dayjs.utc(att.checkOutDate).local().format('HH:mm:ss') : '-'}
                       </td>
                       <td className="py-4 px-5 text-center">
-                        {renderAttendanceBadge(att)}
+                        <div className="flex flex-col items-center gap-1">
+                          {renderAttendanceBadge(att)}
+                          {renderScheduleBadge(att)}
+                        </div>
                       </td>
                       <td className="py-4 px-5 text-right">
                         <div className="inline-flex gap-2 justify-end items-center">
@@ -239,17 +256,20 @@ export default function FormationAttendeesTable({
               const hasCheckedIn = !!att.checkInDate;
               return (
                 <div key={att.id || user.id} className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm rounded-2xl p-4 border border-white/40 dark:border-white/10 flex flex-col gap-3">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-3">
+                  <div className="flex flex-col gap-2.5">
+                    <div className="flex items-center gap-3 min-w-0">
                       <div className="p-2.5 rounded-2xl bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a] shadow-xs flex-shrink-0">
                         <FaUser size={15} />
                       </div>
-                      <div>
-                        <h4 className="font-bold text-slate-800 dark:text-slate-100 m-0 text-base leading-tight">{user.firstName} {user.lastName}</h4>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 m-0 mt-0.5">@{user.username} • #{user.personalCode}</p>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-bold text-slate-800 dark:text-slate-100 m-0 text-base leading-tight break-words">{user.firstName} {user.lastName}</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 m-0 mt-0.5 truncate">@{user.username} • #{user.personalCode}</p>
                       </div>
                     </div>
-                    <div>{renderAttendanceBadge(att)}</div>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {renderAttendanceBadge(att)}
+                      {renderScheduleBadge(att)}
+                    </div>
                   </div>
 
                   <div className="flex justify-between text-xs text-slate-600 dark:text-slate-300 bg-white/40 dark:bg-slate-900/40 p-2.5 rounded-xl border border-white/40 dark:border-white/10 font-mono">

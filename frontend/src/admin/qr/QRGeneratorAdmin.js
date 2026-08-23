@@ -95,18 +95,28 @@ const QRGeneratorAdmin = () => {
         fetchCurrentToken();
     }, [fetchCurrentToken, wsTick]);
 
+    const lastBucketRef = React.useRef(Math.floor(Date.now() / 20000));
+
     useEffect(() => {
         const calculateProgress = () => {
-            const remainingMs = 20000 - (Date.now() % 20000);
+            const now = Date.now();
+            const currentBucket = Math.floor(now / 20000);
+            const remainingMs = 20000 - (now % 20000);
             setProgress((remainingMs / 20000) * 100);
+
+            // Si el ciclo de 20s ha finalizado y comenzado uno nuevo
+            if (currentBucket !== lastBucketRef.current) {
+                lastBucketRef.current = currentBucket;
+                fetchCurrentToken();
+            }
         };
         
         calculateProgress();
         const interval = setInterval(calculateProgress, 100);
         return () => clearInterval(interval);
-    }, []);
+    }, [fetchCurrentToken]);
 
-    // El WebSocket ya no sobrescribe con el token global. Solo avisa de que el tiempo pasó.
+    // El WebSocket sincroniza además en tiempo real cuando el backend cambia de token
     useSubscription('/topic/totp', () => {
         setWsTick(prev => prev + 1);
     });

@@ -54,7 +54,7 @@ export default function FormationEditAdmin() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="name" className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1">
-                {t('formations.formationName')}
+                {t('formations.formationName', 'Nombre de la Formación')} *
               </label>
               <input
                 type="text"
@@ -69,7 +69,7 @@ export default function FormationEditAdmin() {
 
             <div>
               <label htmlFor="formationDate" className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1">
-                {t('formations.dateAndTime')}
+                {t('formations.dateAndTime', 'Fecha y Hora')} *
               </label>
               <input
                 type="datetime-local"
@@ -77,6 +77,38 @@ export default function FormationEditAdmin() {
                 name="formationDate"
                 id="formationDate"
                 value={formattedDate}
+                onChange={handleChange}
+                className="da-input w-full"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="location" className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1">
+                {t('formations.location', 'Lugar Formación')} *
+              </label>
+              <input
+                type="text"
+                required
+                name="location"
+                id="location"
+                placeholder="Ej. BA VILLAFRANCA"
+                value={formation.location || ""}
+                onChange={handleChange}
+                className="da-input w-full"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="trainer" className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1">
+                {t('formations.trainer', 'Formador')} *
+              </label>
+              <input
+                type="text"
+                required
+                name="trainer"
+                id="trainer"
+                placeholder="Ej. VICTOR PARDO"
+                value={formation.trainer || ""}
                 onChange={handleChange}
                 className="da-input w-full"
               />

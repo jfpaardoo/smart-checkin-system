@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faQrcode, faKeyboard, faCalendarCheck, faSpinner, faLocationDot, faCheckCircle, faCameraRotate, faCamera } from '@fortawesome/free-solid-svg-icons';
+import { faQrcode, faKeyboard, faCalendarCheck, faSpinner, faLocationDot, faCheckCircle, faCameraRotate, faCamera, faBriefcase, faMoon } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '../../components/ToastProvider';
 import api from '../../services/api';
 import ManualCheckinForm from './components/ManualCheckinForm';
@@ -36,6 +36,8 @@ export default function ScannerCheckin() {
   const [loading, setLoading] = useState(false);
   const [needsSignature, setNeedsSignature] = useState(false);
   const pendingTokenRef = useRef('');
+
+  const [withinWorkingHours, setWithinWorkingHours] = useState(true);
 
   const [successModal, setSuccessModal] = useState(false);
   const [formationDetails, setFormationDetails] = useState(null);
@@ -118,22 +120,40 @@ export default function ScannerCheckin() {
     navigate('/dashboard');
   };
 
+  const prepareCheckinPayload = async (rawInput, signature) => {
+    const basePayload = parseRawInput(rawInput);
+    const coords = gpsCoords.userLat ? gpsCoords : await requestGps();
+
+    if (!coords.userLat && !basePayload.userLat && !navigator.webdriver && !(typeof window !== 'undefined' && (window.__PLAYWRIGHT__ || window.Cypress))) {
+      toast.warning(t('checkin.gpsMissingWarning', 'No se ha detectado ubicación GPS. Por favor, autoriza la ubicación en tu navegador si el administrador exige control de distancia.'));
+    }
+
+    return {
+      ...basePayload,
+      withinWorkingHours,
+      ...coords,
+      ...(signature ? { signature } : {})
+    };
+  };
+
+  const handleOfflineFlow = async (payload) => {
+    if (!payload) return;
+    await saveOfflineCheckin(payload);
+    toast.info(t('checkin.savedOffline', 'Sin conexión: Fichaje guardado localmente en tu dispositivo. Se sincronizará automáticamente al recuperar cobertura.'));
+    setFormationDetails({
+      name: t('formations.title', 'Fichaje Guardado Offline'),
+      description: t('checkin.offlineQueued', 'Tu registro ha quedado almacenado en el dispositivo y se enviará al recuperar conexión.'),
+      formationDate: new Date().toISOString(),
+      type: 'ENTRADA'
+    });
+    setSuccessModal(true);
+  };
+
   const handleCheckinExecution = async (rawInput, signature = null) => {
     setLoading(true);
     let payload;
     try {
-      const basePayload = parseRawInput(rawInput);
-      const coords = gpsCoords.userLat ? gpsCoords : await requestGps();
-
-      if (!coords.userLat && !basePayload.userLat && !navigator.webdriver && !(typeof window !== 'undefined' && (window.__PLAYWRIGHT__ || window.Cypress))) {
-        toast.warning(t('checkin.gpsMissingWarning', 'No se ha detectado ubicación GPS. Por favor, autoriza la ubicación en tu navegador si el administrador exige control de distancia.'));
-      }
-
-      payload = {
-        ...basePayload,
-        ...coords,
-        ...(signature ? { signature } : {})
-      };
+      payload = await prepareCheckinPayload(rawInput, signature);
 
       const res = await api.post('/checkins/qr-fichaje', payload, {
         validateStatus: status => (status >= 200 && status < 300) || status === 202
@@ -161,23 +181,15 @@ export default function ScannerCheckin() {
       setLoading(false);
       resumeScanning();
 
-      // Si no hay conexión a internet o falló por error de red
       if ((typeof navigator !== 'undefined' && !navigator.onLine) || !error.response) {
-        if (payload) {
-          await saveOfflineCheckin(payload);
-          toast.info(t('checkin.savedOffline', 'Sin conexión: Fichaje guardado localmente en tu dispositivo. Se sincronizará automáticamente al recuperar cobertura.'));
-          setFormationDetails({
-            name: t('formations.title', 'Fichaje Guardado Offline'),
-            description: t('checkin.offlineQueued', 'Tu registro ha quedado almacenado en el dispositivo y se enviará al recuperar conexión.'),
-            formationDate: new Date().toISOString(),
-            type: 'ENTRADA'
-          });
-          setSuccessModal(true);
-          return;
-        }
+        await handleOfflineFlow(payload);
+        return;
       }
 
-      const errMsg = error.response?.data?.message || error.message || t('checkin.processError', 'Error al procesar la solicitud');
+      const errMsg = error.response?.data?.message 
+        || (typeof error.response?.data === 'string' ? error.response.data : null) 
+        || error.message 
+        || t('checkin.processError', 'Error al procesar la solicitud');
       toast.error(errMsg);
     }
   };
@@ -198,6 +210,40 @@ export default function ScannerCheckin() {
 
       <div className="da-card mx-auto w-full max-w-[600px] p-6 sm:p-8 shadow-xl">
         
+        {/* Selector de Horario Laboral */}
+        <div className="mb-6">
+          <label className="block text-center text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+            {t('checkin.schedulePrompt', 'En este momento estoy:')}
+          </label>
+          <div className="w-full max-w-[440px] mx-auto p-1.5 rounded-2xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-xs flex gap-2">
+            <button
+              type="button"
+              onClick={() => setWithinWorkingHours(true)}
+              className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 border-0 cursor-pointer ${
+                withinWorkingHours
+                  ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-md scale-[1.02]'
+                  : 'bg-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }`}
+            >
+              <FontAwesomeIcon icon={faBriefcase} className={withinWorkingHours ? 'text-[#73841e] dark:text-[#d4e84a]' : ''} />
+              <span>{t('checkin.insideWorkingHours', 'Dentro de horario')}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setWithinWorkingHours(false)}
+              className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 border-0 cursor-pointer ${
+                !withinWorkingHours
+                  ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-md scale-[1.02]'
+                  : 'bg-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }`}
+            >
+              <FontAwesomeIcon icon={faMoon} className={!withinWorkingHours ? 'text-amber-500' : ''} />
+              <span>{t('checkin.outsideWorkingHours', 'Fuera de horario')}</span>
+            </button>
+          </div>
+        </div>
+
         <div style={{ display: isScanningEnabled ? 'block' : 'none' }}>
           <div className="text-center mb-6">
             <FontAwesomeIcon icon={faQrcode} size="3x" style={{ color: 'var(--da-primary)' }} className="mb-4" />

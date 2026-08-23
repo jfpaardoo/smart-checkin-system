@@ -126,7 +126,7 @@ class FormationRestControllerTests {
     @WithMockUser
     void testRegisterAttendanceSuccess() throws Exception {
         when(userService.findCurrentUser()).thenReturn(user);
-        when(formationService.registerAttendance(eq(1), anyString())).thenReturn(formation);
+        when(formationService.registerAttendance(eq(1), anyString(), any())).thenReturn(formation);
 
         mockMvc.perform(post(BASE_URL + ATTEND_PATH).with(csrf())).andExpect(status().isOk());
     }
@@ -171,6 +171,8 @@ class FormationRestControllerTests {
         FormationRequest req = new FormationRequest();
         req.setName(SPRING_SECURITY_101);
         req.setDescription(SECURITY_COURSE);
+        req.setLocation("BA VILLAFRANCA");
+        req.setTrainer("VICTOR PARDO");
         req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
 
         MockMultipartFile jsonPart = new MockMultipartFile(
@@ -192,6 +194,8 @@ class FormationRestControllerTests {
         FormationRequest req = new FormationRequest();
         req.setName(SPRING_SECURITY_UPDATED);
         req.setDescription(UPDATED_COURSE);
+        req.setLocation("BA VILLAFRANCA");
+        req.setTrainer("VICTOR PARDO");
         req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
         req.setExistingDocumentUrls(List.of());
 
@@ -219,12 +223,16 @@ class FormationRestControllerTests {
         existing.setId(1);
         existing.setName(JAVA_101);
         existing.setDescription(INTRO_TO_JAVA);
+        existing.setLocation("BA VILLAFRANCA");
+        existing.setTrainer("VICTOR PARDO");
         existing.getDocumentUrls().add(FILE1_ONEDRIVE_URL);
         existing.getDocumentUrls().add("file2.pdf||http://onedrive.link/file2.pdf||item456");
 
         FormationRequest req = new FormationRequest();
         req.setName("Java 101 Updated");
         req.setDescription(INTRO_TO_JAVA);
+        req.setLocation("BA VILLAFRANCA");
+        req.setTrainer("VICTOR PARDO");
         req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
         req.setExistingDocumentUrls(List.of(FILE1_ONEDRIVE_URL));
 
@@ -250,7 +258,7 @@ class FormationRestControllerTests {
     void testRegisterAttendanceWithPersonalCodeInBody() throws Exception {
         AttendRequest req = new AttendRequest();
         req.setPersonalCode("9999");
-        when(formationService.registerAttendance(1, "9999")).thenReturn(formation);
+        when(formationService.registerAttendance(eq(1), eq("9999"), any())).thenReturn(formation);
 
         mockMvc.perform(post(BASE_URL + ATTEND_PATH).with(csrf()).contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req))).andExpect(status().isOk());
@@ -260,7 +268,7 @@ class FormationRestControllerTests {
     @WithMockUser
     void testRegisterAttendanceFailure() throws Exception {
         when(userService.findCurrentUser()).thenReturn(user);
-        when(formationService.registerAttendance(eq(1), anyString())).thenThrow(new IllegalArgumentException("Already registered"));
+        when(formationService.registerAttendance(eq(1), anyString(), any())).thenThrow(new IllegalArgumentException("Already registered"));
 
         mockMvc.perform(post(BASE_URL + ATTEND_PATH).with(csrf())).andExpect(status().isBadRequest());
     }
@@ -301,6 +309,8 @@ class FormationRestControllerTests {
         FormationRequest req = new FormationRequest();
         req.setName(SPRING_SECURITY_UPDATED);
         req.setDescription(UPDATED_COURSE);
+        req.setLocation("BA VILLAFRANCA");
+        req.setTrainer("VICTOR PARDO");
         req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
 
         MockMultipartFile jsonPart = new MockMultipartFile(
@@ -339,11 +349,15 @@ class FormationRestControllerTests {
         existing.setId(1);
         existing.setName(JAVA_101);
         existing.setDescription(INTRO_TO_JAVA);
+        existing.setLocation("BA VILLAFRANCA");
+        existing.setTrainer("VICTOR PARDO");
         existing.getDocumentUrls().add(FILE1_ONEDRIVE_URL);
 
         FormationRequest req = new FormationRequest();
         req.setName("Java 101 Updated");
         req.setDescription(INTRO_TO_JAVA);
+        req.setLocation("BA VILLAFRANCA");
+        req.setTrainer("VICTOR PARDO");
         req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
         req.setExistingDocumentUrls(List.of());
 
@@ -370,6 +384,8 @@ class FormationRestControllerTests {
         FormationRequest req = new FormationRequest();
         req.setName(SPRING_SECURITY_UPDATED);
         req.setDescription(UPDATED_COURSE);
+        req.setLocation("BA VILLAFRANCA");
+        req.setTrainer("VICTOR PARDO");
         req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
         req.setExistingDocumentUrls(List.of());
 
@@ -396,6 +412,8 @@ class FormationRestControllerTests {
         FormationRequest req = new FormationRequest();
         req.setName(SPRING_SECURITY_101);
         req.setDescription(SECURITY_COURSE);
+        req.setLocation("BA VILLAFRANCA");
+        req.setTrainer("VICTOR PARDO");
         req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
 
         MockMultipartFile jsonPart = new MockMultipartFile(
@@ -419,6 +437,8 @@ class FormationRestControllerTests {
         FormationRequest req = new FormationRequest();
         req.setName(SPRING_SECURITY_101);
         req.setDescription(SECURITY_COURSE);
+        req.setLocation("BA VILLAFRANCA");
+        req.setTrainer("VICTOR PARDO");
         req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
 
         MockMultipartFile jsonPart = new MockMultipartFile(
@@ -472,7 +492,7 @@ class FormationRestControllerTests {
     @WithMockUser
     void registerAttendanceWithNullRequest() throws Exception {
         when(userService.findCurrentUser()).thenReturn(user);
-        when(formationService.registerAttendance(1, "1234")).thenReturn(formation);
+        when(formationService.registerAttendance(eq(1), eq("1234"), any())).thenReturn(formation);
 
         mockMvc.perform(post(BASE_URL + ATTEND_PATH).with(csrf()))
                 .andExpect(status().isOk());
@@ -482,7 +502,7 @@ class FormationRestControllerTests {
     @WithMockUser
     void registerAttendanceWithNullPersonalCode() throws Exception {
         when(userService.findCurrentUser()).thenReturn(user);
-        when(formationService.registerAttendance(1, "1234")).thenReturn(formation);
+        when(formationService.registerAttendance(eq(1), eq("1234"), any())).thenReturn(formation);
 
         AttendRequest req = new AttendRequest();
         req.setPersonalCode(null);
@@ -513,6 +533,8 @@ class FormationRestControllerTests {
     void createFormationWithNullFilesList() throws Exception {
         FormationRequest req = new FormationRequest();
         req.setName(SPRING_SECURITY_101);
+        req.setLocation("BA VILLAFRANCA");
+        req.setTrainer("VICTOR PARDO");
         req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
 
         MockMultipartFile jsonPart = new MockMultipartFile(
@@ -530,6 +552,8 @@ class FormationRestControllerTests {
     void updateFormationWithNullExistingUrlsAndNullFiles() throws Exception {
         FormationRequest req = new FormationRequest();
         req.setName(SPRING_SECURITY_UPDATED);
+        req.setLocation("BA VILLAFRANCA");
+        req.setTrainer("VICTOR PARDO");
         req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
         req.setExistingDocumentUrls(null); 
 
@@ -563,6 +587,8 @@ class FormationRestControllerTests {
 
         FormationRequest req = new FormationRequest();
         req.setName(SPRING_SECURITY_101);
+        req.setLocation("BA VILLAFRANCA");
+        req.setTrainer("VICTOR PARDO");
         req.setFormationDate(LocalDateTime.now(ZoneId.systemDefault()));
 
         MockMultipartFile jsonPart = new MockMultipartFile(

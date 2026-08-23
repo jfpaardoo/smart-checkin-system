@@ -214,7 +214,10 @@
     "editSubtitle": "Modify training details, schedule and documentation",
     "filterTime": "Filter by date",
     "newSubtitle": "Create a new training session and upload materials",
-    "subtitle": "Schedule training sessions, manage attendances and teaching materials"
+    "subtitle": "Schedule training sessions, manage attendances and teaching materials",
+    "location": "Training Location",
+    "trainer": "Trainer",
+    "titleUppercase": "TRAINING"
   },
   "formationDetails": {
     "title": "Formation Details",
@@ -264,7 +267,29 @@
     "filterStatus": "Filter status",
     "searchAttendee": "Search attendee by name, username or code...",
     "checkinTime": "Check-in:",
-    "checkoutTime": "Check-out:"
+    "checkoutTime": "Check-out:",
+    "summaryAndAttendanceRecord": "SUMMARY AND ATTENDANCE RECORD",
+    "closedBadge": "Completed & Certified",
+    "exportOfficialSheet": "Official Record (FOR 99)",
+    "locationLabel": "Location",
+    "trainerLabel": "Trainer",
+    "statusClosed": "Closed & Signed",
+    "statusOpen": "Open",
+    "noDescription": "No description",
+    "observationsLabel": "Observations / Incident Log",
+    "trainerSignatureLabel": "Trainer Signature",
+    "closeAction": "Finish Formation",
+    "cannotCloseAlert": "To complete the training, all registered attendees must have checked out and signed.",
+    "closeModalTitle": "Finish & Certify Formation",
+    "closeNotice": "All attendees have completed attendance. When closing, the formation will be locked for editing and the official record saved.",
+    "trainerNameLabel": "Trainer Name",
+    "observationsPlaceholder": "Indicate if there were any incidents, technical issues or notes during the session...",
+    "signHint": "Sign with mouse or touch screen.",
+    "closeSuccess": "Formation successfully finished and certified.",
+    "closeError": "Error finishing formation.",
+    "signatureRequired": "Please provide trainer signature to close the session.",
+    "officialSheetDownloaded": "Official record FOR 99 downloaded and synced successfully.",
+    "downloadOfficialSheetError": "Error downloading official record FOR 99."
   },
   "qr": {
     "title": "Formation QR",
@@ -361,10 +386,17 @@
     "formationLabel": "Training",
     "dateLabel": "Date",
     "close": "Close",
-    "switchCamera": "Switch Camera"
+    "switchCamera": "Switch Camera",
+    "schedulePrompt": "Right now, I am:",
+    "insideWorkingHours": "Within working hours",
+    "outsideWorkingHours": "Outside working hours",
+    "insideWorkingHoursShort": "In hours",
+    "outsideWorkingHoursShort": "Out of hours"
   },
   "common": {
+    "clear": "Clear",
     "clearFilters": "Clear filters",
+    "downloading": "Downloading...",
     "noDescription": "No description",
     "back": "Back",
     "rowsPerPage": "Per page:",

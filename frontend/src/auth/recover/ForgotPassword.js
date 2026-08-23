@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../../context/ThemeContext';
 import AuthService from '../../services/auth.service';
 import { useCaptchaSiteKey } from '../../hooks/useCaptchaSiteKey';
 
 export default function ForgotPassword() {
     const { t } = useTranslation();
+    const { isDark } = useTheme();
     const siteKey = useCaptchaSiteKey();
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState({ text: '', type: '' });
@@ -85,12 +87,12 @@ export default function ForgotPassword() {
 
             <div className="flex justify-center items-center my-1 w-full overflow-hidden">
                 <Turnstile 
-                    key={`${siteKey}-${captchaKey}`}
+                    key={`${siteKey}-${captchaKey}-${isDark ? 'dark' : 'light'}`}
                     siteKey={siteKey} 
                     onSuccess={(token) => setCaptchaToken(token)}
                     onError={() => setCaptchaToken(null)}
                     onExpire={() => setCaptchaToken(null)}
-                    options={{ theme: 'light' }}
+                    options={{ theme: isDark ? 'dark' : 'light' }}
                 />
             </div>
 

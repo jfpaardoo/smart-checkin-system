@@ -58,7 +58,10 @@ export default function UserDashboard() {
       reloadUserFormations();
 
     } catch (error) {
-      const msg = error.response?.data?.message || t('dashboard.checkoutError');
+      const msg = error.response?.data?.message 
+        || (typeof error.response?.data === 'string' ? error.response.data : null) 
+        || error.message 
+        || t('dashboard.checkoutError');
       toast.error(msg);
     }
   };

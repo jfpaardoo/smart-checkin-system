@@ -214,7 +214,10 @@
     "editSubtitle": "Modifier les informations, l'horaire et les documents de la formation",
     "filterTime": "Filtrer par date",
     "newSubtitle": "Créer une nouvelle session de formation et téléverser les documents",
-    "subtitle": "Planifiez des sessions de formation, gérez les présences et les supports de cours"
+    "subtitle": "Planifiez des sessions de formation, gérez les présences et les supports de cours",
+    "location": "Lieu de formation",
+    "trainer": "Formateur",
+    "titleUppercase": "FORMATION"
   },
   "formationDetails": {
     "title": "Détails de la Formation",
@@ -264,7 +267,29 @@
     "filterStatus": "Filtrer le statut",
     "searchAttendee": "Rechercher un participant par nom, nom d'utilisateur ou code...",
     "checkinTime": "Entrée :",
-    "checkoutTime": "Sortie :"
+    "checkoutTime": "Sortie :",
+    "summaryAndAttendanceRecord": "RÉSUMÉ ET REGISTRE DE PRÉSENCE",
+    "closedBadge": "Terminée et Certifiée",
+    "exportOfficialSheet": "Registre Officiel (FOR 99)",
+    "locationLabel": "Lieu",
+    "trainerLabel": "Formateur",
+    "statusClosed": "Clôturée et Signée",
+    "statusOpen": "Ouverte",
+    "noDescription": "Sans description",
+    "observationsLabel": "Observations / Journal des Incidents",
+    "trainerSignatureLabel": "Signature du Formateur",
+    "closeAction": "Clôturer la Formation",
+    "cannotCloseAlert": "Pour clôturer la formation, tous les participants inscrits doivent avoir validé leur sortie et signé.",
+    "closeModalTitle": "Clôturer et Certifier la Formation",
+    "closeNotice": "Tous les participants ont validé leur présence. Une fois clôturée, la formation sera verrouillée en édition et le registre officiel sera enregistré avec votre signature.",
+    "trainerNameLabel": "Nom du Formateur",
+    "observationsPlaceholder": "Indiquez s'il y a eu des incidents, problèmes techniques ou remarques durant la session...",
+    "signHint": "Signez avec la souris ou au doigt sur l'écran tactile.",
+    "closeSuccess": "Formation clôturée et certifiée avec succès.",
+    "closeError": "Erreur lors de la clôture de la formation.",
+    "signatureRequired": "Veuillez apposer votre signature en tant que formateur pour clôturer la session.",
+    "officialSheetDownloaded": "Registre officiel FOR 99 téléchargé et synchronisé avec succès.",
+    "downloadOfficialSheetError": "Erreur lors du téléchargement du registre officiel FOR 99."
   },
   "qr": {
     "title": "QR de Formation",
@@ -364,7 +389,9 @@
     "switchCamera": "Changer de Caméra"
   },
   "common": {
+    "clear": "Effacer",
     "clearFilters": "Effacer les filtres",
+    "downloading": "Téléchargement...",
     "noDescription": "Sans description",
     "back": "Retour",
     "rowsPerPage": "Par page :",

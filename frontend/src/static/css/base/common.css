@@ -282,20 +282,21 @@ button, a, input, select, textarea, .da-btn, .da-nav-btn {
 
 .da-btn-primary {
   background: var(--da-primary) !important;
-  color: var(--da-dark) !important;
-  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  color: #1e293b !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
   border-radius: 20px !important;
   padding: 8px 22px !important;
-  font-weight: 600 !important;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.6), 0 4px 15px rgba(179, 195, 76, 0.3) !important;
+  font-weight: 700 !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8), 0 4px 14px rgba(179, 195, 76, 0.35) !important;
   text-decoration: none !important;
 }
 
 .da-btn-primary:hover {
   background: var(--da-primary-hover) !important;
+  color: #0f172a !important;
   transform: translateY(-2px) !important;
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.8), 0 8px 25px rgba(179, 195, 76, 0.6), 0 0 20px rgba(179, 195, 76, 0.4) !important;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.9), 0 8px 22px rgba(179, 195, 76, 0.55) !important;
 }
 
 .da-btn-primary:active {
@@ -303,24 +304,24 @@ button, a, input, select, textarea, .da-btn, .da-nav-btn {
 }
 
 .da-btn-danger, .btn-danger {
-  background: rgba(220, 53, 69, 0.60) !important;
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.5) !important;
+  background: #ef4444 !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
   color: #ffffff !important;
   border-radius: 20px !important;
-  padding: 6px 18px !important;
-  font-weight: 600 !important;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 6px 15px rgba(220, 53, 69, 0.2);
+  padding: 8px 20px !important;
+  font-weight: 700 !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 4px 14px rgba(239, 68, 68, 0.35) !important;
+  text-decoration: none !important;
 }
 
 .da-btn-danger:hover, .btn-danger:hover, .btn-danger:focus {
-  background: rgba(220, 53, 69, 0.85) !important;
+  background: #dc2626 !important;
   color: #ffffff !important;
-  transform: translateY(-3px) scale(1.05) !important;
-  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.8), 0 10px 25px rgba(220, 53, 69, 0.35) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 8px 20px rgba(220, 38, 38, 0.45) !important;
 }
 
 .da-btn-danger:active, .btn-danger:active {
@@ -328,42 +329,41 @@ button, a, input, select, textarea, .da-btn, .da-nav-btn {
 }
 
 .da-btn-blue {
-  background: rgba(30, 41, 59, 0.65) !important;
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.4) !important;
+  background: #2563eb !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
   color: #ffffff !important;
   border-radius: 20px !important;
-  padding: 6px 18px !important;
-  font-weight: 600 !important;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), 0 6px 15px rgba(30, 41, 59, 0.2);
+  padding: 8px 20px !important;
+  font-weight: 700 !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 4px 14px rgba(37, 99, 235, 0.35) !important;
   text-decoration: none !important;
 }
 
 .da-btn-blue:hover, .da-btn-blue:focus {
-  background: rgba(15, 23, 42, 0.85) !important;
+  background: #1d4ed8 !important;
   color: #ffffff !important;
-  transform: translateY(-3px) scale(1.05) !important;
-  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.5), 0 10px 25px rgba(30, 41, 59, 0.3) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 8px 20px rgba(37, 99, 235, 0.45) !important;
 }
 
 .da-btn-blue:active {
   transform: translateY(1px) scale(0.97) !important;
 }
 
-.da-btn-secondary {
-  background: rgba(44, 62, 80, 0.75) !important;
+.da-btn-secondary, .btn-secondary {
+  background: rgba(255, 255, 255, 0.85) !important;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
-  color: #ffffff !important;
+  border: 1px solid rgba(203, 213, 225, 0.85) !important;
+  color: #334155 !important;
   border-radius: 20px !important;
   padding: 8px 22px !important;
-  font-weight: 600 !important;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 3px 10px rgba(0, 0, 0, 0.1);
+  font-weight: 700 !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -371,14 +371,45 @@ button, a, input, select, textarea, .da-btn, .da-nav-btn {
   text-decoration: none !important;
 }
 
-.da-btn-secondary:hover {
-  background: rgba(30, 41, 59, 0.90) !important;
-  color: #ffffff !important;
-  transform: translateY(-3px) scale(1.05) !important;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 8px 25px rgba(0, 0, 0, 0.2) !important;
+.da-btn-secondary:hover, .btn-secondary:hover {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: rgba(148, 163, 184, 0.9) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 1), 0 6px 18px rgba(0, 0, 0, 0.08) !important;
 }
 
-.da-btn-secondary:active {
+.da-btn-secondary:active, .btn-secondary:active {
+  transform: translateY(1px) scale(0.97) !important;
+}
+
+.da-btn-emerald, .da-btn-excel {
+  background: rgba(16, 185, 129, 0.14) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(16, 185, 129, 0.45) !important;
+  color: #065f46 !important;
+  border-radius: 20px !important;
+  padding: 8px 22px !important;
+  font-weight: 700 !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8), 0 2px 8px rgba(16, 185, 129, 0.12) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  text-decoration: none !important;
+}
+
+.da-btn-emerald:hover, .da-btn-excel:hover {
+  background: rgba(16, 185, 129, 0.25) !important;
+  color: #047857 !important;
+  border-color: rgba(16, 185, 129, 0.7) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 6px 18px rgba(16, 185, 129, 0.25) !important;
+}
+
+.da-btn-emerald:active, .da-btn-excel:active {
   transform: translateY(1px) scale(0.97) !important;
 }
 
@@ -506,33 +537,50 @@ button, a, input, select, textarea, .da-btn, .da-nav-btn {
 
 /* Glass Badges */
 .da-badge {
-  padding: 6px 14px;
+  padding: 4px 10px;
   border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6);
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  white-space: nowrap;
+  line-height: 1.2;
 }
 
 .da-badge-active {
-  background: rgba(204, 227, 100, 0.4) !important;
+  background: rgba(204, 227, 100, 0.35) !important;
   color: #2b3a04 !important;
-  border: 1px solid rgba(255, 255, 255, 0.5) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.9) !important;
-  border-left: 1px solid rgba(255, 255, 255, 0.7) !important;
-  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.8), 0 4px 10px rgba(204, 227, 100, 0.15);
+  border: 1px solid rgba(179, 195, 76, 0.6) !important;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.8), 0 2px 8px rgba(204, 227, 100, 0.2);
+}
+
+.da-badge-warning {
+  background: rgba(245, 158, 11, 0.18) !important;
+  color: #92400e !important;
+  border: 1px solid rgba(245, 158, 11, 0.45) !important;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.8), 0 2px 8px rgba(245, 158, 11, 0.15);
 }
 
 .da-badge-inactive {
   background: rgba(200, 200, 200, 0.25) !important;
-  color: #1e293b !important;
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.8) !important;
-  border-left: 1px solid rgba(255, 255, 255, 0.6) !important;
-  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 4px 10px rgba(0, 0, 0, 0.05);
+  color: #334155 !important;
+  border: 1px solid rgba(203, 213, 225, 0.8) !important;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+@media (max-width: 640px) {
+  .da-badge {
+    padding: 3px 8px;
+    font-size: 0.68rem;
+  }
 }
 
 .btn-gap {
@@ -1366,6 +1414,12 @@ a {
   border-color: rgba(179,195,76,0.35) !important;
 }
 
+.dark .da-badge-warning {
+  background: rgba(245,158,11,0.20) !important;
+  color: #fbbf24 !important;
+  border-color: rgba(245,158,11,0.35) !important;
+}
+
 .dark .da-badge-inactive {
   background: rgba(100,116,139,0.20) !important;
   color: #e2e8f0 !important;
@@ -1546,11 +1600,6 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(179, 195, 76, 0.3), 0 4px 20px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* Specific Search Bar Input Overrides */
-.da-glass-search-input {
-  border-radius: 50px !important;
-  padding: 12px 48px 12px 52px !important;
-}
 
 
 /* Fondos blancos puros en cards de Bootstrap */
@@ -1632,10 +1681,82 @@ select:focus {
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
 }
 
-/* Botones principales verde lima: texto oscuro para alto contraste */
+/* Botones en modo oscuro */
 .dark .da-btn-primary,
 .dark .btn-primary,
 .dark .badge.bg-primary {
-  color: #1e293b !important;
-  font-weight: 600;
+  background: var(--da-primary) !important;
+  color: #0f172a !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 4px 18px rgba(179, 195, 76, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.5) !important;
+  font-weight: 700;
+}
+
+.dark .da-btn-primary:hover,
+.dark .btn-primary:hover {
+  background: #c2d454 !important;
+  color: #000000 !important;
+  box-shadow: 0 6px 24px rgba(179, 195, 76, 0.65) !important;
+}
+
+.dark .da-btn-secondary,
+.dark .btn-secondary {
+  background: rgba(30, 41, 59, 0.85) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #f1f5f9 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.08) !important;
+}
+
+.dark .da-btn-secondary:hover,
+.dark .btn-secondary:hover {
+  background: rgba(51, 65, 85, 0.95) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45) !important;
+}
+
+.dark .da-btn-blue {
+  background: #3b82f6 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.35) !important;
+}
+
+.dark .da-btn-blue:hover {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+.dark .da-btn-danger,
+.dark .btn-danger {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.35) !important;
+}
+
+.dark .da-btn-danger:hover,
+.dark .btn-danger:hover {
+  background: #b91c1c !important;
+  color: #ffffff !important;
+}
+
+.dark .da-btn-emerald,
+.dark .da-btn-excel {
+  background: rgba(16, 185, 129, 0.22) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(16, 185, 129, 0.45) !important;
+  color: #6ee7b7 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .da-btn-emerald:hover,
+.dark .da-btn-excel:hover {
+  background: rgba(16, 185, 129, 0.35) !important;
+  color: #a7f3d0 !important;
+  border-color: rgba(16, 185, 129, 0.7) !important;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35) !important;
 }

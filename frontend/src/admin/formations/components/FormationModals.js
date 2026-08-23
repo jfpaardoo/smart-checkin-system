@@ -136,7 +136,16 @@ export function AttendanceDetailsModal({ isOpen, toggle, attendance, formationNa
 
             <div>
               <span className="text-slate-400 text-xs font-semibold block mb-1">{t('formationDetails.statusLabel')}:</span>
-              <div>{renderBadge(attendance)}</div>
+              <div className="flex items-center gap-2">
+                {renderBadge(attendance)}
+                {attendance.checkInDate && (
+                  <span className={`da-badge text-xs font-semibold ${attendance.withinWorkingHours !== false ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/20' : 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20'}`}>
+                    {attendance.withinWorkingHours !== false
+                      ? t('checkin.insideWorkingHours', 'Dentro del horario')
+                      : t('checkin.outsideWorkingHours', 'Fuera del horario')}
+                  </span>
+                )}
+              </div>
             </div>
 
             <div>
