@@ -14,7 +14,8 @@
     "register": "Solicitar Registro",
     "audit": "Auditoría",
     "cloudSettings": "Ajustes de Nube",
-    "toggleMenu": "Alternar navegación"
+    "toggleMenu": "Alternar navegación",
+    "support": "Ayuda y Soporte"
   },
   "home": {
     "welcome": "Bienvenido a Distribution Academy",
@@ -346,6 +347,8 @@
     "filterStatus": "Filtrar estado"
   },
   "checkin": {
+    "invalidOrExpiredQr": "Código QR no válido o expirado",
+    "offlineSyncRejected": "Sincronización: Fichaje rechazado por el servidor ({{msg}})",
     "title": "Escáner de Fichaje",
     "scanQr": "Escanea el QR",
     "success": "Fichaje registrado correctamente",
@@ -977,5 +980,27 @@
     "iosTitle": "Instala la App en iPhone",
     "iosInstructions": "Pulsa Compartir",
     "iosInstructions2": "y luego \"Añadir a pantalla de inicio\""
+  },
+  "support": {
+    "modalTitle": "Centro de Ayuda y Soporte",
+    "assistanceTitle": "¿Tienes alguna incidencia o duda?",
+    "assistanceSubtitle": "Estamos a tu disposición para resolver dudas sobre formaciones, fichajes o accesos.",
+    "officialEmailChannel": "Canal Oficial de Soporte",
+    "emailDescription": "Escríbenos directamente indicando tu nombre, empresa e incidencia para recibir asistencia rápida.",
+    "sendEmailNow": "Enviar correo ahora",
+    "copyEmail": "Copiar dirección",
+    "copied": "¡Copiado!",
+    "schedule": "Horario: Lunes a Viernes · 08:00 a 18:00",
+    "slaResponse": "Respuesta media < 2h",
+    "faqTitle": "Preguntas frecuentes",
+    "faq1_q": "¿Cómo ficho si la cámara no lee el código QR?",
+    "faq1_a": "Pulsa en el botón \"Introducir código manualmente\" en la pantalla de escaneo e introduce el código de 6 dígitos que el formador tiene visible en su pantalla.",
+    "faq2_q": "¿Por qué se solicita mi firma digital al salir?",
+    "faq2_a": "El protocolo oficial de calidad y homologación (FOR 99 HRS) requiere registrar la firma manuscrita de cada participante para certificar la asistencia.",
+    "faq3_q": "¿Qué ocurre si no tengo conexión a internet o cobertura?",
+    "faq3_a": "Smart Check-in dispone de sincronización offline automática. Tu fichaje se guardará de forma segura en tu dispositivo y se enviará en cuanto recuperes conexión.",
+    "faq4_q": "¿Cómo recupero mi contraseña de acceso?",
+    "faq4_a": "Haz clic en \"¿Olvidaste tu contraseña?\" en la pantalla de inicio de sesión y recibirás un correo electrónico seguro con un enlace de restablecimiento.",
+    "confidentiality": "Distribution Academy · Soporte Técnico Seguro"
   }
 }

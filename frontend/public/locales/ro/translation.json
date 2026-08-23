@@ -14,7 +14,8 @@
     "register": "Solicitare Înregistrare",
     "audit": "Jurnal de Audit",
     "cloudSettings": "Setări Cloud",
-    "toggleMenu": "Comutare navigare"
+    "toggleMenu": "Comutare navigare",
+    "support": "Ajutor și Asistență"
   },
   "home": {
     "welcome": "Bine ați venit la Distribution Academy",
@@ -301,6 +302,12 @@
     "totpSecurity": "Securitate TOTP: Se actualizează la fiecare 20s"
   },
   "dashboard": {
+    "qrValidated": "Cod QR validat",
+    "manualActivated": "Introducere manuală activată",
+    "cameraReactivated": "Cameră reactivată",
+    "codeAccepted": "Cod acceptat",
+    "codeInvalid": "Cod invalid",
+    "signatureRequired": "Semnătură obligatorie",
     "hello": "Bună",
     "scannerButton": "Scanner QR (Pontaj / Formare)",
     "myFormations": "Formările Mele",
@@ -340,6 +347,13 @@
     "filterStatus": "Filtrează starea"
   },
   "checkin": {
+    "schedulePrompt": "În acest moment, sunt:",
+    "insideWorkingHours": "În timpul programului de lucru",
+    "outsideWorkingHours": "În afara programului de lucru",
+    "insideWorkingHoursShort": "În program",
+    "outsideWorkingHoursShort": "În afara programului",
+    "invalidOrExpiredQr": "Cod QR invalid sau expirat",
+    "offlineSyncRejected": "Sincronizare: Înregistrare respinsă de server ({{msg}})",
     "title": "Scanner de Înregistrare",
     "scanQr": "Scanați codul QR",
     "success": "Înregistrare reușită",
@@ -966,5 +980,27 @@
     "iosTitle": "Instalează Aplicația pe iPhone",
     "iosInstructions": "Apasă Distribuie",
     "iosInstructions2": "și apoi \"Adaugă la ecranul principal\""
+  },
+  "support": {
+    "modalTitle": "Centru de Ajutor și Asistență",
+    "assistanceTitle": "Aveți vreo întrebare sau o problemă tehnică?",
+    "assistanceSubtitle": "Suntem la dispoziția dumneavoastră pentru a vă ajuta cu sesiunile de formare, pontaj sau acces.",
+    "officialEmailChannel": "Canal Oficial de Asistență",
+    "emailDescription": "Scrieți-ne direct indicând numele, compania și problema întâmpinată pentru asistență rapidă.",
+    "sendEmailNow": "Trimite e-mail acum",
+    "copyEmail": "Copiază adresa",
+    "copied": "Copiat!",
+    "schedule": "Program: Luni până Vineri · 08:00 – 18:00",
+    "slaResponse": "Răspuns mediu < 2h",
+    "faqTitle": "Întrebări frecvente",
+    "faq1_q": "Cum mă înregistrez dacă camera nu poate citi codul QR?",
+    "faq1_a": "Apăsați pe butonul 'Introduceți codul manual' pe ecranul scanerului și introduceți codul de 6 cifre afișat de formator.",
+    "faq2_q": "De ce este solicitată semnătura mea digitală la ieșire?",
+    "faq2_a": "Protocolul oficial de certificare a calității (FOR 99 HRS) impune înregistrarea semnăturii fiecărui participant pentru atestarea prezenței.",
+    "faq3_q": "Ce se întâmplă dacă nu am conexiune la internet sau semnal?",
+    "faq3_a": "Smart Check-in include sincronizare automată offline. Înregistrarea este salvată în siguranță pe dispozitiv și se sincronizează la revenirea conexiunii.",
+    "faq4_q": "Cum îmi recuperez parola de acces?",
+    "faq4_a": "Faceți clic pe 'Ați uitat parola?' pe ecranul de autentificare pentru a primi un link securizat de resetare prin e-mail.",
+    "confidentiality": "Distribution Academy · Suport Tehnic Securizat"
   }
 }

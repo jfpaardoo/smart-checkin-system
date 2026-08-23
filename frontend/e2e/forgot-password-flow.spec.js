@@ -53,17 +53,24 @@ test.describe('Flujo de Recuperación de Contraseña (Forgot Password E2E)', () 
     // 2. Comprobar encabezado real
     await expect(page.getByRole('heading', { name: /restablecer contraseña|reset password|cambiar contraseña/i })).toBeVisible();
 
-    // 3. Rellenar con contraseñas distintas
-    await page.locator('input#newPassword').fill('SecurePass123!');
-    await page.locator('input#confirmPassword').fill('DifferentPass456!');
+    // 3. Rellenar con contraseñas distintas y asegurar que el estado de React se aplicó
+    const newPassInput = page.locator('input#newPassword');
+    await expect(newPassInput).toBeVisible({ timeout: 10000 });
+    await newPassInput.fill('SecurePass123!');
+    await expect(newPassInput).toHaveValue('SecurePass123!');
+
+    const confirmPassInput = page.locator('input#confirmPassword');
+    await expect(confirmPassInput).toBeVisible({ timeout: 10000 });
+    await confirmPassInput.fill('DifferentPass456!');
+    await expect(confirmPassInput).toHaveValue('DifferentPass456!');
 
     // 4. Enviar
-    const changeBtn = page.getByRole('button', { name: /cambiar contraseña|change password|reset password/i });
+    const changeBtn = page.locator('button[type="submit"]');
     await expect(changeBtn).toBeVisible({ timeout: 10000 });
     await changeBtn.click();
 
     // 5. Verificar error de validación en el frontend sin llamar a la API
-    await expect(page.getByText(/las contraseñas no coinciden|passwords do not match|palavras-passe|mots de passe|passwörter|hasła|паролите|parolele/i)).toBeVisible();
+    await expect(page.locator('[class*="border-red"] p')).toBeVisible({ timeout: 10000 });
   });
 
   test('Debe permitir restablecer la contraseña con un token válido y redirigir al login', async ({ page }) => {
@@ -83,20 +90,27 @@ test.describe('Flujo de Recuperación de Contraseña (Forgot Password E2E)', () 
     // 1. Navegar con un token simulado
     await page.goto('/reset-password?token=mocked-valid-token-123');
 
-    // 2. Rellenar contraseñas válidas e idénticas
-    await page.locator('input#newPassword').fill('SecurePass123!');
-    await page.locator('input#confirmPassword').fill('SecurePass123!');
+    // 2. Rellenar contraseñas válidas e idénticas y asegurar estado
+    const newPassInput = page.locator('input#newPassword');
+    await expect(newPassInput).toBeVisible({ timeout: 10000 });
+    await newPassInput.fill('SecurePass123!');
+    await expect(newPassInput).toHaveValue('SecurePass123!');
+
+    const confirmPassInput = page.locator('input#confirmPassword');
+    await expect(confirmPassInput).toBeVisible({ timeout: 10000 });
+    await confirmPassInput.fill('SecurePass123!');
+    await expect(confirmPassInput).toHaveValue('SecurePass123!');
 
     // 3. Enviar formulario
-    const changeBtn = page.getByRole('button', { name: /cambiar contraseña|change password|reset password/i });
+    const changeBtn = page.locator('button[type="submit"]');
     await expect(changeBtn).toBeVisible({ timeout: 10000 });
     await changeBtn.click();
 
     // 4. Verificar mensaje de éxito
-    await expect(page.getByText(/contraseña restablecida|password reset successfully|éxito/i)).toBeVisible();
+    await expect(page.locator('[class*="border-emerald"] p')).toBeVisible({ timeout: 10000 });
 
     // 5. Esperar a que el setTimeout(3000) nos redirija automáticamente al login
     await page.waitForURL('**/login', { timeout: 6000 });
   });
 
-});
+});

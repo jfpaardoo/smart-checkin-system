@@ -13,6 +13,7 @@ import GlassModal from '../../components/GlassModal';
 import { useQrScanner } from '../../hooks/useQrScanner';
 import { formatDate } from '../../utils/dateUtils';
 import { saveOfflineCheckin, initOfflineSync } from '../../util/offlineQueue';
+import soundAndHaptics from '../../util/soundAndHaptics';
 
 const parseRawInput = (rawInput) => {
   try {
@@ -64,19 +65,33 @@ export default function ScannerCheckin() {
       };
 
       try {
-        const pos = await getPos(false, 1500, 30000);
-        const coords = { userLat: pos.coords.latitude, userLng: pos.coords.longitude };
+        setGpsStatus('prompt');
+        let pos;
+        try {
+          pos = await getPos(true, 5000, 5000);
+        } catch (highAccuracyErr) {
+          console.debug('[GPS] High accuracy fallback:', highAccuracyErr);
+          pos = await getPos(false, 8000, 15000);
+        }
+        
+        const coords = {
+          userLat: pos.coords.latitude,
+          userLng: pos.coords.longitude
+        };
         setGpsCoords(coords);
         setGpsStatus('granted');
         return coords;
-      } catch {
+      } catch (err) {
+        console.debug('[GPS] Location permission or acquisition denied:', err);
         setGpsStatus('denied');
         return {};
       }
     })();
 
-    const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({}), 1800));
-    return Promise.race([gpsPromise, timeoutPromise]);
+    return Promise.race([
+      gpsPromise,
+      new Promise(resolve => setTimeout(() => resolve({}), 8500))
+    ]);
   }, []);
 
   // Solicitar GPS al montar la vista e inicializar sincronizador offline
@@ -103,6 +118,7 @@ export default function ScannerCheckin() {
     "qr-reader",
     isScanningEnabled,
     (decodedText) => {
+      soundAndHaptics.playScanBeep();
       handleCheckinExecution(decodedText);
     }
   );

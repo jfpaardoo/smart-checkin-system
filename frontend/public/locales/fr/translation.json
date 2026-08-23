@@ -14,7 +14,8 @@
     "register": "Demander Inscription",
     "audit": "Journal d'Audit",
     "cloudSettings": "Paramètres Cloud",
-    "toggleMenu": "Basculer la navigation"
+    "toggleMenu": "Basculer la navigation",
+    "support": "Aide et Support"
   },
   "home": {
     "welcome": "Bienvenue sur Distribution Academy",
@@ -346,6 +347,13 @@
     "filterStatus": "Filtrer le statut"
   },
   "checkin": {
+    "schedulePrompt": "En ce moment, je suis :",
+    "insideWorkingHours": "Pendant les heures de travail",
+    "outsideWorkingHours": "En dehors des heures de travail",
+    "insideWorkingHoursShort": "Heures de travail",
+    "outsideWorkingHoursShort": "Hors heures",
+    "invalidOrExpiredQr": "Code QR invalide ou expiré",
+    "offlineSyncRejected": "Synchronisation : Pointage rejeté par le serveur ({{msg}})",
     "title": "Scanner de Pointage",
     "scanQr": "Scannez le code QR",
     "success": "Pointage réussi",
@@ -972,5 +980,27 @@
     "iosTitle": "Installer l'App sur iPhone",
     "iosInstructions": "Appuyez sur Partager",
     "iosInstructions2": "puis \"Sur l'écran d'accueil\""
+  },
+  "support": {
+    "modalTitle": "Centre d'Aide et de Support",
+    "assistanceTitle": "Avez-vous une question ou un problème ?",
+    "assistanceSubtitle": "Nous sommes à votre disposition pour répondre à vos questions sur les formations, les pointages ou les accès.",
+    "officialEmailChannel": "Canal Officiel d'Assistance",
+    "emailDescription": "Écrivez-nous directement en indiquant votre nom, entreprise et problème pour une assistance rapide.",
+    "sendEmailNow": "Envoyer un e-mail maintenant",
+    "copyEmail": "Copier l'adresse",
+    "copied": "Copié !",
+    "schedule": "Horaires : Du lundi au vendredi · 08h00 à 18h00",
+    "slaResponse": "Réponse moyenne < 2h",
+    "faqTitle": "Foire aux questions",
+    "faq1_q": "Comment pointer si la caméra ne lit pas le QR code ?",
+    "faq1_a": "Appuyez sur le bouton 'Saisir le code manuellement' sur l'écran du scanner et entrez le code à 6 chiffres affiché par le formateur.",
+    "faq2_q": "Pourquoi ma signature numérique est-elle demandée à la sortie ?",
+    "faq2_a": "Le protocole officiel de certification (FOR 99 HRS) exige d'enregistrer la signature de chaque participant pour attester de sa présence.",
+    "faq3_q": "Que se passe-t-il si je n'ai pas de connexion internet ou de réseau ?",
+    "faq3_a": "Smart Check-in dispose d'une synchronisation hors ligne automatique. Votre pointage est sauvegardé sur votre appareil et sera envoyé dès le retour de la connexion.",
+    "faq4_q": "Comment récupérer mon mot de passe ?",
+    "faq4_a": "Cliquez sur 'Mot de passe oublié ?' sur l'écran de connexion pour recevoir un lien de réinitialisation sécurisé par e-mail.",
+    "confidentiality": "Distribution Academy · Support Technique Sécurisé"
   }
 }

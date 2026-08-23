@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
+import soundAndHaptics from "../util/soundAndHaptics";
+
 const ToastContext = createContext(null);
 
 let toastIdCounter = 0;
@@ -18,6 +20,18 @@ export function ToastProvider({ children }) {
 
   const addToast = useCallback((type, message, options = {}) => {
     const id = ++toastIdCounter;
+
+    // Trigger audible and tactile feedback
+    if (type === "success") {
+      soundAndHaptics.playSuccess();
+    } else if (type === "error") {
+      soundAndHaptics.playError();
+    } else if (type === "warning" || type === "confirm") {
+      soundAndHaptics.playWarning();
+    } else {
+      soundAndHaptics.playInfo();
+    }
+
     setToasts((prev) => [...prev, { id, type, message, ...options }]);
     return id;
   }, []);

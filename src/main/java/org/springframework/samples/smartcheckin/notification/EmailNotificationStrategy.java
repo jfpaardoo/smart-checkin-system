@@ -23,6 +23,9 @@ public class EmailNotificationStrategy implements NotificationStrategy {
     @Value("${app.mail.from:onboarding@resend.dev}")
     private String mailFrom;
 
+    @Value("${app.frontend.url:${FRONTEND_URL:http://localhost:3000}}")
+    private String frontendUrl;
+
     @Autowired
     public EmailNotificationStrategy(JavaMailSender javaMailSender, TemplateEngine templateEngine) {
         this.javaMailSender = javaMailSender;
@@ -33,35 +36,40 @@ public class EmailNotificationStrategy implements NotificationStrategy {
     @Override
     public void sendNotification(User user, String title, String message) {
         String userEmail = user.getEmail();
-        if (Boolean.TRUE.equals(user.getEmailNotificationsEnabled()) && userEmail != null) {
-            try {
-                MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-                MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-
-                String safeMailFrom = mailFrom != null ? mailFrom : "onboarding@resend.dev";
-                String safeTitle = title != null ? title : "Notificación de Smart Check-in";
-                String safeMessage = message != null ? message : "";
-
-                helper.setFrom(safeMailFrom);
-                helper.setTo(userEmail);
-                helper.setSubject(safeTitle);
-
-                // Prepare Thymeleaf context
-                Context context = new Context();
-                context.setVariable("title", safeTitle);
-                context.setVariable("message", safeMessage);
-                context.setVariable("username", user.getFirstName() != null ? user.getFirstName() : user.getUsername());
-
-                // Process the HTML template
-                String htmlContent = templateEngine.process("notification-email", context);
-                String safeHtmlContent = htmlContent != null ? htmlContent : "";
-                helper.setText(safeHtmlContent, true); // true = isHtml
-
-                javaMailSender.send(mimeMessage);
-                log.info("Async email notification sent successfully to {}", userEmail);
-            } catch (Exception e) {
-                log.error("Failed to send async email notification to {}: {}", userEmail, e.getMessage());
-            }
+        if (!Boolean.TRUE.equals(user.getEmailNotificationsEnabled()) || userEmail == null) {
+            return;
         }
+
+        try {
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            String safeMailFrom = mailFrom != null ? mailFrom : "onboarding@resend.dev";
+            String safeTitle = title != null ? title : "Notificación de Smart Check-in";
+            String safeMessage = message != null ? message : "";
+
+            helper.setFrom(safeMailFrom);
+            helper.setTo(userEmail);
+            helper.setSubject(safeTitle);
+
+            Context context = buildContext(user, safeTitle, safeMessage);
+            String htmlContent = templateEngine.process("notification-email", context);
+            helper.setText(htmlContent != null ? htmlContent : "", true);
+
+            javaMailSender.send(mimeMessage);
+            log.info("Async email notification sent successfully to {}", userEmail);
+        } catch (Exception e) {
+            log.error("Failed to send async email notification to {}: {}", userEmail, e.getMessage());
+        }
+    }
+
+    private Context buildContext(User user, String title, String message) {
+        Context context = new Context();
+        context.setVariable("title", title);
+        context.setVariable("message", message);
+        String name = user.getFirstName() != null ? user.getFirstName() : user.getUsername();
+        context.setVariable("username", name);
+        context.setVariable("frontendUrl", frontendUrl != null ? frontendUrl : "http://localhost:3000");
+        return context;
     }
 }

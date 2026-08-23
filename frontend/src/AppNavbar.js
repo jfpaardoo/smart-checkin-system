@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaUsers, FaBuilding, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen, FaChartLine, FaIdCard, FaUserPlus, FaSignInAlt, FaShieldAlt, FaCloudUploadAlt, FaBars, FaTimes, FaCheck, FaBell } from 'react-icons/fa';
+import { FaUsers, FaBuilding, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen, FaChartLine, FaIdCard, FaUserPlus, FaSignInAlt, FaShieldAlt, FaCloudUploadAlt, FaBars, FaTimes, FaCheck, FaBell, FaHeadset } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import tokenService from './services/token.service';
 import { useTheme } from './context/ThemeContext';
@@ -8,6 +8,7 @@ import { useNotifications } from './context/NotificationContext';
 
 import LanguageSwitcher from './components/LanguageSwitcher';
 import NotificationBell from './components/NotificationBell';
+import HelpSupportModal from './components/HelpSupportModal';
 import { preload } from 'swr';
 import api from './services/api';
 
@@ -115,7 +116,7 @@ function AdminDropdownMenu({ isOpen, toggleMenu, closeAll, t }) {
     );
 }
 
-function UserDropdownMenu({ isOpen, toggleMenu, closeAll, username, t }) {
+function UserDropdownMenu({ isOpen, toggleMenu, closeAll, username, t, onOpenSupport }) {
     return (
         <div className="relative dropdown-container">
             <button type="button" onClick={(e) => toggleMenu('user', e)} className="da-nav-btn">
@@ -126,6 +127,16 @@ function UserDropdownMenu({ isOpen, toggleMenu, closeAll, username, t }) {
             <div className={`da-nav-dropdown-container right-0 w-[230px] transition-all duration-300 origin-top-right ${isOpen ? 'opacity-100 scale-100 translate-y-0 visible' : 'opacity-0 scale-95 -translate-y-4 invisible pointer-events-none'}`}>
                 <div className="py-1" role="menu">
                     <Link to="/profile" className="da-nav-dropdown-item" onClick={closeAll}><FaIdCard className="text-slate-500 dark:text-white/60" /> {t('nav.profile', 'Mi Perfil')}</Link>
+                    <button
+                        type="button"
+                        className="da-nav-dropdown-item w-full text-left bg-transparent border-0 cursor-pointer"
+                        onClick={() => {
+                            closeAll();
+                            onOpenSupport();
+                        }}
+                    >
+                        <FaHeadset className="text-[#8a9e22] dark:text-[#d4e84a]" /> {t('nav.support', 'Ayuda y Soporte')}
+                    </button>
                     <div className="border-t border-slate-300/40 dark:border-white/20 my-1 mx-2"></div>
                     <Link to="/logout" className="da-nav-dropdown-item" onClick={closeAll}><FaSignOutAlt className="text-red-500 dark:text-red-400" /> {t('nav.logout', 'Salir')}</Link>
                 </div>
@@ -134,9 +145,16 @@ function UserDropdownMenu({ isOpen, toggleMenu, closeAll, username, t }) {
     );
 }
 
-function PublicNavLinks({ t }) {
+function PublicNavLinks({ t, onOpenSupport }) {
     return (
         <div className="flex flex-col md:flex-row gap-4 items-center">
+            <button
+                type="button"
+                onClick={onOpenSupport}
+                className="flex items-center justify-center gap-2 text-slate-600 dark:text-white/80 hover:text-slate-900 dark:hover:text-white no-underline font-medium transition-colors duration-300 bg-transparent border-0 cursor-pointer p-0 text-sm"
+            >
+                <FaHeadset className="text-[#8a9e22] dark:text-[#d4e84a]" /> {t('nav.support', 'Ayuda y Soporte')}
+            </button>
             <Link to="/register" className="flex items-center justify-center gap-2 text-slate-600 dark:text-white/80 hover:text-slate-900 dark:hover:text-white no-underline font-medium transition-colors duration-300">
                 <FaUserPlus /> {t('nav.register', 'Solicitar Registro')}
             </Link>
@@ -147,7 +165,7 @@ function PublicNavLinks({ t }) {
     );
 }
 
-function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggleMobileLang, currentLangCode, closeAll, t, i18n }) {
+function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggleMobileLang, currentLangCode, closeAll, t, i18n, onOpenSupport }) {
     return (
         <div className={`md:hidden transition-all duration-500 ease-in-out w-full rounded-b-[40px] ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[85vh] opacity-100 bg-white/60 dark:bg-slate-900/80 backdrop-blur-3xl border-t border-slate-300/40 dark:border-white/20 overflow-y-auto'}`}>
             <div className="px-6 pt-4 pb-8 space-y-2">
@@ -170,6 +188,16 @@ function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggl
                 <div className="flex flex-col gap-2 py-2">
                     {!user ? (
                         <div className="flex flex-col gap-2">
+                            <button
+                                type="button"
+                                className="da-nav-dropdown-item w-full text-left bg-transparent border-0 cursor-pointer"
+                                onClick={() => {
+                                    closeAll();
+                                    onOpenSupport();
+                                }}
+                            >
+                                <FaHeadset className="text-[#8a9e22] dark:text-[#d4e84a]" /> {t('nav.support', 'Ayuda y Soporte')}
+                            </button>
                             <Link to="/register" className="da-nav-dropdown-item" onClick={closeAll}><FaUserPlus className="text-slate-500 dark:text-white/60" /> {t('nav.register', 'Solicitar Registro')}</Link>
                             <Link to="/login" className="flex items-center gap-3 px-[18px] py-[10px] my-1 text-[0.95rem] bg-[#b3c34c] text-slate-900 rounded-[20px] font-semibold shadow-md" onClick={closeAll}><FaSignInAlt /> {t('nav.login', 'Iniciar Sesión')}</Link>
                         </div>
@@ -178,6 +206,16 @@ function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggl
                             <div className="text-[10px] font-extrabold text-slate-500 dark:text-white/40 mb-3 uppercase tracking-widest">{username}</div>
                             <div className="space-y-1">
                                 <Link to="/profile" className="da-nav-dropdown-item" onClick={closeAll}><FaIdCard className="text-slate-500 dark:text-white/60" /> {t('nav.profile', 'Mi Perfil')}</Link>
+                                <button
+                                    type="button"
+                                    className="da-nav-dropdown-item w-full text-left bg-transparent border-0 cursor-pointer"
+                                    onClick={() => {
+                                        closeAll();
+                                        onOpenSupport();
+                                    }}
+                                >
+                                    <FaHeadset className="text-[#8a9e22] dark:text-[#d4e84a]" /> {t('nav.support', 'Ayuda y Soporte')}
+                                </button>
                                 <div className="border-t border-slate-300/40 dark:border-white/20 my-1 mx-2"></div>
                                 <Link to="/logout" className="da-nav-dropdown-item" onClick={closeAll}><FaSignOutAlt className="text-red-500 dark:text-red-400" /> {t('nav.logout', 'Salir')}</Link>
                             </div>
@@ -277,6 +315,7 @@ export default function AppNavbar() {
 
     const [openMenu, setOpenMenu] = useState(null);
     const [mobileLangOpen, setMobileLangOpen] = useState(false);
+    const [isSupportOpen, setIsSupportOpen] = useState(false);
 
     const currentLangCode = i18n.resolvedLanguage || 'es';
 
@@ -317,105 +356,114 @@ export default function AppNavbar() {
     const isMobileDrawerOpen = isNavMobileOpen || isNotifOpen;
 
     return (
-        <nav className={`sticky top-3 z-40 mx-auto w-[calc(100%-24px)] md:w-[calc(100%-48px)] max-w-[1440px] mb-6 sm:mb-8 rounded-[40px] bg-white/50 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/60 dark:border-white/10 border-t-white/80 dark:border-t-white/15 shadow-[0_12px_40px_rgba(31,38,135,0.10),inset_0_1px_1.5px_rgba(255,255,255,0.8)] dark:shadow-[0_15px_35px_rgba(0,0,0,0.35),inset_0_1px_1px_rgba(255,255,255,0.06)] transition-all duration-300 ${isMobileDrawerOpen ? 'overflow-hidden md:overflow-visible' : 'md:overflow-visible'}`}>
-            <div className="w-full px-3.5 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-[58px] sm:h-[64px]">
-                    <div className="flex items-center min-w-0 flex-1">
-                        <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group text-slate-800 dark:text-white hover:text-slate-950 dark:hover:text-white no-underline min-w-0" onClick={closeAll}>
-                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden flex items-center justify-center shadow-[0_2px_5px_rgba(0,0,0,0.12)] group-hover:scale-105 transition-transform duration-300 shrink-0 bg-white/40 dark:bg-white/10 backdrop-blur-md">
-                                <img src="/logo.png" alt={t('common.companyLogo', 'Logo de la empresa')} className="w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] object-cover" />
-                            </div>
-                            <span className="text-[1.25rem] lg:text-[1.4rem] font-semibold tracking-tight hidden md:block whitespace-nowrap text-slate-800 dark:text-white">
-                                Distribution Academy
-                            </span>
-                            <div className="flex flex-col justify-center leading-none md:hidden shrink-0">
-                                <span className="text-[11.5px] sm:text-sm font-bold tracking-tight text-slate-800 dark:text-white whitespace-nowrap">
-                                    Distribution
+        <>
+            <nav className={`sticky top-3 z-40 mx-auto w-[calc(100%-24px)] md:w-[calc(100%-48px)] max-w-[1440px] mb-6 sm:mb-8 rounded-[40px] bg-white/50 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/60 dark:border-white/10 border-t-white/80 dark:border-t-white/15 shadow-[0_12px_40px_rgba(31,38,135,0.10),inset_0_1px_1.5px_rgba(255,255,255,0.8)] dark:shadow-[0_15px_35px_rgba(0,0,0,0.35),inset_0_1px_1px_rgba(255,255,255,0.06)] transition-all duration-300 ${isMobileDrawerOpen ? 'overflow-hidden md:overflow-visible' : 'md:overflow-visible'}`}>
+                <div className="w-full px-3.5 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center h-[58px] sm:h-[64px]">
+                        <div className="flex items-center min-w-0 flex-1">
+                            <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group text-slate-800 dark:text-white hover:text-slate-950 dark:hover:text-white no-underline min-w-0" onClick={closeAll}>
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden flex items-center justify-center shadow-[0_2px_5px_rgba(0,0,0,0.12)] group-hover:scale-105 transition-transform duration-300 shrink-0 bg-white/40 dark:bg-white/10 backdrop-blur-md">
+                                    <img src="/logo.png" alt={t('common.companyLogo', 'Logo de la empresa')} className="w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] object-cover" />
+                                </div>
+                                <span className="text-[1.25rem] lg:text-[1.4rem] font-semibold tracking-tight hidden md:block whitespace-nowrap text-slate-800 dark:text-white">
+                                    Distribution Academy
                                 </span>
-                                <span className="text-[8.5px] sm:text-[10px] font-extrabold text-[#7a8a18] dark:text-[#d4e157] tracking-widest uppercase mt-0.5">
-                                    Academy
-                                </span>
-                            </div>
-                        </Link>
-                        {roles.includes("ADMIN") && (
-                            <div className="hidden md:flex ml-8">
-                                <AdminDropdownMenu
-                                    isOpen={isAdminOpen}
-                                    toggleMenu={toggleMenu}
-                                    closeAll={closeAll}
-                                    t={t}
-                                />
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="hidden md:flex md:items-center md:space-x-3">
-                        {!user ? (
-                            <PublicNavLinks t={t} />
-                        ) : (
-                            <>
-                                <div className="text-white list-none">
-                                    <NotificationBell
-                                        isOpen={isNotifOpen}
-                                        onToggle={(e) => toggleMenu('notif', e)}
+                                <div className="flex flex-col justify-center leading-none md:hidden shrink-0">
+                                    <span className="text-[11.5px] sm:text-sm font-bold tracking-tight text-slate-800 dark:text-white whitespace-nowrap">
+                                        Distribution
+                                    </span>
+                                    <span className="text-[8.5px] sm:text-[10px] font-extrabold text-[#7a8a18] dark:text-[#d4e157] tracking-widest uppercase mt-0.5">
+                                        Academy
+                                    </span>
+                                </div>
+                            </Link>
+                            {roles.includes("ADMIN") && (
+                                <div className="hidden md:flex ml-8">
+                                    <AdminDropdownMenu
+                                        isOpen={isAdminOpen}
+                                        toggleMenu={toggleMenu}
+                                        closeAll={closeAll}
+                                        t={t}
                                     />
                                 </div>
-                                <UserDropdownMenu
-                                    isOpen={isUserOpen}
-                                    toggleMenu={toggleMenu}
-                                    closeAll={closeAll}
-                                    username={username}
-                                    t={t}
-                                />
-                            </>
-                        )}
-                        <div className="text-white ml-2 list-none">
-                            <LanguageSwitcher
-                                isMobile={false}
-                                isOpen={isLangOpen}
-                                onToggle={(e) => toggleMenu('lang', e)}
-                            />
+                            )}
                         </div>
-                        <ThemeToggleButton />
-                    </div>
 
-                    {/* Mobile Hamburger & Bell Toggle */}
-                    <div className="flex items-center space-x-1 sm:space-x-2 md:hidden">
-                        {user && (
-                            <NotificationBell
-                                isMobile={true}
-                                isOpen={isNotifOpen}
-                                onToggle={(e) => toggleMenu('notif', e)}
-                            />
-                        )}
-                        <button type="button"
-                            onClick={(e) => toggleMenu('menu', e)}
-                            aria-label={t('nav.toggleMenu', 'Toggle navigation')}
-                            className="mobile-menu-btn p-2 rounded-[20px] text-slate-700 dark:text-white hover:bg-white/40 dark:hover:bg-white/20 focus:outline-none transition-colors"
-                        >
-                            {!isNavMobileOpen ? <FaBars className="h-5 w-5 sm:h-6 sm:w-6" /> : <FaTimes className="h-5 w-5 sm:h-6 sm:w-6" />}
-                        </button>
+                        <div className="hidden md:flex md:items-center md:space-x-3">
+                            {!user ? (
+                                <PublicNavLinks t={t} onOpenSupport={() => setIsSupportOpen(true)} />
+                            ) : (
+                                <>
+                                    <div className="text-white list-none">
+                                        <NotificationBell
+                                            isOpen={isNotifOpen}
+                                            onToggle={(e) => toggleMenu('notif', e)}
+                                        />
+                                    </div>
+                                    <UserDropdownMenu
+                                        isOpen={isUserOpen}
+                                        toggleMenu={toggleMenu}
+                                        closeAll={closeAll}
+                                        username={username}
+                                        t={t}
+                                        onOpenSupport={() => setIsSupportOpen(true)}
+                                    />
+                                </>
+                            )}
+                            <div className="text-white ml-2 list-none">
+                                <LanguageSwitcher
+                                    isMobile={false}
+                                    isOpen={isLangOpen}
+                                    onToggle={(e) => toggleMenu('lang', e)}
+                                />
+                            </div>
+                            <ThemeToggleButton />
+                        </div>
+
+                        {/* Mobile Hamburger & Bell Toggle */}
+                        <div className="flex items-center space-x-1 sm:space-x-2 md:hidden">
+                            {user && (
+                                <NotificationBell
+                                    isMobile={true}
+                                    isOpen={isNotifOpen}
+                                    onToggle={(e) => toggleMenu('notif', e)}
+                                />
+                            )}
+                            <button type="button"
+                                onClick={(e) => toggleMenu('menu', e)}
+                                aria-label={t('nav.toggleMenu', 'Toggle navigation')}
+                                className="mobile-menu-btn p-2 rounded-[20px] text-slate-700 dark:text-white hover:bg-white/40 dark:hover:bg-white/20 focus:outline-none transition-colors"
+                            >
+                                {!isNavMobileOpen ? <FaBars className="h-5 w-5 sm:h-6 sm:w-6" /> : <FaTimes className="h-5 w-5 sm:h-6 sm:w-6" />}
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <MobileMenuDrawer
-                isOpen={isNavMobileOpen}
-                roles={roles}
-                user={user}
-                username={username}
-                mobileLangOpen={mobileLangOpen}
-                toggleMobileLang={toggleMobileLang}
-                currentLangCode={currentLangCode}
-                closeAll={closeAll}
-                t={t}
-                i18n={i18n}
-            />
+                <MobileMenuDrawer
+                    isOpen={isNavMobileOpen}
+                    roles={roles}
+                    user={user}
+                    username={username}
+                    mobileLangOpen={mobileLangOpen}
+                    toggleMobileLang={toggleMobileLang}
+                    currentLangCode={currentLangCode}
+                    closeAll={closeAll}
+                    t={t}
+                    i18n={i18n}
+                    onOpenSupport={() => setIsSupportOpen(true)}
+                />
 
-            <MobileNotificationDrawer
-                isOpen={isNotifOpen}
-                t={t}
+                <MobileNotificationDrawer
+                    isOpen={isNotifOpen}
+                    t={t}
+                />
+            </nav>
+
+            <HelpSupportModal
+                isOpen={isSupportOpen}
+                onClose={() => setIsSupportOpen(false)}
             />
-        </nav>
+        </>
     );
 }

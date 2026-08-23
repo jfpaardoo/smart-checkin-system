@@ -14,7 +14,8 @@
     "register": "Request Registration",
     "audit": "Audit Log",
     "cloudSettings": "Cloud Settings",
-    "toggleMenu": "Toggle navigation"
+    "toggleMenu": "Toggle navigation",
+    "support": "Help & Support"
   },
   "home": {
     "welcome": "Welcome to Distribution Academy",
@@ -346,6 +347,8 @@
     "filterStatus": "Filter status"
   },
   "checkin": {
+    "invalidOrExpiredQr": "Invalid or expired QR code",
+    "offlineSyncRejected": "Sync: Check-in rejected by server ({{msg}})",
     "title": "Check-in Scanner",
     "scanQr": "Scan QR Code",
     "success": "Check-in successful",
@@ -977,5 +980,27 @@
     "iosTitle": "Install App on iPhone",
     "iosInstructions": "Tap Share",
     "iosInstructions2": "and then \"Add to Home Screen\""
+  },
+  "support": {
+    "modalTitle": "Help & Support Center",
+    "assistanceTitle": "Do you have any questions or issues?",
+    "assistanceSubtitle": "We are here to help you resolve questions about training sessions, check-ins, or access.",
+    "officialEmailChannel": "Official Support Channel",
+    "emailDescription": "Write directly to us with your name, company, and issue for quick assistance.",
+    "sendEmailNow": "Send email now",
+    "copyEmail": "Copy address",
+    "copied": "Copied!",
+    "schedule": "Hours: Monday to Friday · 08:00 to 18:00",
+    "slaResponse": "Average response < 2h",
+    "faqTitle": "Frequently asked questions",
+    "faq1_q": "How do I check in if the camera cannot scan the QR code?",
+    "faq1_a": "Click the 'Enter code manually' button on the scanner screen and enter the 6-digit code displayed by the trainer.",
+    "faq2_q": "Why is my digital signature required upon checkout?",
+    "faq2_a": "The official quality certification protocol (FOR 99 HRS) requires recording each attendee's digital signature to certify presence.",
+    "faq3_q": "What happens if I don't have internet connection or coverage?",
+    "faq3_a": "Smart Check-in has automatic offline queueing. Your attendance is saved securely on your device and will sync as soon as connectivity is restored.",
+    "faq4_q": "How do I recover my account password?",
+    "faq4_a": "Click 'Forgot password?' on the login screen and you will receive a secure reset link via email.",
+    "confidentiality": "Distribution Academy · Secure Technical Support"
   }
 }

@@ -14,7 +14,8 @@
     "register": "Poproś o Rejestrację",
     "audit": "Dziennik Audytu",
     "cloudSettings": "Ustawienia Chmury",
-    "toggleMenu": "Przełącz nawigację"
+    "toggleMenu": "Przełącz nawigację",
+    "support": "Pomoc i Wsparcie"
   },
   "home": {
     "welcome": "Witaj w Distribution Academy",
@@ -346,6 +347,13 @@
     "filterStatus": "Filtruj status"
   },
   "checkin": {
+    "schedulePrompt": "W tej chwili jestem:",
+    "insideWorkingHours": "W godzinach pracy",
+    "outsideWorkingHours": "Poza godzinami pracy",
+    "insideWorkingHoursShort": "W godz. pracy",
+    "outsideWorkingHoursShort": "Poza godz. pracy",
+    "invalidOrExpiredQr": "Nieprawidłowy lub wygasły kod QR",
+    "offlineSyncRejected": "Synchronizacja: Odrzucono rejestrację przez serwer ({{msg}})",
     "title": "Skaner rejestracji",
     "scanQr": "Zeskanuj kod QR",
     "success": "Rejestracja pomyślna",
@@ -972,5 +980,27 @@
     "iosTitle": "Zainstaluj aplikację na iPhone",
     "iosInstructions": "Dotknij Udostępnij",
     "iosInstructions2": "a następnie \"Do ekranu początkowego\""
+  },
+  "support": {
+    "modalTitle": "Centrum Pomocy i Wsparcia",
+    "assistanceTitle": "Masz pytania lub problem techniczny?",
+    "assistanceSubtitle": "Jesteśmy do Twojej dyspozycji, aby pomóc w sprawach szkoleń, rejestracji obecności lub dostępu.",
+    "officialEmailChannel": "Oficjalny Kanał Wsparcia",
+    "emailDescription": "Napisz do nas bezpośrednio, podając imię, firmę i opis problemu, aby uzyskać szybką pomoc.",
+    "sendEmailNow": "Wyślij e-mail teraz",
+    "copyEmail": "Kopiuj adres",
+    "copied": "Skopiowano!",
+    "schedule": "Godziny pracy: Poniedziałek – Piątek · 08:00 – 18:00",
+    "slaResponse": "Średni czas odpowiedzi < 2h",
+    "faqTitle": "Często zadawane pytania",
+    "faq1_q": "Jak zarejestrować obecność, jeśli aparat nie czyta kodu QR?",
+    "faq1_a": "Kliknij przycisk 'Wprowadź kod ręcznie' na ekranie skanera i wpisz 6-cyfrowy kod wyświetlany przez trenera.",
+    "faq2_q": "Dlaczego wymagany jest mój podpis cyfrowy przy wyjściu?",
+    "faq2_a": "Oficjalny protokół certyfikacji jakości (FOR 99 HRS) wymaga zarejestrowania cyfrowego podpisu każdego uczestnika w celu poświadczenia obecności.",
+    "faq3_q": "Co się stanie, jeśli nie mam połączenia z internetem lub zasięgu?",
+    "faq3_a": "Smart Check-in posiada automatyczną kolejkę offline. Twój wpis zostanie bezpiecznie zapisany w urządzeniu i zsynchronizowany po odzyskaniu łączności.",
+    "faq4_q": "Jak odzyskać hasło do konta?",
+    "faq4_a": "Kliknij 'Zapomniałeś hasła?' na ekranie logowania, aby otrzymać bezpieczny link do resetowania hasła pocztą e-mail.",
+    "confidentiality": "Distribution Academy · Bezpieczne Wsparcie Techniczne"
   }
 }

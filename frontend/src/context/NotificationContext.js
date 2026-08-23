@@ -3,6 +3,8 @@ import { useSubscription } from '../hooks/useSubscription';
 import tokenService from '../services/token.service';
 import { registerPushNotifications } from '../util/pushNotificationUtil';
 
+import soundAndHaptics from '../util/soundAndHaptics';
+
 const NotificationContext = createContext(null);
 
 function triggerNativeNotification(text) {
@@ -59,6 +61,7 @@ export function NotificationProvider({ children }) {
     const text = message.body;
 
     triggerNativeNotification(text);
+    soundAndHaptics.playInfo();
 
     setNotifications(prev => {
       const isDuplicate = prev.some(n => n.text === text && (Date.now() - n.id) < 3000);
@@ -83,6 +86,7 @@ export function NotificationProvider({ children }) {
       if (event?.data?.type === 'PUSH_RECEIVED') {
         const payload = event.data.payload;
         const text = payload.body || payload.title || 'Nueva notificación';
+        soundAndHaptics.playInfo();
         setNotifications(prev => {
           const isDuplicate = prev.some(n => n.text === text && (Date.now() - n.id) < 3000);
           if (isDuplicate) return prev;

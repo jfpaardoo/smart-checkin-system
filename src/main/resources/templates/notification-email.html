@@ -2,114 +2,189 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Notificación</title>
+    <title th:text="${title}">Notificación de Distribution Academy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
-            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
             margin: 0;
             padding: 0;
-            color: #333333;
+            background-color: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #1e293b;
+            -webkit-font-smoothing: antialiased;
+        }
+        .wrapper {
+            width: 100%;
+            background-color: #f1f5f9;
+            padding: 40px 16px;
+            box-sizing: border-box;
         }
         .container {
-            width: 100%;
-            max-width: 600px;
-            margin: 40px auto;
+            max-width: 560px;
+            margin: 0 auto;
             background-color: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border-radius: 24px;
+            box-shadow: 0 12px 36px rgba(15, 23, 42, 0.08);
+            border: 1px solid #e2e8f0;
             overflow: hidden;
-            border: 1px solid #e0e5e2;
         }
         .header {
-            background-color: #8a9e29;
-            padding: 30px;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 36px 32px 32px 32px;
             text-align: center;
+            position: relative;
+        }
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.10);
+            border: 1px solid rgba(255, 255, 255, 0.20);
+            padding: 6px 16px;
+            border-radius: 50px;
+            margin-bottom: 16px;
+        }
+        .brand-text {
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .brand-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #b3c34c;
+            margin-right: 8px;
         }
         .header h1 {
             color: #ffffff;
             margin: 0;
-            font-size: 24px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            line-height: 1.3;
         }
-        .content {
-            padding: 40px 30px;
+        .body-content {
+            padding: 36px 32px;
         }
         .greeting {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 600;
-            margin-bottom: 20px;
-            color: #2c3e50;
+            color: #0f172a;
+            margin-bottom: 12px;
         }
-        .message-body {
-            font-size: 16px;
+        .subtext {
+            font-size: 15px;
             line-height: 1.6;
-            margin-bottom: 30px;
-            color: #555555;
+            color: #64748b;
+            margin-bottom: 24px;
         }
-        .message-box {
-            background-color: #f9fbf9;
-            border-left: 4px solid #8a9e29;
-            padding: 15px 20px;
-            border-radius: 4px;
-            font-style: italic;
+        .notification-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #b3c34c;
+            padding: 20px 22px;
             margin-bottom: 30px;
-            color: #444444;
         }
-        .btn-container {
+        .notification-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+        .notification-text {
+            font-size: 15px;
+            font-weight: 500;
+            line-height: 1.5;
+            color: #1e293b;
+            margin: 0;
+        }
+        .cta-container {
             text-align: center;
-            margin-top: 30px;
-            margin-bottom: 10px;
+            margin: 32px 0 12px 0;
         }
-        .btn {
+        .cta-btn {
             display: inline-block;
-            background-color: #546e1e;
-            color: #ffffff;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #ffffff !important;
             text-decoration: none;
-            padding: 12px 30px;
+            padding: 14px 34px;
             border-radius: 50px;
-            font-weight: 600;
-            font-size: 16px;
-            transition: background-color 0.3s;
+            font-weight: 700;
+            font-size: 15px;
+            letter-spacing: 0.2px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.20);
+        }
+        .cta-btn:hover {
+            background: #0f172a;
         }
         .footer {
-            background-color: #f9faf9;
-            padding: 20px;
+            background-color: #f8fafc;
+            padding: 24px 32px;
             text-align: center;
-            font-size: 13px;
-            color: #555555;
-            border-top: 1px solid #eeeeee;
+            border-top: 1px solid #e2e8f0;
         }
         .footer p {
-            margin: 5px 0;
+            margin: 4px 0;
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+        .footer .company-tag {
+            font-weight: 600;
+            color: #64748b;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1 th:text="${title}">Notificación Importante</h1>
-        </div>
-        <div class="content">
-            <div class="greeting">Hola, <span th:text="${username}">Usuario</span>:</div>
-            
-            <div class="message-body">
-                Tienes una nueva actualización en tu perfil de Smart Check-in.
+    <div class="wrapper">
+        <div class="container">
+            <!-- Header -->
+            <div class="header">
+                <div class="brand-badge">
+                    <span class="brand-dot"></span>
+                    <span class="brand-text">Distribution Academy</span>
+                </div>
+                <h1 th:text="${title}">Notificación del Sistema</h1>
             </div>
 
-            <div class="message-box" th:text="${message}">
-                Este es el mensaje de la notificación.
+            <!-- Body -->
+            <div class="body-content">
+                <div class="greeting">
+                    Hola, <span style="color: #0f172a; font-weight: 700;" th:text="${username}">Usuario</span>:
+                </div>
+                
+                <p class="subtext">
+                    Has recibido una nueva actualización en tu perfil de formación:
+                </p>
+
+                <!-- Notification Card -->
+                <div class="notification-card">
+                    <div class="notification-title">Detalles del Aviso</div>
+                    <p class="notification-text" th:text="${message}">
+                        Este es el mensaje de la notificación.
+                    </p>
+                </div>
+
+                <!-- CTA Button -->
+                <div class="cta-container">
+                    <a th:href="@{${frontendUrl} + '/profile'}" class="cta-btn">
+                        Acceder a mi panel &rarr;
+                    </a>
+                </div>
             </div>
 
-            <div class="btn-container">
-                <a href="http://localhost:3000/profile" class="btn">Ir a mi panel</a>
+            <!-- Footer -->
+            <div class="footer">
+                <p class="company-tag">Distribution Academy · Sistema de Gestión de Formaciones</p>
+                <p>Has recibido este correo electrónico de forma automática porque tienes las notificaciones activadas en tu cuenta.</p>
+                <p>&copy; 2026 Distribution Academy. Todos los derechos reservados.</p>
             </div>
-        </div>
-        <div class="footer">
-            <p>Smart Check-in System</p>
-            <p>Has recibido este correo porque tienes las notificaciones activadas en tu perfil.</p>
         </div>
     </div>
 </body>

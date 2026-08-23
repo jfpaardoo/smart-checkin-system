@@ -14,7 +14,8 @@
     "register": "Solicitar Registo",
     "audit": "Auditoria",
     "cloudSettings": "Definições de Nuvem",
-    "toggleMenu": "Alternar navegação"
+    "toggleMenu": "Alternar navegação",
+    "support": "Ajuda e Suporte"
   },
   "home": {
     "welcome": "Bem-vindo ao Distribution Academy",
@@ -346,6 +347,13 @@
     "filterStatus": "Filtrar estado"
   },
   "checkin": {
+    "schedulePrompt": "Neste momento, estou:",
+    "insideWorkingHours": "Dentro do horário de trabalho",
+    "outsideWorkingHours": "Fora do horário de trabalho",
+    "insideWorkingHoursShort": "Dentro do horário",
+    "outsideWorkingHoursShort": "Fora do horário",
+    "invalidOrExpiredQr": "Código QR inválido ou expirado",
+    "offlineSyncRejected": "Sincronização: Registo rejeitado pelo servidor ({{msg}})",
     "title": "Scanner de Registro",
     "scanQr": "Digitalize o código QR",
     "success": "Registro bem-sucedido",
@@ -972,5 +980,27 @@
     "iosTitle": "Instalar a App no iPhone",
     "iosInstructions": "Toque em Partilhar",
     "iosInstructions2": "e depois \"Adicionar ao ecrã principal\""
+  },
+  "support": {
+    "modalTitle": "Centro de Ajuda e Suporte",
+    "assistanceTitle": "Tem alguma dúvida ou problema?",
+    "assistanceSubtitle": "Estamos ao seu dispor para esclarecer dúvidas sobre formações, registos ou acessos.",
+    "officialEmailChannel": "Canal Oficial de Suporte",
+    "emailDescription": "Escreva-nos diretamente indicando o seu nome, empresa e problema para obter assistência rápida.",
+    "sendEmailNow": "Enviar e-mail agora",
+    "copyEmail": "Copiar endereço",
+    "copied": "Copiado!",
+    "schedule": "Horário: Segunda a Sexta · 08:00 às 18:00",
+    "slaResponse": "Resposta média < 2h",
+    "faqTitle": "Perguntas frequentes",
+    "faq1_q": "Como faço o check-in se a câmara não ler o código QR?",
+    "faq1_a": "Clique no botão 'Inserir código manualmente' no ecrã de leitura e introduza o código de 6 dígitos exibido pelo formador.",
+    "faq2_q": "Por que motivo é solicitada a minha assinatura digital na saída?",
+    "faq2_a": "O protocolo oficial de certificação e qualidade (FOR 99 HRS) exige o registo da assinatura digital de cada formando para validar a presença.",
+    "faq3_q": "O que acontece se não tiver ligação à internet ou rede?",
+    "faq3_a": "O Smart Check-in inclui sincronização offline automática. O seu registo é guardado no dispositivo e enviado assim que recuperar a rede.",
+    "faq4_q": "Como recupero a minha palavra-passe de acesso?",
+    "faq4_a": "Clique em 'Esqueceu-se da sua palavra-passe?' no ecrã de início de sessão para receber um e-mail de recuperação seguro.",
+    "confidentiality": "Distribution Academy · Suporte Técnico Seguro"
   }
 }

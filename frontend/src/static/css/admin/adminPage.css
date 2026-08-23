@@ -122,7 +122,7 @@ html.dark .da-tab-pill:hover {
 .dark .da-tab-pill-active,
 html.dark .da-tab-pill-active {
   background: rgba(179, 195, 76, 0.22) !important;
-  color: #d4e84a !important;
+  color: #e4f575 !important;
   border: 1.5px solid rgba(212, 232, 74, 0.75) !important;
   box-shadow: 0 0 20px rgba(179, 195, 76, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
 }
@@ -130,7 +130,7 @@ html.dark .da-tab-pill-active {
 .dark .da-tab-pill-pending,
 html.dark .da-tab-pill-pending {
   background: rgba(245, 158, 11, 0.22) !important;
-  color: #fbbf24 !important;
+  color: #fde68a !important;
   border: 1.5px solid rgba(251, 191, 36, 0.75) !important;
   box-shadow: 0 0 20px rgba(245, 158, 11, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
 }

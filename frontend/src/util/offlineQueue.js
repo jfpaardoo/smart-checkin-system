@@ -84,7 +84,23 @@ export async function removePendingCheckin(id) {
 
 let isSyncing = false;
 
-async function syncSingleCheckin(api, item, toast) {
+function handleSyncError(postErr, toast, t) {
+  const status = postErr?.response?.status;
+  if (status !== 400 && status !== 409) return;
+
+  const defaultMsg = t ? t('checkin.invalidOrExpiredQr', 'Código QR no válido o expirado') : 'Código QR no válido o expirado';
+  const serverMsg = postErr.response?.data?.message || 
+    (typeof postErr.response?.data === 'string' ? postErr.response.data : defaultMsg);
+  
+  if (toast) {
+    const errorTemplate = t 
+      ? t('checkin.offlineSyncRejected', 'Sincronización: Fichaje rechazado por el servidor ({{msg}})', { msg: serverMsg })
+      : `Sincronización: Fichaje rechazado por el servidor (${serverMsg})`;
+    toast.error(errorTemplate);
+  }
+}
+
+async function syncSingleCheckin(api, item, toast, t) {
   const { id, queuedAt, ...payload } = item;
   try {
     const res = await api.post('/checkins/qr-fichaje', payload);
@@ -96,11 +112,7 @@ async function syncSingleCheckin(api, item, toast) {
     const status = postErr?.response?.status;
     if (status === 400 || status === 409) {
       await removePendingCheckin(id);
-      const serverMsg = postErr.response.data?.message || 
-        (typeof postErr.response.data === 'string' ? postErr.response.data : 'Código QR no válido o expirado');
-      if (toast) {
-        toast.error(`Sincronización: Fichaje rechazado por el servidor (${serverMsg})`);
-      }
+      handleSyncError(postErr, toast, t);
     }
   }
   return false;
@@ -127,7 +139,7 @@ export async function syncOfflineCheckins(api, toast, t) {
 
     let syncedCount = 0;
     for (const item of pending) {
-      const isSuccess = await syncSingleCheckin(api, item, toast);
+      const isSuccess = await syncSingleCheckin(api, item, toast, t);
       if (isSuccess) syncedCount++;
     }
 
