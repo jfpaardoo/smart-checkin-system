@@ -25,16 +25,24 @@ public class TotpService {
 
     private final TimeProvider timeProvider = new SystemTimeProvider();
     private final CodeGenerator codeGenerator = new DefaultCodeGenerator();
-    private final CodeVerifier verifier;
+    private final CodeVerifier qrVerifier;
+    private final CodeVerifier twoFactorVerifier;
     
     // Key: formationId (or "GLOBAL"), Value: [lat, lng]
     private final ConcurrentHashMap<String, double[]> adminLocationCache = new ConcurrentHashMap<>();
 
     public TotpService() {
-        DefaultCodeVerifier v = new DefaultCodeVerifier(codeGenerator, timeProvider);
-        v.setTimePeriod(30); // Estándar de 30s compatible con Google Authenticator / Authy
-        v.setAllowedTimePeriodDiscrepancy(1); // Permite un margen de desfase de 1 intervalo (±30s)
-        this.verifier = v;
+        // QR Dinámico para formaciones y fichajes: Período de 20 segundos
+        DefaultCodeVerifier qrV = new DefaultCodeVerifier(codeGenerator, timeProvider);
+        qrV.setTimePeriod(20);
+        qrV.setAllowedTimePeriodDiscrepancy(1); // Margen de ±20s para compensar latencia de red
+        this.qrVerifier = qrV;
+
+        // Autenticación en dos factores (2FA): Estándar RFC 6238 de 30s para Google Authenticator / Authy
+        DefaultCodeVerifier twoFactV = new DefaultCodeVerifier(codeGenerator, timeProvider);
+        twoFactV.setTimePeriod(30);
+        twoFactV.setAllowedTimePeriodDiscrepancy(1);
+        this.twoFactorVerifier = twoFactV;
     }
 
     public String getCurrentToken() {
@@ -43,7 +51,7 @@ public class TotpService {
 
     public String getCurrentToken(Object formationId) {
         try {
-            long currentBucket = Math.floorDiv(timeProvider.getTime(), 30);
+            long currentBucket = Math.floorDiv(timeProvider.getTime(), 20);
             String targetSecret = getHashedSecretForFormation(formationId);
             return codeGenerator.generate(targetSecret, currentBucket);
         } catch (Exception e) {
@@ -60,7 +68,7 @@ public class TotpService {
             return false;
         }
         String targetSecret = getHashedSecretForFormation(formationId);
-        return verifier.isValidCode(targetSecret, token);
+        return qrVerifier.isValidCode(targetSecret, token);
     }
 
     private String getHashedSecretForFormation(Object formationId) {
@@ -83,7 +91,7 @@ public class TotpService {
         if (twoFactorSecret == null || twoFactorSecret.trim().isEmpty() || code == null || code.trim().isEmpty()) {
             return false;
         }
-        return verifier.isValidCode(twoFactorSecret, code);
+        return twoFactorVerifier.isValidCode(twoFactorSecret, code);
     }
 
     public String generateCode(String twoFactorSecret) {

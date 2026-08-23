@@ -20,4 +20,6 @@ public class QrCheckinRequest {
     private Double userLng;
     private Double adminLat;
     private Double adminLng;
+
+    private Boolean withinWorkingHours = true;
 }

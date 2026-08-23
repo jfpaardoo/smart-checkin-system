@@ -64,10 +64,10 @@ export default function GlassPagination({
   const visiblePages = getPageNumbers();
 
   return (
-    <div className={`flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 sm:px-5 sm:py-3 rounded-2xl sm:rounded-full bg-white/40 dark:bg-slate-900/70 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-sm mt-4 relative z-20 w-full ${className}`}>
+    <div className={`flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-3 p-3 sm:px-5 sm:py-3 rounded-2xl sm:rounded-full bg-white/40 dark:bg-slate-900/70 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-sm mt-4 relative z-20 w-full ${className}`}>
       
-      {/* 1. Contador y Selector "Por pág" perfectamente alineados en una sola fila */}
-      <div className="flex items-center justify-between gap-3 text-xs text-slate-600 dark:text-slate-400 w-full sm:w-auto">
+      {/* 1. Información de página y Selector de elementos por página (en fila en desktop, apilados en móvil estrecho) */}
+      <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2 sm:gap-4 text-xs text-slate-600 dark:text-slate-400 w-full sm:w-auto text-center sm:text-left">
         <span className="font-medium whitespace-nowrap text-xs">
           {t('pagination.showing', 'Mostrando')}{' '}
           <strong className="text-slate-800 dark:text-slate-200 font-bold">{startItem}-{endItem}</strong>{' '}
@@ -76,7 +76,7 @@ export default function GlassPagination({
         </span>
 
         {onPageSizeChange && (
-          <div className="flex items-center gap-1.5 relative shrink-0" ref={dropdownRef}>
+          <div className="flex items-center justify-center gap-1.5 relative shrink-0" ref={dropdownRef}>
             <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">{t('pagination.perPage', 'Por pág:')}</span>
             
             {/* Botón selector custom Liquid Glass */}
@@ -92,7 +92,7 @@ export default function GlassPagination({
             {/* Menú flotante hacia arriba */}
             {isOpen && (
               <div 
-                className="absolute bottom-[calc(100%+8px)] right-0 min-w-[75px] bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-2xl p-1.5 shadow-2xl border border-slate-100 dark:border-slate-700 flex flex-col gap-1 z-50"
+                className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 sm:left-auto sm:right-0 sm:translate-x-0 min-w-[75px] bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-2xl p-1.5 shadow-2xl border border-slate-100 dark:border-slate-700 flex flex-col gap-1 z-50"
               >
                 {pageSizeOptions.map((opt) => {
                   const isSelected = opt === pageSize;
@@ -122,7 +122,7 @@ export default function GlassPagination({
       </div>
 
       {/* 2. Controles circulares de navegación */}
-      <div className="flex items-center gap-1.5 max-w-full justify-center w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200/50 dark:border-slate-700/50">
+      <div className="flex items-center gap-1 sm:gap-1.5 max-w-full justify-center flex-wrap w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200/50 dark:border-slate-700/50">
         {/* Primera página */}
         <button
           type="button"
@@ -140,7 +140,7 @@ export default function GlassPagination({
           type="button"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="w-8 h-8 rounded-full bg-white/50 dark:bg-slate-800/60 border border-white/60 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 disabled:opacity-25 disabled:cursor-not-allowed transition shadow-2xs inline-flex items-center justify-center shrink-0 cursor-pointer"
+          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/50 dark:bg-slate-800/60 border border-white/60 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 disabled:opacity-25 disabled:cursor-not-allowed transition shadow-2xs inline-flex items-center justify-center shrink-0 cursor-pointer"
           title={t('pagination.prev', 'Página anterior')}
           aria-label={t('pagination.prev', 'Página anterior')}
         >
@@ -148,7 +148,7 @@ export default function GlassPagination({
         </button>
 
         {/* Números de página */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 sm:gap-1.5">
           {visiblePages.map((pageNum) => {
             const isActive = pageNum === currentPage;
             return (
@@ -156,7 +156,7 @@ export default function GlassPagination({
                 key={pageNum}
                 type="button"
                 onClick={() => onPageChange(pageNum)}
-                className={`w-8 h-8 rounded-full text-xs font-bold transition-all shadow-2xs inline-flex items-center justify-center shrink-0 cursor-pointer ${
+                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full text-xs font-bold transition-all shadow-2xs inline-flex items-center justify-center shrink-0 cursor-pointer ${
                   isActive
                     ? 'bg-[#b3c34c] text-slate-950 border border-[#b3c34c] shadow-[0_2px_10px_rgba(179,195,76,0.5)] font-extrabold scale-105'
                     : 'bg-white/50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border border-white/60 dark:border-white/10 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
@@ -173,7 +173,7 @@ export default function GlassPagination({
           type="button"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="w-8 h-8 rounded-full bg-white/50 dark:bg-slate-800/60 border border-white/60 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 disabled:opacity-25 disabled:cursor-not-allowed transition shadow-2xs inline-flex items-center justify-center shrink-0 cursor-pointer"
+          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/50 dark:bg-slate-800/60 border border-white/60 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 disabled:opacity-25 disabled:cursor-not-allowed transition shadow-2xs inline-flex items-center justify-center shrink-0 cursor-pointer"
           title={t('pagination.next', 'Página siguiente')}
           aria-label={t('pagination.next', 'Página siguiente')}
         >

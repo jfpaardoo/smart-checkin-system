@@ -14,7 +14,8 @@
     "register": "Solicitare Înregistrare",
     "audit": "Jurnal de Audit",
     "cloudSettings": "Setări Cloud",
-    "toggleMenu": "Comutare navigare"
+    "toggleMenu": "Comutare navigare",
+    "support": "Ajutor și Asistență"
   },
   "home": {
     "welcome": "Bine ați venit la Distribution Academy",
@@ -214,7 +215,10 @@
     "editSubtitle": "Modifică detaliile, programul și documentația instruirii",
     "filterTime": "Filtrează după dată",
     "newSubtitle": "Creează o nouă sesiune de instruire și încarcă materialele",
-    "subtitle": "Programează sesiuni de instruire, gestionează prezența și materialele didactice"
+    "subtitle": "Programează sesiuni de instruire, gestionează prezența și materialele didactice",
+    "location": "Locație Formare",
+    "trainer": "Formator",
+    "titleUppercase": "FORMARE"
   },
   "formationDetails": {
     "title": "Detalii Formare",
@@ -264,7 +268,29 @@
     "filterStatus": "Filtrează starea",
     "searchAttendee": "Caută participant după nume, utilizator sau cod...",
     "checkinTime": "Intrare:",
-    "checkoutTime": "Ieșire:"
+    "checkoutTime": "Ieșire:",
+    "summaryAndAttendanceRecord": "REZUMAT ȘI REGISTRU DE PREZENȚĂ",
+    "closedBadge": "Finalizată și Certificată",
+    "exportOfficialSheet": "Registru Oficial (FOR 99)",
+    "locationLabel": "Locație",
+    "trainerLabel": "Formator",
+    "statusClosed": "Închisă și Semnată",
+    "statusOpen": "Deschisă",
+    "noDescription": "Fără descriere",
+    "observationsLabel": "Observații / Jurnal Incidente",
+    "trainerSignatureLabel": "Semnătură Formator",
+    "closeAction": "Finalizare Formare",
+    "cannotCloseAlert": "Pentru a finaliza formarea, toți participanții înscriși trebuie să fi efectuat ieșirea și să fi semnat.",
+    "closeModalTitle": "Finalizare și Certificare Formare",
+    "closeNotice": "Toți participanții și-au finalizat prezența. La finalizare, formarea va fi blocată pentru editare și registrul oficial va fi salvat cu semnătura dumneavoastră.",
+    "trainerNameLabel": "Nume Formator",
+    "observationsPlaceholder": "Indicați dacă au existat incidente, probleme tehnice sau mențiuni pe parcursul sesiunii...",
+    "signHint": "Semnați cu mouse-ul sau cu degetul pe ecranul tactil.",
+    "closeSuccess": "Formare finalizată și certificată cu succes.",
+    "closeError": "Eroare la finalizarea formării.",
+    "signatureRequired": "Vă rugăm să aplicați semnătura în calitate de formator pentru a închide sesiunea.",
+    "officialSheetDownloaded": "Registru oficial FOR 99 descărcat și sincronizat cu succes.",
+    "downloadOfficialSheetError": "Eroare la descărcarea registrului oficial FOR 99."
   },
   "qr": {
     "title": "QR Formare",
@@ -276,6 +302,12 @@
     "totpSecurity": "Securitate TOTP: Se actualizează la fiecare 20s"
   },
   "dashboard": {
+    "qrValidated": "Cod QR validat",
+    "manualActivated": "Introducere manuală activată",
+    "cameraReactivated": "Cameră reactivată",
+    "codeAccepted": "Cod acceptat",
+    "codeInvalid": "Cod invalid",
+    "signatureRequired": "Semnătură obligatorie",
     "hello": "Bună",
     "scannerButton": "Scanner QR (Pontaj / Formare)",
     "myFormations": "Formările Mele",
@@ -315,6 +347,13 @@
     "filterStatus": "Filtrează starea"
   },
   "checkin": {
+    "schedulePrompt": "În acest moment, sunt:",
+    "insideWorkingHours": "În timpul programului de lucru",
+    "outsideWorkingHours": "În afara programului de lucru",
+    "insideWorkingHoursShort": "În program",
+    "outsideWorkingHoursShort": "În afara programului",
+    "invalidOrExpiredQr": "Cod QR invalid sau expirat",
+    "offlineSyncRejected": "Sincronizare: Înregistrare respinsă de server ({{msg}})",
     "title": "Scanner de Înregistrare",
     "scanQr": "Scanați codul QR",
     "success": "Înregistrare reușită",
@@ -358,7 +397,9 @@
     "switchCamera": "Schimbă Camera"
   },
   "common": {
+    "clear": "Șterge",
     "clearFilters": "Șterge filtrele",
+    "downloading": "Se descarcă...",
     "noDescription": "Fără descriere",
     "back": "Înapoi",
     "rowsPerPage": "Pe pag:",
@@ -939,5 +980,27 @@
     "iosTitle": "Instalează Aplicația pe iPhone",
     "iosInstructions": "Apasă Distribuie",
     "iosInstructions2": "și apoi \"Adaugă la ecranul principal\""
+  },
+  "support": {
+    "modalTitle": "Centru de Ajutor și Asistență",
+    "assistanceTitle": "Aveți vreo întrebare sau o problemă tehnică?",
+    "assistanceSubtitle": "Suntem la dispoziția dumneavoastră pentru a vă ajuta cu sesiunile de formare, pontaj sau acces.",
+    "officialEmailChannel": "Canal Oficial de Asistență",
+    "emailDescription": "Scrieți-ne direct indicând numele, compania și problema întâmpinată pentru asistență rapidă.",
+    "sendEmailNow": "Trimite e-mail acum",
+    "copyEmail": "Copiază adresa",
+    "copied": "Copiat!",
+    "schedule": "Program: Luni până Vineri · 08:00 – 18:00",
+    "slaResponse": "Răspuns mediu < 2h",
+    "faqTitle": "Întrebări frecvente",
+    "faq1_q": "Cum mă înregistrez dacă camera nu poate citi codul QR?",
+    "faq1_a": "Apăsați pe butonul 'Introduceți codul manual' pe ecranul scanerului și introduceți codul de 6 cifre afișat de formator.",
+    "faq2_q": "De ce este solicitată semnătura mea digitală la ieșire?",
+    "faq2_a": "Protocolul oficial de certificare a calității (FOR 99 HRS) impune înregistrarea semnăturii fiecărui participant pentru atestarea prezenței.",
+    "faq3_q": "Ce se întâmplă dacă nu am conexiune la internet sau semnal?",
+    "faq3_a": "Smart Check-in include sincronizare automată offline. Înregistrarea este salvată în siguranță pe dispozitiv și se sincronizează la revenirea conexiunii.",
+    "faq4_q": "Cum îmi recuperez parola de acces?",
+    "faq4_a": "Faceți clic pe 'Ați uitat parola?' pe ecranul de autentificare pentru a primi un link securizat de resetare prin e-mail.",
+    "confidentiality": "Distribution Academy · Suport Tehnic Securizat"
   }
 }

@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.StreamSupport;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,13 +92,15 @@ public class FormationService {
         return attendanceRepository.findFirstByFormationAndUserOrderByCheckInDateDesc(formation, user);
     }
 
-    private Formation doRegisterAttendance(Integer formationId, User user) {
+    private Formation doRegisterAttendance(Integer formationId, User user, Boolean withinWorkingHours) {
         Formation formation = formationRepository.findById(formationId)
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
 
         if (Boolean.TRUE.equals(formation.getIsClosed())) {
-            throw new IllegalStateException("La formación ya está finalizada y cerrada. No se admiten nuevos fichajes ni registros.");
+            throw new IllegalStateException("Esta formación ya está finalizada y cerrada. No se admiten nuevos registros.");
         }
+
+        boolean withinHours = !Boolean.FALSE.equals(withinWorkingHours);
 
         Optional<FormationAttendance> existing = findAttendance(formation, user);
         if (!existing.isPresent()) {
@@ -105,6 +108,7 @@ public class FormationService {
             att.setFormation(formation);
             att.setUser(user);
             att.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
+            att.setWithinWorkingHours(withinHours);
             attendanceRepository.save(att);
             formation.getAttendances().add(att);
             try {
@@ -118,6 +122,7 @@ public class FormationService {
             FormationAttendance att = existing.get();
             if (att.getCheckInDate() == null) {
                 att.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
+                att.setWithinWorkingHours(withinHours);
                 attendanceRepository.save(att);
                 try {
                     notificationContext.sendNotification(user, 
@@ -127,7 +132,7 @@ public class FormationService {
                     // Non-critical
                 }
             } else {
-                throw new IllegalArgumentException("Ya estás registrado en esta formación.");
+                throw new IllegalArgumentException("Ya estás registrado en esta formación (entrada ya registrada previamente).");
             }
         }
         user.setIsWorking(true);
@@ -137,39 +142,66 @@ public class FormationService {
     }
 
     @Transactional
+    public Formation registerAttendance(Integer formationId, User user, Boolean withinWorkingHours) {
+        return doRegisterAttendance(formationId, user, withinWorkingHours);
+    }
+
+    @Transactional
     public Formation registerAttendance(Integer formationId, User user) {
-        return doRegisterAttendance(formationId, user);
+        return doRegisterAttendance(formationId, user, true);
+    }
+
+    @Transactional
+    public Formation registerAttendance(Integer formationId, String personalCode, Boolean withinWorkingHours) {
+        User user = userService.findByPersonalCode(personalCode);
+        return doRegisterAttendance(formationId, user, withinWorkingHours);
     }
 
     @Transactional
     public Formation registerAttendance(Integer formationId, String personalCode) {
         User user = userService.findByPersonalCode(personalCode);
-        return doRegisterAttendance(formationId, user);
+        return doRegisterAttendance(formationId, user, true);
     }
 
     private Formation doCheckoutAttendance(Integer formationId, String personalCode, String signature, String token) {
         if (token != null && !token.isBlank() && !totpService.verifyToken(token, formationId)) {
-            throw new IllegalArgumentException("Código inválido o expirado para esta formación.");
+            Iterable<Formation> allFormations = formationRepository.findAll();
+            boolean isOtherFormation = StreamSupport.stream(allFormations.spliterator(), false)
+                .filter(f -> !f.getId().equals(formationId))
+                .anyMatch(f -> totpService.verifyToken(token, f.getId()));
+            if (isOtherFormation) {
+                throw new IllegalArgumentException("El código o QR introducido pertenece a otra formación diferente.");
+            }
+            throw new IllegalArgumentException("El código o QR de formación ha expirado o no es válido.");
         }
         Formation formation = formationRepository.findById(formationId)
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
         
         if (Boolean.TRUE.equals(formation.getIsClosed())) {
-            throw new IllegalStateException("La formación ya está finalizada y cerrada.");
+            throw new IllegalStateException("Esta formación ya está finalizada y cerrada. No se admiten nuevos registros de salida.");
         }
         
         User user = userService.findByPersonalCode(personalCode);
+        if (user == null) {
+            throw new IllegalArgumentException("Usuario no encontrado para el código personal indicado.");
+        }
 
         FormationAttendance att = findAttendance(formation, user)
-            .orElseThrow(() -> new IllegalArgumentException("El usuario no ha hecho check-in en esta formación"));
+            .orElseThrow(() -> new IllegalArgumentException("No puedes realizar el checkout porque no tienes un check-in de entrada previo en esta formación."));
+
+        if (att.getCheckOutDate() != null) {
+            throw new IllegalArgumentException("Ya has registrado tu salida y firmado en esta formación previamente.");
+        }
+
+        if (signature == null || signature.trim().isEmpty()) {
+            throw new IllegalArgumentException("La firma digital es obligatoria para confirmar la salida.");
+        }
 
         att.setCheckOutDate(LocalDateTime.now(ZoneId.systemDefault()));
-        if (signature != null && !signature.isEmpty()) {
-            String fName = formation.getName() != null ? formation.getName() : "Unknown_Formation";
-            String pathContext = "formations/" + fName.replaceAll("[^a-zA-Z0-9.-]", "_");
-            String fileName = signatureStorageService.saveSignature(signature, pathContext);
-            att.setSignature(fileName);
-        }
+        String fName = formation.getName() != null ? formation.getName() : "Unknown_Formation";
+        String pathContext = "formations/" + fName.replaceAll("[^a-zA-Z0-9.-]", "_");
+        String fileName = signatureStorageService.saveSignature(signature, pathContext);
+        att.setSignature(fileName);
         attendanceRepository.save(att);
 
         user.setIsWorking(false);
@@ -276,6 +308,7 @@ public class FormationService {
             FormationAttendance att = new FormationAttendance();
             att.setFormation(formation);
             att.setUser(user);
+            att.setWithinWorkingHours(true);
             attendanceRepository.save(att);
 
             // Send notification to the assigned user

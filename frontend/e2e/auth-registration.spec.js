@@ -53,8 +53,8 @@ test.describe('Flujo de Autorregistro de Usuario (User Self-Registration E2E)', 
     await expect(submitButton).toBeEnabled({ timeout: 8000 });
     await submitButton.click();
 
-    // Verify Success Screen
-    await expect(page.getByRole('heading', { name: /¡Solicitud Enviada!|Request Sent!|Request Submitted!/i })).toBeVisible({ timeout: 15000 });
+    // Verify Success Screen (multilingual)
+    await expect(page.getByRole('heading', { name: /solicitud|request|pedido|demande|antrag|wniosek|заявка|solicitare/i })).toBeVisible({ timeout: 15000 });
   });
 
   test('Debe validar que las contraseñas coincidan', async ({ page }) => {

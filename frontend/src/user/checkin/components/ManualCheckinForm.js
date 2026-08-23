@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../../components/ToastProvider';
+import soundAndHaptics from '../../../util/soundAndHaptics';
 
 export default function ManualCheckinForm({ onSubmit, onCancel }) {
   const { t } = useTranslation();
@@ -35,7 +36,12 @@ export default function ManualCheckinForm({ onSubmit, onCancel }) {
             value={manualCode}
             onChange={(e) => {
               const val = e.target.value.replace(/\D/g, '');
-              if (val.length <= 6) setManualCode(val);
+              if (val.length <= 6) {
+                if (val.length > manualCode.length) {
+                  soundAndHaptics.playClick();
+                }
+                setManualCode(val);
+              }
             }}
             className="da-input mx-auto max-w-full"
             style={{

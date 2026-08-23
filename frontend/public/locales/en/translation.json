@@ -14,7 +14,8 @@
     "register": "Request Registration",
     "audit": "Audit Log",
     "cloudSettings": "Cloud Settings",
-    "toggleMenu": "Toggle navigation"
+    "toggleMenu": "Toggle navigation",
+    "support": "Help & Support"
   },
   "home": {
     "welcome": "Welcome to Distribution Academy",
@@ -214,7 +215,10 @@
     "editSubtitle": "Modify training details, schedule and documentation",
     "filterTime": "Filter by date",
     "newSubtitle": "Create a new training session and upload materials",
-    "subtitle": "Schedule training sessions, manage attendances and teaching materials"
+    "subtitle": "Schedule training sessions, manage attendances and teaching materials",
+    "location": "Training Location",
+    "trainer": "Trainer",
+    "titleUppercase": "TRAINING"
   },
   "formationDetails": {
     "title": "Formation Details",
@@ -264,7 +268,29 @@
     "filterStatus": "Filter status",
     "searchAttendee": "Search attendee by name, username or code...",
     "checkinTime": "Check-in:",
-    "checkoutTime": "Check-out:"
+    "checkoutTime": "Check-out:",
+    "summaryAndAttendanceRecord": "SUMMARY AND ATTENDANCE RECORD",
+    "closedBadge": "Completed & Certified",
+    "exportOfficialSheet": "Official Record (FOR 99)",
+    "locationLabel": "Location",
+    "trainerLabel": "Trainer",
+    "statusClosed": "Closed & Signed",
+    "statusOpen": "Open",
+    "noDescription": "No description",
+    "observationsLabel": "Observations / Incident Log",
+    "trainerSignatureLabel": "Trainer Signature",
+    "closeAction": "Finish Formation",
+    "cannotCloseAlert": "To complete the training, all registered attendees must have checked out and signed.",
+    "closeModalTitle": "Finish & Certify Formation",
+    "closeNotice": "All attendees have completed attendance. When closing, the formation will be locked for editing and the official record saved.",
+    "trainerNameLabel": "Trainer Name",
+    "observationsPlaceholder": "Indicate if there were any incidents, technical issues or notes during the session...",
+    "signHint": "Sign with mouse or touch screen.",
+    "closeSuccess": "Formation successfully finished and certified.",
+    "closeError": "Error finishing formation.",
+    "signatureRequired": "Please provide trainer signature to close the session.",
+    "officialSheetDownloaded": "Official record FOR 99 downloaded and synced successfully.",
+    "downloadOfficialSheetError": "Error downloading official record FOR 99."
   },
   "qr": {
     "title": "Formation QR",
@@ -321,6 +347,8 @@
     "filterStatus": "Filter status"
   },
   "checkin": {
+    "invalidOrExpiredQr": "Invalid or expired QR code",
+    "offlineSyncRejected": "Sync: Check-in rejected by server ({{msg}})",
     "title": "Check-in Scanner",
     "scanQr": "Scan QR Code",
     "success": "Check-in successful",
@@ -361,10 +389,17 @@
     "formationLabel": "Training",
     "dateLabel": "Date",
     "close": "Close",
-    "switchCamera": "Switch Camera"
+    "switchCamera": "Switch Camera",
+    "schedulePrompt": "Right now, I am:",
+    "insideWorkingHours": "Within working hours",
+    "outsideWorkingHours": "Outside working hours",
+    "insideWorkingHoursShort": "In hours",
+    "outsideWorkingHoursShort": "Out of hours"
   },
   "common": {
+    "clear": "Clear",
     "clearFilters": "Clear filters",
+    "downloading": "Downloading...",
     "noDescription": "No description",
     "back": "Back",
     "rowsPerPage": "Per page:",
@@ -945,5 +980,27 @@
     "iosTitle": "Install App on iPhone",
     "iosInstructions": "Tap Share",
     "iosInstructions2": "and then \"Add to Home Screen\""
+  },
+  "support": {
+    "modalTitle": "Help & Support Center",
+    "assistanceTitle": "Do you have any questions or issues?",
+    "assistanceSubtitle": "We are here to help you resolve questions about training sessions, check-ins, or access.",
+    "officialEmailChannel": "Official Support Channel",
+    "emailDescription": "Write directly to us with your name, company, and issue for quick assistance.",
+    "sendEmailNow": "Send email now",
+    "copyEmail": "Copy address",
+    "copied": "Copied!",
+    "schedule": "Hours: Monday to Friday · 08:00 to 18:00",
+    "slaResponse": "Average response < 2h",
+    "faqTitle": "Frequently asked questions",
+    "faq1_q": "How do I check in if the camera cannot scan the QR code?",
+    "faq1_a": "Click the 'Enter code manually' button on the scanner screen and enter the 6-digit code displayed by the trainer.",
+    "faq2_q": "Why is my digital signature required upon checkout?",
+    "faq2_a": "The official quality certification protocol (FOR 99 HRS) requires recording each attendee's digital signature to certify presence.",
+    "faq3_q": "What happens if I don't have internet connection or coverage?",
+    "faq3_a": "Smart Check-in has automatic offline queueing. Your attendance is saved securely on your device and will sync as soon as connectivity is restored.",
+    "faq4_q": "How do I recover my account password?",
+    "faq4_a": "Click 'Forgot password?' on the login screen and you will receive a secure reset link via email.",
+    "confidentiality": "Distribution Academy · Secure Technical Support"
   }
 }

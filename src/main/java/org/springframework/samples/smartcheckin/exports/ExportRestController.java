@@ -60,6 +60,7 @@ public class ExportRestController {
     private final AnalyticsService analyticsService;
     private final ExportFactory exportFactory;
     private final OfficialFormationSheetService officialFormationSheetService;
+    private final org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter cloudStorageAdapter;
 
     @Autowired
     public ExportRestController(CheckinRepository checkinRepository,
@@ -70,7 +71,8 @@ public class ExportRestController {
                                 UserSessionRepository userSessionRepository,
                                 AnalyticsService analyticsService,
                                 ExportFactory exportFactory,
-                                OfficialFormationSheetService officialFormationSheetService) {
+                                OfficialFormationSheetService officialFormationSheetService,
+                                @Autowired(required = false) org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter cloudStorageAdapter) {
         this.checkinRepository = checkinRepository;
         this.attendanceRepository = attendanceRepository;
         this.formationRepository = formationRepository;
@@ -80,17 +82,62 @@ public class ExportRestController {
         this.analyticsService = analyticsService;
         this.exportFactory = exportFactory;
         this.officialFormationSheetService = officialFormationSheetService;
+        this.cloudStorageAdapter = cloudStorageAdapter;
     }
 
     @GetMapping("/formations/{id}/official-sheet")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<byte[]> exportOfficialFormationSheet(@PathVariable Integer id) throws IOException {
+    public ResponseEntity<byte[]> exportOfficialFormationSheet(
+            @PathVariable Integer id,
+            @RequestParam(required = false) String formationWord,
+            @RequestParam(required = false) String summaryWord,
+            @RequestParam(required = false) String filename) throws IOException {
         Formation formation = formationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Formación no encontrada"));
         byte[] data = officialFormationSheetService.generateOfficialSheet(formation);
-        String safeName = formation.getName() != null ? formation.getName().replaceAll("[^a-zA-Z0-9_-]", "_") : "FOR99";
-        String filename = "FOR99_" + safeName + "_" + id + ".xls";
-        return createResponse(data, filename, "application/vnd.ms-excel");
+
+        String finalFilename = (filename != null && !filename.isBlank()) 
+                ? filename 
+                : buildOfficialSheetFilename(formation, formationWord, summaryWord);
+
+        syncOfficialSheetToCloud(formation, finalFilename, data);
+
+        return createResponse(data, finalFilename, "application/vnd.ms-excel");
+    }
+
+    private String buildOfficialSheetFilename(Formation formation, String formationWord, String summaryWord) {
+        String fWord = (formationWord != null && !formationWord.isBlank()) ? formationWord.trim().toUpperCase() : "FORMACIÓN";
+        String sWord = (summaryWord != null && !summaryWord.isBlank()) ? summaryWord.trim().toUpperCase() : "SUMARIO Y REGISTRO DE PRESENCIAS";
+        String yearMonth = formation.getFormationDate() != null 
+                ? formation.getFormationDate().format(DateTimeFormatter.ofPattern("yyyyMM")) 
+                : LocalDateTime.now(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyyMM"));
+        String safeFormationName = formation.getName() != null 
+                ? formation.getName().toUpperCase().replaceAll("[\\\\/:*?\"<>|~#%&{}]", "_").trim() 
+                : "SIN_NOMBRE";
+        return yearMonth + "_" + fWord + "_" + safeFormationName + "_" + sWord + "_FOR_99 HRS.xls";
+    }
+
+    private void syncOfficialSheetToCloud(Formation formation, String filename, byte[] data) {
+        if (cloudStorageAdapter == null) {
+            return;
+        }
+        try {
+            org.springframework.samples.smartcheckin.util.ByteArrayMultipartFile multipartFile = 
+                    new org.springframework.samples.smartcheckin.util.ByteArrayMultipartFile(
+                            filename, 
+                            filename, 
+                            "application/vnd.ms-excel", 
+                            data
+                    );
+            String uploadedDoc = cloudStorageAdapter.uploadFile(multipartFile, formation.getName());
+            if (uploadedDoc != null && !formation.getDocumentUrls().contains(uploadedDoc)) {
+                formation.getDocumentUrls().add(uploadedDoc);
+                formationRepository.save(formation);
+            }
+        } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(ExportRestController.class)
+                    .warn("No se pudo sincronizar automáticamente la hoja oficial FOR 99 en OneDrive: {}", e.getMessage());
+        }
     }
 
     @GetMapping("/user-formations/{format}")
@@ -129,7 +176,7 @@ public class ExportRestController {
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
         byte[] data = strategy.exportSingleUserDossier(userAnalytics, userAnalytics.getFormationDetails());
-        String cleanUsername = userAnalytics.getUsername() != null ? userAnalytics.getUsername().replaceAll("[^a-zA-Z0-9_]", "_") : "empleado";
+        String cleanUsername = userAnalytics.getUsername() != null ? userAnalytics.getUsername().replaceAll("\\W", "_") : "empleado";
         return createResponse(data, "expediente_formativo_" + cleanUsername + "." + strategy.getFileExtension(), strategy.getContentType());
     }
 

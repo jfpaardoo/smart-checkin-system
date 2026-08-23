@@ -3,7 +3,7 @@ const path = require('node:path');
 const pkg = require('../package.json');
 
 const versionData = {
-  version: pkg.version || '1.1.0',
+  version: pkg.version || '1.2.0',
   buildTime: new Date().toISOString(),
   timestamp: Date.now()
 };

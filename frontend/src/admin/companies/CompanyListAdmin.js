@@ -219,7 +219,7 @@ export default function CompanyListAdmin() {
 
   return (
     <div className="da-container">
-      <div className="da-card" style={{ maxWidth: "1100px", margin: "2rem auto" }}>
+      <div className="da-card">
         <GlassPageHeader
           icon={FaBuilding}
           title={t("companies.title", "Gestión de Empresas")}

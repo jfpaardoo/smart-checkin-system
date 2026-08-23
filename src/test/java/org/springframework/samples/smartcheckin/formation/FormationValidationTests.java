@@ -28,6 +28,8 @@ class FormationValidationTests {
         Formation formation = new Formation();
         formation.setName("Valid Formation");
         formation.setDescription("Valid Description");
+        formation.setLocation("BA VILLAFRANCA");
+        formation.setTrainer("VICTOR PARDO");
         formation.setFormationDate(LocalDateTime.now().plusDays(2));
         return formation;
     }
@@ -36,6 +38,24 @@ class FormationValidationTests {
     void shouldNotValidateWhenNameIsBlank() {
         Formation formation = createValidFormation();
         formation.setName("   ");
+
+        Set<ConstraintViolation<Formation>> violations = validator.validate(formation);
+        assertThat(violations).isNotEmpty();
+    }
+
+    @Test
+    void shouldNotValidateWhenLocationIsBlank() {
+        Formation formation = createValidFormation();
+        formation.setLocation("   ");
+
+        Set<ConstraintViolation<Formation>> violations = validator.validate(formation);
+        assertThat(violations).isNotEmpty();
+    }
+
+    @Test
+    void shouldNotValidateWhenTrainerIsBlank() {
+        Formation formation = createValidFormation();
+        formation.setTrainer("   ");
 
         Set<ConstraintViolation<Formation>> violations = validator.validate(formation);
         assertThat(violations).isNotEmpty();

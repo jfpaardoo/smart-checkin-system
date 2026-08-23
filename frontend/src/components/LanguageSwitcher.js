@@ -56,10 +56,10 @@ export default function LanguageSwitcher({ isMobile = false, isOpen = false, onT
         onClick={handleToggle}
         className="da-nav-btn flex items-center gap-2 focus:outline-none"
       >
-        <FaGlobe className="text-white/80" />
+        <FaGlobe className="text-slate-600 dark:text-white/80" />
         <span className="uppercase font-semibold text-[0.85rem]">{current.code}</span>
         <svg
-          className={`w-4 h-4 ml-0.5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 ml-0.5 text-slate-500 dark:text-white/80 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -92,19 +92,19 @@ export default function LanguageSwitcher({ isMobile = false, isOpen = false, onT
                     type="button"
                     onClick={() => handleChange(code)}
                     className={`da-nav-dropdown-item w-full flex items-center justify-between text-left whitespace-nowrap ${
-                      isSelected ? 'bg-white/10 font-bold' : ''
+                      isSelected ? 'bg-white/60 dark:bg-white/10 font-bold' : ''
                     }`}
                   >
                     <span>{label}</span>
-                    {isSelected && <FaCheck className="text-[#b3c34c] text-xs ml-3 flex-shrink-0" />}
+                    {isSelected && <FaCheck className="text-[#8fa228] dark:text-[#b3c34c] text-xs ml-3 flex-shrink-0" />}
                   </button>
                 );
               })}
             </div>
 
             {canScrollMore && (
-              <div className="flex justify-center items-center py-1 bg-gradient-to-t from-slate-900/80 to-transparent pointer-events-none rounded-b-xl">
-                <FaChevronDown className="text-white/60 text-xs animate-bounce" />
+              <div className="flex justify-center items-center py-1 bg-gradient-to-t from-white/80 dark:from-slate-900/80 to-transparent pointer-events-none rounded-b-xl">
+                <FaChevronDown className="text-slate-500 dark:text-white/60 text-xs animate-bounce" />
               </div>
             )}
           </div>

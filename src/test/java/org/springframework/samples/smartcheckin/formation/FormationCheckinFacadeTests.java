@@ -71,6 +71,8 @@ class FormationCheckinFacadeTests {
         FormationRequest req = new FormationRequest();
         req.setName(JAVA_101);
         req.setDescription("Learn Java");
+        req.setLocation("BA VILLAFRANCA");
+        req.setTrainer("VICTOR PARDO");
         req.setFormationDate(LocalDateTime.now(ZoneId.of("Europe/Madrid")));
 
         MockMultipartFile validFile = new MockMultipartFile(FILES_PARAM, "doc.pdf", APPLICATION_PDF, "content".getBytes());
@@ -94,6 +96,8 @@ class FormationCheckinFacadeTests {
     void createFormationFileUploadExceptionThrowsException() throws Exception {
         FormationRequest req = new FormationRequest();
         req.setName(JAVA_101);
+        req.setLocation("BA VILLAFRANCA");
+        req.setTrainer("VICTOR PARDO");
 
         MockMultipartFile file = new MockMultipartFile(FILES_PARAM, "doc.pdf", APPLICATION_PDF, "content".getBytes());
         when(cloudStorageAdapter.uploadFile(any(), anyString())).thenThrow(new IOException("Upload failed"));
@@ -118,12 +122,16 @@ class FormationCheckinFacadeTests {
         Formation existing = new Formation();
         existing.setId(1);
         existing.setName("Old Name");
+        existing.setLocation("BA VILLAFRANCA");
+        existing.setTrainer("VICTOR PARDO");
         existing.setDocumentUrls(new ArrayList<>(List.of("http://doc1.pdf", DOC2_URL)));
 
         when(formationService.findById(1)).thenReturn(Optional.of(existing));
 
         FormationRequest req = new FormationRequest();
         req.setName(NEW_NAME);
+        req.setLocation("BA VILLAFRANCA");
+        req.setTrainer("VICTOR PARDO");
         req.setExistingDocumentUrls(List.of("http://doc1.pdf"));
 
         MockMultipartFile newFile = new MockMultipartFile(FILES_PARAM, "new.pdf", APPLICATION_PDF, "data".getBytes());
@@ -146,9 +154,9 @@ class FormationCheckinFacadeTests {
         when(userService.findCurrentUser()).thenReturn(sampleUser);
         Formation formation = new Formation();
         formation.setId(5);
-        when(formationService.registerAttendance(5, EMP_001)).thenReturn(formation);
+        when(formationService.registerAttendance(5, EMP_001, true)).thenReturn(formation);
 
-        Formation result = facade.registerAttendance(5, null);
+        Formation result = facade.registerAttendance(5, null, true);
         assertNotNull(result);
         assertEquals(5, result.getId());
     }

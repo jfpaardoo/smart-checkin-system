@@ -27,6 +27,7 @@ const SIZE_MAP = {
 export default function GlassModal({
   isOpen,
   toggle,
+  onClose,
   title,
   children,
   footer,
@@ -35,6 +36,7 @@ export default function GlassModal({
   backdrop = true,
   className = '',
 }) {
+  const closeCallback = toggle || onClose;
   const resolvedMaxWidth = maxWidth || SIZE_MAP[size] || SIZE_MAP.md;
   const panelRef = useRef(null);
 
@@ -52,13 +54,13 @@ export default function GlassModal({
 
   // Cerrar con Escape
   useEffect(() => {
-    if (!isOpen || backdrop === 'static') return;
+    if (!isOpen || backdrop === 'static' || !backdrop) return;
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') toggle?.();
+      if (e.key === 'Escape') closeCallback?.();
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, toggle, backdrop]);
+  }, [isOpen, closeCallback, backdrop]);
 
   // Trap focus dentro del modal
   useEffect(() => {
@@ -71,7 +73,7 @@ export default function GlassModal({
   }, [isOpen]);
 
   const handleBackdropClick = () => {
-    if (backdrop === true) toggle?.();
+    if (backdrop !== 'static' && Boolean(backdrop)) closeCallback?.();
   };
 
   return createPortal(
@@ -123,12 +125,12 @@ export default function GlassModal({
                 >
                   {title}
                 </h5>
-                {toggle && (
+                {closeCallback && (
                   <button
                     type="button"
-                    onClick={toggle}
+                    onClick={closeCallback}
                     aria-label="Cerrar"
-                    className="ml-3 flex-shrink-0 p-1.5 rounded-full text-slate-500 hover:text-slate-800 hover:bg-black/10 dark:hover:text-white dark:hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-da-primary"
+                    className="ml-3 flex-shrink-0 p-1.5 rounded-full text-slate-500 hover:text-slate-800 hover:bg-black/10 dark:hover:text-white dark:hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-da-primary cursor-pointer"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />

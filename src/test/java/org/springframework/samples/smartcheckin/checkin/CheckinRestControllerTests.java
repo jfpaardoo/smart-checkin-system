@@ -183,7 +183,7 @@ class CheckinRestControllerTests {
 		formation.setName("Course 5");
 		when(formationService.findAll()).thenReturn(List.of(formation));
 		when(totpService.verifyToken(eq(TOKEN_123456), any())).thenReturn(true);
-		when(formationService.registerAttendance(5, user)).thenThrow(new RuntimeException("Database error"));
+		when(formationService.registerAttendance(eq(5), eq(user), any())).thenThrow(new RuntimeException("Database error"));
 
 		QrCheckinRequest req = new QrCheckinRequest();
 		req.setToken(TOKEN_123456);
@@ -448,7 +448,7 @@ class CheckinRestControllerTests {
             	.contentType(MediaType.APPLICATION_JSON)
             	.content(objectMapper.writeValueAsString(req)))
             	.andExpect(status().isBadRequest())
-            	.andExpect(jsonPath("$.message").value("Código inválido o expirado."));
+            	.andExpect(jsonPath("$.message").value("El código o QR de formación ha expirado o no es válido."));
 	}
 
     @Test

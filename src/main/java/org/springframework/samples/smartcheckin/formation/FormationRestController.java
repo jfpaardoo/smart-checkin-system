@@ -84,10 +84,11 @@ public class FormationRestController {
     public ResponseEntity<Object> registerAttendance(@PathVariable Integer id, @RequestBody(required = false) AttendRequest request) {
         try {
             String code = request != null ? request.getPersonalCode() : null;
-            Formation formation = facade.registerAttendance(id, code);
+            Boolean withinWorkingHours = request == null || !Boolean.FALSE.equals(request.getWithinWorkingHours());
+            Formation formation = facade.registerAttendance(id, code, withinWorkingHours);
             return ResponseEntity.ok(formation);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Failed to register: " + e.getMessage());
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of(MESSAGE_KEY, e.getMessage()));
         }
     }
 
@@ -96,8 +97,8 @@ public class FormationRestController {
         try {
             Formation formation = facade.checkoutAttendance(id, request.getSignature(), request.getToken());
             return ResponseEntity.ok(formation);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Failed to checkout: " + e.getMessage());
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of(MESSAGE_KEY, e.getMessage()));
         }
     }
 

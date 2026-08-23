@@ -6,7 +6,25 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ---
 
-## [1.2.0](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.2.0) - 2026-08-22
+## [1.2.0](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.2.0) - 2026-08-23
+
+### Añadido (Features) & Abstracciones Frontend
+- **Motor de Sonidos Sintetizados y Respuestas Hápticas en Tiempo Real (*Web Audio & Haptics*)**:
+  - Creado el gestor [`soundAndHaptics.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/util/soundAndHaptics.js) basado en la **Web Audio API** de baja latencia (0 ms, sin archivos externos ni peso extra, compatible 100% offline y PWA) y la **Web Vibration API** para dispositivos móviles.
+  - Diseñados efectos sonoros armónicos y patrones hápticos específicos para:
+    - *Lectura y escaneo de código QR*: Pitido agudo de confirmación y vibración instantánea.
+    - *Éxito / Fichaje completado*: Acorde melódico ascendente (D5 &rarr; A5) y doble pulso háptico.
+    - *Error o denegación*: Tono grave de alerta y doble vibración de aviso.
+    - *Notificaciones y avisos del sistema*: Campana sutil y suave.
+    - *Teclado numérico / Entrada de código*: Micro-clic táctil al teclear cada dígito.
+  - Integrado de forma centralizada en [`ToastProvider.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/components/ToastProvider.js), [`ScannerCheckin.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/user/checkin/ScannerCheckin.js), [`ManualCheckinForm.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/user/checkin/components/ManualCheckinForm.js) y [`NotificationContext.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/context/NotificationContext.js).
+- **Barra de Navegación y Desplegables en Cristal Líquido Translúcido (*Ultra Frosted Liquid Glass*)**:
+  - Rediseñada la barra de navegación principal ([`AppNavbar.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/AppNavbar.js), [`navbar.css`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/static/css/layout/navbar.css)) para presentar una estética pura de cristal blanco translúcido en Modo Claro (`bg-white/50 backdrop-blur-2xl border-white/60 shadow-[0_12px_40px_rgba(31,38,135,0.10)]`) y cristal espacial sutil en Modo Oscuro (`dark:bg-slate-900/40`), eliminando sobre-saturaciones excesivas de color azul.
+  - Ajustados todos los menús flotantes desplegables (Administración, Perfil, Idioma, Notificaciones y cajón móvil) con desenfoque de cristal denso (`backdrop-filter: blur(25px)`), adaptándose de forma armoniosa al tema activo con textos oscuros en modo claro y textos blancos en modo oscuro, evitando cualquier mezcla o traslúcido no deseado con el contenido de la página.
+- **Feedback Específico y Contextual en Notificaciones Toast (Check-in & Check-out)**:
+  - Clasificación de errores detallados en los flujos de escaneo y registro de asistencia: detección de QR/código de otra formación, formación ya fichada/registrada previamente, código expirado, convocatoria fuera de horario o no iniciada, y fallo de validación de firma.
+- **Centrado Absoluto de Casillas en Informe Oficial Excel (FOR 99 HRS)**:
+  - Calibración exacta de los anclajes de forma en [`OfficialFormationSheetService.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/exports/OfficialFormationSheetService.java) para centrar milimétricamente las "X" dentro de las casillas de verificación *Dentro de Jornada* y *Fuera de Jornada* de la plantilla oficial con tipografía en negrita y margen cero.
 
 ### Añadido (Features) & Abstracciones Frontend
 - **Flujo Integral de Cierre y Certificación de Formaciones (Firma de Formador y Bloqueo)**:
@@ -42,6 +60,17 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
   - Transición fluida entre pestañas (`AnimatePresence mode="wait"`) y entrada escalonada (*stagger animation*) en las tarjetas de KPI del panel de analíticas (`AnalyticsDashboard.js`, `AnalyticsOverviewTab.js`).
 
 ### Corregido (Bug Fixes) & Refinamiento UI/UX
+- **Pestañas de Filtro y Navegación Administrativa en Modo Oscuro**:
+  - Añadido soporte nativo de modo oscuro para pestañas tipo píldora (`.da-tab-pill`, `.da-tab-pill-active`, `.da-tab-pill-pending` en [`adminPage.css`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/static/css/admin/adminPage.css), [`UserListTabs.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/admin/users/components/UserListTabs.js)), resolviendo fondos apagados y falta de contraste en las vistas de gestión de usuarios.
+- **Modo Oscuro en Verificación de Seguridad Cloudflare Turnstile**:
+  - Actualizado el contenedor y el widget de Turnstile en [`Register.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/auth/register/Register.js), [`RegisterForm.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/auth/register/components/RegisterForm.js) y [`ForgotPassword.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/auth/recover/ForgotPassword.js) para renderizar automáticamente el tema oscuro nativo (`options={{ theme: isDark ? 'dark' : 'light' }}`) sin desentonar con el formulario.
+- **Homogeneización del Ancho de Tabla en Gestión de Empresas**:
+  - Eliminada la restricción de ancho rígido en [`CompanyListAdmin.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/admin/companies/CompanyListAdmin.js) para que su longitud y distribución se alineen al 100% de manera consistente con las tablas de formaciones, usuarios y auditoría.
+- **Ajuste Responsive de Badges en Tarjetas Móviles de Asistentes**:
+  - Reestructurado el layout de las tarjetas de asistentes en móviles ([`FormationAttendeesTable.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/admin/formations/components/FormationAttendeesTable.js)) a dos filas independientes, solventando el aplastamiento y corte de texto en las insignias de estado de jornada.
+  - Flexibilizadas las insignias de cabecera en [`FormationDetailsAdmin.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/admin/formations/FormationDetailsAdmin.js) para evitar solapamientos con el botón de regreso en pantallas estrechas.
+- **Estilos Globales de Botones para Modo Claro y Modo Oscuro**:
+  - Refactorizados los botones `.da-btn-secondary`, `.da-btn-primary`, `.da-btn-blue`, `.da-btn-danger` y `.da-btn-excel` en [`common.css`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/static/css/base/common.css) con fondos de cristal líquido y contrastes tipográficos nítidos para ambos modos visuales.
 - **Panel de Notificaciones en Móvil**:
   - Resuelto el problema por el cual el panel de notificaciones en móviles aparecía vacío a pesar de llegar la notificación push y el contador de campana. Se conectó `NotificationBell.js` al renderizado responsive para mostrar las notificaciones en tiempo real tanto en móvil como en escritorio.
 - **Amplitud y Aprovechamiento de Pantalla en Tarjetas de Acceso Rápido (Home Móvil)**:

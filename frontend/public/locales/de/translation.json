@@ -14,7 +14,8 @@
     "register": "Registrierung anfordern",
     "audit": "Audit-Protokoll",
     "cloudSettings": "Cloud-Einstellungen",
-    "toggleMenu": "Navigation umschalten"
+    "toggleMenu": "Navigation umschalten",
+    "support": "Hilfe & Support"
   },
   "home": {
     "welcome": "Willkommen bei Distribution Academy",
@@ -214,7 +215,10 @@
     "editSubtitle": "Schulungsdaten, Zeitplan und Dokumentation bearbeiten",
     "filterTime": "Nach Datum filtern",
     "newSubtitle": "Neue Schulungssitzung erstellen und Materialien hochladen",
-    "subtitle": "Schulungen planen, Anwesenheiten und Lehrmaterialien verwalten"
+    "subtitle": "Schulungen planen, Anwesenheiten und Lehrmaterialien verwalten",
+    "location": "Schulungsort",
+    "trainer": "Trainer",
+    "titleUppercase": "SCHULUNG"
   },
   "formationDetails": {
     "title": "Schulungsdetails",
@@ -264,7 +268,29 @@
     "filterStatus": "Status filtern",
     "searchAttendee": "Teilnehmer nach Name, Benutzername oder Code suchen...",
     "checkinTime": "Eingang:",
-    "checkoutTime": "Ausgang:"
+    "checkoutTime": "Ausgang:",
+    "summaryAndAttendanceRecord": "ZUSAMMENFASSUNG UND ANWESENHEITSLISTE",
+    "closedBadge": "Abgeschlossen und Zertifiziert",
+    "exportOfficialSheet": "Offizielles Protokoll (FOR 99)",
+    "locationLabel": "Ort",
+    "trainerLabel": "Trainer",
+    "statusClosed": "Geschlossen und Unterschrieben",
+    "statusOpen": "Offen",
+    "noDescription": "Keine Beschreibung",
+    "observationsLabel": "Beobachtungen / Vorfallsprotokoll",
+    "trainerSignatureLabel": "Unterschrift des Trainers",
+    "closeAction": "Schulung Beenden",
+    "cannotCloseAlert": "Um die Schulung abzuschließen, müssen alle angemeldeten Teilnehmer den Auslass vollzogen und unterschrieben haben.",
+    "closeModalTitle": "Schulung Beenden & Zertifizieren",
+    "closeNotice": "Alle Teilnehmer haben die Anwesenheit abgeschlossen. Nach dem Beenden wird die Schulung für Bearbeitungen gesperrt und das Protokoll gespeichert.",
+    "trainerNameLabel": "Name des Trainers",
+    "observationsPlaceholder": "Geben Sie an, ob während der Schulung Zwischenfälle oder technische Probleme aufgetreten sind...",
+    "signHint": "Mit der Maus oder dem Finger auf dem Touchscreen unterschreiben.",
+    "closeSuccess": "Schulung erfolgreich beendet und zertifiziert.",
+    "closeError": "Fehler beim Beenden der Schulung.",
+    "signatureRequired": "Bitte leisten Sie Ihre Unterschrift als Trainer, um die Schulung zu schließen.",
+    "officialSheetDownloaded": "Offizielles Protokoll FOR 99 erfolgreich heruntergeladen und synchronisiert.",
+    "downloadOfficialSheetError": "Fehler beim Herunterladen des offiziellen Protokolls FOR 99."
   },
   "qr": {
     "title": "Schulungs-QR",
@@ -321,6 +347,13 @@
     "filterStatus": "Status filtern"
   },
   "checkin": {
+    "schedulePrompt": "Im Moment bin ich:",
+    "insideWorkingHours": "Innerhalb der Arbeitszeit",
+    "outsideWorkingHours": "Außerhalb der Arbeitszeit",
+    "insideWorkingHoursShort": "In Arbeitszeit",
+    "outsideWorkingHoursShort": "Außerhalb",
+    "invalidOrExpiredQr": "Ungültiger oder abgelaufener QR-Code",
+    "offlineSyncRejected": "Synchronisierung: Stempelung vom Server abgelehnt ({{msg}})",
     "title": "Check-in Scanner",
     "scanQr": "Scannen Sie den QR-Code",
     "success": "Check-in erfolgreich",
@@ -364,7 +397,9 @@
     "switchCamera": "Kamera wechseln"
   },
   "common": {
+    "clear": "Löschen",
     "clearFilters": "Filter zurücksetzen",
+    "downloading": "Herunterladen...",
     "noDescription": "Keine Beschreibung",
     "back": "Zurück",
     "rowsPerPage": "Pro Seite:",
@@ -945,5 +980,27 @@
     "iosTitle": "App auf dem iPhone installieren",
     "iosInstructions": "Tippen Sie auf Teilen",
     "iosInstructions2": "und dann \"Zum Home-Bildschirm\""
+  },
+  "support": {
+    "modalTitle": "Hilfe- & Support-Center",
+    "assistanceTitle": "Haben Sie ein Problem oder eine Frage?",
+    "assistanceSubtitle": "Wir stehen Ihnen bei Fragen zu Schulungen, Check-ins oder Zugängen gerne zur Verfügung.",
+    "officialEmailChannel": "Offizieller Support-Kanal",
+    "emailDescription": "Schreiben Sie uns direkt mit Ihrem Namen, Unternehmen und Anliegen für eine schnelle Unterstützung.",
+    "sendEmailNow": "Jetzt E-Mail senden",
+    "copyEmail": "Adresse kopieren",
+    "copied": "Kopiert!",
+    "schedule": "Öffnungszeiten: Montag bis Freitag · 08:00 bis 18:00 Uhr",
+    "slaResponse": "Durchschnittliche Antwortzeit < 2h",
+    "faqTitle": "Häufig gestellte Fragen",
+    "faq1_q": "Wie checke ich ein, wenn die Kamera den QR-Code nicht lesen kann?",
+    "faq1_a": "Klicken Sie im Scanner-Bildschirm auf 'Code manuell eingeben' und geben Sie den 6-stelligen Code ein, den der Trainer anzeigt.",
+    "faq2_q": "Warum ist beim Verlassen meine digitale Unterschrift erforderlich?",
+    "faq2_a": "Das offizielle Zertifizierungsprotokoll (FOR 99 HRS) verlangt die Erfassung der handschriftlichen digitalen Signatur aller Teilnehmer zur Bestätigung der Anwesenheit.",
+    "faq3_q": "Was passiert, wenn ich keine Internetverbindung oder Netzempfang habe?",
+    "faq3_a": "Smart Check-in verfügt über eine automatische Offline-Warteschlange. Ihre Anwesenheit wird sicher auf dem Gerät gespeichert und synchronisiert, sobald wieder Verbindung besteht.",
+    "faq4_q": "Wie setze ich mein Passwort zurück?",
+    "faq4_a": "Klicken Sie auf 'Passwort vergessen?' auf dem Anmeldebildschirm, um einen sicheren Wiederherstellungslink per E-Mail zu erhalten.",
+    "confidentiality": "Distribution Academy · Sicherer technischer Support"
   }
 }

@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import dayjs from 'dayjs';
 import api from '../../../services/api';
 import useFetchState from '../../../util/useFetchState';
 import tokenService from '../../../services/token.service';
@@ -83,6 +84,8 @@ export function useFormationDetails(id) {
     });
   };
 
+  const [isDownloadingSheet, setIsDownloadingSheet] = useState(false);
+
   const downloadSignaturePdf = async (attendanceId) => {
     try {
       const res = await api.get(`/certificates/attendance/${attendanceId}`, { responseType: 'blob' });
@@ -94,11 +97,30 @@ export function useFormationDetails(id) {
   };
 
   const downloadOfficialSheet = async () => {
+    if (isDownloadingSheet) return;
+    setIsDownloadingSheet(true);
     try {
-      const res = await api.get(`/exports/formations/${id}/official-sheet`, { responseType: 'blob' });
-      const safeName = (formation?.name || 'FOR99').replace(/[^a-zA-Z0-9_-]/g, '_');
-      await saveBlobFile(res.data, `FOR99_${safeName}_${id}.xls`, 'application/vnd.ms-excel');
-      toast.success(t('formationDetails.officialSheetDownloaded', 'Registro oficial FOR 99 descargado con éxito.'));
+      const yearMonth = formation?.formationDate 
+        ? dayjs(formation.formationDate).format('YYYYMM') 
+        : dayjs().format('YYYYMM');
+      
+      const formationWord = t('formations.titleUppercase', 'FORMACIÓN').toUpperCase();
+      const summaryWord = t('formationDetails.summaryAndAttendanceRecord', 'SUMARIO Y REGISTRO DE PRESENCIAS').toUpperCase();
+      const safeName = (formation?.name || 'FORMACION').toUpperCase().replace(/[\\/:*?"<>|~#%&{}]/g, '_').trim();
+      
+      const filename = `${yearMonth}_${formationWord}_${safeName}_${summaryWord}_FOR_99 HRS.xls`;
+
+      const res = await api.get(`/exports/formations/${id}/official-sheet`, {
+        params: {
+          formationWord,
+          summaryWord,
+          filename
+        },
+        responseType: 'blob'
+      });
+      
+      await saveBlobFile(res.data, filename, 'application/vnd.ms-excel');
+      toast.success(t('formationDetails.officialSheetDownloaded', 'Registro oficial FOR 99 descargado y sincronizado con éxito.'));
     } catch (err) {
       console.error("Error downloading official sheet:", err);
       let errorMsg = t('formationDetails.downloadOfficialSheetError', 'Error al descargar el registro oficial FOR 99.');
@@ -112,6 +134,8 @@ export function useFormationDetails(id) {
         }
       }
       toast.error(errorMsg);
+    } finally {
+      setIsDownloadingSheet(false);
     }
   };
 
@@ -149,6 +173,7 @@ export function useFormationDetails(id) {
     handleDeleteFormation,
     downloadSignaturePdf,
     downloadOfficialSheet,
+    isDownloadingSheet,
     handleCloseFormation,
     allAttendeesCompleted,
     canCloseFormation

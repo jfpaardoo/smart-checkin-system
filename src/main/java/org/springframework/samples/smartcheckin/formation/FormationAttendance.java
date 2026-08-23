@@ -39,4 +39,7 @@ public class FormationAttendance extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String signature;
+
+    @Column(name = "within_working_hours")
+    private Boolean withinWorkingHours = true;
 }
