@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaUsers, FaBuilding, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen, FaChartLine, FaIdCard, FaUserPlus, FaSignInAlt, FaShieldAlt, FaCloudUploadAlt, FaBars, FaTimes, FaBell, FaCheck } from 'react-icons/fa';
+import { FaUsers, FaBuilding, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen, FaChartLine, FaIdCard, FaUserPlus, FaSignInAlt, FaShieldAlt, FaCloudUploadAlt, FaBars, FaTimes, FaCheck, FaBell } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import tokenService from './services/token.service';
 import { useTheme } from './context/ThemeContext';
+import { useNotifications } from './context/NotificationContext';
 
 import LanguageSwitcher from './components/LanguageSwitcher';
 import NotificationBell from './components/NotificationBell';
@@ -220,17 +221,46 @@ function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggl
 }
 
 function MobileNotificationDrawer({ isOpen, t }) {
+    const { notifications, clearAll } = useNotifications();
     return (
-        <div className={`md:hidden transition-all duration-500 ease-in-out w-full ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[60vh] opacity-100 bg-slate-800/25 backdrop-blur-sm border-t border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)] rounded-b-[40px] overflow-hidden'}`}>
-            <div className="px-6 py-4">
+        <div className={`md:hidden transition-all duration-500 ease-in-out w-full rounded-b-[40px] ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[75vh] opacity-100 bg-slate-800/25 backdrop-blur-sm border-t border-white/20 overflow-y-auto shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]'}`}>
+            <div className="px-6 pt-3 pb-6">
                 <div className="flex justify-between items-center pb-2 border-b border-white/10 mb-3">
-                    <span className="text-[11px] font-extrabold text-white/40 uppercase tracking-widest">
+                    <span className="text-[11px] font-extrabold text-white/40 uppercase tracking-widest flex items-center gap-1.5">
+                        <FaBell className="text-[#d4e157] text-xs" />
                         {t('notifications.title', 'Notificaciones')}
                     </span>
+                    {notifications.length > 0 && (
+                        <button
+                            type="button"
+                            className="text-[10px] text-white/60 hover:text-white transition-colors uppercase font-bold cursor-pointer bg-transparent border-0"
+                            onClick={clearAll}
+                        >
+                            {t('notifications.clearAll', 'Limpiar todo')}
+                        </button>
+                    )}
                 </div>
-                <div className="text-center py-6">
-                    <FaBell className="mx-auto mb-2 text-white/20" size={28} />
-                    <p className="text-xs text-white/50 m-0">{t('notifications.empty', 'Sin notificaciones')}</p>
+                <div className="space-y-2">
+                    {notifications.length === 0 ? (
+                        <div className="text-center py-6">
+                            <FaBell className="mx-auto mb-2 text-white/20" size={28} />
+                            <p className="text-xs text-white/50 m-0">{t('notifications.empty', 'Sin notificaciones')}</p>
+                        </div>
+                    ) : (
+                        notifications.map(n => (
+                            <div 
+                                key={n.id} 
+                                className={`block px-4 py-3 rounded-2xl border border-white/10 transition-colors ${!n.read ? 'bg-white/15 text-white shadow-sm' : 'bg-white/5 text-white/70'}`}
+                            >
+                                <div className={`text-xs mb-1 leading-snug break-words ${!n.read ? 'font-bold text-white' : 'font-medium'}`}>
+                                    {n.text}
+                                </div>
+                                <div className="text-[10px] text-white/40">
+                                    {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>

@@ -31,10 +31,27 @@ function getInitialTheme() {
 function applyTheme(theme) {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
   if (theme === 'dark') {
     root.classList.add('dark');
+    root.style.backgroundColor = '#0f172a';
+    root.style.colorScheme = 'dark';
+    if (document.body) {
+      document.body.style.backgroundColor = '#0f172a';
+    }
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', '#0f172a');
+    }
   } else {
     root.classList.remove('dark');
+    root.style.backgroundColor = '#f1f5f9';
+    root.style.colorScheme = 'light';
+    if (document.body) {
+      document.body.style.backgroundColor = '#f1f5f9';
+    }
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', '#f1f5f9');
+    }
   }
 }
 

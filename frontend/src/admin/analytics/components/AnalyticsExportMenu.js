@@ -17,6 +17,7 @@ import GlassDropdown from '../../../components/GlassDropdown';
 import AdvancedExportModal from './AdvancedExportModal';
 import { useToast } from '../../../components/ToastProvider';
 import api from '../../../services/api';
+import { saveBlobFile } from '../../../util/downloadExportFile';
 
 export default function AnalyticsExportMenu({ 
   companies = [], 
@@ -63,14 +64,8 @@ export default function AnalyticsExportMenu({
         responseType: 'blob'
       });
 
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = defaultFilename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      const mimeType = res.headers['content-type'] || 'application/octet-stream';
+      await saveBlobFile(res.data, defaultFilename, mimeType);
 
       toast.success(t('analytics.exportSuccess', 'Informe descargado con éxito'));
     } catch (err) {
@@ -88,7 +83,7 @@ export default function AnalyticsExportMenu({
           type="button"
           disabled={isExporting}
           onClick={toggle}
-          className={`w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-2xl flex items-center justify-between sm:justify-center gap-2.5 font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 transition-all duration-200 border border-white/80 dark:border-white/10 bg-white/75 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 backdrop-blur-md shadow-xs active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
+          className={`w-full sm:w-auto h-[44px] min-h-[44px] px-5 py-2 rounded-2xl flex items-center justify-between sm:justify-center gap-2.5 font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 transition-all duration-200 border border-white/80 dark:border-white/10 bg-white/75 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 backdrop-blur-md shadow-xs active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer box-border ${
             isOpen ? 'ring-2 ring-[#b3c34c]/50 border-[#b3c34c]/60 shadow-md bg-white dark:bg-slate-800' : ''
           } ${selectedCompanyId ? 'border-[#8a9b1c] bg-[#b3c34c]/10' : ''}`}
         >

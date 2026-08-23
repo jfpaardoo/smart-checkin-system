@@ -31,15 +31,32 @@ public class DelegatingSignatureStorageService implements SignatureStorageServic
 
     @Override
     public String saveSignature(String base64Data, String pathContext) {
-        return getActiveService().saveSignature(base64Data, pathContext);
+        SignatureStorageService primary = getActiveService();
+        try {
+            return primary.saveSignature(base64Data, pathContext);
+        } catch (Exception e) {
+            if (primary != localService) {
+                return localService.saveSignature(base64Data, pathContext);
+            }
+            throw e;
+        }
     }
 
     @Override
     public byte[] loadSignature(String reference) {
-        byte[] data = getActiveService().loadSignature(reference);
+        byte[] data = null;
+        try {
+            data = getActiveService().loadSignature(reference);
+        } catch (Exception ignored) {
+            // Ignored, try fallback
+        }
         if (data == null || data.length == 0) {
             SignatureStorageService fallback = getActiveService() == oneDriveService ? localService : oneDriveService;
-            return fallback.loadSignature(reference);
+            try {
+                return fallback.loadSignature(reference);
+            } catch (Exception ignored) {
+                return new byte[0];
+            }
         }
         return data;
     }

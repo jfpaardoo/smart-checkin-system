@@ -228,3 +228,74 @@
     color: #e2e8f0 !important;
 }
 
+/* Date Filter Box & Input Alignment */
+.da-date-filter-box {
+    height: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 16px;
+    padding: 0 14px;
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.da-date-filter-box:focus-within {
+    border-color: #b3c34c;
+    box-shadow: 0 0 0 2px rgba(179, 195, 76, 0.25);
+}
+
+.dark .da-date-filter-box {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.dark .da-date-filter-box:focus-within {
+    border-color: #d4e84a;
+    box-shadow: 0 0 0 2px rgba(179, 195, 76, 0.35);
+}
+
+.da-date-input {
+    min-width: 100px;
+    width: 100% !important;
+    font-family: inherit !important;
+    font-size: 0.8125rem !important;
+    font-weight: 600 !important;
+    color: #1e293b !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    outline: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    cursor: pointer !important;
+    box-sizing: border-box !important;
+    height: auto !important;
+}
+
+.dark .da-date-input {
+    color: #f1f5f9 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color-scheme: dark;
+}
+
+.da-date-input::-webkit-calendar-picker-indicator {
+    display: none !important;
+    -webkit-appearance: none;
+    appearance: none;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}

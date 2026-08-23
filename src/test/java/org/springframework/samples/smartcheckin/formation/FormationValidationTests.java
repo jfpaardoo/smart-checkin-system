@@ -42,9 +42,9 @@ class FormationValidationTests {
     }
 
     @Test
-    void shouldNotValidateWhenDateIsInThePast() {
+    void shouldNotValidateWhenDateIsNull() {
         Formation formation = createValidFormation();
-        formation.setFormationDate(LocalDateTime.now().minusDays(1));
+        formation.setFormationDate(null);
 
         Set<ConstraintViolation<Formation>> violations = validator.validate(formation);
         assertThat(violations).isNotEmpty();

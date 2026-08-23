@@ -11,6 +11,7 @@ import GlassModal from "../../components/GlassModal";
 import { useUserProfileData } from "./hooks/useUserProfileData";
 import { usePasswordSecurity } from "./hooks/usePasswordSecurity";
 import api from "../../services/api";
+import { saveBlobFile } from "../../util/downloadExportFile";
 
 export default function UserProfile() {
   const { t } = useTranslation();
@@ -33,14 +34,7 @@ export default function UserProfile() {
     setIsExporting(true);
     try {
       const res = await api.get("/exports/me/export", { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "user_data_export.json";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      await saveBlobFile(res.data, "user_data_export.json", "application/json");
       toast.success(t("profile.exportSuccess", "Tus datos se han exportado correctamente."));
     } catch (err) {
       console.error("Error exporting data:", err);

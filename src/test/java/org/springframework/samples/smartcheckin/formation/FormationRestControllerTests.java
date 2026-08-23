@@ -585,4 +585,51 @@ class FormationRestControllerTests {
 
         mockMvc.perform(delete(BASE_URL + "/1").with(csrf())).andExpect(status().isOk());
     }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void testCloseFormationSuccess() throws Exception {
+        CloseFormationRequest req = new CloseFormationRequest();
+        req.setSignature("data:image/png;base64,sample");
+        req.setObservations("Sin incidencias");
+        req.setTrainerName("VICTOR PARDO");
+        req.setLocation("BA VILLAFRANCA");
+
+        Formation closed = new Formation();
+        closed.setId(1);
+        closed.setName("Formación Picking");
+        closed.setIsClosed(true);
+        closed.setObservations("Sin incidencias");
+        closed.setTrainer("VICTOR PARDO");
+        closed.setLocation("BA VILLAFRANCA");
+
+        when(formationService.closeFormation(eq(1), anyString(), anyString(), anyString(), anyString()))
+            .thenReturn(closed);
+
+        mockMvc.perform(post(BASE_URL + "/1/close")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.isClosed").value(true))
+                .andExpect(jsonPath("$.observations").value("Sin incidencias"))
+                .andExpect(jsonPath("$.trainer").value("VICTOR PARDO"))
+                .andExpect(jsonPath("$.location").value("BA VILLAFRANCA"));
+    }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void testCloseFormationIllegalStateReturnsBadRequest() throws Exception {
+        CloseFormationRequest req = new CloseFormationRequest();
+        when(formationService.closeFormation(anyInt(), any(), any(), any(), any()))
+            .thenThrow(new IllegalStateException("Todos los asistentes deben completar checkout"));
+
+        mockMvc.perform(post(BASE_URL + "/1/close")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Todos los asistentes deben completar checkout"));
+    }
 }

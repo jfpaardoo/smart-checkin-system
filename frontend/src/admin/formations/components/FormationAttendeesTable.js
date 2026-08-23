@@ -79,31 +79,33 @@ export default function FormationAttendeesTable({
 
   return (
     <>
-      {/* Selector de Nuevo Asistente */}
-      <div className="p-4 sm:p-5 mt-4 rounded-3xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.06)] relative z-30">
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-          <div className="flex-1 min-w-0">
-            <GlassDropdown
-              options={availableUsers.map((u) => ({
-                value: String(u.id),
-                label: `${u.firstName} ${u.lastName} (${u.username})`
-              }))}
-              value={selectedUserId}
-              onChange={(val) => setSelectedUserId(String(val))}
-              placeholder={t('formationDetails.selectUserToAdd', 'Seleccionar Usuario...')}
-              searchable={true}
-              className="w-full"
-            />
-          </div>
-          <button 
-            className="da-btn-primary px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm text-slate-950 flex items-center justify-center gap-2 shadow-xs hover:scale-102 active:scale-98 transition-all border-0 cursor-pointer disabled:opacity-50 shrink-0" 
-            type="submit" 
-            disabled={!selectedUserId || isAddingUser}
-          >
-            {isAddingUser ? t('common.saving', 'Añadiendo...') : t('formationDetails.addUser', 'Añadir Usuario')}
-          </button>
-        </form>
-      </div>
+      {/* Selector de Nuevo Asistente (solo si no está cerrada) */}
+      {!formation?.isClosed && (
+        <div className="p-4 sm:p-5 mt-4 rounded-3xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.06)] relative z-30">
+          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+            <div className="flex-1 min-w-0">
+              <GlassDropdown
+                options={availableUsers.map((u) => ({
+                  value: String(u.id),
+                  label: `${u.firstName} ${u.lastName} (${u.username})`
+                }))}
+                value={selectedUserId}
+                onChange={(val) => setSelectedUserId(String(val))}
+                placeholder={t('formationDetails.selectUserToAdd', 'Seleccionar Usuario...')}
+                searchable={true}
+                className="w-full"
+              />
+            </div>
+            <button 
+              className="da-btn-primary px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm text-slate-950 flex items-center justify-center gap-2 shadow-xs hover:scale-102 active:scale-98 transition-all border-0 cursor-pointer disabled:opacity-50 shrink-0" 
+              type="submit" 
+              disabled={!selectedUserId || isAddingUser}
+            >
+              {isAddingUser ? t('common.saving', 'Añadiendo...') : t('formationDetails.addUser', 'Añadir Usuario')}
+            </button>
+          </form>
+        </div>
+      )}
 
       {attendees.length === 0 ? (
         <div className="text-center p-6 mt-4 rounded-3xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/60 dark:border-white/10 text-slate-500 dark:text-slate-400 relative z-10">
@@ -208,16 +210,18 @@ export default function FormationAttendeesTable({
                             </button>
                           )}
 
-                          {/* Botón 3: Eliminar */}
-                          <button
-                            type="button"
-                            className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 hover:scale-105 active:scale-95 transition shadow-xs cursor-pointer inline-flex items-center justify-center"
-                            onClick={() => handleRemoveUser(user.id)}
-                            title={t('formations.delete', 'Eliminar')}
-                            aria-label={t('formations.delete', 'Eliminar')}
-                          >
-                            <FaTrash size={14} />
-                          </button>
+                          {/* Botón 3: Eliminar (solo si no está cerrada) */}
+                          {!formation?.isClosed && (
+                            <button
+                              type="button"
+                              className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 hover:scale-105 active:scale-95 transition shadow-xs cursor-pointer inline-flex items-center justify-center"
+                              onClick={() => handleRemoveUser(user.id)}
+                              title={t('formations.delete', 'Eliminar')}
+                              aria-label={t('formations.delete', 'Eliminar')}
+                            >
+                              <FaTrash size={14} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -274,14 +278,16 @@ export default function FormationAttendeesTable({
                       </button>
                     )}
 
-                    <button
-                      type="button"
-                      className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:bg-rose-500/20 inline-flex items-center justify-center shadow-xs cursor-pointer"
-                      onClick={() => handleRemoveUser(user.id)}
-                      title={t('formations.delete', 'Eliminar')}
-                    >
-                      <FaTrash size={14} />
-                    </button>
+                    {!formation?.isClosed && (
+                      <button
+                        type="button"
+                        className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:bg-rose-500/20 inline-flex items-center justify-center shadow-xs cursor-pointer"
+                        onClick={() => handleRemoveUser(user.id)}
+                        title={t('formations.delete', 'Eliminar')}
+                      >
+                        <FaTrash size={14} />
+                      </button>
+                    )}
                   </div>
                 </div>
               );

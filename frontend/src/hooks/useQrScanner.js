@@ -96,17 +96,14 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
             v.onabort = null;
             v.onerror = null;
             v.onpause = null;
-            try {
-              v.pause();
-            } catch {}
             if (v.srcObject && typeof v.srcObject.getTracks === 'function') {
               v.srcObject.getTracks().forEach(t => {
                 try { t.stop(); } catch (error_) { /* ignore */ }
               });
-              try {
-                v.srcObject = null;
-              } catch {}
             }
+            try {
+              v.srcObject = null;
+            } catch {}
           });
         }
       }
@@ -248,24 +245,21 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
         }
         if (cancelled) return;
 
-        // Desactivar BarcodeDetector experimental (causa congelación en iOS Safari / WebKit)
         const html5Qrcode = new Html5Qrcode(elementId, {
-          experimentalFeatures: { useBarCodeDetectorIfSupported: false },
           verbose: false
         });
         html5QrcodeRef.current = html5Qrcode;
 
         const scanConfig = { 
-          fps: 10,
+          fps: 15,
           qrbox: (viewfinderWidth, viewfinderHeight) => {
             const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-            const edgeSize = Math.floor(minEdge * 0.72);
+            const edgeSize = Math.max(Math.floor(minEdge * 0.82), 220);
             return {
-              width: Math.max(edgeSize, 180),
-              height: Math.max(edgeSize, 180)
+              width: edgeSize,
+              height: edgeSize
             };
           },
-          aspectRatio: 1.0,
           disableFlip: false
         };
 
@@ -294,7 +288,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       }
     };
 
-    const timerId = setTimeout(startScanner, 180);
+    const timerId = setTimeout(startScanner, 120);
 
     return () => {
       cancelled = true;
@@ -304,11 +298,9 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     };
   }, [isScanningEnabled, facingMode, selectedCameraId, elementId, scannerKey, stopScannerSafely, executeStart, enforceVideoPlaybackOnIOS, refreshCameraListSafely]);
 
-  // Reanuda la detección de QR tras un fallo sin reiniciar el hardware de la cámara
+  // Reanuda la detección de QR inmediatamente
   const resumeScanning = useCallback(() => {
-    setTimeout(() => {
-      scanLockRef.current = false;
-    }, 1200);
+    scanLockRef.current = false;
   }, []);
 
   const resetScannerState = useCallback(() => {

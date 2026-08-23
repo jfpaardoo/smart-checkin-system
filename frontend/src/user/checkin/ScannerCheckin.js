@@ -109,6 +109,7 @@ export default function ScannerCheckin() {
     setNeedsSignature(false);
     pendingTokenRef.current = '';
     setIsManualInput(false);
+    resumeScanning();
   };
 
   const handleCloseSuccess = () => {

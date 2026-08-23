@@ -9,6 +9,16 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 ## [1.2.0](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.2.0) - 2026-08-22
 
 ### Añadido (Features) & Abstracciones Frontend
+- **Flujo Integral de Cierre y Certificación de Formaciones (Firma de Formador y Bloqueo)**:
+  - Implementado el ciclo de vida de cierre de formación con validación de requisitos: todos los asistentes inscritos deben haber completado su checkout y estampado su firma digital.
+  - Creado el endpoint `POST /api/v1/formations/{id}/close` en [`FormationRestController.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/formation/FormationRestController.java) y la lógica de validación transaccional en [`FormationService.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/formation/FormationService.java).
+  - Integrado el modal accesible [`CloseFormationModal`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/admin/formations/components/FormationModals.js) con canvas de firma digital para el formador (`react-signature-canvas`), campo de observaciones e incidencias opcionales y selector de formador.
+  - Almacenamiento seguro de la firma del formador en la nube/OneDrive a través de [`SignatureStorageService.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/signatures/SignatureStorageService.java).
+  - Bloqueo total de modificaciones: una vez cerrada la formación, se bloquea la edición de datos, subida/borrado de documentos y la adición o eliminación de asistentes tanto en frontend como con guardas de seguridad en el backend.
+- **Exportación Oficial de Formaciones con Firmas Digitales Incrustadas (Formato FOR 99 HRS)**:
+  - Implementado el servicio [`OfficialFormationSheetService.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/exports/OfficialFormationSheetService.java) y endpoint `GET /api/v1/exports/formations/{id}/official-sheet` para rellenar automáticamente la plantilla oficial de calidad `FOR 99 HRS 103 (es) - Sumario y Registro de presencias`.
+  - Incrusta dinámicamente el logo corporativo, los metadatos de la convocatoria (fecha, horario, lugar por defecto `"BA VILLAFRANCA"`, formador `"VICTOR PARDO"`, descripción y observaciones), el censo de formandos (nombre, DNI/código, casillas de horario de trabajo marcadas con "X"), las **firmas digitales PNG** de cada asistente y la **firma digital del formador** posicionada en el pie de página oficial.
+  - Añadido el botón de descarga directa **"Registro Oficial (FOR 99)"** con icono de Excel en el panel de detalles de formación ([`FormationDetailsAdmin.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/admin/formations/FormationDetailsAdmin.js)).
 - **Unificación y Homogeneización Global de Tablas y Botoneras de Acción**:
   - Estandarizado el contenedor de tabla en toda la plataforma (`rounded-3xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.06)]`) en usuarios, empresas, formaciones, asistentes, analíticas e historial de perfil.
   - Botones de acción unificados a píldoras de cristal cuadradas redondeadas (`p-2.5 rounded-xl border border-white/80 dark:border-white/10 hover:scale-105 active:scale-95 transition`) con soporte de modo oscuro.
@@ -32,6 +42,16 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
   - Transición fluida entre pestañas (`AnimatePresence mode="wait"`) y entrada escalonada (*stagger animation*) en las tarjetas de KPI del panel de analíticas (`AnalyticsDashboard.js`, `AnalyticsOverviewTab.js`).
 
 ### Corregido (Bug Fixes) & Refinamiento UI/UX
+- **Panel de Notificaciones en Móvil**:
+  - Resuelto el problema por el cual el panel de notificaciones en móviles aparecía vacío a pesar de llegar la notificación push y el contador de campana. Se conectó `NotificationBell.js` al renderizado responsive para mostrar las notificaciones en tiempo real tanto en móvil como en escritorio.
+- **Amplitud y Aprovechamiento de Pantalla en Tarjetas de Acceso Rápido (Home Móvil)**:
+  - Optimizado el ancho de las tarjetas (`da-action-card`, `home-card`) en pantallas móviles reduciendo márgenes ociosos laterales para que ocupen todo el ancho útil del dispositivo con padding equilibrado.
+- **Fondo Oscuro e Insets en iOS Safari / WebKit**:
+  - Solucionado el fondo blanco en bordes y áreas de sobre-desplazamiento (*overscroll canvas*) en iOS Safari declarando `background-color: #0f172a !important` y `color-scheme: dark` directamente en `html.dark` y `html.dark body`, así como la sincronización dinámica de la etiqueta `<meta name="theme-color">` en `index.html` y `ThemeContext.js`.
+- **Selector de Fechas y Placeholder en Analíticas Móvil**:
+  - Reemplazados los campos de fecha vacíos y desbordados en móviles por un componente `grid` responsivo con etiquetas superiores fijas (*Desde* / *Hasta*), icono de calendario y botón de borrado rápido, garantizando visualización homogénea en iOS y Android sin desbordamiento lateral.
+- **Desglose de Formaciones Adaptativo en Detalle de Empleado (Analíticas)**:
+  - Implementada vista de tarjetas y badges semánticos en dispositivos móviles (`md:hidden`) en `UserAnalyticsDetailModal.js`, sustituyendo la tabla rígida comprimida por tarjetas estilizadas con insignias de estado, horas asistidas y marcas de tiempo claras.
 - **Cristales Oscuros en Analíticas, Perfil, Modales y Cierre de Sesión**:
   - Corregidos fondos blancos rígidos en las tarjetas KPI de Analítica (`AnalyticsOverviewTab.js`, `analyticsDashboard.css`), paneles de filtro (`EmployeeFilterPanel.js`), sesiones activas (`ActiveSessionsTab.js`), privacidad/GDPR (`PrivacyDataTab.js`), documentación adjunta (`FormationDetailsAdmin.js`), modal de detalles de formación (`FormationDetailsModal.js`) y modal de confirmación de salida (`Logout/index.js`).
 - **Superposición de Etiquetas y Texto en Formularios de Entrada**:

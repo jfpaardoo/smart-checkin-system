@@ -1,7 +1,9 @@
 import React from 'react';
+import SignatureCanvas from 'react-signature-canvas';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
+import { useToast } from "../../../components/ToastProvider";
 import { getFileIconAndType, getEmbedUrl } from "../../../utils/fileUtils";
 import { formatDate } from "../../../utils/dateUtils";
 import SecureImage from "../../../components/SecureImage";
@@ -171,6 +173,146 @@ export function AttendanceDetailsModal({ isOpen, toggle, attendance, formationNa
           </div>
         )}
       </div>
+    </GlassModal>
+  );
+}
+
+export function CloseFormationModal({ isOpen, toggle, formation, onCloseFormation }) {
+  const { t } = useTranslation();
+  const toast = useToast();
+  const sigCanvas = React.useRef(null);
+  const [observations, setObservations] = React.useState('');
+  const [trainerName, setTrainerName] = React.useState(formation?.trainer || 'VICTOR PARDO');
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  React.useEffect(() => {
+    if (formation?.trainer) {
+      setTrainerName(formation.trainer);
+    }
+  }, [formation]);
+
+  const handleClear = () => {
+    if (sigCanvas.current) {
+      sigCanvas.current.clear();
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!sigCanvas.current || sigCanvas.current.isEmpty()) {
+      toast.warning(t('formationDetails.signatureRequired', 'Por favor, estampe su firma como formador para cerrar la convocatoria.'));
+      return;
+    }
+
+    const signatureBase64 = sigCanvas.current.getCanvas().toDataURL('image/png');
+    setIsSubmitting(true);
+    const success = await onCloseFormation({
+      signature: signatureBase64,
+      observations: observations.trim(),
+      trainerName: trainerName.trim() || 'VICTOR PARDO',
+      location: formation?.location || 'BA VILLAFRANCA'
+    });
+    setIsSubmitting(false);
+    if (success) {
+      toggle();
+    }
+  };
+
+  if (!formation) return null;
+
+  const totalAttendees = formation.attendances?.length || 0;
+
+  return (
+    <GlassModal
+      isOpen={isOpen}
+      toggle={toggle}
+      title={
+        <div className="flex items-center gap-2 text-slate-800 dark:text-slate-100 font-bold">
+          <span>{t('formationDetails.closeModalTitle', 'Finalizar y Certificar Formación')}</span>
+        </div>
+      }
+      size="md"
+    >
+      <form onSubmit={handleSubmit} className="p-2 flex flex-col gap-4 text-left">
+        <div className="p-3.5 bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/30 rounded-2xl">
+          <p className="text-xs text-emerald-800 dark:text-emerald-300 font-semibold mb-0">
+            {t('formationDetails.closeNotice', `Todos los asistentes (${totalAttendees}/${totalAttendees}) han completado su asistencia. Al finalizar, la formación quedará bloqueada para edición y se guardará el registro oficial con su firma.`)}
+          </p>
+        </div>
+
+        <div>
+          <label className="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">
+            {t('formationDetails.trainerNameLabel', 'Nombre del Formador')}
+          </label>
+          <input
+            type="text"
+            className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            value={trainerName}
+            onChange={(e) => setTrainerName(e.target.value)}
+            required
+          />
+        </div>
+
+        <div>
+          <label className="text-xs font-bold text-slate-600 dark:text-slate-300 block mb-1">
+            {t('formationDetails.observationsLabel', 'Observaciones / Registro de Incidencias (Opcional)')}
+          </label>
+          <textarea
+            rows="3"
+            className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder={t('formationDetails.observationsPlaceholder', 'Indique si hubo alguna incidencia, incidencias técnicas o puntualizaciones durante la sesión...')}
+            value={observations}
+            onChange={(e) => setObservations(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <div className="flex justify-between items-center mb-1">
+            <label className="text-xs font-bold text-slate-600 dark:text-slate-300">
+              {t('formationDetails.trainerSignatureLabel', 'Firma del Formador')} <span className="text-red-500">*</span>
+            </label>
+            <button
+              type="button"
+              className="text-[11px] font-bold text-slate-500 hover:text-red-500 bg-transparent border-0 cursor-pointer"
+              onClick={handleClear}
+            >
+              {t('common.clear', 'Limpiar')}
+            </button>
+          </div>
+          <div className="border border-dashed border-slate-300 dark:border-slate-600 rounded-2xl bg-white overflow-hidden shadow-inner flex justify-center items-center">
+            <SignatureCanvas
+              ref={sigCanvas}
+              penColor="#000000"
+              canvasProps={{
+                width: 380,
+                height: 160,
+                className: "sigCanvas cursor-crosshair block w-full h-[160px]"
+              }}
+            />
+          </div>
+          <small className="text-[11px] text-slate-400 block mt-1">
+            {t('formationDetails.signHint', 'Firme con el ratón o el dedo en la pantalla táctil.')}
+          </small>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+          <button
+            type="button"
+            className="da-btn-secondary px-4 py-2 rounded-full font-bold text-xs"
+            onClick={toggle}
+            disabled={isSubmitting}
+          >
+            {t('common.cancel', 'Cancelar')}
+          </button>
+          <button
+            type="submit"
+            className="da-btn-success px-5 py-2 rounded-full font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white border-0 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? t('common.saving', 'Finalizando...') : t('formationDetails.confirmClose', 'Finalizar Formación')}
+          </button>
+        </div>
+      </form>
     </GlassModal>
   );
 }

@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -42,6 +43,7 @@ import org.springframework.samples.smartcheckin.exports.strategy.CsvExportStrate
 import org.springframework.samples.smartcheckin.exports.strategy.ExcelExportStrategy;
 import org.springframework.samples.smartcheckin.exports.strategy.PdfExportStrategy;
 
+@SuppressWarnings("null")
 @WebMvcTest(controllers = ExportRestController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebSecurityConfigurer.class), excludeAutoConfiguration = SecurityConfiguration.class)
 @Import({ExportFactory.class, CsvExportStrategy.class, ExcelExportStrategy.class, PdfExportStrategy.class})
 class ExportRestControllerTests {
@@ -80,6 +82,9 @@ class ExportRestControllerTests {
 
 	@MockitoBean
 	private AnalyticsService analyticsService;
+
+	@MockitoBean
+	private OfficialFormationSheetService officialFormationSheetService;
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -517,6 +522,17 @@ class ExportRestControllerTests {
         when(pdfReportGenerator.generateSingleUserDossierPdf(any(), any())).thenReturn(new byte[]{1, 2, 3});
         mockMvc.perform(get(BASE_URL + "/user/1/pdf"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void shouldExportOfficialFormationSheetSuccessfully() throws Exception {
+        when(formationRepository.findById(1)).thenReturn(java.util.Optional.of(formation));
+        when(officialFormationSheetService.generateOfficialSheet(any())).thenReturn(new byte[]{1, 2, 3});
+
+        mockMvc.perform(get(BASE_URL + "/formations/1/official-sheet"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("FOR99_")));
     }
 }
 

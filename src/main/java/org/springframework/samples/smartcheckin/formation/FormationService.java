@@ -95,6 +95,10 @@ public class FormationService {
         Formation formation = formationRepository.findById(formationId)
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
 
+        if (Boolean.TRUE.equals(formation.getIsClosed())) {
+            throw new IllegalStateException("La formación ya está finalizada y cerrada. No se admiten nuevos fichajes ni registros.");
+        }
+
         Optional<FormationAttendance> existing = findAttendance(formation, user);
         if (!existing.isPresent()) {
             FormationAttendance att = new FormationAttendance();
@@ -143,15 +147,16 @@ public class FormationService {
         return doRegisterAttendance(formationId, user);
     }
 
-    @Transactional
-    public Formation checkoutAttendance(Integer formationId, String personalCode, String signature, String token) {
-        if (token != null && !token.isBlank()) {
-            if (!totpService.verifyToken(token, formationId)) {
-                throw new IllegalArgumentException("Código inválido o expirado para esta formación.");
-            }
+    private Formation doCheckoutAttendance(Integer formationId, String personalCode, String signature, String token) {
+        if (token != null && !token.isBlank() && !totpService.verifyToken(token, formationId)) {
+            throw new IllegalArgumentException("Código inválido o expirado para esta formación.");
         }
         Formation formation = formationRepository.findById(formationId)
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
+        
+        if (Boolean.TRUE.equals(formation.getIsClosed())) {
+            throw new IllegalStateException("La formación ya está finalizada y cerrada.");
+        }
         
         User user = userService.findByPersonalCode(personalCode);
 
@@ -183,17 +188,31 @@ public class FormationService {
     }
 
     @Transactional
+    public Formation checkoutAttendance(Integer formationId, String personalCode, String signature, String token) {
+        return doCheckoutAttendance(formationId, personalCode, signature, token);
+    }
+
+    @Transactional
     public Formation checkoutAttendance(Integer formationId, String personalCode, String signature) {
-        return checkoutAttendance(formationId, personalCode, signature, null);
+        return doCheckoutAttendance(formationId, personalCode, signature, null);
     }
 
     @Transactional
     public Formation updateFormation(Formation formation, Integer id) {
         Formation toUpdate = formationRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
+        if (Boolean.TRUE.equals(toUpdate.getIsClosed())) {
+            throw new IllegalStateException("La formación está finalizada y cerrada, no se puede modificar.");
+        }
         toUpdate.setName(formation.getName());
         toUpdate.setDescription(formation.getDescription());
         toUpdate.setFormationDate(formation.getFormationDate());
+        if (formation.getLocation() != null && !formation.getLocation().isBlank()) {
+            toUpdate.setLocation(formation.getLocation());
+        }
+        if (formation.getTrainer() != null && !formation.getTrainer().isBlank()) {
+            toUpdate.setTrainer(formation.getTrainer());
+        }
         
         if (formation.getDocumentUrls() != null && toUpdate.getDocumentUrls() != formation.getDocumentUrls()) {
             toUpdate.getDocumentUrls().clear();
@@ -207,10 +226,19 @@ public class FormationService {
     public Formation updateFormation(Formation formationDetails, Integer id, MultipartFile file) throws IOException {
         Formation toUpdate = formationRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
+        if (Boolean.TRUE.equals(toUpdate.getIsClosed())) {
+            throw new IllegalStateException("La formación está finalizada y cerrada, no se puede modificar.");
+        }
 
         toUpdate.setName(formationDetails.getName());
         toUpdate.setDescription(formationDetails.getDescription());
         toUpdate.setFormationDate(formationDetails.getFormationDate());
+        if (formationDetails.getLocation() != null && !formationDetails.getLocation().isBlank()) {
+            toUpdate.setLocation(formationDetails.getLocation());
+        }
+        if (formationDetails.getTrainer() != null && !formationDetails.getTrainer().isBlank()) {
+            toUpdate.setTrainer(formationDetails.getTrainer());
+        }
 
         if (file != null && !file.isEmpty()) {
             if (toUpdate.getDocumentUrls() == null) {
@@ -238,6 +266,9 @@ public class FormationService {
     public void addAttendee(Integer formationId, Integer userId) {
         Formation formation = formationRepository.findById(formationId)
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
+        if (Boolean.TRUE.equals(formation.getIsClosed())) {
+            throw new IllegalStateException("La formación está finalizada y cerrada, no se pueden añadir más asistentes.");
+        }
         User user = userService.findUser(userId);
         
         Optional<FormationAttendance> existing = attendanceRepository.findByFormationAndUser(formation, user);
@@ -262,6 +293,9 @@ public class FormationService {
     public void removeAttendee(Integer formationId, Integer userId) {
         Formation formation = formationRepository.findById(formationId)
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
+        if (Boolean.TRUE.equals(formation.getIsClosed())) {
+            throw new IllegalStateException("La formación está finalizada y cerrada, no se pueden eliminar asistentes.");
+        }
         User user = userService.findUser(userId);
         
         Optional<FormationAttendance> existing = attendanceRepository.findByFormationAndUser(formation, user);
@@ -273,6 +307,46 @@ public class FormationService {
             }
             attendanceRepository.delete(att);
         }
+    }
+
+    @Transactional
+    public Formation closeFormation(Integer formationId, String signatureBase64, String observations, String trainerName, String location) {
+        Formation formation = formationRepository.findById(formationId)
+            .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
+
+        if (Boolean.TRUE.equals(formation.getIsClosed())) {
+            throw new IllegalStateException("La formación ya ha sido finalizada y cerrada.");
+        }
+
+        List<FormationAttendance> attendances = formation.getAttendances();
+        if (attendances == null || attendances.isEmpty()) {
+            throw new IllegalStateException("No se puede finalizar una formación sin asistentes.");
+        }
+
+        boolean allCompleted = attendances.stream().allMatch(
+            att -> att.getCheckOutDate() != null && att.getSignature() != null && !att.getSignature().isBlank()
+        );
+        if (!allCompleted) {
+            throw new IllegalStateException("Todos los asistentes deben haber realizado el checkout y firmado para poder finalizar la formación.");
+        }
+
+        if (signatureBase64 != null && !signatureBase64.isBlank()) {
+            String safeCourseName = formation.getName() != null ? formation.getName().replaceAll("[^a-zA-Z0-9.-]", "_") : "Course";
+            String sigRef = signatureStorageService.saveSignature(signatureBase64, "formations/" + safeCourseName + "/trainer");
+            formation.setTrainerSignature(sigRef);
+        }
+
+        formation.setIsClosed(true);
+        formation.setObservations(observations);
+        if (trainerName != null && !trainerName.isBlank()) {
+            formation.setTrainer(trainerName);
+        }
+        if (location != null && !location.isBlank()) {
+            formation.setLocation(location);
+        }
+        formation.setClosedDate(LocalDateTime.now(ZoneId.systemDefault()));
+
+        return formationRepository.save(formation);
     }
 
     @Transactional
