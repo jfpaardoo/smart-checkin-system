@@ -190,16 +190,65 @@ export default function AnalyticsDashboard() {
 
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto justify-center xl:justify-end">
             {activeTab === 'overview' && (
-                <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-                  <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <FontAwesomeIcon icon={faCalendarAlt} className="text-slate-400 hidden sm:block" />
-                    <input type="date" id="startDate" name="startDate" className="da-input py-1.5 px-3 text-xs w-full sm:w-auto" value={startDate} onChange={(e) => setStartDate(e.target.value)} aria-label={t('analytics.startDate', 'Fecha inicio')} />
+              <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full sm:w-auto">
+                <div className="da-date-filter-box w-full sm:w-48 xl:w-52">
+                  <FontAwesomeIcon icon={faCalendarAlt} className="text-slate-400 text-xs shrink-0" />
+                  <div className="flex flex-col flex-1 min-w-0 justify-center">
+                    <label htmlFor="startDate" className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 leading-none mb-0.5 cursor-pointer truncate">
+                      {t('analytics.startDate', 'Fecha inicio')}
+                    </label>
+                    <input 
+                      type="date" 
+                      id="startDate" 
+                      name="startDate" 
+                      className="da-date-input" 
+                      value={startDate} 
+                      onChange={(e) => setStartDate(e.target.value)} 
+                      onClick={(e) => { try { e.target.showPicker?.(); } catch { /* ignore */ } }}
+                      aria-label={t('analytics.startDate', 'Fecha inicio')} 
+                    />
                   </div>
-                  <span className="text-slate-400 hidden sm:block"> - </span>
-                  <div className="w-full sm:w-auto">
-                    <input type="date" id="endDate" name="endDate" className="da-input py-1.5 px-3 text-xs w-full sm:w-auto" value={endDate} onChange={(e) => setEndDate(e.target.value)} aria-label={t('analytics.endDate', 'Fecha fin')} />
-                  </div>
+                  {startDate && (
+                    <button 
+                      type="button" 
+                      onClick={() => setStartDate('')} 
+                      className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs p-1 cursor-pointer bg-transparent border-0 shrink-0"
+                      title={t('common.clear', 'Limpiar')}
+                    >
+                      &times;
+                    </button>
+                  )}
                 </div>
+
+                <div className="da-date-filter-box w-full sm:w-48 xl:w-52">
+                  <FontAwesomeIcon icon={faCalendarAlt} className="text-slate-400 text-xs shrink-0" />
+                  <div className="flex flex-col flex-1 min-w-0 justify-center">
+                    <label htmlFor="endDate" className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 leading-none mb-0.5 cursor-pointer truncate">
+                      {t('analytics.endDate', 'Fecha fin')}
+                    </label>
+                    <input 
+                      type="date" 
+                      id="endDate" 
+                      name="endDate" 
+                      className="da-date-input" 
+                      value={endDate} 
+                      onChange={(e) => setEndDate(e.target.value)} 
+                      onClick={(e) => { try { e.target.showPicker?.(); } catch { /* ignore */ } }}
+                      aria-label={t('analytics.endDate', 'Fecha fin')} 
+                    />
+                  </div>
+                  {endDate && (
+                    <button 
+                      type="button" 
+                      onClick={() => setEndDate('')} 
+                      className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs p-1 cursor-pointer bg-transparent border-0 shrink-0"
+                      title={t('common.clear', 'Limpiar')}
+                    >
+                      &times;
+                    </button>
+                  )}
+                </div>
+              </div>
             )}
             <div className="w-full sm:w-auto flex justify-center">
               <AnalyticsExportMenu 

@@ -152,12 +152,14 @@ button, a, input, select, textarea, .da-btn, .da-nav-btn {
 
 /* Card and Container Styles */
 .da-container {
-  max-width: 1250px;
+  max-width: 1440px;
+  width: 100%;
   margin: 0 auto;
   padding: 15px 20px 25px 20px;
   min-height: calc(100vh - 120px);
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 .da-card {
@@ -540,12 +542,23 @@ button, a, input, select, textarea, .da-btn, .da-nav-btn {
 /* Home Component Styles */
 .home-card {
   text-align: center;
-  padding: 60px 20px;
-  margin-top: 20px;
+  padding: 40px 20px;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .home-card {
+    padding: 20px 10px !important;
+    width: 100% !important;
+  }
+  .da-action-card {
+    padding: 20px 14px !important;
+    width: 100% !important;
+  }
 }
 
 .logo-crop.home-logo {
@@ -1473,7 +1486,7 @@ a {
 .da-textarea,
 .form-control,
 .form-select,
-input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(.da-glass-search-input),
+input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(.da-glass-search-input):not(.da-date-input),
 textarea,
 select {
   border-radius: 16px !important;
@@ -1494,7 +1507,7 @@ select {
 .da-textarea:focus,
 .form-control:focus,
 .form-select:focus,
-input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(.da-glass-search-input):focus,
+input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(.da-glass-search-input):not(.da-date-input):focus,
 textarea:focus,
 select:focus {
   background: rgba(255, 255, 255, 0.95) !important;
@@ -1507,7 +1520,7 @@ select:focus {
 .dark .da-textarea,
 .dark .form-control,
 .dark .form-select,
-.dark input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(.da-glass-search-input),
+.dark input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(.da-glass-search-input):not(.da-date-input),
 .dark textarea,
 .dark select {
   color: #f1f5f9 !important;
@@ -1524,7 +1537,7 @@ select:focus {
 .dark .da-textarea:focus,
 .dark .form-control:focus,
 .dark .form-select:focus,
-.dark input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(.da-glass-search-input):focus,
+.dark input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not(.da-glass-search-input):not(.da-date-input):focus,
 .dark textarea:focus,
 .dark select:focus {
   color: #ffffff !important;

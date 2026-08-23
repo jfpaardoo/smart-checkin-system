@@ -202,46 +202,102 @@ export default function UserAnalyticsDetailModal({ isOpen, toggle, userAnalytics
                     </div>
 
                     {userAnalytics.formationDetails && userAnalytics.formationDetails.length > 0 ? (
-                        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-700/80 overflow-x-auto bg-white/50 dark:bg-slate-800/50 shadow-xs">
-                            <table className="da-table stacked-mobile align-middle mb-0 w-full" style={{ minWidth: '100%' }}>
-                                <thead className="bg-slate-50/80 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs">
-                                    <tr>
-                                        <th className="py-2.5 px-3 font-bold">{t('analytics.formationName', 'Formación')}</th>
-                                        <th className="py-2.5 px-3 font-bold">{t('analytics.date', 'Fecha')}</th>
-                                        <th className="py-2.5 px-3 font-bold">{t('analytics.checkIn', 'Entrada')}</th>
-                                        <th className="py-2.5 px-3 font-bold">{t('analytics.checkOut', 'Salida')}</th>
-                                        <th className="py-2.5 px-3 font-bold">{t('analytics.duration', 'Tiempo Dedicado')}</th>
-                                        <th className="py-2.5 px-3 font-bold">{t('analytics.signature', 'Firma y Estado')}</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="text-xs divide-y divide-slate-100 dark:divide-slate-700 text-slate-800 dark:text-slate-100">
-                                    {userAnalytics.formationDetails.map((f) => (
-                                        <tr key={f.formationId} className="hover:bg-slate-50/60 dark:hover:bg-slate-700/60 transition-colors">
-                                            <td data-label={t('analytics.formationName', 'Formación')} className="py-2.5 px-3 font-bold text-slate-800 dark:text-slate-100">
-                                                {f.formationName}
-                                            </td>
-                                            <td data-label={t('analytics.date', 'Fecha')} className="py-2.5 px-3 text-slate-600 dark:text-slate-300">
-                                                {f.formationDate ? dayjs(f.formationDate).format('YYYY-MM-DD HH:mm') : 'N/A'}
-                                            </td>
-                                            <td data-label={t('analytics.checkIn', 'Entrada')} className="py-2.5 px-3 font-mono text-slate-700 dark:text-slate-200">
-                                                {f.checkInDate ? dayjs(f.checkInDate).format('HH:mm') : '-'}
-                                            </td>
-                                            <td data-label={t('analytics.checkOut', 'Salida')} className="py-2.5 px-3 font-mono text-slate-700 dark:text-slate-200">
-                                                {f.checkOutDate ? dayjs(f.checkOutDate).format('HH:mm') : '-'}
-                                            </td>
-                                            <td data-label={t('analytics.duration', 'Tiempo Dedicado')} className="py-2.5 px-3">
-                                                <span className="px-2 py-0.5 rounded-lg text-xs font-extrabold bg-[#b3c34c]/20 text-[#3b4707] dark:text-[#d2db85]">
+                        <>
+                            {/* 1. VISTA ESCRITORIO (md y superior) */}
+                            <div className="hidden md:block rounded-2xl border border-slate-200/80 dark:border-slate-700/80 overflow-x-auto bg-white/50 dark:bg-slate-800/50 shadow-xs">
+                                <table className="da-table align-middle mb-0 w-full" style={{ minWidth: '100%' }}>
+                                    <thead className="bg-slate-50/80 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs">
+                                        <tr>
+                                            <th className="py-2.5 px-3 font-bold">{t('analytics.formationName', 'Formación')}</th>
+                                            <th className="py-2.5 px-3 font-bold">{t('analytics.date', 'Fecha')}</th>
+                                            <th className="py-2.5 px-3 font-bold">{t('analytics.checkIn', 'Entrada')}</th>
+                                            <th className="py-2.5 px-3 font-bold">{t('analytics.checkOut', 'Salida')}</th>
+                                            <th className="py-2.5 px-3 font-bold">{t('analytics.duration', 'Tiempo Dedicado')}</th>
+                                            <th className="py-2.5 px-3 font-bold">{t('analytics.signature', 'Firma y Estado')}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="text-xs divide-y divide-slate-100 dark:divide-slate-700 text-slate-800 dark:text-slate-100">
+                                        {userAnalytics.formationDetails.map((f) => (
+                                            <tr key={f.formationId} className="hover:bg-slate-50/60 dark:hover:bg-slate-700/60 transition-colors">
+                                                <td className="py-2.5 px-3 font-bold text-slate-800 dark:text-slate-100">
+                                                    {f.formationName}
+                                                </td>
+                                                <td className="py-2.5 px-3 text-slate-600 dark:text-slate-300">
+                                                    {f.formationDate ? dayjs(f.formationDate).format('YYYY-MM-DD HH:mm') : 'N/A'}
+                                                </td>
+                                                <td className="py-2.5 px-3 font-mono text-slate-700 dark:text-slate-200">
+                                                    {f.checkInDate ? dayjs(f.checkInDate).format('HH:mm') : '-'}
+                                                </td>
+                                                <td className="py-2.5 px-3 font-mono text-slate-700 dark:text-slate-200">
+                                                    {f.checkOutDate ? dayjs(f.checkOutDate).format('HH:mm') : '-'}
+                                                </td>
+                                                <td className="py-2.5 px-3">
+                                                    <span className="px-2 py-0.5 rounded-lg text-xs font-extrabold bg-[#b3c34c]/20 text-[#3b4707] dark:text-[#d2db85]">
+                                                        {formatDuration(f.durationMinutes)}
+                                                    </span>
+                                                </td>
+                                                <td className="py-2.5 px-3">
+                                                    {renderSignatureStatus(f)}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* 2. VISTA MÓVIL (Tarjetas con Badges) */}
+                            <div className="md:hidden flex flex-col gap-2.5">
+                                {userAnalytics.formationDetails.map((f) => (
+                                    <div 
+                                        key={f.formationId} 
+                                        className="bg-white/70 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl p-3.5 border border-white/60 dark:border-white/10 shadow-xs flex flex-col gap-2.5 text-left"
+                                    >
+                                        <div className="flex justify-between items-start gap-2">
+                                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                                <div className="p-2 rounded-xl bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a] flex-shrink-0">
+                                                    <FontAwesomeIcon icon={faGraduationCap} />
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <h4 className="font-bold text-slate-800 dark:text-slate-100 m-0 text-sm leading-tight break-words">
+                                                        {f.formationName}
+                                                    </h4>
+                                                    <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 m-0 mt-0.5">
+                                                        {f.formationDate ? dayjs(f.formationDate).format('YYYY-MM-DD HH:mm') : 'N/A'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex-shrink-0 text-xs">
+                                                {renderSignatureStatus(f)}
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200/50 dark:border-slate-700/50 text-[11px]">
+                                            <div className="flex flex-col">
+                                                <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-400">
+                                                    {t('analytics.checkIn', 'Entrada')}
+                                                </span>
+                                                <span className="font-mono font-bold text-slate-700 dark:text-slate-200">
+                                                    {f.checkInDate ? dayjs(f.checkInDate).format('HH:mm') : '-'}
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-slate-400">
+                                                    {t('analytics.checkOut', 'Salida')}
+                                                </span>
+                                                <span className="font-mono font-bold text-slate-700 dark:text-slate-200">
+                                                    {f.checkOutDate ? dayjs(f.checkOutDate).format('HH:mm') : '-'}
+                                                </span>
+                                            </div>
+                                            <div className="flex flex-col items-end justify-center">
+                                                <span className="px-2 py-0.5 rounded-lg text-[11px] font-extrabold bg-[#b3c34c]/20 text-[#3b4707] dark:text-[#d2db85] border border-[#b3c34c]/30">
                                                     {formatDuration(f.durationMinutes)}
                                                 </span>
-                                            </td>
-                                            <td data-label={t('analytics.signature', 'Firma y Estado')} className="py-2.5 px-3">
-                                                {renderSignatureStatus(f)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
                     ) : (
                         <div className="text-center p-8 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-400 text-xs">
                             {t('analytics.noFormationsUser', 'No hay formaciones asignadas a este empleado.')}

@@ -59,6 +59,7 @@ public class ExportRestController {
     private final UserSessionRepository userSessionRepository;
     private final AnalyticsService analyticsService;
     private final ExportFactory exportFactory;
+    private final OfficialFormationSheetService officialFormationSheetService;
 
     @Autowired
     public ExportRestController(CheckinRepository checkinRepository,
@@ -68,7 +69,8 @@ public class ExportRestController {
                                 AuditLogRepository auditLogRepository,
                                 UserSessionRepository userSessionRepository,
                                 AnalyticsService analyticsService,
-                                ExportFactory exportFactory) {
+                                ExportFactory exportFactory,
+                                OfficialFormationSheetService officialFormationSheetService) {
         this.checkinRepository = checkinRepository;
         this.attendanceRepository = attendanceRepository;
         this.formationRepository = formationRepository;
@@ -77,6 +79,18 @@ public class ExportRestController {
         this.userSessionRepository = userSessionRepository;
         this.analyticsService = analyticsService;
         this.exportFactory = exportFactory;
+        this.officialFormationSheetService = officialFormationSheetService;
+    }
+
+    @GetMapping("/formations/{id}/official-sheet")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<byte[]> exportOfficialFormationSheet(@PathVariable Integer id) throws IOException {
+        Formation formation = formationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Formación no encontrada"));
+        byte[] data = officialFormationSheetService.generateOfficialSheet(formation);
+        String safeName = formation.getName() != null ? formation.getName().replaceAll("[^a-zA-Z0-9_-]", "_") : "FOR99";
+        String filename = "FOR99_" + safeName + "_" + id + ".xls";
+        return createResponse(data, filename, "application/vnd.ms-excel");
     }
 
     @GetMapping("/user-formations/{format}")
@@ -146,39 +160,50 @@ public class ExportRestController {
             @RequestParam(required = false) Integer userId) throws IOException {
         DataExportStrategy strategy = exportFactory.getStrategy(format);
         List<Checkin> checkins = (List<Checkin>) checkinRepository.findAll();
+        checkins = filterCheckins(checkins, search, companyId, startDate, endDate, userId);
 
+        byte[] data = strategy.exportCheckins(checkins);
+        return createResponse(data, "checkins." + strategy.getFileExtension(), strategy.getContentType());
+    }
+
+    private List<Checkin> filterCheckins(List<Checkin> checkins, String search, Integer companyId,
+                                         String startDate, String endDate, Integer userId) {
+        List<Checkin> result = checkins;
         if (companyId != null) {
-            checkins = checkins.stream()
+            result = result.stream()
                     .filter(c -> c.getUser() != null && c.getUser().getCompany() != null && companyId.equals(c.getUser().getCompany().getId()))
                     .toList();
         }
         if (userId != null) {
-            checkins = checkins.stream()
+            result = result.stream()
                     .filter(c -> c.getUser() != null && userId.equals(c.getUser().getId()))
                     .toList();
         }
         if (search != null && !search.isBlank()) {
             String q = search.toLowerCase().trim();
-            checkins = checkins.stream()
-                    .filter(c -> c.getUser() != null && (
-                            (c.getUser().getUsername() != null && c.getUser().getUsername().toLowerCase().contains(q)) ||
-                            (c.getUser().getFirstName() != null && c.getUser().getFirstName().toLowerCase().contains(q)) ||
-                            (c.getUser().getLastName() != null && c.getUser().getLastName().toLowerCase().contains(q)) ||
-                            (c.getUser().getPersonalCode() != null && c.getUser().getPersonalCode().toLowerCase().contains(q))
-                    ))
+            result = result.stream()
+                    .filter(c -> matchesUserSearch(c.getUser(), q))
                     .toList();
         }
         if (startDate != null && !startDate.isBlank()) {
             LocalDateTime start = LocalDate.parse(startDate).atStartOfDay();
-            checkins = checkins.stream().filter(c -> c.getCheckInDate() != null && !c.getCheckInDate().isBefore(start)).toList();
+            result = result.stream().filter(c -> c.getCheckInDate() != null && !c.getCheckInDate().isBefore(start)).toList();
         }
         if (endDate != null && !endDate.isBlank()) {
             LocalDateTime end = LocalDate.parse(endDate).atTime(23, 59, 59);
-            checkins = checkins.stream().filter(c -> c.getCheckInDate() != null && !c.getCheckInDate().isAfter(end)).toList();
+            result = result.stream().filter(c -> c.getCheckInDate() != null && !c.getCheckInDate().isAfter(end)).toList();
         }
+        return result;
+    }
 
-        byte[] data = strategy.exportCheckins(checkins);
-        return createResponse(data, "checkins." + strategy.getFileExtension(), strategy.getContentType());
+    private boolean matchesUserSearch(User user, String query) {
+        if (user == null) {
+            return false;
+        }
+        return (user.getUsername() != null && user.getUsername().toLowerCase().contains(query)) ||
+               (user.getFirstName() != null && user.getFirstName().toLowerCase().contains(query)) ||
+               (user.getLastName() != null && user.getLastName().toLowerCase().contains(query)) ||
+               (user.getPersonalCode() != null && user.getPersonalCode().toLowerCase().contains(query));
     }
 
     @GetMapping("/formations/{format}")

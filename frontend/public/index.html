@@ -26,8 +26,18 @@
         try {
           var stored = localStorage.getItem('da-theme');
           var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-          if (stored === 'dark' || (!stored && prefersDark)) {
+          var isDark = stored === 'dark' || (!stored && prefersDark);
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (isDark) {
             document.documentElement.classList.add('dark');
+            document.documentElement.style.backgroundColor = '#0f172a';
+            document.documentElement.style.colorScheme = 'dark';
+            if (meta) meta.setAttribute('content', '#0f172a');
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.backgroundColor = '#f1f5f9';
+            document.documentElement.style.colorScheme = 'light';
+            if (meta) meta.setAttribute('content', '#f1f5f9');
           }
         } catch (err) {
           console.debug('Theme initialization info:', err);

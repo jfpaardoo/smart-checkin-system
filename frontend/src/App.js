@@ -8,6 +8,7 @@ import AppNavbar from "./AppNavbar";
 import Home from "./home";
 import PrivateRoute from "./privateRoute";
 import { ToastProvider } from "./components/ToastProvider";
+import { NotificationProvider } from "./context/NotificationContext";
 import SessionTimeoutModal from "./components/SessionTimeoutModal";
 import PwaInstallPrompt from "./components/PwaInstallPrompt";
 import PwaUpdateNotification from "./components/PwaUpdateNotification";
@@ -141,13 +142,15 @@ function App() {
   return (
     <SWRConfig value={{ provider: localStorageProvider, revalidateOnFocus: false, dedupingInterval: 10000 }}>
       <ToastProvider>
-        <ErrorBoundary FallbackComponent={ErrorFallback}>
-          <AppNavbar />
-          <SessionTimeoutModal />
-          <PwaInstallPrompt />
-          <PwaUpdateNotification />
-          <AnimatedRoutes />
-        </ErrorBoundary>
+        <NotificationProvider>
+          <ErrorBoundary FallbackComponent={ErrorFallback}>
+            <AppNavbar />
+            <SessionTimeoutModal />
+            <PwaInstallPrompt />
+            <PwaUpdateNotification />
+            <AnimatedRoutes />
+          </ErrorBoundary>
+        </NotificationProvider>
       </ToastProvider>
     </SWRConfig>
   );

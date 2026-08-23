@@ -3,6 +3,7 @@ import { FaShieldAlt, FaRedo } from "react-icons/fa";
 import api from "../../../services/api";
 import TwoFactorBackupCodesView from "./TwoFactorBackupCodesView";
 import { TwoFactorSetupStart, TwoFactorSetupVerify } from "./TwoFactorSetupStep";
+import { saveBlobFile } from "../../../util/downloadExportFile";
 
 export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
   const [setupData, setSetupData] = useState(null);
@@ -107,18 +108,13 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
     toast.success(t('profile.backupCodesCopied', 'Códigos de recuperación copiados al portapapeles.'));
   };
 
-  const handleDownloadBackupCodes = () => {
+  const handleDownloadBackupCodes = async () => {
     if (!backupCodes) return;
     const text = `DISTRIBUTION ACADEMY - CÓDIGOS DE RECUPERACIÓN (2FA)\nGenerados el: ${new Date().toLocaleString()}\n\n` +
       backupCodes.map((c, i) => `${i + 1}. ${c}`).join("\n") +
       `\n\nGuarda estos códigos en un lugar seguro. Cada uno solo puede usarse una vez.`;
-    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `backup-codes-distribution-academy-${new Date().toISOString().slice(0, 10)}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const filename = `backup-codes-distribution-academy-${new Date().toISOString().slice(0, 10)}.txt`;
+    await saveBlobFile(text, filename, "text/plain;charset=utf-8");
   };
 
   const glassButtonClass = "da-btn-primary w-full py-3 px-4 rounded-2xl font-bold text-xs sm:text-sm text-slate-950 flex items-center justify-center gap-2 shadow-md hover:scale-102 active:scale-98 transition-all cursor-pointer border-0";

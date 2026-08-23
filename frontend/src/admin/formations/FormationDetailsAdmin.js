@@ -1,20 +1,23 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQrcode, faPencil, faTrash, faFileLines, faChevronDown, faChevronUp, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { faQrcode, faPencil, faTrash, faFileLines, faChevronDown, faChevronUp, faArrowLeft, faFileExcel, faCheckDouble, faLock } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import getIdFromUrl from "../../util/getIdFromUrl";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import { getFileIconAndType, getCleanFileInfo } from "../../utils/fileUtils";
+import SecureImage from "../../components/SecureImage";
+import { useToast } from "../../components/ToastProvider";
 
 import { useFormationDetails } from "./hooks/useFormationDetails";
 import FormationAttendeesTable from "./components/FormationAttendeesTable";
-import { DocumentPreviewModal, AttendanceDetailsModal } from "./components/FormationModals";
+import { DocumentPreviewModal, AttendanceDetailsModal, CloseFormationModal } from "./components/FormationModals";
 
 export default function FormationDetailsAdmin() {
   const id = getIdFromUrl(2);
   const { t } = useTranslation();
+  const toast = useToast();
   
   const {
     formation,
@@ -23,11 +26,15 @@ export default function FormationDetailsAdmin() {
     handleAddUser,
     handleRemoveUser,
     handleDeleteFormation,
-    downloadSignaturePdf
+    downloadSignaturePdf,
+    downloadOfficialSheet,
+    handleCloseFormation,
+    canCloseFormation
   } = useFormationDetails(id);
 
   const [selectedAttendance, setSelectedAttendance] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [closeModalOpen, setCloseModalOpen] = useState(false);
   
   const [documentModalOpen, setDocumentModalOpen] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState({ url: "", name: "", type: "unknown" });
@@ -45,38 +52,82 @@ export default function FormationDetailsAdmin() {
   return (
     <div className="da-container">
       <div className="da-card">
-        <div className="da-card-header da-admin-header border-0 flex flex-col md:flex-row justify-between items-center gap-4 pb-4 mb-4 border-b border-slate-200/60 dark:border-slate-700/60">
-          <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="da-card-header da-admin-header border-0 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 mb-4 border-b border-slate-200/60 dark:border-slate-700/60">
+          <div className="flex items-start sm:items-center gap-3 w-full lg:w-auto">
             <Link
               to="/formations"
-              className="p-2.5 rounded-2xl bg-white/50 dark:bg-slate-800/50 border border-white/70 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 hover:scale-105 active:scale-95 transition shadow-xs flex items-center justify-center shrink-0 text-decoration-none"
+              className="p-2.5 rounded-2xl bg-white/50 dark:bg-slate-800/50 border border-white/70 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 hover:scale-105 active:scale-95 transition shadow-xs flex items-center justify-center shrink-0 text-decoration-none mt-0.5 sm:mt-0"
               title={t("common.back", "Volver")}
             >
               <FontAwesomeIcon icon={faArrowLeft} />
             </Link>
 
             <div className="flex flex-col items-start text-left min-w-0 flex-1">
-              <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-widest text-[#73841e] bg-[#b3c34c]/20 px-2.5 py-0.5 rounded-full border border-[#b3c34c]/30 mb-1 inline-block truncate max-w-full">
-                {t('formationDetails.title', 'Detalles de Formación')}
-              </span>
-              <h2 className="mb-0 text-slate-800 dark:text-slate-100 font-bold text-lg sm:text-2xl break-words max-w-full" style={{ lineHeight: '1.2' }}>
+              <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+                <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-widest text-[#73841e] bg-[#b3c34c]/20 px-2.5 py-0.5 rounded-full border border-[#b3c34c]/30 inline-block truncate max-w-full">
+                  {t('formationDetails.title', 'Detalles de Formación')}
+                </span>
+                {formation.isClosed && (
+                  <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-widest text-emerald-700 dark:text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30 inline-flex items-center gap-1">
+                    <FontAwesomeIcon icon={faLock} />
+                    {t('formationDetails.closedBadge', 'Finalizada y Certificada')}
+                  </span>
+                )}
+              </div>
+              <h2 className="mb-0 text-slate-800 dark:text-slate-100 font-bold text-lg sm:text-2xl break-words max-w-full leading-tight">
                 {formation.name}
               </h2>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 w-full md:w-auto mt-2 md:mt-0">
-            <Link 
-              className="da-btn-primary font-bold shadow-xs px-3.5 py-2 rounded-full inline-flex items-center gap-1.5 text-xs text-decoration-none" 
-              to={`/formations/${id}`} 
-              title={t('formations.edit')}
-            >
-              <FontAwesomeIcon icon={faPencil} />
-              <span>{t('formations.edit', 'Editar')}</span>
-            </Link>
+          <div className="flex flex-wrap items-center justify-start sm:justify-end gap-2 w-full lg:w-auto">
+            {formation.isClosed && (
+              <button 
+                type="button"
+                className="da-btn-secondary px-3.5 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 shadow-xs hover:scale-105 active:scale-95 transition-all text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 cursor-pointer w-full sm:w-auto" 
+                onClick={downloadOfficialSheet} 
+                title={t('formationDetails.exportOfficialSheet', 'Exportar Registro Oficial (FOR 99)')}
+              >
+                <FontAwesomeIcon icon={faFileExcel} className="text-emerald-600 dark:text-emerald-400" />
+                <span>{t('formationDetails.exportOfficialSheet', 'Registro Oficial (FOR 99)')}</span>
+              </button>
+            )}
+
+            {!formation.isClosed && (
+              <button 
+                type="button"
+                className={`px-3.5 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 border-0 cursor-pointer flex-1 sm:flex-initial ${
+                  canCloseFormation
+                    ? 'da-btn-primary shadow-md'
+                    : 'da-btn-secondary opacity-75 shadow-xs'
+                }`}
+                onClick={() => {
+                  if (canCloseFormation) {
+                    setCloseModalOpen(true);
+                  } else {
+                    toast.warning(t('formationDetails.cannotCloseAlert', 'Para finalizar la formación es obligatorio que todos los asistentes inscritos hayan completado el checkout y firmado.'));
+                  }
+                }}
+                title={t('formationDetails.closeAction', 'Finalizar Formación')}
+              >
+                <FontAwesomeIcon icon={faCheckDouble} />
+                <span>{t('formationDetails.closeAction', 'Finalizar Formación')}</span>
+              </button>
+            )}
+
+            {!formation.isClosed && (
+              <Link 
+                className="da-btn-secondary px-3.5 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 text-decoration-none shadow-xs hover:scale-105 active:scale-95 transition-all text-slate-700 dark:text-slate-200" 
+                to={`/formations/${id}`} 
+                title={t('formations.edit')}
+              >
+                <FontAwesomeIcon icon={faPencil} />
+                <span>{t('formations.edit', 'Editar')}</span>
+              </Link>
+            )}
 
             <Link 
-              className="da-btn-blue font-bold shadow-xs px-3.5 py-2 rounded-full inline-flex items-center gap-1.5 text-xs text-decoration-none" 
+              className="da-btn-blue px-3.5 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 text-decoration-none shadow-xs hover:scale-105 active:scale-95 transition-all text-white" 
               to={`/qr-generator?formationId=${id}`} 
               title={t('formationDetails.qrButton')}
             >
@@ -84,23 +135,72 @@ export default function FormationDetailsAdmin() {
               <span>{t('formationDetails.qrButton', 'QR')}</span>
             </Link>
 
-            <button 
-              type="button"
-              className="da-btn-danger font-bold shadow-xs px-3.5 py-2 rounded-full inline-flex items-center gap-1.5 text-xs border-0 cursor-pointer" 
-              onClick={handleDeleteFormation} 
-              title={t('formations.delete')}
-            >
-              <FontAwesomeIcon icon={faTrash} />
-              <span>{t('formations.delete', 'Eliminar')}</span>
-            </button>
+            {!formation.isClosed && (
+              <button 
+                type="button"
+                className="da-btn-danger px-3.5 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 shadow-xs hover:scale-105 active:scale-95 transition-all border-0 cursor-pointer text-white" 
+                onClick={handleDeleteFormation} 
+                title={t('formations.delete')}
+              >
+                <FontAwesomeIcon icon={faTrash} />
+                <span>{t('formations.delete', 'Eliminar')}</span>
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="p-6 rounded-3xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.06)] mb-6">
+        <div className="p-6 rounded-3xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.06)] mb-6 text-left">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div>
+              <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{t('formationDetails.dateTime')}</h4>
+              <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-0">{dayjs(formation.formationDate).format('YYYY-MM-DD HH:mm')}</p>
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{t('formationDetails.locationLabel', 'Lugar')}</h4>
+              <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-0">{formation.location || 'BA VILLAFRANCA'}</p>
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{t('formationDetails.trainerLabel', 'Formador')}</h4>
+              <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-0">{formation.trainer || 'VICTOR PARDO'}</p>
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{t('formationDetails.statusLabel', 'Estado')}</h4>
+              <p className="text-sm font-semibold mb-0">
+                {formation.isClosed ? (
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold">{t('formationDetails.statusClosed', 'Cerrada y Firmada')}</span>
+                ) : (
+                  <span className="text-amber-600 dark:text-amber-400 font-bold">{t('formationDetails.statusOpen', 'Abierta')}</span>
+                )}
+              </p>
+            </div>
+          </div>
+
           <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{t('formationDetails.description')}</h4>
-          <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-4">{formation.description}</p>
-          <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{t('formationDetails.dateTime')}</h4>
-          <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-0">{dayjs(formation.formationDate).format('YYYY-MM-DD HH:mm')}</p>
+          <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-4">{formation.description || t('formationDetails.noDescription', 'Sin descripción')}</p>
+
+          {formation.observations && (
+            <div className="mt-4 pt-4 border-t border-white/40 dark:border-white/10">
+              <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{t('formationDetails.observationsLabel', 'Observaciones / Registro de Incidencias')}</h4>
+              <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 bg-white/50 dark:bg-slate-800/50 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 mb-0">
+                {formation.observations}
+              </p>
+            </div>
+          )}
+
+          {formation.trainerSignature && (
+            <div className="mt-4 pt-4 border-t border-white/40 dark:border-white/10">
+              <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                {t('formationDetails.trainerSignatureLabel', 'Firma del Formador')} ({formation.trainer || 'VICTOR PARDO'})
+              </h4>
+              <div className="max-w-[260px] bg-white rounded-2xl border border-dashed border-slate-300 p-2 shadow-inner">
+                <SecureImage
+                  src={formation.trainerSignature.startsWith('data:image') ? formation.trainerSignature : `/api/v1/signatures/${formation.trainerSignature}`}
+                  alt="Firma del Formador"
+                  className="w-full h-[90px] object-contain block mx-auto"
+                />
+              </div>
+            </div>
+          )}
 
           {formation.documentUrls && formation.documentUrls.length > 0 && (
             <div className="formation-document-section mt-4 pt-4 border-t border-white/40 dark:border-white/10">
@@ -166,6 +266,13 @@ export default function FormationDetailsAdmin() {
         toggle={() => setModalOpen(false)} 
         attendance={selectedAttendance} 
         formationName={formation?.name} 
+      />
+
+      <CloseFormationModal
+        isOpen={closeModalOpen}
+        toggle={() => setCloseModalOpen(false)}
+        formation={formation}
+        onCloseFormation={handleCloseFormation}
       />
     </div>
   );

@@ -3,18 +3,12 @@ import { FaGraduationCap, FaCheckCircle, FaExclamationTriangle, FaAward, FaClock
 import { TableGhostLoader } from "../../../components/GhostLoader";
 import api from "../../../services/api";
 import { calculateDuration, formatDate } from "../../../utils/dateUtils";
+import { saveBlobFile } from "../../../util/downloadExportFile";
 
 const handleDownloadCertificate = async (attendanceId) => {
   try {
     const res = await api.get(`/certificates/attendance/${attendanceId}`, { responseType: 'blob' });
-    const url = window.URL.createObjectURL(new Blob([res.data]));
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `certificate_${attendanceId}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    a.remove();
+    await saveBlobFile(res.data, `certificate_${attendanceId}.pdf`, 'application/pdf');
   } catch (error) {
     console.error("Error downloading PDF", error);
   }

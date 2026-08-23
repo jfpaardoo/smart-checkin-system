@@ -470,10 +470,10 @@ class FormationServiceTests {
 
     @Test
     void testDeleteFormationWithNullDocumentUrls() {
-        Formation formation = mock(Formation.class);
-        when(formation.getId()).thenReturn(1);
-        when(formation.getAttendances()).thenReturn(new ArrayList<>());
-        when(formation.getDocumentUrls()).thenReturn(null); // Fuerza la evaluación documento == null
+        Formation formation = new Formation();
+        formation.setId(1);
+        formation.setAttendances(new ArrayList<>());
+        formation.setDocumentUrls(null);
 
         when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
 
@@ -506,5 +506,96 @@ class FormationServiceTests {
         assertNotNull(res);
         assertEquals("New", res.getName());
         verify(cloudStorageAdapter, times(1)).uploadFile(mockFile, FORMATIONS_DIR);
+    }
+
+    @Test
+    void testCloseFormationSuccess() {
+        Formation formation = new Formation();
+        formation.setId(1);
+        formation.setName("Prevención Picking");
+        formation.setIsClosed(false);
+
+        FormationAttendance att = new FormationAttendance();
+        att.setId(10);
+        att.setCheckInDate(LocalDateTime.now().minusHours(2));
+        att.setCheckOutDate(LocalDateTime.now().minusHours(1));
+        att.setSignature("sig_base64_or_ref");
+        formation.setAttendances(new ArrayList<>(List.of(att)));
+
+        when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
+        when(signatureStorageService.saveSignature(anyString(), anyString())).thenReturn("trainer_sig_saved.png");
+        when(formationRepository.save(any(Formation.class))).thenAnswer(i -> i.getArgument(0));
+
+        Formation closed = formationService.closeFormation(
+            1, "data:image/png;base64,sample", "Sesión completada con éxito.", "VICTOR PARDO", "BA VILLAFRANCA"
+        );
+
+        assertNotNull(closed);
+        assertTrue(closed.getIsClosed());
+        assertEquals("trainer_sig_saved.png", closed.getTrainerSignature());
+        assertEquals("Sesión completada con éxito.", closed.getObservations());
+        assertEquals("VICTOR PARDO", closed.getTrainer());
+        assertEquals("BA VILLAFRANCA", closed.getLocation());
+        assertNotNull(closed.getClosedDate());
+        verify(signatureStorageService, times(1)).saveSignature(eq("data:image/png;base64,sample"), anyString());
+    }
+
+    @Test
+    void testCloseFormationAlreadyClosedThrows() {
+        Formation formation = new Formation();
+        formation.setId(1);
+        formation.setIsClosed(true);
+
+        when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
+
+        assertThrows(IllegalStateException.class, () -> 
+            formationService.closeFormation(1, "sig", "obs", "trainer", "loc")
+        );
+    }
+
+    @Test
+    void testCloseFormationNoAttendeesThrows() {
+        Formation formation = new Formation();
+        formation.setId(1);
+        formation.setIsClosed(false);
+        formation.setAttendances(new ArrayList<>());
+
+        when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
+
+        assertThrows(IllegalStateException.class, () -> 
+            formationService.closeFormation(1, "sig", "obs", "trainer", "loc")
+        );
+    }
+
+    @Test
+    void testCloseFormationIncompleteCheckoutThrows() {
+        Formation formation = new Formation();
+        formation.setId(1);
+        formation.setIsClosed(false);
+
+        FormationAttendance att = new FormationAttendance();
+        att.setId(10);
+        att.setCheckInDate(LocalDateTime.now().minusHours(1));
+        // No checkOutDate
+        formation.setAttendances(new ArrayList<>(List.of(att)));
+
+        when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
+
+        assertThrows(IllegalStateException.class, () -> 
+            formationService.closeFormation(1, "sig", "obs", "trainer", "loc")
+        );
+    }
+
+    @Test
+    void testClosedFormationGuardsThrow() {
+        Formation formation = new Formation();
+        formation.setId(1);
+        formation.setIsClosed(true);
+
+        when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
+
+        assertThrows(IllegalStateException.class, () -> formationService.updateFormation(new Formation(), 1));
+        assertThrows(IllegalStateException.class, () -> formationService.addAttendee(1, 10));
+        assertThrows(IllegalStateException.class, () -> formationService.removeAttendee(1, 10));
     }
 }

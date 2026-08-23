@@ -16,7 +16,6 @@ import jakarta.persistence.CollectionTable;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.FetchType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -43,7 +42,6 @@ public class Formation extends BaseEntity {
     private String description;
 
     @NotNull
-    @Future
     private LocalDateTime formationDate;
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -57,5 +55,25 @@ public class Formation extends BaseEntity {
     @lombok.Builder.Default
     private List<FormationAttendance> attendances = new ArrayList<>();
 
+    @Column(name = "location", length = 255)
+    @lombok.Builder.Default
+    private String location = "BA VILLAFRANCA";
+
+    @Column(name = "trainer", length = 255)
+    @lombok.Builder.Default
+    private String trainer = "VICTOR PARDO";
+
+    @Column(name = "is_closed")
+    @lombok.Builder.Default
+    private Boolean isClosed = false;
+
+    @Column(name = "observations", columnDefinition = "TEXT")
+    private String observations;
+
+    @Column(name = "trainer_signature", columnDefinition = "TEXT")
+    private String trainerSignature;
+
+    @Column(name = "closed_date")
+    private LocalDateTime closedDate;
 
 }

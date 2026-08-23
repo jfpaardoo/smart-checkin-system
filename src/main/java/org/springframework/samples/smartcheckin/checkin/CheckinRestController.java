@@ -80,6 +80,11 @@ public class CheckinRestController {
         // FLUJO 1: EL CÓDIGO ES DE UNA FORMACIÓN
         // ==========================================
         if (targetFormation != null) {
+            if (Boolean.TRUE.equals(targetFormation.getIsClosed())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of(MESSAGE_KEY, "Esta formación ya ha sido finalizada y cerrada. No se admiten nuevos fichajes."));
+            }
+
             ResponseEntity<Object> locationError = validateLocation(request);
             if (locationError != null) return locationError;
 

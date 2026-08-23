@@ -124,6 +124,26 @@ public class FormationRestController {
         }
     }
 
+    @PostMapping("/{id}/close")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<Object> closeFormation(@PathVariable Integer id, @RequestBody(required = false) CloseFormationRequest request) {
+        try {
+            Formation closed = formationService.closeFormation(
+                id, 
+                request != null ? request.getSignature() : null, 
+                request != null ? request.getObservations() : null, 
+                request != null ? request.getTrainerName() : null,
+                request != null ? request.getLocation() : null
+            );
+            return ResponseEntity.ok(closed);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of(MESSAGE_KEY, e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(MESSAGE_KEY, "Error al cerrar la formación: " + e.getMessage()));
+        }
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Object> deleteFormation(@PathVariable Integer id) {
