@@ -299,7 +299,8 @@
     "selectFormationPlaceholder": "Alegeți o formare...",
     "selectFormationPrompt": "Selectați o formare",
     "selectFormationPrompt2": "pentru a genera codul QR",
-    "totpSecurity": "Securitate TOTP: Se actualizează la fiecare 20s"
+    "totpSecurity": "Securitate TOTP: Se actualizează la fiecare 20s",
+    "maxBrightnessBtn": "Mod Luminozitate Maximă"
   },
   "dashboard": {
     "qrValidated": "Cod QR validat",

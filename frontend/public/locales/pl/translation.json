@@ -299,7 +299,8 @@
     "selectFormationPlaceholder": "Wybierz szkolenie...",
     "selectFormationPrompt": "Wybierz szkolenie",
     "selectFormationPrompt2": "aby wygenerować kod QR",
-    "totpSecurity": "Bezpieczeństwo TOTP: Odświeżanie co 20s"
+    "totpSecurity": "Bezpieczeństwo TOTP: Odświeżanie co 20s",
+    "maxBrightnessBtn": "Tryb Maksymalnej Jasności"
   },
   "dashboard": {
     "hello": "Witaj",

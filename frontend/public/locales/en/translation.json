@@ -299,7 +299,8 @@
     "selectFormationPlaceholder": "Choose a formation...",
     "selectFormationPrompt": "Select a formation",
     "selectFormationPrompt2": "to generate the QR",
-    "totpSecurity": "TOTP Security: Updates every 20s"
+    "totpSecurity": "TOTP Security: Updates every 20s",
+    "maxBrightnessBtn": "Max Brightness Mode"
   },
   "dashboard": {
     "hello": "Hello",
