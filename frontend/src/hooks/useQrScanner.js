@@ -52,6 +52,23 @@ function formatCameraLabel(device, index) {
   return device.label || `Cámara ${index + 1}`;
 }
 
+function formatCameraList(devices) {
+  const labelsSeen = {};
+  return devices.map((d, index) => {
+    let baseLabel = formatCameraLabel(d, index);
+    if (labelsSeen[baseLabel]) {
+      labelsSeen[baseLabel]++;
+      baseLabel = `${baseLabel} (${labelsSeen[baseLabel]})`;
+    } else {
+      labelsSeen[baseLabel] = 1;
+    }
+    return {
+      value: d.deviceId,
+      label: baseLabel
+    };
+  });
+}
+
 export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
   const [cameras, setCameras] = useState([]);
   const [selectedCameraId, setSelectedCameraId] = useState(() => {
@@ -67,7 +84,6 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
 
   const html5QrcodeRef = useRef(null);
   const scanLockRef = useRef(false);
-  const isOperatingRef = useRef(false);
 
   const onScanSuccessRef = useRef(onScanSuccess);
   useEffect(() => { onScanSuccessRef.current = onScanSuccess; }, [onScanSuccess]);
@@ -114,27 +130,35 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
 
   // Enumerar dispositivos de vídeo de forma pasiva y auto-seleccionar por defecto
   const refreshCameraListSafely = useCallback(async () => {
-    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.enumerateDevices) return;
     try {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoInputs = devices.filter(d => d.kind === 'videoinput');
-      if (videoInputs.length > 0) {
-        const formatted = videoInputs.map((d, index) => ({
-          value: d.deviceId,
-          label: formatCameraLabel(d, index)
-        }));
+      const devices = await Html5Qrcode.getCameras();
+      if (devices && devices.length > 0) {
+        const formatted = formatCameraList(devices.map((d, index) => ({
+          deviceId: d.id,
+          label: d.label || formatCameraLabel(d, index)
+        })));
         setCameras(formatted);
 
-        // Auto-seleccionar por defecto si no está seleccionada
+        // Auto-seleccionar por defecto si no está seleccionada o si el ID actual no existe
         setSelectedCameraId(currentId => {
           if (currentId && formatted.some(c => c.value === currentId)) {
             return currentId;
           }
+          let saved = null;
+          try {
+            saved = localStorage.getItem('da_preferred_camera');
+          } catch {}
+          if (saved && formatted.some(c => c.value === saved)) {
+            return saved;
+          }
+
           // Priorizar cámara trasera principal
           const backCam = formatted.find(c => 
-            c.label.includes('Principal') || 
+            c.label.toLowerCase().includes('principal') || 
             c.label.toLowerCase().includes('trasera') || 
-            c.label.toLowerCase().includes('back')
+            c.label.toLowerCase().includes('back') ||
+            c.label.toLowerCase().includes('rear') ||
+            c.label.toLowerCase().includes('environment')
           );
           const autoChosen = backCam ? backCam.value : formatted[0].value;
           try {
@@ -147,6 +171,11 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       console.debug('Safe device enumeration deferred:', err);
     }
   }, []);
+
+  // Carga inicial pasiva de dispositivos
+  useEffect(() => {
+    refreshCameraListSafely();
+  }, [refreshCameraListSafely]);
 
   // Asegurar atributos playsinline y autoplay para WebKit / iOS Safari
   const enforceVideoPlaybackOnIOS = useCallback((containerId) => {
@@ -171,21 +200,23 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     }
   }, []);
 
-  // Iniciar instancia de escaneo con resolución en cascada compatible con iOS/Android
-  const executeStart = useCallback(async (scanner, scanConfig, onSuccess) => {
+  // Iniciar instancia de escaneo
+  const executeStart = useCallback(async (scanner, baseConfig, onSuccess) => {
+    const errorCallback = () => {};
+
     // 1. Si el usuario seleccionó un dispositivo concreto por ID
     if (selectedCameraId) {
       try {
-        await scanner.start(selectedCameraId, scanConfig, onSuccess, () => {});
+        await scanner.start(selectedCameraId, baseConfig, onSuccess, errorCallback);
         return;
       } catch (error_) {
-        console.warn('Selected device start failed, falling back to facingMode:', error_);
+        console.warn('Selected device start failed, falling back:', error_);
       }
     }
 
-    // 2. Intentar con facingMode deseado (preferido por iOS/Android)
+    // 2. Intentar con facingMode deseado (preferido por móviles iOS/Android)
     try {
-      await scanner.start({ facingMode }, scanConfig, onSuccess, () => {});
+      await scanner.start({ facingMode }, baseConfig, onSuccess, errorCallback);
       return;
     } catch (error_) {
       console.debug('Requested facingMode unavailable:', error_);
@@ -194,20 +225,21 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     // 3. Fallback a facingMode opuesto
     const alternateFacing = facingMode === 'environment' ? 'user' : 'environment';
     try {
-      await scanner.start({ facingMode: alternateFacing }, scanConfig, onSuccess, () => {});
+      await scanner.start({ facingMode: alternateFacing }, baseConfig, onSuccess, errorCallback);
       return;
     } catch (error_) {
       console.debug('Alternate facingMode unavailable:', error_);
     }
 
-    // 4. Fallback final usando enumerateDevices pasivo
-    if (navigator?.mediaDevices?.enumerateDevices) {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const videoDevices = devices.filter(d => d.kind === 'videoinput');
-      if (videoDevices.length > 0) {
-        await scanner.start(videoDevices[0].deviceId, scanConfig, onSuccess, () => {});
+    // 4. Fallback final usando getCameras
+    try {
+      const devices = await Html5Qrcode.getCameras();
+      if (devices && devices.length > 0) {
+        await scanner.start(devices[0].id, baseConfig, onSuccess, errorCallback);
         return;
       }
+    } catch (err) {
+      console.debug('Final fallback getCameras failed:', err);
     }
 
     throw new Error('No camera hardware found');
@@ -232,11 +264,9 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     };
 
     const startScanner = async () => {
-      if (cancelled || isOperatingRef.current) return;
+      if (cancelled) return;
       const container = document.getElementById(elementId);
       if (!container) return;
-
-      isOperatingRef.current = true;
 
       try {
         if (html5QrcodeRef.current) {
@@ -245,33 +275,22 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
         }
         if (cancelled) return;
 
-        const html5Qrcode = new Html5Qrcode(elementId, {
-          verbose: false
-        });
+        const html5Qrcode = new Html5Qrcode(elementId);
         html5QrcodeRef.current = html5Qrcode;
 
         const scanConfig = { 
           fps: 15,
-          qrbox: (viewfinderWidth, viewfinderHeight) => {
-            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-            const edgeSize = Math.max(Math.floor(minEdge * 0.82), 220);
-            return {
-              width: edgeSize,
-              height: edgeSize
-            };
-          },
-          disableFlip: false
+          aspectRatio: 1.0
         };
 
         await executeStart(html5Qrcode, scanConfig, handleSuccess);
         
         if (!cancelled) {
-          // Forzar compatibilidad de reproducción inline en iOS
           enforceVideoPlaybackOnIOS(elementId);
           setIsScannerReady(true);
-
-          // Actualizar lista de cámaras de forma pasiva y fijar la por defecto
           refreshCameraListSafely();
+        } else {
+          await stopScannerSafely(html5Qrcode, elementId);
         }
       } catch (error_) {
         if (!cancelled) {
@@ -283,12 +302,10 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
           }
           setIsScannerReady(false);
         }
-      } finally {
-        isOperatingRef.current = false;
       }
     };
 
-    const timerId = setTimeout(startScanner, 120);
+    const timerId = setTimeout(startScanner, 80);
 
     return () => {
       cancelled = true;
@@ -303,10 +320,14 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     scanLockRef.current = false;
   }, []);
 
-  const resetScannerState = useCallback(() => {
+  const resetScannerState = useCallback(async () => {
     scanLockRef.current = false;
+    if (html5QrcodeRef.current) {
+      await stopScannerSafely(html5QrcodeRef.current, elementId);
+      html5QrcodeRef.current = null;
+    }
     setScannerKey(k => k + 1);
-  }, []);
+  }, [stopScannerSafely, elementId]);
 
   const toggleCamera = useCallback(() => {
     const nextFacing = facingMode === 'environment' ? 'user' : 'environment';
@@ -316,29 +337,44 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     if (cameras && cameras.length > 0) {
       const match = cameras.find(c => 
         nextFacing === 'user' 
-          ? (c.label.toLowerCase().includes('front') || c.label.toLowerCase().includes('delantera'))
-          : (c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('trasera'))
+          ? (c.label.toLowerCase().includes('front') || c.label.toLowerCase().includes('delantera') || c.label.toLowerCase().includes('user') || c.label.toLowerCase().includes('selfie'))
+          : (c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('trasera') || c.label.toLowerCase().includes('rear') || c.label.toLowerCase().includes('environment'))
       );
       if (match) {
         setSelectedCameraId(match.value);
         try { localStorage.setItem('da_preferred_camera', match.value); } catch {}
       } else {
-        setSelectedCameraId(null);
+        const otherCam = cameras.find(c => c.value !== selectedCameraId);
+        if (otherCam) {
+          setSelectedCameraId(otherCam.value);
+          try { localStorage.setItem('da_preferred_camera', otherCam.value); } catch {}
+        }
       }
-    } else {
-      setSelectedCameraId(null);
     }
     
     setScannerKey(k => k + 1);
-  }, [facingMode, cameras]);
+  }, [facingMode, cameras, selectedCameraId]);
 
   const handleSelectCamera = useCallback((camId) => {
+    if (!camId) return;
+
+    // Sincronizar facingMode si la cámara elegida es claramente frontal o trasera
+    const foundCam = cameras.find(c => c.value === camId);
+    if (foundCam) {
+      const label = foundCam.label.toLowerCase();
+      if (label.includes('front') || label.includes('delantera') || label.includes('user') || label.includes('selfie')) {
+        setFacingMode('user');
+      } else if (label.includes('back') || label.includes('trasera') || label.includes('rear') || label.includes('environment')) {
+        setFacingMode('environment');
+      }
+    }
+
     setSelectedCameraId(camId);
     try {
-      if (camId) localStorage.setItem('da_preferred_camera', camId);
+      localStorage.setItem('da_preferred_camera', camId);
     } catch {}
     setScannerKey(k => k + 1);
-  }, []);
+  }, [cameras]);
 
   return {
     cameras,
@@ -352,4 +388,3 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     stopScannerSafely: () => stopScannerSafely(html5QrcodeRef.current, elementId)
   };
 }
-

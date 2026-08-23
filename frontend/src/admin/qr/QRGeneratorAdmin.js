@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -9,7 +9,7 @@ import useFetchState from '../../util/useFetchState';
 import api from '../../services/api';
 import GlassDropdown from '../../components/GlassDropdown';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faQrcode } from '@fortawesome/free-solid-svg-icons';
+import { faQrcode, faSun, faExpand, faTimes } from '@fortawesome/free-solid-svg-icons';
 
 const QRGeneratorAdmin = () => {
     const { t } = useTranslation();
@@ -21,6 +21,7 @@ const QRGeneratorAdmin = () => {
     const [totpToken, setTotpToken] = useState(null);
     const [loading, setLoading] = useState(true);
     const [progress, setProgress] = useState(100);
+    const [isMaxBrightnessFullscreen, setIsMaxBrightnessFullscreen] = useState(false);
     
     const [selectedFormationId, setSelectedFormationId] = useState(initialFormationId);
     
@@ -29,6 +30,39 @@ const QRGeneratorAdmin = () => {
 
     const [formations] = useFetchState([], `/api/v1/formations`, jwt, null, null);
     const [adminCoords, setAdminCoords] = useState(null);
+
+    // Activar Screen Wake Lock para mantener la pantalla siempre encendida con brillo máximo sin atenuarse
+    useEffect(() => {
+        let wakeLockSentinel = null;
+
+        const requestWakeLock = async () => {
+            try {
+                if (typeof navigator !== 'undefined' && 'wakeLock' in navigator) {
+                    wakeLockSentinel = await navigator.wakeLock.request('screen');
+                    console.debug('[QRGenerator] Screen Wake Lock activo');
+                }
+            } catch (err) {
+                console.debug('[QRGenerator] Wake Lock no disponible:', err);
+            }
+        };
+
+        requestWakeLock();
+
+        const handleVisibilityChange = () => {
+            if (wakeLockSentinel !== null && document.visibilityState === 'visible') {
+                requestWakeLock();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            if (wakeLockSentinel) {
+                wakeLockSentinel.release().catch(() => {});
+            }
+        };
+    }, []);
 
     useEffect(() => {
         if (typeof navigator !== 'undefined' && "geolocation" in navigator) {
@@ -95,7 +129,7 @@ const QRGeneratorAdmin = () => {
         fetchCurrentToken();
     }, [fetchCurrentToken, wsTick]);
 
-    const lastBucketRef = React.useRef(Math.floor(Date.now() / 20000));
+    const lastBucketRef = useRef(Math.floor(Date.now() / 20000));
 
     useEffect(() => {
         const calculateProgress = () => {
@@ -146,6 +180,16 @@ const QRGeneratorAdmin = () => {
         transition: 'opacity 0.2s ease-out'
     };
 
+    const toggleFullscreenBrightness = () => {
+        const nextState = !isMaxBrightnessFullscreen;
+        setIsMaxBrightnessFullscreen(nextState);
+        if (nextState && typeof document !== 'undefined' && document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        } else if (!nextState && typeof document !== 'undefined' && document.exitFullscreen && document.fullscreenElement) {
+            document.exitFullscreen().catch(() => {});
+        }
+    };
+
     return (
         <div className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center p-4 min-h-[calc(100vh-140px)]">
             <div className="w-full rounded-3xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.08)] p-6 sm:p-8 md:p-10 my-auto">
@@ -155,34 +199,34 @@ const QRGeneratorAdmin = () => {
                     ) : (
                         <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-10 py-2 w-full">
                             
-                            {/* Left QR Frame */}
+                            {/* QR Presentation (Clean, high-contrast, no bulky dark borders) */}
                             <div className="flex flex-col items-center">
-                                <div 
-                                    className={`qr-frame-box flex items-center justify-center shadow-lg border border-white/80 dark:border-white/10 w-full max-w-[280px] sm:max-w-[305px] aspect-square rounded-[32px] p-4 transition-all duration-300 ${
-                                        selectedFormationId ? 'bg-white' : 'bg-white/60 dark:bg-slate-800/60 backdrop-blur-md'
-                                    }`}
-                                >
-                                    {selectedFormationId ? (
-                                        <div style={fadeStyle} className="w-full h-full flex items-center justify-center">
-                                            <QRCodeSVG 
-                                                value={buildQrPayload()} 
-                                                size={240} 
-                                                style={{ width: '100%', height: '100%', maxWidth: '265px', maxHeight: '265px' }}
-                                                level="M" 
-                                                marginSize={0}
-                                            />
+                                {Boolean(selectedFormationId) ? (
+                                    <div 
+                                        style={fadeStyle} 
+                                        className="bg-white p-3.5 sm:p-4 rounded-2xl shadow-[0_10px_35px_rgba(0,0,0,0.15)] flex items-center justify-center border border-slate-100"
+                                    >
+                                        <QRCodeSVG 
+                                            value={buildQrPayload()} 
+                                            size={260} 
+                                            style={{ width: '100%', height: '100%', maxWidth: '270px', maxHeight: '270px', display: 'block' }}
+                                            level="M" 
+                                            marginSize={1}
+                                            bgColor="#FFFFFF"
+                                            fgColor="#000000"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="w-[270px] h-[270px] rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-600/70 flex flex-col items-center justify-center p-6 text-center bg-white/40 dark:bg-slate-800/30 backdrop-blur-sm">
+                                        <div className="w-12 h-12 rounded-2xl bg-[#b3c34c]/20 border border-[#b3c34c]/40 flex items-center justify-center mx-auto mb-3">
+                                            <FontAwesomeIcon icon={faQrcode} className="text-[#73841e] dark:text-[#d4e84a] text-xl" />
                                         </div>
-                                    ) : (
-                                        <div className="p-4 text-center">
-                                            <div className="w-12 h-12 rounded-2xl bg-[#b3c34c]/20 border border-[#b3c34c]/40 flex items-center justify-center mx-auto mb-3">
-                                                <FontAwesomeIcon icon={faQrcode} className="text-[#73841e] dark:text-[#d4e84a] text-xl" />
-                                            </div>
-                                            <p className="mb-0 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200">{t('qr.selectFormationPrompt', 'Selecciona una formación')}</p>
-                                            <p className="mb-0 text-[11px] mt-1 text-slate-500 dark:text-slate-400">{t('qr.selectFormationPrompt2', 'para generar el código QR dinámico')}</p>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="mt-3 text-center w-full">
+                                        <p className="mb-0 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200">{t('qr.selectFormationPrompt', 'Selecciona una formación')}</p>
+                                        <p className="mb-0 text-[11px] mt-1 text-slate-500 dark:text-slate-400">{t('qr.selectFormationPrompt2', 'para generar el código QR dinámico')}</p>
+                                    </div>
+                                )}
+                                
+                                <div className="mt-3 text-center w-full flex flex-col items-center gap-2">
                                     {adminCoords ? (
                                         <div 
                                             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 shadow-xs"
@@ -197,6 +241,18 @@ const QRGeneratorAdmin = () => {
                                             <span className="w-2 h-2 rounded-full inline-block bg-amber-500 animate-ping"></span>
                                             <span>Obteniendo GPS del Administrador...</span>
                                         </div>
+                                    )}
+
+                                    {Boolean(selectedFormationId) && (
+                                        <button
+                                            type="button"
+                                            onClick={toggleFullscreenBrightness}
+                                            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold text-slate-800 bg-[#b3c34c] hover:bg-[#c4d650] active:scale-95 transition-all shadow-md mt-1 cursor-pointer border border-white/60"
+                                        >
+                                            <FontAwesomeIcon icon={faSun} className="text-amber-700" />
+                                            <span>{t('qr.maxBrightnessBtn', 'Modo Brillo Máximo')}</span>
+                                            <FontAwesomeIcon icon={faExpand} className="text-xs opacity-75" />
+                                        </button>
                                     )}
                                 </div>
                             </div>
@@ -223,7 +279,7 @@ const QRGeneratorAdmin = () => {
                                     </div>
                                 </div>
 
-                                {!!selectedFormationId && (
+                                {Boolean(selectedFormationId) && (
                                     <div className="w-full text-center md:text-left mt-2">
                                         <div className="mb-3">
                                             <span 
@@ -271,6 +327,65 @@ const QRGeneratorAdmin = () => {
                     )}
                 </div>
             </div>
+
+            {/* Modal de Pantalla Completa y Brillo Máximo */}
+            {Boolean(isMaxBrightnessFullscreen && selectedFormationId) && (
+                <div className="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-between p-6 sm:p-10 select-none text-slate-900 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="w-full flex items-center justify-between max-w-lg">
+                        <div className="flex items-center gap-2">
+                            <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span className="text-sm font-extrabold uppercase tracking-wider text-slate-800">
+                                {formations.find(f => f.id === selectedFormationId)?.name || t('qr.title')}
+                            </span>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={toggleFullscreenBrightness}
+                            className="p-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 active:scale-95 transition-all cursor-pointer border border-slate-300"
+                            title="Cerrar pantalla completa"
+                        >
+                            <FontAwesomeIcon icon={faTimes} className="text-lg" />
+                        </button>
+                    </div>
+
+                    {/* QR ultra-grande sobre fondo blanco puro y contraste absoluto */}
+                    <div className="flex flex-col items-center justify-center my-auto w-full max-w-sm sm:max-w-md aspect-square p-4 bg-white rounded-3xl">
+                        <div style={fadeStyle} className="w-full h-full flex items-center justify-center">
+                            <QRCodeSVG 
+                                value={buildQrPayload()} 
+                                size={320} 
+                                style={{ width: '100%', height: '100%', maxWidth: '340px', maxHeight: '340px' }}
+                                level="M" 
+                                marginSize={2}
+                                bgColor="#FFFFFF"
+                                fgColor="#000000"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="w-full max-w-md flex flex-col items-center">
+                        <div className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-wider mb-3">
+                            {totpToken}
+                        </div>
+
+                        {/* Barra de progreso de caducidad */}
+                        <div className="w-full rounded-full overflow-hidden bg-slate-200 h-2 mb-2">
+                            <div
+                                style={{
+                                    width: `${progress}%`,
+                                    height: '100%',
+                                    borderRadius: '9999px',
+                                    background: isEnding ? '#ef4444' : '#84cc16',
+                                    transition: 'width 100ms linear, background 0.4s ease'
+                                }}
+                            />
+                        </div>
+                        <p className="text-xs text-slate-500 font-semibold mb-0">
+                            {t('qr.totpSecurity')}
+                        </p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

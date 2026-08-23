@@ -299,7 +299,8 @@
     "selectFormationPlaceholder": "Изберете обучение...",
     "selectFormationPrompt": "Изберете обучение",
     "selectFormationPrompt2": "за да генерирате QR код",
-    "totpSecurity": "TOTP Защита: Обновява се на всеки 20с"
+    "totpSecurity": "TOTP Защита: Обновява се на всеки 20с",
+    "maxBrightnessBtn": "Режим Максимална Яркост"
   },
   "dashboard": {
     "hello": "Здравейте",
