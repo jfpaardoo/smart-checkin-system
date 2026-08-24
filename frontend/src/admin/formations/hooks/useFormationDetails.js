@@ -84,7 +84,7 @@ export function useFormationDetails(id) {
     });
   };
 
-  const [isDownloadingSheet, setIsDownloadingSheet] = useState(false);
+  const [isDownloadingSheet, setIsDownloadingSheet] = useState(null);
 
   const downloadSignaturePdf = async (attendanceId) => {
     try {
@@ -96,9 +96,10 @@ export function useFormationDetails(id) {
     }
   };
 
-  const downloadOfficialSheet = async () => {
+  const downloadOfficialSheet = async (format = 'excel') => {
     if (isDownloadingSheet) return;
-    setIsDownloadingSheet(true);
+    const targetFormat = format === 'pdf' ? 'pdf' : 'excel';
+    setIsDownloadingSheet(targetFormat);
     try {
       const yearMonth = formation?.formationDate 
         ? dayjs(formation.formationDate).format('YYYYMM') 
@@ -108,18 +109,22 @@ export function useFormationDetails(id) {
       const summaryWord = t('formationDetails.summaryAndAttendanceRecord', 'SUMARIO Y REGISTRO DE PRESENCIAS').toUpperCase();
       const safeName = (formation?.name || 'FORMACION').toUpperCase().replace(/[\\/:*?"<>|~#%&{}]/g, '_').trim();
       
-      const filename = `${yearMonth}_${formationWord}_${safeName}_${summaryWord}_FOR_99 HRS.xls`;
+      const isPdf = targetFormat === 'pdf';
+      const extension = isPdf ? 'pdf' : 'xls';
+      const mimeType = isPdf ? 'application/pdf' : 'application/vnd.ms-excel';
+      const filename = `${yearMonth}_${formationWord}_${safeName}_${summaryWord}_FOR_99 HRS.${extension}`;
 
       const res = await api.get(`/exports/formations/${id}/official-sheet`, {
         params: {
           formationWord,
           summaryWord,
-          filename
+          filename,
+          format: targetFormat
         },
         responseType: 'blob'
       });
       
-      await saveBlobFile(res.data, filename, 'application/vnd.ms-excel');
+      await saveBlobFile(res.data, filename, mimeType);
       toast.success(t('formationDetails.officialSheetDownloaded', 'Registro oficial FOR 99 descargado y sincronizado con éxito.'));
     } catch (err) {
       console.error("Error downloading official sheet:", err);

@@ -537,5 +537,16 @@ class ExportRestControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("FOR_99 HRS.xls")));
     }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void shouldExportOfficialFormationSheetPdfSuccessfully() throws Exception {
+        when(formationRepository.findById(1)).thenReturn(java.util.Optional.of(formation));
+        when(officialFormationSheetService.generateOfficialSheetPdf(any())).thenReturn(new byte[]{37, 80, 68, 70});
+
+        mockMvc.perform(get(BASE_URL + "/formations/1/official-sheet").param("format", "pdf"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("FOR_99 HRS.pdf")));
+    }
 }
 

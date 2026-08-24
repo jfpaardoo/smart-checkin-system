@@ -272,6 +272,8 @@
     "summaryAndAttendanceRecord": "REZUMAT ȘI REGISTRU DE PREZENȚĂ",
     "closedBadge": "Finalizată și Certificată",
     "exportOfficialSheet": "Registru Oficial (FOR 99)",
+    "exportOfficialSheetExcel": "FOR 99 (Excel)",
+    "exportOfficialSheetPdf": "FOR 99 (PDF)",
     "locationLabel": "Locație",
     "trainerLabel": "Formator",
     "statusClosed": "Închisă și Semnată",
@@ -300,7 +302,8 @@
     "selectFormationPrompt": "Selectați o formare",
     "selectFormationPrompt2": "pentru a genera codul QR",
     "totpSecurity": "Securitate TOTP: Se actualizează la fiecare 20s",
-    "maxBrightnessBtn": "Mod Luminozitate Maximă"
+    "maxBrightnessBtn": "Mod Luminozitate Maximă",
+    "brightnessHint": "Pe iPhone / iPad: Glisați Centrul de control pentru a crește luminozitatea dispozitivului dacă este scăzută."
   },
   "dashboard": {
     "qrValidated": "Cod QR validat",

@@ -272,6 +272,8 @@
     "summaryAndAttendanceRecord": "SUMMARY AND ATTENDANCE RECORD",
     "closedBadge": "Completed & Certified",
     "exportOfficialSheet": "Official Record (FOR 99)",
+    "exportOfficialSheetExcel": "FOR 99 (Excel)",
+    "exportOfficialSheetPdf": "FOR 99 (PDF)",
     "locationLabel": "Location",
     "trainerLabel": "Trainer",
     "statusClosed": "Closed & Signed",
@@ -299,8 +301,9 @@
     "selectFormationPlaceholder": "Choose a formation...",
     "selectFormationPrompt": "Select a formation",
     "selectFormationPrompt2": "to generate the QR",
-    "totpSecurity": "TOTP Security: Updates every 20s",
-    "maxBrightnessBtn": "Max Brightness Mode"
+    "totpSecurity": "TOTP Security: Refreshes every 20s",
+    "maxBrightnessBtn": "Max Brightness Mode",
+    "brightnessHint": "On iPhone / iPad: Swipe down Control Center to turn device brightness up to 100% if it is low."
   },
   "dashboard": {
     "hello": "Hello",

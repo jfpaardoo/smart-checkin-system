@@ -272,6 +272,8 @@
     "summaryAndAttendanceRecord": "ZUSAMMENFASSUNG UND ANWESENHEITSLISTE",
     "closedBadge": "Abgeschlossen und Zertifiziert",
     "exportOfficialSheet": "Offizielles Protokoll (FOR 99)",
+    "exportOfficialSheetExcel": "FOR 99 (Excel)",
+    "exportOfficialSheetPdf": "FOR 99 (PDF)",
     "locationLabel": "Ort",
     "trainerLabel": "Trainer",
     "statusClosed": "Geschlossen und Unterschrieben",
@@ -300,7 +302,8 @@
     "selectFormationPrompt": "Schulung auswählen",
     "selectFormationPrompt2": "um den QR zu generieren",
     "totpSecurity": "TOTP-Sicherheit: Aktualisiert alle 20s",
-    "maxBrightnessBtn": "Maximale Helligkeit"
+    "maxBrightnessBtn": "Maximale Helligkeit",
+    "brightnessHint": "Auf iPhone / iPad: Wischen Sie im Kontrollzentrum nach unten, um die Helligkeit bei Bedarf zu erhöhen."
   },
   "dashboard": {
     "hello": "Hallo",

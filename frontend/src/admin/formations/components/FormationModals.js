@@ -213,7 +213,9 @@ export function CloseFormationModal({ isOpen, toggle, formation, onCloseFormatio
       return;
     }
 
-    const signatureBase64 = sigCanvas.current.getCanvas().toDataURL('image/png');
+    const signatureBase64 = sigCanvas.current.getTrimmedCanvas
+      ? sigCanvas.current.getTrimmedCanvas().toDataURL('image/png')
+      : sigCanvas.current.getCanvas().toDataURL('image/png');
     setIsSubmitting(true);
     const success = await onCloseFormation({
       signature: signatureBase64,

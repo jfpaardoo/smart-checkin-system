@@ -272,6 +272,8 @@
     "summaryAndAttendanceRecord": "РЕЗЮМЕ И ПРИСЪСТВЕН СПИСЪК",
     "closedBadge": "Завършено и Сертифицирано",
     "exportOfficialSheet": "Официален Протокол (FOR 99)",
+    "exportOfficialSheetExcel": "FOR 99 (Excel)",
+    "exportOfficialSheetPdf": "FOR 99 (PDF)",
     "locationLabel": "Място",
     "trainerLabel": "Обучител",
     "statusClosed": "Затворено и Подписано",
@@ -299,8 +301,9 @@
     "selectFormationPlaceholder": "Изберете обучение...",
     "selectFormationPrompt": "Изберете обучение",
     "selectFormationPrompt2": "за да генерирате QR код",
-    "totpSecurity": "TOTP Защита: Обновява се на всеки 20с",
-    "maxBrightnessBtn": "Режим Максимална Яркост"
+    "totpSecurity": "TOTP Сигурност: Обновява се на всеки 20s",
+    "maxBrightnessBtn": "Режим Максимална Яркост",
+    "brightnessHint": "На iPhone / iPad: Плъзнете надолу Контролния център, за да увеличите яркостта на устройството, ако е ниска."
   },
   "dashboard": {
     "hello": "Здравейте",
