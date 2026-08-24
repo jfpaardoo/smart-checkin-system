@@ -69,9 +69,15 @@ function formatCameraList(devices) {
   });
 }
 
+const isIOS = typeof navigator !== 'undefined' && (
+  /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+);
+
 export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
   const [cameras, setCameras] = useState([]);
   const [selectedCameraId, setSelectedCameraId] = useState(() => {
+    if (isIOS) return null;
     try {
       return localStorage.getItem('da_preferred_camera') || null;
     } catch {
@@ -128,7 +134,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     }
   }, []);
 
-  // Enumerar dispositivos de vídeo de forma pasiva y auto-seleccionar por defecto
+  // Enumerar dispositivos de vídeo de forma pasiva sin cortar el stream
   const refreshCameraListSafely = useCallback(async () => {
     try {
       const devices = await Html5Qrcode.getCameras();
@@ -139,33 +145,22 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
         })));
         setCameras(formatted);
 
-        // Auto-seleccionar por defecto si no está seleccionada o si el ID actual no existe
-        setSelectedCameraId(currentId => {
-          if (currentId && formatted.some(c => c.value === currentId)) {
+        // En Android/PC recordar cámara preferida si no es iOS
+        if (!isIOS) {
+          setSelectedCameraId(currentId => {
+            if (currentId && formatted.some(c => c.value === currentId)) {
+              return currentId;
+            }
+            let saved = null;
+            try {
+              saved = localStorage.getItem('da_preferred_camera');
+            } catch {}
+            if (saved && formatted.some(c => c.value === saved)) {
+              return saved;
+            }
             return currentId;
-          }
-          let saved = null;
-          try {
-            saved = localStorage.getItem('da_preferred_camera');
-          } catch {}
-          if (saved && formatted.some(c => c.value === saved)) {
-            return saved;
-          }
-
-          // Priorizar cámara trasera principal
-          const backCam = formatted.find(c => 
-            c.label.toLowerCase().includes('principal') || 
-            c.label.toLowerCase().includes('trasera') || 
-            c.label.toLowerCase().includes('back') ||
-            c.label.toLowerCase().includes('rear') ||
-            c.label.toLowerCase().includes('environment')
-          );
-          const autoChosen = backCam ? backCam.value : formatted[0].value;
-          try {
-            localStorage.setItem('da_preferred_camera', autoChosen);
-          } catch {}
-          return autoChosen;
-        });
+          });
+        }
       }
     } catch (err) {
       console.debug('Safe device enumeration deferred:', err);
@@ -200,11 +195,29 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
     }
   }, []);
 
-  // Iniciar instancia de escaneo
+  // Iniciar instancia de escaneo compatible con iOS Safari y Android
   const executeStart = useCallback(async (scanner, baseConfig, onSuccess) => {
     const errorCallback = () => {};
 
-    // 1. Si el usuario seleccionó un dispositivo concreto por ID
+    // 1. En iOS, AVFoundation requiere facingMode para la lente trasera sin pantalla negra
+    if (isIOS) {
+      try {
+        await scanner.start({ facingMode }, baseConfig, onSuccess, errorCallback);
+        return;
+      } catch (error_) {
+        console.debug('iOS facingMode start failed, trying alternate:', error_);
+      }
+
+      const altFacing = facingMode === 'environment' ? 'user' : 'environment';
+      try {
+        await scanner.start({ facingMode: altFacing }, baseConfig, onSuccess, errorCallback);
+        return;
+      } catch (error_) {
+        console.debug('iOS alternate facingMode failed:', error_);
+      }
+    }
+
+    // 2. Si el usuario seleccionó un dispositivo concreto por ID (Android / PC)
     if (selectedCameraId) {
       try {
         await scanner.start(selectedCameraId, baseConfig, onSuccess, errorCallback);
@@ -214,7 +227,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       }
     }
 
-    // 2. Intentar con facingMode deseado (preferido por móviles iOS/Android)
+    // 3. Intentar con facingMode deseado
     try {
       await scanner.start({ facingMode }, baseConfig, onSuccess, errorCallback);
       return;
@@ -222,7 +235,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       console.debug('Requested facingMode unavailable:', error_);
     }
 
-    // 3. Fallback a facingMode opuesto
+    // 4. Fallback a facingMode opuesto
     const alternateFacing = facingMode === 'environment' ? 'user' : 'environment';
     try {
       await scanner.start({ facingMode: alternateFacing }, baseConfig, onSuccess, errorCallback);
@@ -231,7 +244,7 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
       console.debug('Alternate facingMode unavailable:', error_);
     }
 
-    // 4. Fallback final usando getCameras
+    // 5. Fallback final usando getCameras
     try {
       const devices = await Html5Qrcode.getCameras();
       if (devices && devices.length > 0) {
@@ -275,7 +288,11 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
         }
         if (cancelled) return;
 
-        const html5Qrcode = new Html5Qrcode(elementId);
+        // Desactivar BarcodeDetector experimental en WebKit para evitar congelaciones en iOS 17+
+        const html5Qrcode = new Html5Qrcode(elementId, {
+          experimentalFeatures: { useBarCodeDetectorIfSupported: false },
+          verbose: false
+        });
         html5QrcodeRef.current = html5Qrcode;
 
         const scanConfig = { 
@@ -332,28 +349,9 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
   const toggleCamera = useCallback(() => {
     const nextFacing = facingMode === 'environment' ? 'user' : 'environment';
     setFacingMode(nextFacing);
-    
-    // Buscar la cámara correspondiente en la lista
-    if (cameras && cameras.length > 0) {
-      const match = cameras.find(c => 
-        nextFacing === 'user' 
-          ? (c.label.toLowerCase().includes('front') || c.label.toLowerCase().includes('delantera') || c.label.toLowerCase().includes('user') || c.label.toLowerCase().includes('selfie'))
-          : (c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('trasera') || c.label.toLowerCase().includes('rear') || c.label.toLowerCase().includes('environment'))
-      );
-      if (match) {
-        setSelectedCameraId(match.value);
-        try { localStorage.setItem('da_preferred_camera', match.value); } catch {}
-      } else {
-        const otherCam = cameras.find(c => c.value !== selectedCameraId);
-        if (otherCam) {
-          setSelectedCameraId(otherCam.value);
-          try { localStorage.setItem('da_preferred_camera', otherCam.value); } catch {}
-        }
-      }
-    }
-    
+    setSelectedCameraId(null);
     setScannerKey(k => k + 1);
-  }, [facingMode, cameras, selectedCameraId]);
+  }, [facingMode]);
 
   const handleSelectCamera = useCallback((camId) => {
     if (!camId) return;

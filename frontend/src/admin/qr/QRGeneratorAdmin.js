@@ -31,25 +31,25 @@ const QRGeneratorAdmin = () => {
     const [formations] = useFetchState([], `/api/v1/formations`, jwt, null, null);
     const [adminCoords, setAdminCoords] = useState(null);
 
+    const wakeLockRef = useRef(null);
+
+    const requestWakeLock = useCallback(async () => {
+        try {
+            if (typeof navigator !== 'undefined' && 'wakeLock' in navigator) {
+                wakeLockRef.current = await navigator.wakeLock.request('screen');
+                console.debug('[QRGenerator] Screen Wake Lock activo');
+            }
+        } catch (err) {
+            console.debug('[QRGenerator] Wake Lock no disponible:', err);
+        }
+    }, []);
+
     // Activar Screen Wake Lock para mantener la pantalla siempre encendida con brillo máximo sin atenuarse
     useEffect(() => {
-        let wakeLockSentinel = null;
-
-        const requestWakeLock = async () => {
-            try {
-                if (typeof navigator !== 'undefined' && 'wakeLock' in navigator) {
-                    wakeLockSentinel = await navigator.wakeLock.request('screen');
-                    console.debug('[QRGenerator] Screen Wake Lock activo');
-                }
-            } catch (err) {
-                console.debug('[QRGenerator] Wake Lock no disponible:', err);
-            }
-        };
-
         requestWakeLock();
 
         const handleVisibilityChange = () => {
-            if (wakeLockSentinel !== null && document.visibilityState === 'visible') {
+            if (document.visibilityState === 'visible') {
                 requestWakeLock();
             }
         };
@@ -58,11 +58,11 @@ const QRGeneratorAdmin = () => {
 
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
-            if (wakeLockSentinel) {
-                wakeLockSentinel.release().catch(() => {});
+            if (wakeLockRef.current) {
+                wakeLockRef.current.release().catch(() => {});
             }
         };
-    }, []);
+    }, [requestWakeLock]);
 
     useEffect(() => {
         if (typeof navigator !== 'undefined' && "geolocation" in navigator) {
@@ -180,12 +180,15 @@ const QRGeneratorAdmin = () => {
         transition: 'opacity 0.2s ease-out'
     };
 
-    const toggleFullscreenBrightness = () => {
+    const toggleFullscreenBrightness = async () => {
         const nextState = !isMaxBrightnessFullscreen;
         setIsMaxBrightnessFullscreen(nextState);
-        if (nextState && typeof document !== 'undefined' && document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(() => {});
-        } else if (!nextState && typeof document !== 'undefined' && document.exitFullscreen && document.fullscreenElement) {
+        if (nextState) {
+            await requestWakeLock();
+            if (typeof document !== 'undefined' && document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            }
+        } else if (typeof document !== 'undefined' && document.exitFullscreen && document.fullscreenElement) {
             document.exitFullscreen().catch(() => {});
         }
     };
@@ -201,7 +204,7 @@ const QRGeneratorAdmin = () => {
                             
                             {/* QR Presentation (Clean, high-contrast, no bulky dark borders) */}
                             <div className="flex flex-col items-center">
-                                {Boolean(selectedFormationId) ? (
+                                {selectedFormationId ? (
                                     <div 
                                         style={fadeStyle} 
                                         className="bg-white p-3.5 sm:p-4 rounded-2xl shadow-[0_10px_35px_rgba(0,0,0,0.15)] flex items-center justify-center border border-slate-100"
@@ -330,7 +333,7 @@ const QRGeneratorAdmin = () => {
 
             {/* Modal de Pantalla Completa y Brillo Máximo */}
             {Boolean(isMaxBrightnessFullscreen && selectedFormationId) && (
-                <div className="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-between p-6 sm:p-10 select-none text-slate-900 animate-in fade-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 z-[9999] w-screen h-[100dvh] bg-white flex flex-col items-center justify-between p-4 sm:p-8 overscroll-none touch-none select-none text-slate-900 animate-in fade-in zoom-in-95 duration-200">
                     <div className="w-full flex items-center justify-between max-w-lg">
                         <div className="flex items-center gap-2">
                             <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -380,9 +383,13 @@ const QRGeneratorAdmin = () => {
                                 }}
                             />
                         </div>
-                        <p className="text-xs text-slate-500 font-semibold mb-0">
+                        <p className="text-xs text-slate-500 font-semibold mb-1 text-center">
                             {t('qr.totpSecurity')}
                         </p>
+
+                        <div className="mt-1 text-center max-w-sm px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-900 text-[11px] font-medium leading-tight">
+                            <span>💡 {t('qr.brightnessHint', 'En iPhone / iPad: Desliza el Centro de Control para subir el brillo del dispositivo si está bajo.')}</span>
+                        </div>
                     </div>
                 </div>
             )}

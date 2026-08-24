@@ -91,21 +91,34 @@ public class ExportRestController {
             @PathVariable Integer id,
             @RequestParam(required = false) String formationWord,
             @RequestParam(required = false) String summaryWord,
-            @RequestParam(required = false) String filename) throws IOException {
+            @RequestParam(required = false) String filename,
+            @RequestParam(required = false, defaultValue = "excel") String format) throws IOException {
         Formation formation = formationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Formación no encontrada"));
-        byte[] data = officialFormationSheetService.generateOfficialSheet(formation);
 
-        String finalFilename = (filename != null && !filename.isBlank()) 
-                ? filename 
-                : buildOfficialSheetFilename(formation, formationWord, summaryWord);
+        boolean isPdf = "pdf".equalsIgnoreCase(format);
+        byte[] data = isPdf 
+                ? officialFormationSheetService.generateOfficialSheetPdf(formation)
+                : officialFormationSheetService.generateOfficialSheet(formation);
 
-        syncOfficialSheetToCloud(formation, finalFilename, data);
+        String mimeType = isPdf ? "application/pdf" : "application/vnd.ms-excel";
+        String extension = isPdf ? ".pdf" : ".xls";
 
-        return createResponse(data, finalFilename, "application/vnd.ms-excel");
+        String finalFilename;
+        if (filename != null && !filename.isBlank()) {
+            finalFilename = filename.toLowerCase().endsWith(extension) 
+                    ? filename 
+                    : filename.replaceAll("\\.[^.]+$", "") + extension;
+        } else {
+            finalFilename = buildOfficialSheetFilename(formation, formationWord, summaryWord, extension);
+        }
+
+        syncOfficialSheetToCloud(formation, finalFilename, data, mimeType);
+
+        return createResponse(data, finalFilename, mimeType);
     }
 
-    private String buildOfficialSheetFilename(Formation formation, String formationWord, String summaryWord) {
+    private String buildOfficialSheetFilename(Formation formation, String formationWord, String summaryWord, String extension) {
         String fWord = (formationWord != null && !formationWord.isBlank()) ? formationWord.trim().toUpperCase() : "FORMACIÓN";
         String sWord = (summaryWord != null && !summaryWord.isBlank()) ? summaryWord.trim().toUpperCase() : "SUMARIO Y REGISTRO DE PRESENCIAS";
         String yearMonth = formation.getFormationDate() != null 
@@ -114,10 +127,10 @@ public class ExportRestController {
         String safeFormationName = formation.getName() != null 
                 ? formation.getName().toUpperCase().replaceAll("[\\\\/:*?\"<>|~#%&{}]", "_").trim() 
                 : "SIN_NOMBRE";
-        return yearMonth + "_" + fWord + "_" + safeFormationName + "_" + sWord + "_FOR_99 HRS.xls";
+        return yearMonth + "_" + fWord + "_" + safeFormationName + "_" + sWord + "_FOR_99 HRS" + extension;
     }
 
-    private void syncOfficialSheetToCloud(Formation formation, String filename, byte[] data) {
+    private void syncOfficialSheetToCloud(Formation formation, String filename, byte[] data, String mimeType) {
         if (cloudStorageAdapter == null) {
             return;
         }
@@ -126,7 +139,7 @@ public class ExportRestController {
                     new org.springframework.samples.smartcheckin.util.ByteArrayMultipartFile(
                             filename, 
                             filename, 
-                            "application/vnd.ms-excel", 
+                            mimeType, 
                             data
                     );
             String uploadedDoc = cloudStorageAdapter.uploadFile(multipartFile, formation.getName());

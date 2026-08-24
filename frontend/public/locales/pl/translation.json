@@ -272,6 +272,8 @@
     "summaryAndAttendanceRecord": "PODSUMOWANIE I REJESTR OBECNOŚCI",
     "closedBadge": "Ukończone i Certyfikowane",
     "exportOfficialSheet": "Oficjalny Rejestr (FOR 99)",
+    "exportOfficialSheetExcel": "FOR 99 (Excel)",
+    "exportOfficialSheetPdf": "FOR 99 (PDF)",
     "locationLabel": "Miejsce",
     "trainerLabel": "Trener",
     "statusClosed": "Zamknięte i Podpisane",
@@ -300,7 +302,8 @@
     "selectFormationPrompt": "Wybierz szkolenie",
     "selectFormationPrompt2": "aby wygenerować kod QR",
     "totpSecurity": "Bezpieczeństwo TOTP: Odświeżanie co 20s",
-    "maxBrightnessBtn": "Tryb Maksymalnej Jasności"
+    "maxBrightnessBtn": "Tryb Maksymalnej Jasności",
+    "brightnessHint": "Na iPhone / iPad: Przesuń w dół Centrum sterowania, aby zwiększyć jasność urządzenia, jeśli jest niska."
   },
   "dashboard": {
     "hello": "Witaj",

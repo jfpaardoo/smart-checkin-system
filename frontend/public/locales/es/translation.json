@@ -272,6 +272,8 @@
     "summaryAndAttendanceRecord": "SUMARIO Y REGISTRO DE PRESENCIAS",
     "closedBadge": "Finalizada y Certificada",
     "exportOfficialSheet": "Registro Oficial (FOR 99)",
+    "exportOfficialSheetExcel": "FOR 99 (Excel)",
+    "exportOfficialSheetPdf": "FOR 99 (PDF)",
     "locationLabel": "Lugar",
     "trainerLabel": "Formador",
     "statusClosed": "Cerrada y Firmada",
@@ -300,7 +302,8 @@
     "selectFormationPrompt": "Selecciona una formación",
     "selectFormationPrompt2": "para generar el QR",
     "totpSecurity": "Seguridad TOTP: Se actualiza cada 20s",
-    "maxBrightnessBtn": "Modo Brillo Máximo"
+    "maxBrightnessBtn": "Modo Brillo Máximo",
+    "brightnessHint": "En iPhone / iPad: Desliza el Centro de Control para subir el brillo del dispositivo si está bajo."
   },
   "dashboard": {
     "hello": "Hola",

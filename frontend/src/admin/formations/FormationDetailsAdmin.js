@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faQrcode, faPencil, faTrash, faFileLines, faChevronDown, faChevronUp, faArrowLeft, faFileExcel, faCheckDouble, faLock, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faQrcode, faPencil, faTrash, faFileLines, faChevronDown, faChevronUp, faArrowLeft, faFileExcel, faFilePdf, faCheckDouble, faLock, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import getIdFromUrl from "../../util/getIdFromUrl";
@@ -83,23 +83,43 @@ export default function FormationDetailsAdmin() {
 
           <div className="flex flex-wrap items-stretch sm:items-center justify-start sm:justify-end gap-2 w-full lg:w-auto">
             {formation.isClosed && (
-              <button 
-                type="button"
-                disabled={isDownloadingSheet}
-                className="da-btn-excel flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 shadow-xs hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 min-h-[40px]" 
-                onClick={downloadOfficialSheet} 
-                title={t('formationDetails.exportOfficialSheet', 'Registro Oficial (FOR 99)')}
-              >
-                <FontAwesomeIcon 
-                  icon={isDownloadingSheet ? faSpinner : faFileExcel} 
-                  className={isDownloadingSheet ? "fa-spin" : ""} 
-                />
-                <span className="whitespace-nowrap">
-                  {isDownloadingSheet 
-                    ? t('common.downloading', 'Descargando...') 
-                    : t('formationDetails.exportOfficialSheet', 'Registro Oficial (FOR 99)')}
-                </span>
-              </button>
+              <>
+                <button 
+                  type="button"
+                  disabled={Boolean(isDownloadingSheet)}
+                  className="da-btn-excel flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 shadow-xs hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 min-h-[40px]" 
+                  onClick={() => downloadOfficialSheet('excel')} 
+                  title={t('formationDetails.exportOfficialSheetExcel', 'FOR 99 (Excel)')}
+                >
+                  <FontAwesomeIcon 
+                    icon={isDownloadingSheet === 'excel' ? faSpinner : faFileExcel} 
+                    className={isDownloadingSheet === 'excel' ? "fa-spin" : ""} 
+                  />
+                  <span className="whitespace-nowrap">
+                    {isDownloadingSheet === 'excel' 
+                      ? t('common.downloading', 'Descargando...') 
+                      : t('formationDetails.exportOfficialSheetExcel', 'FOR 99 (Excel)')}
+                  </span>
+                </button>
+
+                <button 
+                  type="button"
+                  disabled={Boolean(isDownloadingSheet)}
+                  className="da-btn-pdf flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 shadow-xs hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 min-h-[40px]" 
+                  onClick={() => downloadOfficialSheet('pdf')} 
+                  title={t('formationDetails.exportOfficialSheetPdf', 'FOR 99 (PDF)')}
+                >
+                  <FontAwesomeIcon 
+                    icon={isDownloadingSheet === 'pdf' ? faSpinner : faFilePdf} 
+                    className={isDownloadingSheet === 'pdf' ? "fa-spin" : ""} 
+                  />
+                  <span className="whitespace-nowrap">
+                    {isDownloadingSheet === 'pdf' 
+                      ? t('common.downloading', 'Descargando...') 
+                      : t('formationDetails.exportOfficialSheetPdf', 'FOR 99 (PDF)')}
+                  </span>
+                </button>
+              </>
             )}
 
             {!formation.isClosed && (

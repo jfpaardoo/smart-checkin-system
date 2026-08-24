@@ -413,6 +413,36 @@ button, a, input, select, textarea, .da-btn, .da-nav-btn {
   transform: translateY(1px) scale(0.97) !important;
 }
 
+.da-btn-pdf {
+  background: rgba(220, 38, 38, 0.12) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(220, 38, 38, 0.45) !important;
+  color: #991b1b !important;
+  border-radius: 20px !important;
+  padding: 8px 22px !important;
+  font-weight: 700 !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8), 0 2px 8px rgba(220, 38, 38, 0.12) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  text-decoration: none !important;
+}
+
+.da-btn-pdf:hover {
+  background: rgba(220, 38, 38, 0.22) !important;
+  color: #7f1d1d !important;
+  border-color: rgba(220, 38, 38, 0.7) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 6px 18px rgba(220, 38, 38, 0.25) !important;
+}
+
+.da-btn-pdf:active {
+  transform: translateY(1px) scale(0.97) !important;
+}
+
 /* Expandable Icon Buttons */
 .btn-icon-expand {
   display: inline-flex !important;
@@ -1759,4 +1789,20 @@ select:focus {
   color: #a7f3d0 !important;
   border-color: rgba(16, 185, 129, 0.7) !important;
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35) !important;
+}
+
+.dark .da-btn-pdf {
+  background: rgba(239, 68, 68, 0.2) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(239, 68, 68, 0.45) !important;
+  color: #fca5a5 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .da-btn-pdf:hover {
+  background: rgba(239, 68, 68, 0.32) !important;
+  color: #fecaca !important;
+  border-color: rgba(239, 68, 68, 0.7) !important;
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35) !important;
 }

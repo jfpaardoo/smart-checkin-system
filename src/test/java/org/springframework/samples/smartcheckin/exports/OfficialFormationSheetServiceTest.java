@@ -188,4 +188,80 @@ class OfficialFormationSheetServiceTest {
             assertTrue(page3.getRow(25).getCell(4).getStringCellValue().contains("NOMBRE45 APELLIDO45"));
         }
     }
+
+    @Test
+    void shouldGenerateOfficialSheetPdfSuccessfully() throws Exception {
+        byte[] pdfBytes = sheetService.generateOfficialSheetPdf(sampleFormation);
+
+        assertNotNull(pdfBytes);
+        assertTrue(pdfBytes.length > 0);
+
+        // Validar cabecera mágica de archivo PDF (%PDF)
+        assertTrue(pdfBytes.length > 4);
+        String header = new String(pdfBytes, 0, 4);
+        org.junit.jupiter.api.Assertions.assertEquals("%PDF", header);
+
+        // Verificar que con 2 asistentes se genera exactamente 1 página
+        com.lowagie.text.pdf.PdfReader reader = new com.lowagie.text.pdf.PdfReader(pdfBytes);
+        org.junit.jupiter.api.Assertions.assertEquals(1, reader.getNumberOfPages());
+        reader.close();
+    }
+
+    @Test
+    void shouldGenerateMultiplePagesPdfWhenMoreThan21Attendees() throws Exception {
+        List<FormationAttendance> attendances = new ArrayList<>();
+        java.time.ZoneId zone = java.time.ZoneId.systemDefault();
+
+        for (int i = 1; i <= 45; i++) {
+            User user = new User();
+            user.setId(i);
+            user.setUsername("user" + i);
+            user.setFirstName("Nombre" + i);
+            user.setLastName("Apellido" + i);
+            user.setPersonalCode("EMP-" + (1000 + i));
+
+            FormationAttendance att = new FormationAttendance();
+            att.setId(i);
+            att.setUser(user);
+            att.setWithinWorkingHours(i % 2 == 1);
+            att.setCheckInDate(LocalDateTime.now(zone));
+
+            attendances.add(att);
+        }
+
+        Formation largeFormation = Formation.builder()
+                .name("Formación Masiva Planta")
+                .description("Formación de seguridad con asistencia masiva.")
+                .formationDate(LocalDateTime.now(zone))
+                .attendances(attendances)
+                .location("PLANTA PRINCIPAL")
+                .trainer("CARLOS RUIZ")
+                .build();
+        largeFormation.setId(200);
+
+        byte[] pdfBytes = sheetService.generateOfficialSheetPdf(largeFormation);
+
+        assertNotNull(pdfBytes);
+        assertTrue(pdfBytes.length > 0);
+
+        // Verificar que con 45 asistentes se generan exactamente 3 páginas (21 + 21 + 3)
+        com.lowagie.text.pdf.PdfReader reader = new com.lowagie.text.pdf.PdfReader(pdfBytes);
+        org.junit.jupiter.api.Assertions.assertEquals(3, reader.getNumberOfPages());
+        reader.close();
+    }
+
+    @Test
+    void shouldGeneratePdfWithNullOptionalFields() throws Exception {
+        Formation minimalFormation = Formation.builder()
+                .name("Formación Básica")
+                .build();
+        minimalFormation.setId(300);
+
+        byte[] pdfBytes = sheetService.generateOfficialSheetPdf(minimalFormation);
+
+        assertNotNull(pdfBytes);
+        assertTrue(pdfBytes.length > 0);
+        String header = new String(pdfBytes, 0, 4);
+        org.junit.jupiter.api.Assertions.assertEquals("%PDF", header);
+    }
 }
