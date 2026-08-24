@@ -213,9 +213,22 @@ export function CloseFormationModal({ isOpen, toggle, formation, onCloseFormatio
       return;
     }
 
-    const signatureBase64 = sigCanvas.current.getTrimmedCanvas
-      ? sigCanvas.current.getTrimmedCanvas().toDataURL('image/png')
-      : sigCanvas.current.getCanvas().toDataURL('image/png');
+    let signatureBase64;
+    try {
+      if (typeof sigCanvas.current.getTrimmedCanvas === 'function') {
+        const trimmed = sigCanvas.current.getTrimmedCanvas();
+        if (trimmed && typeof trimmed.toDataURL === 'function') {
+          signatureBase64 = trimmed.toDataURL('image/png');
+        }
+      }
+    } catch (err) {
+      console.warn('[FormationModal] Fallback to standard canvas export due to trimming issue:', err);
+    }
+
+    if (!signatureBase64 && sigCanvas.current?.getCanvas) {
+      signatureBase64 = sigCanvas.current.getCanvas().toDataURL('image/png');
+    }
+
     setIsSubmitting(true);
     const success = await onCloseFormation({
       signature: signatureBase64,
