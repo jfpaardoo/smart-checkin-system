@@ -129,12 +129,17 @@ export function NotificationProvider({ children }) {
     setNotifications([]);
   }, []);
 
+  const requestPushPermission = useCallback(async () => {
+    return await registerPushNotifications(true);
+  }, []);
+
   const value = useMemo(() => ({
     notifications,
     unreadCount,
     markAllRead,
-    clearAll
-  }), [notifications, unreadCount, markAllRead, clearAll]);
+    clearAll,
+    requestPushPermission
+  }), [notifications, unreadCount, markAllRead, clearAll, requestPushPermission]);
 
   return (
     <NotificationContext.Provider value={value}>

@@ -81,13 +81,13 @@ export default function FormationDetailsAdmin() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-stretch sm:items-center justify-start sm:justify-end gap-2 w-full lg:w-auto">
+          <div className="grid grid-cols-3 sm:flex sm:flex-wrap items-stretch sm:items-center justify-start sm:justify-end gap-2 w-full lg:w-auto">
             {formation.isClosed && (
               <>
                 <button 
                   type="button"
                   disabled={Boolean(isDownloadingSheet)}
-                  className="da-btn-excel flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 shadow-xs hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 min-h-[40px]" 
+                  className="da-btn-excel col-span-3 sm:col-span-1 sm:w-auto px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 shadow-xs hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 min-h-[40px]" 
                   onClick={() => downloadOfficialSheet('excel')} 
                   title={t('formationDetails.exportOfficialSheetExcel', 'FOR 99 (Excel)')}
                 >
@@ -105,7 +105,7 @@ export default function FormationDetailsAdmin() {
                 <button 
                   type="button"
                   disabled={Boolean(isDownloadingSheet)}
-                  className="da-btn-pdf flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 shadow-xs hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 min-h-[40px]" 
+                  className="da-btn-pdf col-span-3 sm:col-span-1 sm:w-auto px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 shadow-xs hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 min-h-[40px]" 
                   onClick={() => downloadOfficialSheet('pdf')} 
                   title={t('formationDetails.exportOfficialSheetPdf', 'FOR 99 (PDF)')}
                 >
@@ -125,7 +125,7 @@ export default function FormationDetailsAdmin() {
             {!formation.isClosed && (
               <button 
                 type="button"
-                className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 border-0 cursor-pointer min-h-[40px] ${
+                className={`col-span-3 sm:col-span-1 sm:w-auto px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 border-0 cursor-pointer min-h-[40px] ${
                   canCloseFormation
                     ? 'da-btn-primary shadow-md'
                     : 'da-btn-secondary opacity-75 shadow-xs'
@@ -146,7 +146,7 @@ export default function FormationDetailsAdmin() {
 
             {!formation.isClosed && (
               <Link 
-                className="da-btn-secondary flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 text-decoration-none shadow-xs hover:scale-105 active:scale-95 transition-all min-h-[40px]" 
+                className="da-btn-secondary col-span-1 sm:w-auto px-2 sm:px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-1.5 sm:gap-2 text-decoration-none shadow-xs hover:scale-105 active:scale-95 transition-all min-h-[40px]" 
                 to={`/formations/${id}`} 
                 title={t('formations.edit')}
               >
@@ -156,7 +156,7 @@ export default function FormationDetailsAdmin() {
             )}
 
             <Link 
-              className="da-btn-blue flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 text-decoration-none shadow-xs hover:scale-105 active:scale-95 transition-all min-h-[40px]" 
+              className={`da-btn-blue ${formation.isClosed ? 'col-span-3 sm:col-span-1' : 'col-span-1'} sm:w-auto px-2 sm:px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-1.5 sm:gap-2 text-decoration-none shadow-xs hover:scale-105 active:scale-95 transition-all min-h-[40px]`} 
               to={`/qr-generator?formationId=${id}`} 
               title={t('formationDetails.qrButton')}
             >
@@ -167,7 +167,7 @@ export default function FormationDetailsAdmin() {
             {!formation.isClosed && (
               <button 
                 type="button"
-                className="da-btn-danger flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 shadow-xs hover:scale-105 active:scale-95 transition-all border-0 cursor-pointer text-white min-h-[40px]" 
+                className="da-btn-danger col-span-1 sm:w-auto px-2 sm:px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-1.5 sm:gap-2 shadow-xs hover:scale-105 active:scale-95 transition-all border-0 cursor-pointer text-white min-h-[40px]" 
                 onClick={handleDeleteFormation} 
                 title={t('formations.delete')}
               >
