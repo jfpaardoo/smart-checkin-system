@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-const CURRENT_CACHE_NAME = 'da-cache-v1.2.0';
+const CURRENT_CACHE_NAME = 'da-cache-v1.2.1';
 
 self.addEventListener('message', function(event) {
   if (event.origin && event.origin !== self.location.origin) {
@@ -25,15 +25,15 @@ self.addEventListener('push', function(event) {
       return {
         title: 'Distribution Academy',
         body: event.data.text(),
-        icon: '/favicon.png?v=6'
+        icon: '/favicon.png?v=7'
       };
     }
   })();
 
   const options = {
     body: data.body || '',
-    icon: data.icon || '/favicon.png?v=6',
-    badge: '/favicon.png?v=6',
+    icon: data.icon || '/favicon.png?v=7',
+    badge: '/favicon.png?v=7',
     vibrate: [200, 100, 200],
     tag: 'da-notification-' + Date.now(),
     data: {

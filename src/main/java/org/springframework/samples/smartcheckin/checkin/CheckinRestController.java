@@ -23,6 +23,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.samples.smartcheckin.formation.FormationService;
 import org.springframework.samples.smartcheckin.formation.Formation;
+import org.springframework.samples.smartcheckin.formation.FormationStatus;
 import org.springframework.samples.smartcheckin.notification.NotificationContext;
 
 @RestController
@@ -51,8 +52,16 @@ public class CheckinRestController {
     }
 
     @GetMapping("/my-history")
-    public ResponseEntity<List<Checkin>> getMyHistory() {
+    public ResponseEntity<Object> getMyHistory(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Integer page,
+            @org.springframework.web.bind.annotation.RequestParam(required = false, defaultValue = "10") Integer size) {
         User currentUser = userService.findCurrentUser();
+        if (page != null) {
+            org.springframework.data.domain.Page<Checkin> paged = checkInService.findPagedByUserId(
+                    currentUser.getId(),
+                    org.springframework.data.domain.PageRequest.of(Math.max(0, page), Math.max(1, size)));
+            return new ResponseEntity<>(paged, HttpStatus.OK);
+        }
         List<Checkin> checkIns = checkInService.findByUserId(currentUser.getId());
         return new ResponseEntity<>(checkIns, HttpStatus.OK);
     }
@@ -87,12 +96,17 @@ public class CheckinRestController {
     }
 
     private ResponseEntity<Object> processFormationCheckin(Formation targetFormation, User user, QrCheckinRequest request) {
+        if (FormationStatus.DRAFT.equals(targetFormation.getStatus())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(MESSAGE_KEY, "Esta formación está en borrador y no está publicada. No se admiten fichajes."));
+        }
+
         if (Boolean.TRUE.equals(targetFormation.getIsClosed())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of(MESSAGE_KEY, "Esta formación ya ha sido finalizada y cerrada. No se admiten nuevos fichajes."));
         }
 
-        ResponseEntity<Object> locationError = validateLocation(request);
+        ResponseEntity<Object> locationError = validateLocation(request, user);
         if (locationError != null) return locationError;
 
         try {
@@ -138,7 +152,7 @@ public class CheckinRestController {
                     .body(Map.of(MESSAGE_KEY, "El código o QR ha expirado o no es válido."));
         }
 
-        ResponseEntity<Object> locationError = validateLocation(request);
+        ResponseEntity<Object> locationError = validateLocation(request, user);
         if (locationError != null) return locationError;
 
         CheckinType type = (Boolean.TRUE.equals(user.getIsWorking())) ? CheckinType.SALIDA : CheckinType.ENTRADA;
@@ -199,34 +213,39 @@ public class CheckinRestController {
         return null;
     }
 
-    private boolean isLocationInvalid(QrCheckinRequest request) {
-        if (request.getUserLat() == null || request.getUserLng() == null || 
-            request.getAdminLat() == null || request.getAdminLng() == null) {
-            return true; // Bloquear si faltan coordenadas
-        }
-        double distance = calculateDistance(request.getUserLat(), request.getUserLng(), 
-                                            request.getAdminLat(), request.getAdminLng());
-        return distance > 50.0;
-    }
-
     private boolean isSignatureMissing(QrCheckinRequest request) {
         return request.getSignature() == null || request.getSignature().isEmpty();
     }
 
-    private ResponseEntity<Object> validateLocation(QrCheckinRequest request) {
-        if (isLocationInvalid(request)) {
-            if (request.getUserLat() == null || request.getUserLng() == null) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of(MESSAGE_KEY, "Se requiere ubicación GPS activa para fichar."));
-            }
-            if (request.getAdminLat() == null || request.getAdminLng() == null) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of(MESSAGE_KEY, "El código no contiene ubicación válida del administrador para validar la distancia."));
-            }
-            double distance = calculateDistance(request.getUserLat(), request.getUserLng(), 
-                                                request.getAdminLat(), request.getAdminLng());
+    private ResponseEntity<Object> validateLocation(QrCheckinRequest request, User user) {
+        if (request.getUserLat() == null || request.getUserLng() == null) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of(MESSAGE_KEY, "Demasiado lejos del punto de control. Distancia: " + Math.round(distance) + "m (Max: 50m)"));
+                    .body(Map.of(MESSAGE_KEY, "Se requiere ubicación GPS activa para fichar."));
+        }
+
+        // Si faltan coordenadas dinámicas de admin, intentar usar las coordenadas de la sede de empresa del usuario
+        if ((request.getAdminLat() == null || request.getAdminLng() == null) 
+                && user != null && user.getCompany() != null 
+                && user.getCompany().getLatitude() != null && user.getCompany().getLongitude() != null) {
+            request.setAdminLat(user.getCompany().getLatitude());
+            request.setAdminLng(user.getCompany().getLongitude());
+        }
+
+        if (request.getAdminLat() == null || request.getAdminLng() == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of(MESSAGE_KEY, "El código no contiene ubicación válida del administrador para validar la distancia."));
+        }
+
+        int maxRadius = 50;
+        if (user != null && user.getCompany() != null && user.getCompany().getRadiusMeters() != null && user.getCompany().getRadiusMeters() > 0) {
+            maxRadius = user.getCompany().getRadiusMeters();
+        }
+
+        double distance = calculateDistance(request.getUserLat(), request.getUserLng(), 
+                                            request.getAdminLat(), request.getAdminLng());
+        if (distance > maxRadius) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of(MESSAGE_KEY, "Demasiado lejos del punto de control o sede. Distancia: " + Math.round(distance) + "m (Máx permitido: " + maxRadius + "m)"));
         }
         return null;
     }

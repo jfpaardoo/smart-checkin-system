@@ -404,7 +404,7 @@ class ExportRestControllerTests {
 
         when(attendanceRepository.findAll()).thenReturn(List.of(att));
 
-        try (org.mockito.MockedStatic<java.security.MessageDigest> mockedDigest = org.mockito.Mockito.mockStatic(java.security.MessageDigest.class)) {
+        try (org.mockito.MockedStatic<java.security.MessageDigest> mockedDigest = org.mockito.Mockito.mockStatic(java.security.MessageDigest.class, org.mockito.Mockito.CALLS_REAL_METHODS)) {
             mockedDigest.when(() -> java.security.MessageDigest.getInstance("SHA-256"))
                     .thenThrow(new java.security.NoSuchAlgorithmException("No SHA-256"));
 
@@ -467,7 +467,7 @@ class ExportRestControllerTests {
     @Test
     @WithMockUser(authorities = {"ADMIN"})
     void shouldExportUserFormationsCsvSuccessfully() throws Exception {
-        when(analyticsService.getFilteredUserFormations(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+        when(analyticsService.getFilteredUserFormations(any(AnalyticsService.UserFormationFilterCriteria.class)))
                 .thenReturn(List.of());
 
         mockMvc.perform(get(BASE_URL + "/user-formations/csv")
@@ -486,7 +486,7 @@ class ExportRestControllerTests {
     @Test
     @WithMockUser(authorities = {"ADMIN"})
     void shouldExportUserFormationsExcelSuccessfully() throws Exception {
-        when(analyticsService.getFilteredUserFormations(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+        when(analyticsService.getFilteredUserFormations(any(AnalyticsService.UserFormationFilterCriteria.class)))
                 .thenReturn(List.of());
 
         mockMvc.perform(get(BASE_URL + "/user-formations/excel"))
@@ -496,7 +496,7 @@ class ExportRestControllerTests {
     @Test
     @WithMockUser(authorities = {"ADMIN"})
     void shouldExportUserFormationsPdfSuccessfully() throws Exception {
-        when(analyticsService.getFilteredUserFormations(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+        when(analyticsService.getFilteredUserFormations(any(AnalyticsService.UserFormationFilterCriteria.class)))
                 .thenReturn(List.of());
         when(pdfReportGenerator.generateUserFormationsPdf(any())).thenReturn(new byte[]{1, 2, 3});
 

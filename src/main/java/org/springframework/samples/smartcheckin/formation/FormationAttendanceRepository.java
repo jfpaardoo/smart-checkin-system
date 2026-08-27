@@ -15,6 +15,7 @@ public interface FormationAttendanceRepository extends CrudRepository<FormationA
     List<FormationAttendance> findAllByFormationAndUser(Formation formation, User user);
     List<FormationAttendance> findByUser(User user);
     List<FormationAttendance> findByUserId(Integer userId);
+    List<FormationAttendance> findByUserIdIn(List<Integer> userIds);
     Long countByCheckInDateBetween(LocalDateTime start, LocalDateTime end);
     void deleteByCheckInDateBefore(LocalDateTime cutoffDate);
 }

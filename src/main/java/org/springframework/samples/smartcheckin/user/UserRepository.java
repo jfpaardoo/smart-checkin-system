@@ -26,6 +26,11 @@ public interface UserRepository extends  CrudRepository<User, Integer>{
     @NonNull
     Optional<User> findById(@NonNull Integer id);
 
+    @Override
+    @NonNull
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.company LEFT JOIN FETCH u.authority")
+    Iterable<User> findAll();
+
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.company LEFT JOIN FETCH u.authority WHERE u.authority.authority = :auth")
     Iterable<User> findAllByAuthority(String auth);
 

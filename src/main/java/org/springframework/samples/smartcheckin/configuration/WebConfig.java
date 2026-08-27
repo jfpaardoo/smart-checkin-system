@@ -12,6 +12,9 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.PathResourceResolver;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.filter.ShallowEtagHeaderFilter;
+
 @Configuration
 @SuppressWarnings("null")
 public class WebConfig implements WebMvcConfigurer {
@@ -21,6 +24,11 @@ public class WebConfig implements WebMvcConfigurer {
 	public WebConfig(GenericIdToEntityConverter idToEntityConverter) {
 		this.idToEntityConverter = idToEntityConverter;
 	}
+
+    @Bean
+    public ShallowEtagHeaderFilter shallowEtagHeaderFilter() {
+        return new ShallowEtagHeaderFilter();
+    }
 	
     @Override
     public void addFormatters(@NonNull FormatterRegistry registry) {

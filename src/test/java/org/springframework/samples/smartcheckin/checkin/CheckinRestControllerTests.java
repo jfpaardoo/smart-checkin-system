@@ -22,6 +22,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.samples.smartcheckin.configuration.SecurityConfiguration;
 import org.springframework.samples.smartcheckin.formation.Formation;
 import org.springframework.samples.smartcheckin.formation.FormationService;
+import org.springframework.samples.smartcheckin.formation.FormationStatus;
 import org.springframework.samples.smartcheckin.storage.SignatureStorageService;
 import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.springframework.samples.smartcheckin.user.User;
@@ -122,6 +123,7 @@ class CheckinRestControllerTests {
 		Formation formation = new Formation();
 		formation.setId(5);
 		formation.setName("Course 5");
+		formation.setStatus(FormationStatus.PUBLISHED);
 		when(formationService.findAll()).thenReturn(List.of(formation));
 		when(totpService.verifyToken(eq(TOKEN_123456), any())).thenReturn(true);
 		when(formationService.registerAttendance(5, user)).thenReturn(formation);
@@ -145,6 +147,7 @@ class CheckinRestControllerTests {
 		Formation formation = new Formation();
 		formation.setId(100);
 		formation.setName("Spring Course");
+		formation.setStatus(FormationStatus.PUBLISHED);
 
 		QrCheckinRequest req = new QrCheckinRequest();
 		req.setToken(TOKEN_123456);
@@ -181,6 +184,7 @@ class CheckinRestControllerTests {
 		Formation formation = new Formation();
 		formation.setId(5);
 		formation.setName("Course 5");
+		formation.setStatus(FormationStatus.PUBLISHED);
 		when(formationService.findAll()).thenReturn(List.of(formation));
 		when(totpService.verifyToken(eq(TOKEN_123456), any())).thenReturn(true);
 		when(formationService.registerAttendance(eq(5), eq(user), any())).thenThrow(new RuntimeException("Database error"));
@@ -205,6 +209,7 @@ class CheckinRestControllerTests {
 
 		Formation formation = new Formation();
 		formation.setId(5);
+		formation.setStatus(FormationStatus.PUBLISHED);
 		when(formationService.findAll()).thenReturn(List.of(formation));
 
 		when(totpService.verifyToken(TOKEN_000000, 5L)).thenReturn(false);
@@ -230,6 +235,7 @@ class CheckinRestControllerTests {
 		Formation formation = new Formation();
 		formation.setId(8);
 		formation.setName("Iterated Course");
+		formation.setStatus(FormationStatus.PUBLISHED);
 		when(formationService.findAll()).thenReturn(List.of(formation));
 
 		when(totpService.verifyToken(TOKEN_123456, 8)).thenReturn(true);

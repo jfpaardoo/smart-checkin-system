@@ -23,12 +23,18 @@ public class CheckinAnomalyObserver {
     private final CheckinRepository checkinRepository;
     private final EmailNotificationSender emailNotificationSender;
     private org.springframework.samples.smartcheckin.metrics.AppMetricsService metricsService;
+    private org.springframework.samples.smartcheckin.notification.WebhookIntegrationService webhookIntegrationService;
 
     @Autowired
     public CheckinAnomalyObserver(AuditService auditService, CheckinRepository checkinRepository, EmailNotificationSender emailNotificationSender) {
         this.auditService = auditService;
         this.checkinRepository = checkinRepository;
         this.emailNotificationSender = emailNotificationSender;
+    }
+
+    @Autowired(required = false)
+    public void setWebhookIntegrationService(org.springframework.samples.smartcheckin.notification.WebhookIntegrationService webhookIntegrationService) {
+        this.webhookIntegrationService = webhookIntegrationService;
     }
 
     @Autowired(required = false)
@@ -66,6 +72,10 @@ public class CheckinAnomalyObserver {
             metricsService.incrementCheckinAnomaly();
         }
         logger.warn("Security Anomaly Logged: {}", details);
+
+        if (webhookIntegrationService != null) {
+            webhookIntegrationService.sendSecurityAnomalyNotification("CHECKIN_ANOMALY", details, "127.0.0.1");
+        }
 
         // Enviar notificación al administrador usando el patrón Bridge
         Notification alert = new AlertNotification(emailNotificationSender, details);

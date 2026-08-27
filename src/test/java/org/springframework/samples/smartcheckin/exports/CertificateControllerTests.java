@@ -49,6 +49,7 @@ class CertificateControllerTests {
 		attendance.setId(1);
 		attendance.setUser(user);
 		attendance.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
+		attendance.setCheckOutDate(LocalDateTime.now(ZoneId.systemDefault()).plusHours(2));
 	}
 
 	@Test

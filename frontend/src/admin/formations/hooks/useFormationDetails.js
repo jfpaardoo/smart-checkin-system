@@ -163,8 +163,20 @@ export function useFormationDetails(id) {
     }
   };
 
+  const downloadCalendarIcs = async () => {
+    try {
+      const res = await api.get(`/formations/${id}/calendar.ics`, { responseType: 'blob' });
+      const safeName = (formation?.name || 'formation').replace(/[\\/:*?"<>|~#%&{}]/g, '_') + '.ics';
+      await saveBlobFile(res.data, safeName, 'text/calendar');
+      toast.success(t('formationDetails.calendarDownloaded', 'Convocatoria descargada (.ics) para tu calendario.'));
+    } catch (err) {
+      console.error("Error downloading .ics calendar:", err);
+      toast.error(t('formationDetails.calendarError', 'Error al descargar la convocatoria de calendario.'));
+    }
+  };
+
   const hasAttendees = (formation?.attendances?.length || 0) > 0;
-  const allAttendeesCompleted = hasAttendees && formation.attendances.every(
+  const allAttendeesCompleted = !hasAttendees || formation.attendances.every(
     (a) => a.checkOutDate && a.signature
   );
   const canCloseFormation = !formation?.isClosed && allAttendeesCompleted;
@@ -178,6 +190,7 @@ export function useFormationDetails(id) {
     handleDeleteFormation,
     downloadSignaturePdf,
     downloadOfficialSheet,
+    downloadCalendarIcs,
     isDownloadingSheet,
     handleCloseFormation,
     allAttendeesCompleted,

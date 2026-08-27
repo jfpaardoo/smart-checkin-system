@@ -2,6 +2,8 @@ package org.springframework.samples.smartcheckin.checkin;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +13,8 @@ public interface CheckinRepository extends CrudRepository<Checkin, Integer> {
     List<Checkin> findByUserId(Integer userId);
 
     List<Checkin> findByUserIdOrderByCheckInDateDesc(Integer userId);
+
+    Page<Checkin> findByUserIdOrderByCheckInDateDesc(Integer userId, Pageable pageable);
 
     Long countByCheckInDateBetween(LocalDateTime start, LocalDateTime end);
 

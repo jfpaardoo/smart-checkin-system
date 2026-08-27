@@ -31,4 +31,18 @@ public class Company extends BaseEntity {
     @Size(max = 500)
     @Column(name = "description")
     private String description;
+
+    @Size(max = 255)
+    @Column(name = "address")
+    private String address;
+
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
+    @Column(name = "radius_meters")
+    @Builder.Default
+    private Integer radiusMeters = 100;
 }

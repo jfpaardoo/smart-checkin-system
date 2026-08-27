@@ -95,7 +95,7 @@ function UserTable({
                       </Link>
                       <button
                         type="button"
-                        onClick={() => handleDeleteAction?.(user.id)}
+                        onClick={() => handleDeleteAction?.(user)}
                         className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 hover:scale-105 active:scale-95 transition shadow-xs cursor-pointer inline-flex items-center justify-center"
                         title={t('common.delete', 'Eliminar')}
                         aria-label={t('common.delete', 'Eliminar')}
@@ -180,7 +180,7 @@ function UserTable({
                   <button
                     type="button"
                     className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 inline-flex items-center justify-center shadow-xs cursor-pointer"
-                    onClick={() => handleDeleteAction?.(user.id)}
+                    onClick={() => handleDeleteAction?.(user)}
                     title={t('common.delete', 'Eliminar')}
                   >
                     <FaTrash size={14} />

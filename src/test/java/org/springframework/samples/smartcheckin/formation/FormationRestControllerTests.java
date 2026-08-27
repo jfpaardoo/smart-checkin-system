@@ -77,6 +77,9 @@ class FormationRestControllerTests {
     @MockitoBean
     private CloudStorageAdapter cloudStorageAdapter;
 
+    @MockitoBean
+    private org.springframework.samples.smartcheckin.notification.NotificationContext notificationContext;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -92,6 +95,7 @@ class FormationRestControllerTests {
         formation.setId(1);
         formation.setName(JAVA_101);
         formation.setDescription(INTRO_TO_JAVA);
+        formation.setStatus(FormationStatus.PUBLISHED);
 
         user = new User();
         user.setId(10);
@@ -101,7 +105,7 @@ class FormationRestControllerTests {
     @Test
     @WithMockUser
     void testGetAllFormations() throws Exception {
-        when(formationService.findAll()).thenReturn(List.of(formation));
+        when(formationService.findAllVisible(anyBoolean())).thenReturn(List.of(formation));
 
         mockMvc.perform(get(BASE_URL)).andExpect(status().isOk());
     }
@@ -471,7 +475,7 @@ class FormationRestControllerTests {
         Formation f3 = new Formation(); f3.setName("Other"); f3.setDescription(null);
         Formation f4 = new Formation(); f4.setName(null); f4.setDescription(null);
 
-        when(formationService.findAll()).thenReturn(List.of(f1, f2, f3, f4));
+        when(formationService.findAllVisible(anyBoolean())).thenReturn(List.of(f1, f2, f3, f4));
 
         mockMvc.perform(get(BASE_URL).param(SEARCH_PARAM, "match"))
                 .andExpect(status().isOk())
@@ -481,7 +485,7 @@ class FormationRestControllerTests {
     @Test
     @WithMockUser
     void getAllFormationsWithBlankSearch() throws Exception {
-        when(formationService.findAll()).thenReturn(List.of(formation));
+        when(formationService.findAllVisible(anyBoolean())).thenReturn(List.of(formation));
 
         mockMvc.perform(get(BASE_URL).param(SEARCH_PARAM, "   "))
                 .andExpect(status().isOk())

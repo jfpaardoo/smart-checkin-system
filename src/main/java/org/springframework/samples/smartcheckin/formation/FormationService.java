@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.samples.smartcheckin.notification.WebhookIntegrationService;
 import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.jpatterns.gof.SingletonPattern;
 @Service
@@ -34,6 +35,7 @@ public class FormationService {
     private final SignatureStorageService signatureStorageService;
     private final ApplicationEventPublisher eventPublisher;
     private final TotpService totpService;
+    private WebhookIntegrationService webhookIntegrationService;
 
     @Autowired
     public FormationService(FormationRepository formationRepository, 
@@ -52,6 +54,11 @@ public class FormationService {
         this.signatureStorageService = signatureStorageService;
         this.eventPublisher = eventPublisher;
         this.totpService = totpService;
+    }
+
+    @Autowired(required = false)
+    public void setWebhookIntegrationService(WebhookIntegrationService webhookIntegrationService) {
+        this.webhookIntegrationService = webhookIntegrationService;
     }
 
     private static final String FORMATION_NOT_FOUND_MSG = "Formation not found";
@@ -76,8 +83,58 @@ public class FormationService {
     }
 
     @Transactional(readOnly = true)
+    public List<Formation> findAllVisible(boolean isAdmin) {
+        if (isAdmin) {
+            return (List<Formation>) formationRepository.findAll();
+        }
+        return formationRepository.findByStatusIn(List.of(FormationStatus.PUBLISHED, FormationStatus.CLOSED));
+    }
+
+    @Transactional(readOnly = true)
     public Optional<Formation> findById(Integer id) {
         return formationRepository.findById(id);
+    }
+
+    private void preAssignAttendee(Formation formation, Integer userId) {
+        try {
+            User u = userService.findUser(userId);
+            if (u != null && findAttendance(formation, u).isEmpty()) {
+                FormationAttendance att = new FormationAttendance();
+                att.setFormation(formation);
+                att.setUser(u);
+                att.setWithinWorkingHours(true);
+                attendanceRepository.save(att);
+                formation.getAttendances().add(att);
+            }
+        } catch (Exception e) {
+            // Ignore user lookup error
+        }
+    }
+
+    private void preAssignTargetAttendees(Formation formation, List<Integer> targetUserIds) {
+        if (targetUserIds == null || targetUserIds.isEmpty()) {
+            return;
+        }
+        for (Integer userId : targetUserIds) {
+            preAssignAttendee(formation, userId);
+        }
+    }
+
+    @Transactional
+    public Formation publishFormation(Integer id, List<Integer> targetUserIds) {
+        Formation formation = formationRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
+
+        if (Boolean.TRUE.equals(formation.getIsClosed()) || FormationStatus.CLOSED.equals(formation.getStatus())) {
+            throw new IllegalStateException("No se puede publicar una formación que ya ha sido finalizada y cerrada.");
+        }
+
+        formation.setStatus(FormationStatus.PUBLISHED);
+        formation.setIsClosed(false);
+
+        preAssignTargetAttendees(formation, targetUserIds);
+
+        return formationRepository.save(formation);
     }
 
     private Optional<FormationAttendance> findAttendance(Formation formation, User user) {
@@ -96,8 +153,12 @@ public class FormationService {
         Formation formation = formationRepository.findById(formationId)
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
 
-        if (Boolean.TRUE.equals(formation.getIsClosed())) {
+        if (Boolean.TRUE.equals(formation.getIsClosed()) || FormationStatus.CLOSED.equals(formation.getStatus())) {
             throw new IllegalStateException("Esta formación ya está finalizada y cerrada. No se admiten nuevos registros.");
+        }
+
+        if (FormationStatus.DRAFT.equals(formation.getStatus())) {
+            throw new IllegalStateException("Esta formación se encuentra en borrador y todavía no ha sido publicada para registrar asistencia.");
         }
 
         boolean withinHours = !Boolean.FALSE.equals(withinWorkingHours);
@@ -347,29 +408,40 @@ public class FormationService {
         Formation formation = formationRepository.findById(formationId)
             .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
 
+        validateFormationClosureEligibility(formation);
+        applyTrainerDetailsAndSignature(formation, signatureBase64, observations, trainerName, location);
+
+        Formation saved = formationRepository.save(formation);
+        if (webhookIntegrationService != null) {
+            int attendeeCount = formation.getAttendances() != null ? formation.getAttendances().size() : 0;
+            webhookIntegrationService.sendFormationClosedNotification(saved, attendeeCount);
+        }
+        return saved;
+    }
+
+    private void validateFormationClosureEligibility(Formation formation) {
         if (Boolean.TRUE.equals(formation.getIsClosed())) {
             throw new IllegalStateException("La formación ya ha sido finalizada y cerrada.");
         }
-
         List<FormationAttendance> attendances = formation.getAttendances();
-        if (attendances == null || attendances.isEmpty()) {
-            throw new IllegalStateException("No se puede finalizar una formación sin asistentes.");
+        if (attendances != null && !attendances.isEmpty()) {
+            boolean allCompleted = attendances.stream().allMatch(
+                att -> att.getCheckOutDate() != null && att.getSignature() != null && !att.getSignature().isBlank()
+            );
+            if (!allCompleted) {
+                throw new IllegalStateException("Todos los asistentes deben haber realizado el checkout y firmado para poder finalizar la formación.");
+            }
         }
+    }
 
-        boolean allCompleted = attendances.stream().allMatch(
-            att -> att.getCheckOutDate() != null && att.getSignature() != null && !att.getSignature().isBlank()
-        );
-        if (!allCompleted) {
-            throw new IllegalStateException("Todos los asistentes deben haber realizado el checkout y firmado para poder finalizar la formación.");
-        }
-
+    private void applyTrainerDetailsAndSignature(Formation formation, String signatureBase64, String observations, String trainerName, String location) {
         if (signatureBase64 != null && !signatureBase64.isBlank()) {
             String safeCourseName = formation.getName() != null ? formation.getName().replaceAll("[^a-zA-Z0-9.-]", "_") : "Course";
             String sigRef = signatureStorageService.saveSignature(signatureBase64, "formations/" + safeCourseName + "/trainer");
             formation.setTrainerSignature(sigRef);
         }
-
         formation.setIsClosed(true);
+        formation.setStatus(FormationStatus.CLOSED);
         formation.setObservations(observations);
         if (trainerName != null && !trainerName.isBlank()) {
             formation.setTrainer(trainerName);
@@ -378,8 +450,6 @@ public class FormationService {
             formation.setLocation(location);
         }
         formation.setClosedDate(LocalDateTime.now(ZoneId.systemDefault()));
-
-        return formationRepository.save(formation);
     }
 
     @Transactional

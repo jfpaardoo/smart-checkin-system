@@ -4,6 +4,45 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), y este proyecto sigue [Versionado Semántico (SemVer)](https://semver.org/lang/es/).
 
+## [1.2.1](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.2.1) - 2026-08-27
+
+### Añadido (Features) & Mejoras de Seguridad
+- **Previsualización y Gestión de Archivos Adjuntos Previo al Guardado (*File Upload Chips*)**:
+  - Implementada lista de tarjetas/chips interactivos para archivos seleccionados en [`FormationEditAdmin.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/admin/formations/FormationEditAdmin.js) y [`useFormationEdit.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/admin/formations/hooks/useFormationEdit.js), mostrando icono de tipo de archivo (PDF, Word, Excel, Texto, Imagen), nombre, tamaño formateado (KB/MB) y botón de eliminación individual antes de subir al servidor.
+- **Desbloqueo Universal de Documentación tras Finalización de Formación**:
+  - Una vez que una formación es finalizada y cerrada por el formador/administrador (`status = CLOSED`), los materiales y temarios se desbloquean automáticamente para todos los empleados de la organización, permitiendo la consulta y descarga didáctica a quienes no pudieron asistir a la sesión presencial.
+  - Las formaciones cerradas no desaparecen del catálogo del usuario: se muestran ordenadas con la insignia `Finalizada` y acceso completo a la visualización de documentos en [`FormationDetailsModal.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/user/dashboard/components/FormationDetailsModal.js).
+- **Cierre de Convocatorias sin Asistentes (Flexibilidad Operativa)**:
+  - Actualizado [`FormationService.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/formation/FormationService.java) y [`useFormationDetails.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/admin/formations/hooks/useFormationDetails.js) para permitir finalizar y certificar formaciones con 0 asistentes (sesiones desiertas), manteniendo la validación estricta de que si existen asistentes inscritos, el 100% debe tener check-out y firma digital estampada.
+- **Sincronización en Tiempo Real por WebSockets en el Dashboard de Usuario**:
+  - Suscripción reactiva en [`UserDashboard.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/user/dashboard/UserDashboard.js) a los canales STOMP `/topic/formations` y `/topic/notifications/{username}` con actualización silenciosa en segundo plano (*background silent revalidation*), reflejando nuevas publicaciones y cambios de estado instantáneamente sin recargar la página.
+- **Botonera y Acciones Contextuales en Edición Administrativa**:
+  - Simplificada la barra de acciones en [`FormationEditAdmin.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/admin/formations/FormationEditAdmin.js): al editar una formación ya publicada o cerrada se muestra un botón claro y directo *"Guardar Cambios"*, ocultando opciones redundantes de *"Guardar como Borrador"*.
+- **Suite de Iconos Multiplataforma y PWA Adaptativa (PC / iOS / Android)**:
+  - **PC / Escritorio (Windows / macOS / Linux)**: Generados [`logo192.png`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/public/logo192.png), [`logo512.png`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/public/logo512.png) y [`favicon.png`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/public/favicon.png) con fondo transparente a partir del diseño de alta resolución original. Al instalar la PWA o crear el acceso directo en Windows/Chrome/Edge, se visualiza la esfera circular estilizada sin marcos cuadrados artificiales.
+  - **iPhone / iPad (iOS Safari)**: Diseñado [`apple-touch-icon.png`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/public/apple-touch-icon.png) de alta definición con el logotipo original centrado y fondo sólido `#1e2535`, eliminando artefactos y esquinas blancas provocadas por el squircle de Apple.
+  - **Android (Chrome / Samsung Internet / Firefox)**: Creados [`maskable-icon-192.png`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/public/maskable-icon-192.png) y [`maskable-icon-512.png`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/public/maskable-icon-512.png) con zona segura del 80% (*Safe Zone*) en [`manifest.json`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/public/manifest.json) para adaptarse automáticamente a cualquier forma de launcher (círculo, squircle, lágrima).
+  - **Service Worker & Caché**: Actualizado el caché del Service Worker a `da-cache-v1.2.1` en [`sw.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/public/sw.js) y sincronización de versiones con [`version.json`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/public/version.json).
+
+### Corregido (Bug Fixes) & Refinamiento UI/UX
+- **Contador Permanente en Pestaña "En Curso"**:
+  - Corregido en [`UserFormationCategoryTabs.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/user/dashboard/components/UserFormationCategoryTabs.js) para mostrar siempre la insignia numérica de conteo, incluyendo el valor `(0)` de forma homogénea con el resto de categorías.
+- **Superposición de Textos y Badges en Modal de Formación**:
+  - Solucionado en [`FormationDetailsModal.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/user/dashboard/components/FormationDetailsModal.js) el solapamiento visual entre la etiqueta *"Desbloqueado tras finalización"* y el texto *"Haz clic para previsualizar"* mediante layout flexible responsivo con `flex-wrap` y espaciado adaptativo.
+- **Insignias de Estado Semánticas en Listado y Modal de Usuario**:
+  - Añadido soporte para el estado `Finalizada` (`isClosedNonAttended`) en [`DesktopUserFormationRow.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/user/dashboard/components/DesktopUserFormationRow.js), [`MobileUserFormationCard.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/user/dashboard/components/MobileUserFormationCard.js) y [`FormationDetailsModal.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/user/dashboard/components/FormationDetailsModal.js).
+
+### Optimización (Performance & Seguridad)
+- **Eliminación de Consultas N+1 en Analíticas y Exportaciones**:
+  - Creado el método por lotes `findByUserIdIn` en [`FormationAttendanceRepository.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/formation/FormationAttendanceRepository.java) e indexación en memoria con `Collectors.groupingBy` en [`AnalyticsService.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/analytics/AnalyticsService.java), reduciendo drásticamente las consultas a la base de datos de N queries a 1 única consulta SQL agregada.
+- **Refactorización con Patrón Builder en el API de Formaciones**:
+  - Aplicado `Formation.builder()` en [`FormationRestController.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/formation/FormationRestController.java) para la clonación y sanitización inmutable de entidades de forma limpia y desacoplada.
+- **Limpieza de Parámetros y Transaccionalidad en Servicios de Analítica**:
+  - Unificado el filtrado de exportación en el record [`UserFormationFilterCriteria`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/analytics/AnalyticsService.java), resolviendo avisos de Sonar y eliminando llamadas internas anómalas a métodos `@Transactional`.
+- **Hardening de Seguridad en Descarga de Diplomas y Documentación**:
+  - Blindado [`CertificateController.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/exports/CertificateController.java) requiriendo `checkOutDate != null` para generar certificados PDF de asistencia.
+  - Blindado `GET /api/v1/formations/{id}` y `GET /api/v1/formations` en [`FormationRestController.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/formation/FormationRestController.java) para ocultar las URLs de documentos antes del fichaje o del cierre oficial de la formación.
+
 ---
 
 ## [1.2.0](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.2.0) - 2026-08-23

@@ -31,4 +31,10 @@ public class FormationRequest {
     private String trainer;
 
     private List<String> existingDocumentUrls;
+
+    private FormationStatus status;
+
+    private Boolean publishImmediately;
+
+    private List<Integer> targetUserIds;
 }
