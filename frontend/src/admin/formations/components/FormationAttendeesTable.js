@@ -1,11 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from "react-i18next";
-import { FaEye, FaFilePdf, FaTrash, FaUser } from "react-icons/fa";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faFilePdf, faTrash, faUser, faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import GlassDropdown from "../../../components/GlassDropdown";
 import GlassSearchBar from "../../../components/GlassSearchBar";
 import GlassPagination from "../../../components/GlassPagination";
+import StatusBadge from "../../../components/StatusBadge";
+import GlassButton from "../../../components/GlassButton";
 
 dayjs.extend(utc);
 
@@ -28,22 +31,22 @@ export default function FormationAttendeesTable({
   const [pageSize, setPageSize] = useState(10);
 
   const renderAttendanceBadge = (att) => {
-    if (att.checkOutDate) return <span className="da-badge da-badge-active text-[11px] sm:text-xs font-bold">{t('formationDetails.statusCompleted', 'Completada')}</span>;
-    if (att.checkInDate)  return <span className="da-badge da-badge-warning text-[11px] sm:text-xs font-bold">{t('formationDetails.statusInProgress', 'En curso')}</span>;
-    return <span className="da-badge da-badge-inactive text-[11px] sm:text-xs font-bold">{t('formationDetails.statusPending', 'Pendiente')}</span>;
+    if (att.checkOutDate) return <StatusBadge variant="success">{t('formationDetails.statusCompleted', 'Completada')}</StatusBadge>;
+    if (att.checkInDate)  return <StatusBadge variant="warning" pulse>{t('formationDetails.statusInProgress', 'En curso')}</StatusBadge>;
+    return <StatusBadge variant="neutral">{t('formationDetails.statusPending', 'Pendiente')}</StatusBadge>;
   };
 
   const renderScheduleBadge = (att) => {
     if (!att.checkInDate) return null;
     const isInside = att.withinWorkingHours !== false;
     return isInside ? (
-      <span className="da-badge bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/20 text-[10px] font-semibold">
+      <StatusBadge variant="info">
         {t('checkin.insideWorkingHoursShort', 'Dentro horario')}
-      </span>
+      </StatusBadge>
     ) : (
-      <span className="da-badge bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/20 text-[10px] font-semibold">
+      <StatusBadge variant="warning">
         {t('checkin.outsideWorkingHoursShort', 'Fuera horario')}
-      </span>
+      </StatusBadge>
     );
   };
 
@@ -110,13 +113,17 @@ export default function FormationAttendeesTable({
                 className="w-full"
               />
             </div>
-            <button 
-              className="da-btn-primary px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm text-slate-950 flex items-center justify-center gap-2 shadow-xs hover:scale-102 active:scale-98 transition-all border-0 cursor-pointer disabled:opacity-50 shrink-0" 
+            <GlassButton 
+              variant="primary"
               type="submit" 
               disabled={!selectedUserId || isAddingUser}
+              loading={isAddingUser}
+              loadingText={t('common.saving', 'Añadiendo...')}
+              icon={<FontAwesomeIcon icon={faUserPlus} />}
+              className="px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm shadow-xs shrink-0" 
             >
-              {isAddingUser ? t('common.saving', 'Añadiendo...') : t('formationDetails.addUser', 'Añadir Usuario')}
-            </button>
+              <span>{t('formationDetails.addUser', 'Añadir Usuario')}</span>
+            </GlassButton>
           </form>
         </div>
       )}
@@ -177,7 +184,7 @@ export default function FormationAttendeesTable({
                       <td className="py-4 px-5">
                         <div className="flex items-center gap-3">
                           <div className="p-2.5 rounded-2xl bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a] shadow-xs flex-shrink-0">
-                            <FaUser size={15} />
+                            <FontAwesomeIcon icon={faUser} />
                           </div>
                           <div className="min-w-0">
                             <div className="font-bold text-slate-800 dark:text-slate-100 tracking-tight leading-tight">
@@ -211,7 +218,7 @@ export default function FormationAttendeesTable({
                             title={t('formationDetails.viewSignature', 'Ver Firma / Detalles')}
                             aria-label={t('formationDetails.viewSignature', 'Ver Firma / Detalles')}
                           >
-                            <FaEye size={14} />
+                            <FontAwesomeIcon icon={faEye} />
                           </button>
 
                           {/* Botón 2: PDF */}
@@ -223,7 +230,7 @@ export default function FormationAttendeesTable({
                               title="PDF"
                               aria-label="Descargar PDF"
                             >
-                              <FaFilePdf size={14} />
+                              <FontAwesomeIcon icon={faFilePdf} />
                             </button>
                           )}
 
@@ -236,7 +243,7 @@ export default function FormationAttendeesTable({
                               title={t('formations.delete', 'Eliminar')}
                               aria-label={t('formations.delete', 'Eliminar')}
                             >
-                              <FaTrash size={14} />
+                              <FontAwesomeIcon icon={faTrash} />
                             </button>
                           )}
                         </div>
@@ -259,7 +266,7 @@ export default function FormationAttendeesTable({
                   <div className="flex flex-col gap-2.5">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="p-2.5 rounded-2xl bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a] shadow-xs flex-shrink-0">
-                        <FaUser size={15} />
+                        <FontAwesomeIcon icon={faUser} />
                       </div>
                       <div className="min-w-0 flex-1">
                         <h4 className="font-bold text-slate-800 dark:text-slate-100 m-0 text-base leading-tight break-words">{user.firstName} {user.lastName}</h4>
@@ -284,7 +291,7 @@ export default function FormationAttendeesTable({
                       onClick={() => onViewSignature(att)}
                       title={t('common.details', 'Detalles')}
                     >
-                      <FaEye size={14} />
+                      <FontAwesomeIcon icon={faEye} />
                     </button>
 
                     {att.signature && (
@@ -294,7 +301,7 @@ export default function FormationAttendeesTable({
                         onClick={() => onDownloadPdf(att.id)}
                         title="PDF"
                       >
-                        <FaFilePdf size={14} />
+                        <FontAwesomeIcon icon={faFilePdf} />
                       </button>
                     )}
 
@@ -305,7 +312,7 @@ export default function FormationAttendeesTable({
                         onClick={() => handleRemoveUser(user.id)}
                         title={t('formations.delete', 'Eliminar')}
                       >
-                        <FaTrash size={14} />
+                        <FontAwesomeIcon icon={faTrash} />
                       </button>
                     )}
                   </div>

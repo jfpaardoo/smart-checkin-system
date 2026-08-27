@@ -414,10 +414,12 @@ class AnalyticsServiceTests {
         att.setSignature("sig_base64");
 
         when(userRepository.findAll()).thenReturn(List.of(u1));
-        when(attendanceRepository.findByUserId(1)).thenReturn(List.of(att));
+        when(attendanceRepository.findByUserIdIn(List.of(1))).thenReturn(List.of(att));
 
         List<UserFormationExportDTO> records = analyticsService.getFilteredUserFormations(
-                null, 10, "MG", "EMPLOYEE", "ALL", true, null, null, "ATTENDED", null, null
+                new AnalyticsService.UserFormationFilterCriteria(
+                        null, 10, "MG", "EMPLOYEE", "ALL", true, null, null, "ATTENDED", null, null
+                )
         );
 
         assertEquals(1, records.size());

@@ -11,6 +11,7 @@ import GlassPageHeader from "../../components/GlassPageHeader";
 import { useSubscription } from "../../hooks/useSubscription";
 import api from "../../services/api";
 import FormationTable from "./components/FormationTable";
+import PublishFormationModal from "./components/PublishFormationModal";
 
 const fetcher = (url) => api.get(url).then((res) => (Array.isArray(res.data) ? res.data : []));
 
@@ -18,6 +19,8 @@ export default function FormationListAdmin() {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [timeFilter, setTimeFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [formationToPublish, setFormationToPublish] = useState(null);
 
   // SWR: Instantáneo desde RAM (0ms) + revalidación en segundo plano
   const { data: formations = [], isLoading, mutate } = useSWR('/formations', fetcher, {
@@ -44,6 +47,18 @@ export default function FormationListAdmin() {
           );
           if (!match) return false;
         }
+
+        // Filtro por Estado
+        if (statusFilter === 'DRAFT' && f.status !== 'DRAFT') {
+          return false;
+        }
+        if (statusFilter === 'PUBLISHED' && (f.status !== 'PUBLISHED' || f.isClosed)) {
+          return false;
+        }
+        if (statusFilter === 'CLOSED' && f.status !== 'CLOSED' && !f.isClosed) {
+          return false;
+        }
+
         // Filtro por tiempo
         if (timeFilter === 'UPCOMING') {
           return new Date(f.formationDate) >= now;
@@ -54,12 +69,12 @@ export default function FormationListAdmin() {
         return true;
       })
       .sort((a, b) => new Date(b.formationDate) - new Date(a.formationDate));
-  }, [formations, searchQuery, timeFilter]);
+  }, [formations, searchQuery, timeFilter, statusFilter]);
 
   // Reset de página al cambiar filtros
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, timeFilter, pageSize]);
+  }, [searchQuery, timeFilter, statusFilter, pageSize]);
 
   // Paginación
   const paginatedFormations = useMemo(() => {
@@ -81,20 +96,34 @@ export default function FormationListAdmin() {
           }
         />
         
-        {/* Barra de Búsqueda y Filtro de Fecha */}
+        {/* Barra de Búsqueda y Filtros */}
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-4 items-center relative z-30">
-          <div className="sm:col-span-8">
+          <div className="sm:col-span-6">
             <GlassSearchBar 
               placeholder={t('formations.searchPlaceholderShort', 'Buscar formación por título o descripción...')}
               onSearch={(query) => setSearchQuery(query)}
             />
           </div>
-          <div className="sm:col-span-4">
+          <div className="sm:col-span-3">
             <GlassDropdown
               options={[
-                { value: 'ALL', label: t('formations.filterAll', 'Todas las formaciones') },
-                { value: 'UPCOMING', label: t('formations.filterUpcoming', 'Próximas formaciones') },
-                { value: 'PAST', label: t('formations.filterPast', 'Formaciones pasadas') }
+                { value: 'ALL', label: t('formations.filterAllStatus', 'Todos los estados') },
+                { value: 'DRAFT', label: t('formation.statusDraft', 'Borradores') },
+                { value: 'PUBLISHED', label: t('formation.statusPublished', 'Publicadas') },
+                { value: 'CLOSED', label: t('formation.statusClosed', 'Finalizadas') }
+              ]}
+              value={statusFilter}
+              onChange={(val) => setStatusFilter(val)}
+              placeholder={t('formations.filterStatus', 'Filtrar por estado')}
+              className="w-full"
+            />
+          </div>
+          <div className="sm:col-span-3">
+            <GlassDropdown
+              options={[
+                { value: 'ALL', label: t('formations.filterAll', 'Todas las fechas') },
+                { value: 'UPCOMING', label: t('formations.filterUpcoming', 'Próximas') },
+                { value: 'PAST', label: t('formations.filterPast', 'Pasadas') }
               ]}
               value={timeFilter}
               onChange={(val) => setTimeFilter(val)}
@@ -104,7 +133,11 @@ export default function FormationListAdmin() {
           </div>
         </div>
 
-        <FormationTable formations={paginatedFormations} loading={isLoading && formations.length === 0} />
+        <FormationTable 
+          formations={paginatedFormations} 
+          loading={isLoading && formations.length === 0}
+          onPublish={(formation) => setFormationToPublish(formation)}
+        />
         
         {/* Paginación Liquid Glass */}
         {filteredFormations.length > 0 && (
@@ -118,6 +151,14 @@ export default function FormationListAdmin() {
           />
         )}
       </div>
+
+      {/* Modal de Publicación */}
+      <PublishFormationModal
+        isOpen={Boolean(formationToPublish)}
+        onClose={() => setFormationToPublish(null)}
+        formation={formationToPublish}
+        onPublishSuccess={() => mutate()}
+      />
     </div>
   );
 }

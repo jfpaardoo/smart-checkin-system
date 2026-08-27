@@ -19,6 +19,7 @@ import org.springframework.samples.smartcheckin.auth.payload.response.TwoFactorE
 import org.springframework.samples.smartcheckin.auth.service.HaveIBeenPwnedService;
 import org.springframework.samples.smartcheckin.auth.service.TwoFactorBackupCodeService;
 import org.springframework.samples.smartcheckin.exceptions.AccessDeniedException;
+import org.springframework.samples.smartcheckin.formation.Formation;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.springframework.samples.smartcheckin.util.RestPreconditions;
@@ -147,7 +148,38 @@ class UserRestController {
     @GetMapping("me/formations")
     public ResponseEntity<List<FormationAttendance>> getMyFormations() {
         User currentUser = userService.findCurrentUser();
-        return new ResponseEntity<>(currentUser.getFormationAttendances(), HttpStatus.OK);
+        List<FormationAttendance> list = currentUser.getFormationAttendances();
+        List<FormationAttendance> sanitized = list.stream().map(att -> {
+            boolean hasCheckedIn = att.getCheckInDate() != null;
+            boolean isClosed = att.getFormation() != null && 
+                    (Boolean.TRUE.equals(att.getFormation().getIsClosed()) || "CLOSED".equalsIgnoreCase(String.valueOf(att.getFormation().getStatus())));
+
+            if (!hasCheckedIn && !isClosed && att.getFormation() != null) {
+                Formation orig = att.getFormation();
+                Formation safeFormation = new Formation();
+                safeFormation.setId(orig.getId());
+                safeFormation.setName(orig.getName());
+                safeFormation.setDescription(orig.getDescription());
+                safeFormation.setFormationDate(orig.getFormationDate());
+                safeFormation.setTrainer(orig.getTrainer());
+                safeFormation.setLocation(orig.getLocation());
+                safeFormation.setStatus(orig.getStatus());
+                safeFormation.setIsClosed(orig.getIsClosed());
+                safeFormation.setDocumentUrls(new java.util.ArrayList<>());
+
+                FormationAttendance copy = new FormationAttendance();
+                copy.setId(att.getId());
+                copy.setUser(att.getUser());
+                copy.setFormation(safeFormation);
+                copy.setCheckInDate(att.getCheckInDate());
+                copy.setCheckOutDate(att.getCheckOutDate());
+                copy.setSignature(att.getSignature());
+                copy.setWithinWorkingHours(att.getWithinWorkingHours());
+                return copy;
+            }
+            return att;
+        }).toList();
+        return new ResponseEntity<>(sanitized, HttpStatus.OK);
     }
 
     @PutMapping("me/password")

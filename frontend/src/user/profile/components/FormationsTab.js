@@ -4,6 +4,7 @@ import { TableGhostLoader } from "../../../components/GhostLoader";
 import api from "../../../services/api";
 import { calculateDuration, formatDate } from "../../../utils/dateUtils";
 import { saveBlobFile } from "../../../util/downloadExportFile";
+import CalendarSyncDropdown from "../../../components/CalendarSyncDropdown";
 
 const handleDownloadCertificate = async (attendanceId) => {
   try {
@@ -137,19 +138,22 @@ export default function FormationsTab({ loadingFormations, formations, t }) {
                         )}
                       </td>
                       <td className="py-4 px-5 text-right">
-                        {isSigned ? (
-                          <button 
-                            type="button" 
-                            className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 hover:scale-105 active:scale-95 transition shadow-xs inline-flex items-center justify-center cursor-pointer" 
-                            onClick={() => handleDownloadCertificate(att.id)} 
-                            title={t('profile.downloadCertificate', 'Descargar Certificado PDF')}
-                            aria-label={t('profile.downloadCertificate', 'Descargar Certificado PDF')}
-                          >
-                            <FaFilePdf size={14} />
-                          </button>
-                        ) : (
-                          <span className="text-slate-400 dark:text-slate-600 text-xs">-</span>
-                        )}
+                        <div className="inline-flex gap-2 justify-end items-center">
+                          <CalendarSyncDropdown formation={att.formation} variant="icon" />
+                          {isSigned ? (
+                            <button 
+                              type="button" 
+                              className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 hover:scale-105 active:scale-95 transition shadow-xs inline-flex items-center justify-center cursor-pointer" 
+                              onClick={() => handleDownloadCertificate(att.id)} 
+                              title={t('profile.downloadCertificate', 'Descargar Certificado PDF')}
+                              aria-label={t('profile.downloadCertificate', 'Descargar Certificado PDF')}
+                            >
+                              <FaFilePdf size={14} />
+                            </button>
+                          ) : (
+                            <span className="text-slate-400 dark:text-slate-600 text-xs self-center">-</span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -209,9 +213,10 @@ export default function FormationsTab({ loadingFormations, formations, t }) {
                     </div>
                   </div>
 
-                  {/* Pie de tarjeta: Botón PDF (Solo si está firmado) */}
-                  {isSigned && (
-                    <div className="flex items-center justify-end pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
+                  {/* Pie de tarjeta: Botón Calendario y PDF */}
+                  <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
+                    <CalendarSyncDropdown formation={att.formation} variant="icon" />
+                    {isSigned && (
                       <button 
                         type="button" 
                         className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 active:scale-95 transition shadow-xs inline-flex items-center justify-center cursor-pointer"
@@ -220,8 +225,8 @@ export default function FormationsTab({ loadingFormations, formations, t }) {
                       >
                         <FaFilePdf size={14} />
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               );
             })}

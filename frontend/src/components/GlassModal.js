@@ -54,7 +54,7 @@ export default function GlassModal({
 
   // Cerrar con Escape
   useEffect(() => {
-    if (!isOpen || backdrop === 'static' || !backdrop) return;
+    if (!isOpen || String(backdrop) === 'static' || !backdrop) return;
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') closeCallback?.();
     };
@@ -73,7 +73,7 @@ export default function GlassModal({
   }, [isOpen]);
 
   const handleBackdropClick = () => {
-    if (backdrop !== 'static' && Boolean(backdrop)) closeCallback?.();
+    if (String(backdrop) !== 'static' && Boolean(backdrop)) closeCallback?.();
   };
 
   return createPortal(

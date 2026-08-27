@@ -62,6 +62,10 @@ public class CompanyRestController {
         Company existing = companyService.findById(id);
         existing.setName(company.getName());
         existing.setDescription(company.getDescription());
+        existing.setAddress(company.getAddress());
+        existing.setLatitude(company.getLatitude());
+        existing.setLongitude(company.getLongitude());
+        existing.setRadiusMeters(company.getRadiusMeters());
         Company updated = companyService.save(existing);
         return ResponseEntity.ok(updated);
     }

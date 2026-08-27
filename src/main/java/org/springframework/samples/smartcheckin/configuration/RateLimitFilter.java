@@ -2,8 +2,9 @@ package org.springframework.samples.smartcheckin.configuration;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import java.util.concurrent.TimeUnit;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,15 +24,22 @@ import org.jpatterns.gof.ChainOfResponsibilityPattern;
 @ChainOfResponsibilityPattern.ConcreteHandler
 public class RateLimitFilter extends OncePerRequestFilter {
 
-    private final Map<String, Bucket> cacheStrict = new ConcurrentHashMap<>();
-    private final Map<String, Bucket> cacheGlobal = new ConcurrentHashMap<>();
+    private final Cache<String, Bucket> cacheStrict = Caffeine.newBuilder()
+            .maximumSize(10_000)
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .build();
+
+    private final Cache<String, Bucket> cacheGlobal = Caffeine.newBuilder()
+            .maximumSize(20_000)
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .build();
 
     private Bucket resolveBucketStrict(String ip) {
-        return cacheStrict.computeIfAbsent(ip, this::newBucketStrict);
+        return cacheStrict.get(ip, this::newBucketStrict);
     }
 
     private Bucket resolveBucketGlobal(String ip) {
-        return cacheGlobal.computeIfAbsent(ip, this::newBucketGlobal);
+        return cacheGlobal.get(ip, this::newBucketGlobal);
     }
 
     private Bucket newBucketStrict(String ip) {

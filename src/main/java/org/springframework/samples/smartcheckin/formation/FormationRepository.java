@@ -10,6 +10,10 @@ public interface FormationRepository extends CrudRepository<Formation, Integer> 
 
     List<Formation> findByFormationDateAfterOrderByFormationDateAsc(LocalDateTime date);
 
+    List<Formation> findByStatusIn(List<FormationStatus> statuses);
+
+    List<Formation> findByStatus(FormationStatus status);
+
     Long countByFormationDateAfter(LocalDateTime date);
     Long countByFormationDateBefore(LocalDateTime date);
 }

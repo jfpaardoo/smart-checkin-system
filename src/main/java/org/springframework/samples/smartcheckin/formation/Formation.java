@@ -23,6 +23,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.EqualsAndHashCode;
 
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
+
 @Getter
 @Setter
 @org.jpatterns.gof.BuilderPattern.Builder
@@ -43,6 +46,11 @@ public class Formation extends BaseEntity {
 
     @NotNull
     private LocalDateTime formationDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
+    @lombok.Builder.Default
+    private FormationStatus status = FormationStatus.DRAFT;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "formation_documents", joinColumns = @JoinColumn(name = "formation_id"))
@@ -79,5 +87,13 @@ public class Formation extends BaseEntity {
 
     @Column(name = "closed_date")
     private LocalDateTime closedDate;
+
+    public boolean isDraft() {
+        return FormationStatus.DRAFT.equals(this.status);
+    }
+
+    public boolean isPublished() {
+        return FormationStatus.PUBLISHED.equals(this.status);
+    }
 
 }

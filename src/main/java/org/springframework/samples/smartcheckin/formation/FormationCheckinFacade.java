@@ -6,6 +6,7 @@ import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAda
 import org.springframework.samples.smartcheckin.notifications.PushNotificationSender;
 import org.springframework.samples.smartcheckin.notifications.SystemUpdateNotification;
 import org.springframework.samples.smartcheckin.notifications.Notification;
+import org.springframework.samples.smartcheckin.notification.NotificationContext;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
 import org.springframework.stereotype.Service;
@@ -25,16 +26,19 @@ public class FormationCheckinFacade {
     private final UserService userService;
     private final CloudStorageAdapter cloudStorageAdapter;
     private final PushNotificationSender pushNotificationSender;
+    private final NotificationContext notificationContext;
 
     @Autowired
     public FormationCheckinFacade(FormationService formationService,
                                   UserService userService,
                                   CloudStorageAdapter cloudStorageAdapter,
-                                  PushNotificationSender pushNotificationSender) {
+                                  PushNotificationSender pushNotificationSender,
+                                  NotificationContext notificationContext) {
         this.formationService = formationService;
         this.userService = userService;
         this.cloudStorageAdapter = cloudStorageAdapter;
         this.pushNotificationSender = pushNotificationSender;
+        this.notificationContext = notificationContext;
     }
 
     public void notifyFormationsUpdate(Integer formationId) {
@@ -49,16 +53,99 @@ public class FormationCheckinFacade {
         }
     }
 
+    private List<User> resolveTargetUsers(List<Integer> targetUserIds) {
+        List<User> list = new ArrayList<>();
+        for (Integer uid : targetUserIds) {
+            try {
+                User u = userService.findUser(uid);
+                if (u != null && Boolean.TRUE.equals(u.getIsApproved())) {
+                    list.add(u);
+                }
+            } catch (Exception e) {
+                // Ignore user lookup error
+            }
+        }
+        return list;
+    }
+
+    private List<User> resolveAllActiveEmployees() {
+        List<User> list = new ArrayList<>();
+        for (User u : userService.findAll()) {
+            boolean isApproved = Boolean.TRUE.equals(u.getIsApproved());
+            boolean isNotAdmin = !u.hasAuthority("ADMIN");
+            if (isApproved && isNotAdmin) {
+                list.add(u);
+            }
+        }
+        return list;
+    }
+
+    private List<User> resolveRecipients(List<Integer> targetUserIds, boolean notifyAll) {
+        if (!notifyAll && targetUserIds != null && !targetUserIds.isEmpty()) {
+            return resolveTargetUsers(targetUserIds);
+        }
+        return resolveAllActiveEmployees();
+    }
+
+    private void dispatchPublicationNotifications(Formation formation, List<Integer> targetUserIds, boolean notifyAll) {
+        if (notificationContext == null || formation == null) {
+            return;
+        }
+
+        String title = "Nueva Formación Publicada: " + formation.getName();
+        String dateStr = formation.getFormationDate() != null ? formation.getFormationDate().toString().replace("T", " ") : "Próximamente";
+        String message = String.format(
+            "Se ha publicado la formación '%s' programada para el %s en %s (Formador: %s). Accede a la plataforma para ver el evento.",
+            formation.getName(), dateStr, formation.getLocation(), formation.getTrainer()
+        );
+
+        List<User> recipients = resolveRecipients(targetUserIds, notifyAll);
+        for (User recipient : recipients) {
+            try {
+                notificationContext.sendNotification(recipient, title, message);
+            } catch (Exception e) {
+                log.warn("Error sending publication notification to user {}: {}", recipient.getUsername(), e.getMessage());
+            }
+        }
+    }
+
     @Auditable(action = "FORMATION_SAVE", details = "Admin created a formation")
     @Transactional(rollbackFor = Exception.class)
     public Formation createFormation(FormationRequest request, List<MultipartFile> files) {
         Formation formation = new Formation();
         mapBasicFields(formation, request);
+
+        if (request.getStatus() != null) {
+            formation.setStatus(request.getStatus());
+        } else if (Boolean.TRUE.equals(request.getPublishImmediately())) {
+            formation.setStatus(FormationStatus.PUBLISHED);
+        } else {
+            formation.setStatus(FormationStatus.DRAFT);
+        }
+
         uploadFiles(files, request.getName(), formation.getDocumentUrls());
 
         Formation saved = formationService.saveFormation(formation);
         notifyFormationsUpdate(saved.getId());
+
+        if (FormationStatus.PUBLISHED.equals(saved.getStatus())) {
+            boolean notifyAll = request.getTargetUserIds() == null || request.getTargetUserIds().isEmpty();
+            dispatchPublicationNotifications(saved, request.getTargetUserIds(), notifyAll);
+        }
+
         return saved;
+    }
+
+    @Auditable(action = "FORMATION_PUBLISH", details = "Admin published a formation")
+    @Transactional(rollbackFor = Exception.class)
+    public Formation publishFormation(Integer id, FormationPublishRequest publishRequest) {
+        List<Integer> targetIds = publishRequest != null ? publishRequest.getTargetUserIds() : null;
+        boolean notifyAll = publishRequest == null || !Boolean.FALSE.equals(publishRequest.getNotifyAll());
+
+        Formation published = formationService.publishFormation(id, targetIds);
+        notifyFormationsUpdate(published.getId());
+        dispatchPublicationNotifications(published, targetIds, notifyAll);
+        return published;
     }
 
     @Auditable(action = "FORMATION_UPDATE", details = "Admin updated a formation")

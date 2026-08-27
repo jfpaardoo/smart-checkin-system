@@ -69,6 +69,7 @@ class FormationServiceTests {
     void testRegisterAttendanceNew() {
         Formation formation = new Formation();
         formation.setId(1);
+        formation.setStatus(FormationStatus.PUBLISHED);
         formation.setAttendances(new ArrayList<>());
 
         User user = new User();
@@ -87,6 +88,7 @@ class FormationServiceTests {
     void testRegisterAttendanceByPersonalCode() {
         Formation formation = new Formation();
         formation.setId(1);
+        formation.setStatus(FormationStatus.PUBLISHED);
         formation.setAttendances(new ArrayList<>());
 
         User user = new User();
@@ -105,6 +107,7 @@ class FormationServiceTests {
     void testRegisterAttendanceWithWithinWorkingHours() {
         Formation formation = new Formation();
         formation.setId(1);
+        formation.setStatus(FormationStatus.PUBLISHED);
         formation.setAttendances(new ArrayList<>());
 
         User user = new User();
@@ -118,6 +121,20 @@ class FormationServiceTests {
         assertNotNull(res);
         assertFalse(formation.getAttendances().isEmpty());
         assertEquals(Boolean.FALSE, formation.getAttendances().get(0).getWithinWorkingHours());
+    }
+
+    @Test
+    void testRegisterAttendanceOnDraftThrowsException() {
+        Formation formation = new Formation();
+        formation.setId(1);
+        formation.setStatus(FormationStatus.DRAFT);
+
+        User user = new User();
+        user.setId(10);
+
+        when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
+
+        assertThrows(IllegalStateException.class, () -> formationService.registerAttendance(1, user));
     }
 
     @Test
@@ -293,6 +310,7 @@ class FormationServiceTests {
     void testRegisterAttendanceExistingNullCheckInDate() {
         Formation formation = new Formation();
         formation.setId(1);
+        formation.setStatus(FormationStatus.PUBLISHED);
 
         User user = new User();
         user.setId(10);
@@ -312,6 +330,7 @@ class FormationServiceTests {
     void testRegisterAttendanceExistingWithCheckInDate() {
         Formation formation = new Formation();
         formation.setId(1);
+        formation.setStatus(FormationStatus.PUBLISHED);
 
         User user = new User();
         user.setId(10);
@@ -573,17 +592,19 @@ class FormationServiceTests {
     }
 
     @Test
-    void testCloseFormationNoAttendeesThrows() {
+    void testCloseFormationNoAttendeesSuccess() {
         Formation formation = new Formation();
         formation.setId(1);
         formation.setIsClosed(false);
         formation.setAttendances(new ArrayList<>());
 
         when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
+        when(formationRepository.save(any(Formation.class))).thenAnswer(i -> i.getArgument(0));
 
-        assertThrows(IllegalStateException.class, () -> 
-            formationService.closeFormation(1, "sig", "obs", "trainer", "loc")
-        );
+        Formation closed = formationService.closeFormation(1, "sig", "obs", "trainer", "loc");
+        assertNotNull(closed);
+        assertTrue(closed.getIsClosed());
+        assertEquals(FormationStatus.CLOSED, closed.getStatus());
     }
 
     @Test
@@ -613,7 +634,8 @@ class FormationServiceTests {
 
         when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
 
-        assertThrows(IllegalStateException.class, () -> formationService.updateFormation(new Formation(), 1));
+        Formation updateInput = new Formation();
+        assertThrows(IllegalStateException.class, () -> formationService.updateFormation(updateInput, 1));
         assertThrows(IllegalStateException.class, () -> formationService.addAttendee(1, 10));
         assertThrows(IllegalStateException.class, () -> formationService.removeAttendee(1, 10));
     }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import useSWR from "swr";
-import { FaBuilding, FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import { FaBuilding, FaPlus, FaEdit, FaTrash, FaMapMarkerAlt, FaMapPin } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import { useToast } from "../../components/ToastProvider";
 import GlassSearchBar from "../../components/GlassSearchBar";
@@ -131,7 +131,22 @@ export default function CompanyListAdmin() {
                     </div>
                   </td>
                   <td className="py-4 px-5 text-slate-600 dark:text-slate-300">
-                    {company.description || <span className="text-slate-400 italic text-xs">{t("common.noDescription", "Sin descripción")}</span>}
+                    <div className="space-y-1">
+                      {company.description && <p className="m-0 text-sm">{company.description}</p>}
+                      {company.address && (
+                        <p className="m-0 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                          <FaMapMarkerAlt className="text-slate-400 flex-shrink-0" /> {company.address}
+                        </p>
+                      )}
+                      {company.latitude && company.longitude && (
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                          <FaMapPin className="text-emerald-500" /> Geofencing: {company.radiusMeters || 100}m
+                        </span>
+                      )}
+                      {!company.description && !company.address && !company.latitude && (
+                        <span className="text-slate-400 italic text-xs">{t("common.noDescription", "Sin descripción")}</span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-4 px-5 text-right">
                     <div className="inline-flex gap-2">
@@ -175,12 +190,22 @@ export default function CompanyListAdmin() {
                     <span className="text-[11px] text-slate-400">ID #{company.id}</span>
                   </div>
                 </div>
+                {company.latitude && company.longitude && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-md font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 inline-flex items-center gap-1">
+                    <FaMapPin size={10} className="text-emerald-600 dark:text-emerald-400" /> {company.radiusMeters || 100}m
+                  </span>
+                )}
               </div>
 
-              {company.description && (
-                <p className="text-xs text-slate-600 dark:text-slate-300 bg-white/30 dark:bg-slate-900/40 p-2.5 rounded-xl border border-white/40 dark:border-white/10 mb-0">
-                  {company.description}
-                </p>
+              {(company.description || company.address) && (
+                <div className="text-xs text-slate-600 dark:text-slate-300 bg-white/30 dark:bg-slate-900/40 p-2.5 rounded-xl border border-white/40 dark:border-white/10 space-y-1 mb-0">
+                  {company.description && <p className="m-0">{company.description}</p>}
+                  {company.address && (
+                    <p className="m-0 text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                      <FaMapMarkerAlt size={11} className="text-slate-400" /> {company.address}
+                    </p>
+                  )}
+                </div>
               )}
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-1.5 sm:gap-2 pt-2.5 border-t border-white/30 dark:border-white/10 w-full">

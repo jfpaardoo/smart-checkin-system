@@ -824,6 +824,10 @@
     "editSubtitle": "Modifique os dados e descrição da empresa",
     "nameLabel": "Nome da Empresa",
     "descriptionLabel": "Descrição / Observações",
+    "geofenceTitle": "Controlo de Localização e Geofencing",
+    "geofenceSubtitle": "Pesquise a sede, clique no mapa ou utilize o GPS para definir o perímetro de registo de ponto.",
+    "searchAddressPlaceholder": "Pesquisar endereço, parque industrial, sede ou cidade...",
+    "myGpsLocation": "Meu GPS",
     "createBtn": "Criar Empresa",
     "saveBtn": "Guardar Alterações",
     "nameRequired": "O nome da empresa é obrigatório.",
@@ -834,7 +838,16 @@
     "saveError": "Erro ao guardar empresa.",
     "deleteError": "Não foi possível excluir a empresa.",
     "namePlaceholder": "Ex. BA Glass Spain SAU",
-    "descriptionPlaceholder": "Informações adicionais sobre a atividade ou localização do centro..."
+    "descriptionPlaceholder": "Informações adicionais sobre a atividade ou localização do centro...",
+    "addressLabel": "Endereço Físico",
+    "addressPlaceholder": "Ex. Parque Industrial Los Villares, Rua Vidrio 12",
+    "latitudeLabel": "Latitude",
+    "longitudeLabel": "Longitude",
+    "radiusLabel": "Raio Máximo (Metros)",
+    "detectGpsBtn": "Detetar GPS Atual",
+    "gpsCaptured": "Coordenadas GPS atuais capturadas com sucesso",
+    "gpsError": "Não foi possível obter a posição GPS atual",
+    "geofenceHelp": "Se as coordenadas GPS forem configuradas, os colaboradores desta sede só poderão registar o ponto dentro do raio estabelecido."
   },
   "privacy": {
     "secNotCollectedTitle": "2. Dados que NÃO Recolhemos e Garantias de Não Intrusão",
@@ -1004,7 +1017,7 @@
     "faq3_q": "O que acontece se não tiver ligação à internet ou rede?",
     "faq3_a": "O Smart Check-in inclui sincronização offline automática. O seu registo é guardado no dispositivo e enviado assim que recuperar a rede.",
     "faq4_q": "Como recupero a minha palavra-passe de acesso?",
-    "faq4_a": "Clique em 'Esqueceu-se da sua palavra-passe?' no ecrã de início de sessão para receber um e-mail de recuperação seguro.",
+    "faq4_a": "Clique em 'Esqueceu-se da sua palavra-passe?' no ecrã de início de sessão e receberá um e-mail seguro com uma ligação de reposição.",
     "confidentiality": "Distribution Academy · Suporte Técnico Seguro"
   }
 }

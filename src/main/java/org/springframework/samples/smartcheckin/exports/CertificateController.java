@@ -39,7 +39,7 @@ public class CertificateController {
         }
         FormationAttendance attendance = attendanceRepository.findById(attendanceId).orElse(null);
         
-        if (attendance == null || attendance.getCheckInDate() == null) {
+        if (attendance == null || attendance.getCheckInDate() == null || attendance.getCheckOutDate() == null) {
             return ResponseEntity.notFound().build();
         }
 

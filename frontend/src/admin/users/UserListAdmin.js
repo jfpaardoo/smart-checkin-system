@@ -14,6 +14,7 @@ import { useSubscription } from "../../hooks/useSubscription";
 import api from "../../services/api";
 import UserTable from "./components/UserTable";
 import UserListTabs from "./components/UserListTabs";
+import GlassConfirmModal from "../../components/GlassConfirmModal";
 
 const swrFetcher = (url) => api.get(url).then(res => res.data);
 
@@ -88,6 +89,10 @@ export default function UserListAdmin() {
 
   useSubscription('/topic/users', handleWsMessage);
 
+  // Estado para el modal de confirmación de borrado
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   const handleApprove = async (id) => {
     try {
       await api.put(`/users/${id}/approve`);
@@ -110,13 +115,28 @@ export default function UserListAdmin() {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleRequestDelete = (userOrId) => {
+    if (typeof userOrId === 'object' && userOrId !== null) {
+      setUserToDelete(userOrId);
+    } else {
+      const found = users.find(u => u.id === userOrId) || pendingUsers.find(u => u.id === userOrId) || { id: userOrId };
+      setUserToDelete(found);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!userToDelete?.id) return;
+    setDeleteLoading(true);
     try {
-      await api.delete(`/users/${id}`);
+      await api.delete(`/users/${userToDelete.id}`);
       toast.success(t('common.deletedSuccess', 'Usuario eliminado correctamente'));
+      setUserToDelete(null);
       mutateUsers();
+      mutatePending();
     } catch (err) {
-      toast.error(err.response?.data?.message || t('common.deleteError', 'Error al eliminar'));
+      toast.error(err.response?.data?.message || t('common.deleteError', 'Error al eliminar usuario'));
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -301,7 +321,7 @@ export default function UserListAdmin() {
             activeTab={activeTab} 
             onApprove={handleApprove} 
             onReject={handleReject} 
-            onDelete={handleDelete}
+            onDelete={handleRequestDelete}
         />
 
         {/* Paginación Liquid Glass */}
@@ -316,6 +336,25 @@ export default function UserListAdmin() {
           />
         )}
       </div>
+
+      {/* Modal de Confirmación de Eliminación de Usuario */}
+      <GlassConfirmModal
+        isOpen={Boolean(userToDelete)}
+        toggle={() => setUserToDelete(null)}
+        title={t('users.deleteConfirmTitle', 'Eliminar Usuario')}
+        message={
+          userToDelete ? (
+            <span>
+              {t('users.deleteConfirmMessage', '¿Estás seguro de que deseas eliminar permanentemente a')} <strong>{userToDelete.firstName ? `${userToDelete.firstName} ${userToDelete.lastName}` : (userToDelete.name || 'este usuario')} {userToDelete.username ? `(@${userToDelete.username})` : ''}</strong>?
+            </span>
+          ) : ""
+        }
+        warningMessage={t('users.deleteWarning', 'Esta acción no se puede deshacer. Se eliminarán sus accesos al sistema y registros asociados.')}
+        confirmText={t('common.delete', 'Eliminar')}
+        confirmVariant="danger"
+        loading={deleteLoading}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }

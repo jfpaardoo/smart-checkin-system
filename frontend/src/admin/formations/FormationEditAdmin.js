@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTimes, faUpload, faGraduationCap } from "@fortawesome/free-solid-svg-icons";
+import { faTimes, faUpload, faGraduationCap, faFloppyDisk, faPaperPlane, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import tokenService from "../../services/token.service";
 import getIdFromUrl from "../../util/getIdFromUrl";
@@ -26,6 +26,7 @@ export default function FormationEditAdmin() {
     files,
     handleChange,
     handleFileChange,
+    handleRemoveNewFile,
     handleRemoveExistingFile,
     handleSubmit
   } = useFormationEdit(id, jwt, toast, t);
@@ -33,6 +34,13 @@ export default function FormationEditAdmin() {
   const formattedDate = formation.formationDate 
     ? dayjs(formation.formationDate).format('YYYY-MM-DDTHH:mm') 
     : '';
+
+  let submitButtonLabel = t('common.saveChanges', 'Guardar Cambios');
+  if (!formation.id) {
+    submitButtonLabel = t('formation.publishImmediately', 'Crear y Publicar');
+  } else if (formation.status === 'DRAFT') {
+    submitButtonLabel = t('formation.saveAndPublish', 'Guardar y Publicar');
+  }
 
   if (id !== "new" && loading) {
     return <CardGhostLoader />;
@@ -50,7 +58,7 @@ export default function FormationEditAdmin() {
           backUrl="/formations"
         />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={(e) => handleSubmit(e, 'DRAFT')} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="name" className="block text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-1">
@@ -179,18 +187,44 @@ export default function FormationEditAdmin() {
                     <p className="text-slate-500 dark:text-slate-400 text-xs mb-0">{t('formations.acceptedFormats', 'Formatos aceptados: PDF, Word, Excel, PowerPoint, Imágenes')}</p>
                     
                     {files.length > 0 && (
-                      <div className="mt-3 text-left">
-                        <span className="font-bold text-xs" style={{ color: 'var(--da-primary)' }}>
-                          {files.length} {t('formations.filesSelected', 'archivo(s) seleccionado(s)')}
+                      <div className="mt-3 text-left relative z-20">
+                        <span className="font-bold text-xs text-[#73841e] dark:text-[#d4e84a]">
+                          {files.length} {t('formations.filesSelected', 'archivo(s) seleccionado(s)')}:
                         </span>
-                        <ul className="list-none mb-0 mt-2 space-y-1 p-0">
-                          {files.map((f) => (
-                            <li key={f.name} className="text-xs text-slate-600 dark:text-slate-300 flex items-center gap-2">
-                              <FontAwesomeIcon icon={faPlus} className="text-emerald-500 text-[10px]" />
-                              <span className="truncate max-w-[250px]">{f.name}</span>
-                            </li>
-                          ))}
-                        </ul>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {files.map((f, idx) => {
+                            const fileMeta = getCleanFileInfo(f.name);
+                            const sizeFormatted = f.size > 1048576 
+                              ? `${(f.size / 1048576).toFixed(1)} MB` 
+                              : `${Math.round(f.size / 1024)} KB`;
+
+                            return (
+                              <div
+                                key={`${f.name}-${idx}`}
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-700/90 border border-slate-200 dark:border-slate-600 shadow-xs text-xs"
+                              >
+                                <FontAwesomeIcon icon={fileMeta.icon} style={{ color: fileMeta.color }} />
+                                <span className="font-bold text-slate-800 dark:text-slate-100 max-w-[200px] truncate" title={f.name}>
+                                  {f.name}
+                                </span>
+                                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                                  ({sizeFormatted})
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemoveNewFile(idx);
+                                  }}
+                                  className="bg-transparent border-0 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 cursor-pointer p-0.5 ml-1 transition-colors"
+                                  title={t('formations.removeFile', 'Eliminar archivo')}
+                                >
+                                  <FontAwesomeIcon icon={faTrash} size="xs" />
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -200,19 +234,34 @@ export default function FormationEditAdmin() {
 
           <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-white/30 dark:border-white/10 w-full">
             <Link to="/formations" className="da-btn-secondary w-full sm:w-auto text-center text-decoration-none">
-              <FontAwesomeIcon icon={faTimes} className="me-1" /> {t('common.cancel')}
+              <FontAwesomeIcon icon={faTimes} className="me-1" /> {t('common.cancel', 'Cancelar')}
             </Link>
+
+            {/* Si es nueva o es un borrador existente, permitimos guardar como borrador */}
+            {(!formation.id || formation.status === 'DRAFT') && (
+              <GlassButton
+                type="button"
+                variant="secondary"
+                loading={isSaving}
+                loadingText={t('common.saving', 'Guardando...')}
+                icon={<FontAwesomeIcon icon={faFloppyDisk} />}
+                onClick={(e) => handleSubmit(e, 'DRAFT')}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-2xl shadow-xs"
+              >
+                <span>{t('formation.saveAsDraft', 'Guardar como Borrador')}</span>
+              </GlassButton>
+            )}
+
             <GlassButton
-              type="submit"
+              type="button"
               variant="primary"
               loading={isSaving}
               loadingText={t('common.saving', 'Guardando...')}
-              icon={<FontAwesomeIcon icon={faPlus} />}
+              icon={<FontAwesomeIcon icon={formation.id && formation.status !== 'DRAFT' ? faFloppyDisk : faPaperPlane} />}
+              onClick={(e) => handleSubmit(e, formation.status || 'PUBLISHED')}
               className="w-full sm:w-auto px-6 py-2.5 rounded-2xl shadow-md"
             >
-              <span>
-                {formation.id ? t('common.save') : t('formations.createNew')}
-              </span>
+              <span>{submitButtonLabel}</span>
             </GlassButton>
           </div>
         </form>

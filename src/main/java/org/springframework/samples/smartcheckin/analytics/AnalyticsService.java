@@ -153,10 +153,20 @@ public class AnalyticsService {
     @Transactional(readOnly = true)
     public List<UserFormationExportDTO> getFilteredUserFormations(UserFormationFilterCriteria criteria) {
         List<UserAnalyticsDTO> eligibleUsers = resolveEligibleUsers(criteria);
+        if (eligibleUsers.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> userIds = eligibleUsers.stream().map(UserAnalyticsDTO::getUserId).filter(Objects::nonNull).toList();
+        List<FormationAttendance> allAttendances = attendanceRepository.findByUserIdIn(userIds);
+        Map<Integer, List<FormationAttendance>> attendancesByUser = allAttendances.stream()
+                .filter(a -> a.getUser() != null && a.getUser().getId() != null)
+                .collect(java.util.stream.Collectors.groupingBy(a -> a.getUser().getId()));
+
         List<UserFormationExportDTO> exportList = new ArrayList<>();
 
         for (UserAnalyticsDTO u : eligibleUsers) {
-            List<FormationAttendance> attendances = attendanceRepository.findByUserId(u.getUserId());
+            List<FormationAttendance> attendances = attendancesByUser.get(u.getUserId());
             if (attendances != null) {
                 for (FormationAttendance att : attendances) {
                     if (isMatchingAttendance(att, criteria)) {
@@ -170,25 +180,6 @@ public class AnalyticsService {
                 .thenComparing(UserFormationExportDTO::getFormationDate, Comparator.nullsLast(Comparator.naturalOrder())));
 
         return exportList;
-    }
-
-    @Transactional(readOnly = true)
-    public List<UserFormationExportDTO> getFilteredUserFormations(
-            String search,
-            Integer companyId,
-            String locator,
-            String role,
-            String performance,
-            Boolean isWorking,
-            LocalDateTime startDate,
-            LocalDateTime endDate,
-            String attendanceStatus,
-            Integer formationId,
-            Integer targetUserId) {
-        return getFilteredUserFormations(new UserFormationFilterCriteria(
-                search, companyId, locator, role, performance, isWorking,
-                startDate, endDate, attendanceStatus, formationId, targetUserId
-        ));
     }
 
     private List<UserAnalyticsDTO> resolveEligibleUsers(UserFormationFilterCriteria criteria) {

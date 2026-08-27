@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faQrcode, faGraduationCap } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '../../components/ToastProvider';
-import useFetchState from '../../util/useFetchState';
 import tokenService from '../../services/token.service';
 import { useSubscription } from '../../hooks/useSubscription';
 import api from '../../services/api';
@@ -13,34 +14,44 @@ import FormationDetailsModal from './components/FormationDetailsModal';
 export default function UserDashboard() {
   const { t } = useTranslation();
   const toast = useToast();
-  const jwt = tokenService.getUser();
   const user = tokenService.getUser();
 
-  const [attendances, setAttendances, isLoading] = useFetchState(
-    [],
-    "/api/v1/users/me/formations",
-    jwt
-  );
+  const [attendances, setAttendances] = useState([]);
+  const [allPublishedFormations, setAllPublishedFormations] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const reloadUserFormations = () => {
-    api.get("/users/me/formations")
-      .then((r) => setAttendances(r.data))
-      .catch((e) => console.error("Error updating user formations via WS", e));
-  };
+  const loadData = useCallback((showGhost = false) => {
+    if (showGhost) setIsLoading(true);
+    Promise.all([
+      api.get("/users/me/formations").catch(() => ({ data: [] })),
+      api.get("/formations").catch(() => ({ data: [] }))
+    ]).then(([attRes, formRes]) => {
+      setAttendances(attRes.data || []);
+      setAllPublishedFormations(formRes.data || []);
+    }).finally(() => {
+      setIsLoading(false);
+    });
+  }, []);
 
-  useSubscription('/topic/formations', reloadUserFormations);
+  useEffect(() => {
+    loadData(true);
+  }, [loadData]);
+
+  // Sincronización en tiempo real vía WebSockets (STOMP)
+  useSubscription('/topic/formations', () => loadData(false));
+  useSubscription(user?.username ? `/topic/notifications/${user.username}` : null, () => loadData(false));
 
   const [detailsModal, setDetailsModal] = useState(false);
   const [checkoutModal, setCheckoutModal] = useState(false);
   const [selectedAtt, setSelectedAtt] = useState(null);
 
-  const openDetails = (attendance) => {
-    setSelectedAtt(attendance);
+  const openDetails = (item) => {
+    setSelectedAtt(item);
     setDetailsModal(true);
   };
 
-  const handleOpenCheckout = (attendance) => {
-    setSelectedAtt(attendance);
+  const handleOpenCheckout = (item) => {
+    setSelectedAtt(item);
     setCheckoutModal(true);
   };
 
@@ -53,38 +64,50 @@ export default function UserDashboard() {
 
       await api.post(`/formations/${selectedAtt.formation.id}/checkout`, payload);
 
-      toast.success(t('dashboard.checkoutSuccess'));
+      toast.success(t('dashboard.checkoutSuccess', '¡Checkout completado con éxito!'));
       setCheckoutModal(false);
-      reloadUserFormations();
-
+      loadData();
     } catch (error) {
       const msg = error.response?.data?.message 
         || (typeof error.response?.data === 'string' ? error.response.data : null) 
         || error.message 
-        || t('dashboard.checkoutError');
+        || t('dashboard.checkoutError', 'Error al realizar el checkout.');
       toast.error(msg);
     }
   };
 
   return (
     <div className="da-container">
-      <div className="da-card" style={{ maxWidth: '800px', margin: '2rem auto' }}>
-        <h2 className="mb-6 text-center font-extrabold text-slate-800 text-3xl drop-shadow-sm">
-          {t('dashboard.hello')}, <span className="text-primary">{user?.username}</span>
-        </h2>
-        
-        <div className="flex justify-center mb-10 w-full">
-          <Link to="/checkin" className="da-btn-primary px-8 py-4 text-lg font-bold rounded-full w-full md:w-auto text-center shadow-lg hover:shadow-xl transition duration-400 ease-out hover:-translate-y-1">
-            {t('dashboard.scannerButton')}
+      <div className="da-card">
+        {/* Header de Bienvenida Premium */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-6 mb-6 border-b border-white/40 dark:border-white/10">
+          <div className="flex items-center gap-3.5 text-center sm:text-left">
+            <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-[#b3c34c]/30 to-emerald-500/20 text-[#677717] dark:text-[#d4e84a] flex items-center justify-center text-xl shadow-xs border border-white/60 dark:border-white/10 shrink-0">
+              <FontAwesomeIcon icon={faGraduationCap} />
+            </div>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-800 dark:text-slate-100 m-0 tracking-tight">
+                {t('dashboard.hello', 'Hola')}, <span className="text-[#73841e] dark:text-[#d4e84a]">{user?.firstName || user?.username}</span>
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 m-0 mt-0.5">
+                {t('dashboard.welcomeSub', 'Consulta tus próximas convocatorias, sesiones en curso y descarga tus diplomas.')}
+              </p>
+            </div>
+          </div>
+
+          <Link 
+            to="/checkin" 
+            className="da-btn-primary px-6 py-3 text-xs sm:text-sm font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center gap-2 text-decoration-none shrink-0 w-full sm:w-auto"
+          >
+            <FontAwesomeIcon icon={faQrcode} className="text-base" />
+            <span>{t('dashboard.scannerButton', 'Escanear QR para Fichar')}</span>
           </Link>
         </div>
 
-        <h3 className="mb-4 text-slate-800 font-bold text-xl border-b border-slate-200 pb-3">
-          {t('dashboard.myFormations')}
-        </h3>
-        
+        {/* Sección de Formaciones del Empleado */}
         <UserFormationsTable 
-          attendances={attendances} 
+          attendances={attendances}
+          allPublishedFormations={allPublishedFormations}
           isLoading={isLoading} 
           onOpenDetails={openDetails} 
           onCheckout={handleOpenCheckout}

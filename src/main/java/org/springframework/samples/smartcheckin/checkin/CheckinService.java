@@ -53,6 +53,11 @@ public class CheckinService {
         return checkInRepository.findByUserIdOrderByCheckInDateDesc(userId);
     }
 
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Checkin> findPagedByUserId(Integer userId, org.springframework.data.domain.Pageable pageable) {
+        return checkInRepository.findByUserIdOrderByCheckInDateDesc(userId, pageable);
+    }
+
     @Transactional
     public void deleteAllCheckins(User user) {
         List<Checkin> userCheckins = checkInRepository.findByUserId(user.getId());

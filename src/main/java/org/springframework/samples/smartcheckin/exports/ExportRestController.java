@@ -173,7 +173,10 @@ public class ExportRestController {
         LocalDateTime end = (endDate != null && !endDate.isBlank()) ? LocalDate.parse(endDate).atTime(23, 59, 59) : null;
 
         List<UserFormationExportDTO> records = analyticsService.getFilteredUserFormations(
-                search, companyId, locator, role, performance, isWorking, start, end, attendanceStatus, formationId, userId
+                new AnalyticsService.UserFormationFilterCriteria(
+                        search, companyId, locator, role, performance, isWorking,
+                        start, end, attendanceStatus, formationId, userId
+                )
         );
         byte[] data = strategy.exportUserFormations(records);
         return createResponse(data, "asistencias_formaciones_detallado." + strategy.getFileExtension(), strategy.getContentType());

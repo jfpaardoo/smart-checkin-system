@@ -36,6 +36,10 @@ export const useFormationEdit = (id, jwt, toast, t) => {
     setFiles(Array.from(event.target.files));
   };
 
+  const handleRemoveNewFile = (indexToRemove) => {
+    setFiles(prev => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
   const handleRemoveExistingFile = (urlToRemove) => {
     setFormation({
       ...formation,
@@ -43,13 +47,15 @@ export const useFormationEdit = (id, jwt, toast, t) => {
     });
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleSubmit = (event, targetStatus = 'DRAFT') => {
+    if (event) event.preventDefault();
     setIsSaving(true);
 
     const formData = new FormData();
     const payload = {
       ...formation,
+      status: targetStatus,
+      publishImmediately: targetStatus === 'PUBLISHED',
       existingDocumentUrls: formation.documentUrls || []
     };
     formData.append("formation", new Blob([JSON.stringify(payload)], { type: "application/json" }));
@@ -73,14 +79,22 @@ export const useFormationEdit = (id, jwt, toast, t) => {
           toast.error(parseApiError(json.message, t));
           setIsSaving(false);
         } else {
-          toast.success(formation.id ? t('formations.updated') : t('formations.created'));
+          let successMsg;
+          if (formation.id && formation.status !== 'DRAFT') {
+            successMsg = t('formations.updated', 'Formación actualizada correctamente.');
+          } else if (targetStatus === 'PUBLISHED') {
+            successMsg = t('formations.publishedSuccess', '¡Formación guardada y publicada! Se ha notificado a los empleados.');
+          } else if (formation.id) {
+            successMsg = t('formations.updated', 'Formación actualizada correctamente.');
+          } else {
+            successMsg = t('formations.savedAsDraft', 'Formación guardada como borrador.');
+          }
+          toast.success(successMsg);
           setTimeout(() => { window.location.href = "/formations"; }, 1200);
         }
       })
       .catch((error) => {
-        // Leemos la respuesta de error del backend
         if (error?.response?.status === 400 && error?.response?.data?.message) {
-          // Muestra: "El almacenamiento en la nube no está configurado..."
           toast.error(error?.response?.data?.message);
         } else {
           toast.error(t('formations.connectionError'));
@@ -96,6 +110,7 @@ export const useFormationEdit = (id, jwt, toast, t) => {
     files,
     handleChange,
     handleFileChange,
+    handleRemoveNewFile,
     handleRemoveExistingFile,
     handleSubmit
   };
