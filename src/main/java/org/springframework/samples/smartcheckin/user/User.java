@@ -29,6 +29,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Convert;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
@@ -47,7 +48,13 @@ import lombok.EqualsAndHashCode;
 @lombok.NoArgsConstructor
 @EqualsAndHashCode(callSuper = false, exclude = {"formationAttendances", "checkins", "pushSubscriptions"})
 @Entity
-@Table(name = "appusers")
+@Table(name = "appusers", indexes = {
+    @Index(name = "idx_appusers_company_id", columnList = "company_id"),
+    @Index(name = "idx_appusers_authority", columnList = "authority"),
+    @Index(name = "idx_appusers_locator", columnList = "locator"),
+    @Index(name = "idx_appusers_is_approved", columnList = "is_approved"),
+    @Index(name = "idx_appusers_comp_approved", columnList = "company_id, is_approved")
+})
 public class User extends BaseEntity implements OrganizationalUnit {
 
     @NotBlank

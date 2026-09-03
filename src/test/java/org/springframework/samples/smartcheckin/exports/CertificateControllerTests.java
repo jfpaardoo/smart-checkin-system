@@ -35,6 +35,7 @@ class CertificateControllerTests {
 	private FormationAttendanceRepository attendanceRepository;
 
 	@Autowired
+	@SuppressWarnings("java:S6813")
 	private MockMvc mockMvc;
 
 	private FormationAttendance attendance;

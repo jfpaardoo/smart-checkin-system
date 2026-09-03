@@ -12,6 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.samples.smartcheckin.analytics.UserAnalyticsDTO;
+import org.springframework.samples.smartcheckin.analytics.UserFormationDetailDTO;
+import org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO;
 import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.checkin.Checkin;
 import org.springframework.samples.smartcheckin.exports.PdfReportGenerator;
@@ -111,7 +113,7 @@ class PdfExportStrategyTests {
 
     @Test
     void exportUserFormations_delegatesToPdfReportGenerator() throws Exception {
-        List<org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO> list = List.of();
+        List<UserFormationExportDTO> list = List.of();
         byte[] expected = new byte[]{10, 20};
         when(pdfReportGenerator.generateUserFormationsPdf(list)).thenReturn(expected);
 
@@ -123,7 +125,7 @@ class PdfExportStrategyTests {
     @Test
     void exportSingleUserDossier_delegatesToPdfReportGenerator() throws Exception {
         UserAnalyticsDTO u = UserAnalyticsDTO.builder().userId(1).build();
-        List<org.springframework.samples.smartcheckin.analytics.UserFormationDetailDTO> details = List.of();
+        List<UserFormationDetailDTO> details = List.of();
         byte[] expected = new byte[]{30, 40};
         when(pdfReportGenerator.generateSingleUserDossierPdf(u, details)).thenReturn(expected);
 

@@ -10,6 +10,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,7 +26,11 @@ import lombok.Setter;
 @lombok.NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "checkins")
+@Table(name = "checkins", indexes = {
+    @Index(name = "idx_checkins_user_id", columnList = "user_id"),
+    @Index(name = "idx_checkins_check_in_date", columnList = "checkInDate"),
+    @Index(name = "idx_checkins_user_date", columnList = "user_id, checkInDate")
+})
 public class Checkin extends BaseEntity {
 
     @NotNull

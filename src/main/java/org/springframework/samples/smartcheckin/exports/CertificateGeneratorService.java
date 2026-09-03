@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.samples.smartcheckin.storage.SignatureStorageService;
+import org.springframework.samples.smartcheckin.util.HashUtils;
 import org.springframework.stereotype.Service;
 
 import com.lowagie.text.Document;
@@ -165,7 +166,7 @@ public class CertificateGeneratorService {
 
             // Right Cell: Cryptographic Seal
             String rawData = studentCode + "-" + formationName + "-" + (attendance.getCheckInDate() != null ? attendance.getCheckInDate().toString() : "");
-            String hash = org.springframework.samples.smartcheckin.util.HashUtils.generateHash(rawData);
+            String hash = HashUtils.generateHash(rawData);
 
             PdfPCell sealCell = new PdfPCell();
             sealCell.setBorder(Rectangle.NO_BORDER);

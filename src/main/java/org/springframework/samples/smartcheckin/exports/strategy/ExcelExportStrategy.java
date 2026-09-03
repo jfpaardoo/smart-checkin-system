@@ -20,6 +20,7 @@ import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.checkin.Checkin;
 import org.springframework.samples.smartcheckin.formation.Formation;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
+import org.springframework.samples.smartcheckin.util.HashUtils;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
@@ -35,6 +36,15 @@ public class ExcelExportStrategy implements DataExportStrategy {
     private static final String USERNAME_HEADER = "Username";
     private static final String PERSONAL_CODE_HEADER = "Personal Code";
     private static final String COMPANY_HEADER = "Company";
+    private static final String FULL_NAME_HEADER = "Full Name";
+    private static final String SIGNATURE_PRESENT_HEADER = "Signature Present";
+    private static final String FORMATION_ID_HEADER = "Formation ID";
+    private static final String FORMATION_NAME_HEADER = "Formation Name";
+    private static final String SCHEDULED_DATE_HEADER = "Scheduled Date";
+    private static final String USER_ID_HEADER = "User ID";
+    private static final String CHECK_IN_TIME_HEADER = "Check-in Time";
+    private static final String CHECK_OUT_TIME_HEADER = "Check-out Time";
+    private static final String DURATION_MINUTES_HEADER = "Duration (Minutes)";
     private static final String NOT_AVAILABLE = "N/A";
     private static final String YES = "YES";
     private static final String NO = "NO";
@@ -192,8 +202,8 @@ public class ExcelExportStrategy implements DataExportStrategy {
             sheet.setDisplayGridlines(true);
 
             String[] headers = {
-                    "ID", USERNAME_HEADER, PERSONAL_CODE_HEADER, "Full Name", COMPANY_HEADER,
-                    "Checkin Type", "Timestamp", "Signature Present"
+                    "ID", USERNAME_HEADER, PERSONAL_CODE_HEADER, FULL_NAME_HEADER, COMPANY_HEADER,
+                    "Checkin Type", "Timestamp", SIGNATURE_PRESENT_HEADER
             };
             createHeaderRow(sheet, styles, headers);
 
@@ -217,20 +227,31 @@ public class ExcelExportStrategy implements DataExportStrategy {
         CellStyle numStyle = isZebra ? styles.numberZebraStyle : styles.numberStyle;
 
         setNumericCell(row.createCell(0), c.getId() != null ? c.getId() : 0, numStyle);
-        setStringCell(row.createCell(1), c.getUser() != null ? c.getUser().getUsername() : NOT_AVAILABLE, txtStyle);
-        setStringCell(row.createCell(2), c.getUser() != null ? c.getUser().getPersonalCode() : NOT_AVAILABLE, cntrStyle);
 
-        String fullName = c.getUser() != null ? (safe(c.getUser().getFirstName()) + " " + safe(c.getUser().getLastName())).trim() : NOT_AVAILABLE;
+        String username = c.getUser() != null ? c.getUser().getUsername() : NOT_AVAILABLE;
+        setStringCell(row.createCell(1), username, txtStyle);
+
+        String personalCode = c.getUser() != null ? c.getUser().getPersonalCode() : NOT_AVAILABLE;
+        setStringCell(row.createCell(2), personalCode, cntrStyle);
+
+        String fullName = c.getUser() != null
+                ? (safe(c.getUser().getFirstName()) + " " + safe(c.getUser().getLastName())).trim()
+                : NOT_AVAILABLE;
         setStringCell(row.createCell(3), fullName, txtStyle);
 
-        String comp = (c.getUser() != null && c.getUser().getCompany() != null) ? c.getUser().getCompany().getName() : NOT_AVAILABLE;
-        setStringCell(row.createCell(4), comp, txtStyle);
+        String company = (c.getUser() != null && c.getUser().getCompany() != null)
+                ? c.getUser().getCompany().getName()
+                : NOT_AVAILABLE;
+        setStringCell(row.createCell(4), company, txtStyle);
 
-        setStringCell(row.createCell(5), c.getCheckInType() != null ? c.getCheckInType().name() : NOT_AVAILABLE, cntrStyle);
-        setStringCell(row.createCell(6), c.getCheckInDate() != null ? c.getCheckInDate().format(DATE_FORMATTER) : NOT_AVAILABLE, cntrStyle);
+        String type = c.getCheckInType() != null ? c.getCheckInType().name() : NOT_AVAILABLE;
+        setStringCell(row.createCell(5), type, cntrStyle);
 
-        boolean hasSig = c.getSignature() != null && !c.getSignature().trim().isEmpty();
-        setStringCell(row.createCell(7), hasSig ? YES : NO, cntrStyle);
+        String ts = c.getCheckInDate() != null ? c.getCheckInDate().format(DATE_FORMATTER) : NOT_AVAILABLE;
+        setStringCell(row.createCell(6), ts, cntrStyle);
+
+        boolean hasSignature = c.getSignature() != null && !c.getSignature().trim().isEmpty();
+        setStringCell(row.createCell(7), hasSignature ? YES : NO, cntrStyle);
     }
 
     // ─── 3. Export Formations ─────────────────────────────────────────────────
@@ -252,7 +273,7 @@ public class ExcelExportStrategy implements DataExportStrategy {
         Sheet sheet = workbook.createSheet("Formations Summary");
         sheet.setDisplayGridlines(true);
 
-        String[] headers = {"Formation ID", "Formation Name", "Scheduled Date", "Enrolled Students"};
+        String[] headers = {FORMATION_ID_HEADER, FORMATION_NAME_HEADER, SCHEDULED_DATE_HEADER, "Enrolled Students"};
         createHeaderRow(sheet, styles, headers);
 
         int rowIdx = 1;
@@ -282,9 +303,9 @@ public class ExcelExportStrategy implements DataExportStrategy {
         sheet.setDisplayGridlines(true);
 
         String[] headers = {
-                "Formation ID", "Formation Name", "Scheduled Date", "User ID", USERNAME_HEADER,
-                PERSONAL_CODE_HEADER, "Student Name", COMPANY_HEADER, "Check-in Time", "Check-out Time",
-                "Duration (Minutes)", "Signature Present", "Integrity Verification Hash"
+                FORMATION_ID_HEADER, FORMATION_NAME_HEADER, SCHEDULED_DATE_HEADER, USER_ID_HEADER, USERNAME_HEADER,
+                PERSONAL_CODE_HEADER, "Student Name", COMPANY_HEADER, CHECK_IN_TIME_HEADER, CHECK_OUT_TIME_HEADER,
+                DURATION_MINUTES_HEADER, SIGNATURE_PRESENT_HEADER, "Integrity Verification Hash"
         };
         createHeaderRow(sheet, styles, headers);
 
@@ -388,7 +409,7 @@ public class ExcelExportStrategy implements DataExportStrategy {
         setStringCell(row.createCell(5), log.getIpAddress(), cntrStyle);
 
         String rawData = ts + safe(log.getAction()) + safe(log.getUsername()) + safe(log.getIpAddress());
-        setStringCell(row.createCell(6), org.springframework.samples.smartcheckin.util.HashUtils.generateHash(rawData), cntrStyle);
+        setStringCell(row.createCell(6), HashUtils.generateHash(rawData), cntrStyle);
     }
 
     // ─── 5. Export User Formations Detailed ────────────────────────────────────
@@ -401,11 +422,11 @@ public class ExcelExportStrategy implements DataExportStrategy {
             sheet.setDisplayGridlines(true);
 
             String[] headers = {
-                    "User ID", USERNAME_HEADER, PERSONAL_CODE_HEADER, "Full Name", "Email",
+                    USER_ID_HEADER, USERNAME_HEADER, PERSONAL_CODE_HEADER, FULL_NAME_HEADER, "Email",
                     "Locator", COMPANY_HEADER, "Role", "Working Status",
-                    "Formation ID", "Formation Name", "Scheduled Date", "Attendance Status",
-                    "Check-in Time", "Check-out Time", "Duration (Minutes)", "Duration (Hours)",
-                    "Signature Present", "Integrity Hash (SHA-256)"
+                    FORMATION_ID_HEADER, FORMATION_NAME_HEADER, SCHEDULED_DATE_HEADER, "Attendance Status",
+                    CHECK_IN_TIME_HEADER, CHECK_OUT_TIME_HEADER, DURATION_MINUTES_HEADER, "Duration (Hours)",
+                    SIGNATURE_PRESENT_HEADER, "Integrity Hash (SHA-256)"
             };
             createHeaderRow(sheet, styles, headers);
 
@@ -460,59 +481,77 @@ public class ExcelExportStrategy implements DataExportStrategy {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             StyleRegistry styles = new StyleRegistry(workbook);
 
-            // Sheet 1: Profile & KPI Summary
-            Sheet summarySheet = workbook.createSheet("Employee Dossier Summary");
-            summarySheet.setDisplayGridlines(true);
-
-            String[] summaryHeaders = {
-                    "Field", "Value"
-            };
-            createHeaderRow(summarySheet, styles, summaryHeaders);
-
-            int sRow = 1;
-            addDossierField(summarySheet.createRow(sRow++), "User ID", String.valueOf(user != null && user.getUserId() != null ? user.getUserId() : 0), styles);
-            addDossierField(summarySheet.createRow(sRow++), "Username", user != null ? user.getUsername() : NOT_AVAILABLE, styles);
-            addDossierField(summarySheet.createRow(sRow++), "Personal Code", user != null ? user.getPersonalCode() : NOT_AVAILABLE, styles);
-            addDossierField(summarySheet.createRow(sRow++), "Full Name", user != null ? (safe(user.getFirstName()) + " " + safe(user.getLastName())).trim() : NOT_AVAILABLE, styles);
-            addDossierField(summarySheet.createRow(sRow++), "Company", user != null && user.getCompanyName() != null ? user.getCompanyName() : NOT_AVAILABLE, styles);
-            addDossierField(summarySheet.createRow(sRow++), "Locator / Sede", user != null && user.getLocator() != null ? user.getLocator() : NOT_AVAILABLE, styles);
-            addDossierField(summarySheet.createRow(sRow++), "Role / Authority", user != null && user.getAuthority() != null ? user.getAuthority() : NOT_AVAILABLE, styles);
-            addDossierField(summarySheet.createRow(sRow++), "Currently Working", user != null && Boolean.TRUE.equals(user.getIsWorking()) ? YES : NO, styles);
-            addDossierField(summarySheet.createRow(sRow++), "Total Shift Checkins", String.valueOf(user != null && user.getTotalCheckins() != null ? user.getTotalCheckins() : 0), styles);
-            addDossierField(summarySheet.createRow(sRow++), "Total Work Minutes", String.valueOf(user != null && user.getTotalWorkMinutes() != null ? user.getTotalWorkMinutes() : 0), styles);
-            addDossierField(summarySheet.createRow(sRow++), "Formations Assigned", String.valueOf(user != null && user.getFormationsAssigned() != null ? user.getFormationsAssigned() : 0), styles);
-            addDossierField(summarySheet.createRow(sRow++), "Formations Attended", String.valueOf(user != null && user.getFormationsAttended() != null ? user.getFormationsAttended() : 0), styles);
-            addDossierField(summarySheet.createRow(sRow++), "Formations Completed", String.valueOf(user != null && user.getFormationsCompleted() != null ? user.getFormationsCompleted() : 0), styles);
-            addDossierField(summarySheet.createRow(sRow++), "Attendance Rate (%)", String.format(java.util.Locale.US, "%.1f%%", user != null && user.getAttendancePercentage() != null ? user.getAttendancePercentage() : 0.0), styles);
-            addDossierField(summarySheet.createRow(sRow++), "Total Formation Minutes", String.valueOf(user != null && user.getTotalFormationMinutes() != null ? user.getTotalFormationMinutes() : 0), styles);
-            long fMins = user != null && user.getTotalFormationMinutes() != null ? user.getTotalFormationMinutes() : 0;
-            addDossierField(summarySheet.createRow(sRow++), "Total Formation Hours", String.format(java.util.Locale.US, "%dh %dm (%.1fh)", fMins / 60, fMins % 60, fMins / 60.0), styles);
-
-            autoSizeColumns(summarySheet, summaryHeaders.length);
-
-            // Sheet 2: Training Sessions & Signatures
-            Sheet detailsSheet = workbook.createSheet("Training Sessions & Signatures");
-            detailsSheet.setDisplayGridlines(true);
-
-            String[] detailHeaders = {
-                    "Formation ID", "Formation Name", "Scheduled Date", "Status",
-                    "Check-in Time", "Check-out Time", "Duration (Minutes)", "Duration (Formatted)",
-                    "Signature Present", "Integrity Verification Hash"
-            };
-            createHeaderRow(detailsSheet, styles, detailHeaders);
-
-            int dRow = 1;
-            if (details != null) {
-                for (UserFormationDetailDTO d : details) {
-                    appendUserDetailRow(detailsSheet.createRow(dRow++), d, styles, (dRow % 2 == 0));
-                }
-            }
-
-            autoSizeColumns(detailsSheet, detailHeaders.length);
+            buildDossierSummarySheet(workbook, user, styles);
+            buildDossierDetailsSheet(workbook, details, styles);
 
             workbook.write(out);
             return out.toByteArray();
         }
+    }
+
+    private void buildDossierSummarySheet(Workbook workbook, UserAnalyticsDTO user, StyleRegistry styles) {
+        Sheet summarySheet = workbook.createSheet("Employee Dossier Summary");
+        summarySheet.setDisplayGridlines(true);
+
+        String[] summaryHeaders = {"Field", "Value"};
+        createHeaderRow(summarySheet, styles, summaryHeaders);
+
+        UserAnalyticsDTO safeUser = user != null ? user : UserAnalyticsDTO.builder().build();
+        String uId = String.valueOf(safeUser.getUserId() != null ? safeUser.getUserId() : 0);
+        String fullName = (safe(safeUser.getFirstName()) + " " + safe(safeUser.getLastName())).trim();
+        boolean isWorking = Boolean.TRUE.equals(safeUser.getIsWorking());
+        long totalCheckins = safeUser.getTotalCheckins() != null ? safeUser.getTotalCheckins() : 0;
+        long totalWorkMins = safeUser.getTotalWorkMinutes() != null ? safeUser.getTotalWorkMinutes() : 0;
+        int assigned = safeUser.getFormationsAssigned() != null ? safeUser.getFormationsAssigned() : 0;
+        int attended = safeUser.getFormationsAttended() != null ? safeUser.getFormationsAttended() : 0;
+        int completed = safeUser.getFormationsCompleted() != null ? safeUser.getFormationsCompleted() : 0;
+        double rate = safeUser.getAttendancePercentage() != null ? safeUser.getAttendancePercentage() : 0.0;
+        long fMins = safeUser.getTotalFormationMinutes() != null ? safeUser.getTotalFormationMinutes() : 0;
+
+        int sRow = 1;
+        addDossierField(summarySheet.createRow(sRow++), USER_ID_HEADER, uId, styles);
+        addDossierField(summarySheet.createRow(sRow++), USERNAME_HEADER, defaultVal(safeUser.getUsername()), styles);
+        addDossierField(summarySheet.createRow(sRow++), PERSONAL_CODE_HEADER, defaultVal(safeUser.getPersonalCode()), styles);
+        addDossierField(summarySheet.createRow(sRow++), FULL_NAME_HEADER, defaultVal(fullName), styles);
+        addDossierField(summarySheet.createRow(sRow++), COMPANY_HEADER, defaultVal(safeUser.getCompanyName()), styles);
+        addDossierField(summarySheet.createRow(sRow++), "Locator / Sede", defaultVal(safeUser.getLocator()), styles);
+        addDossierField(summarySheet.createRow(sRow++), "Role / Authority", defaultVal(safeUser.getAuthority()), styles);
+        addDossierField(summarySheet.createRow(sRow++), "Currently Working", isWorking ? YES : NO, styles);
+        addDossierField(summarySheet.createRow(sRow++), "Total Shift Checkins", String.valueOf(totalCheckins), styles);
+        addDossierField(summarySheet.createRow(sRow++), "Total Work Minutes", String.valueOf(totalWorkMins), styles);
+        addDossierField(summarySheet.createRow(sRow++), "Formations Assigned", String.valueOf(assigned), styles);
+        addDossierField(summarySheet.createRow(sRow++), "Formations Attended", String.valueOf(attended), styles);
+        addDossierField(summarySheet.createRow(sRow++), "Formations Completed", String.valueOf(completed), styles);
+        addDossierField(summarySheet.createRow(sRow++), "Attendance Rate (%)", String.format(java.util.Locale.US, "%.1f%%", rate), styles);
+        addDossierField(summarySheet.createRow(sRow++), "Total Formation Minutes", String.valueOf(fMins), styles);
+        addDossierField(summarySheet.createRow(sRow), "Total Formation Hours", String.format(java.util.Locale.US, "%dh %dm (%.1fh)", fMins / 60, fMins % 60, fMins / 60.0), styles);
+
+        autoSizeColumns(summarySheet, summaryHeaders.length);
+    }
+
+    private String defaultVal(String val) {
+        return (val != null && !val.trim().isEmpty()) ? val : NOT_AVAILABLE;
+    }
+
+    private void buildDossierDetailsSheet(Workbook workbook, List<UserFormationDetailDTO> details, StyleRegistry styles) {
+        Sheet detailsSheet = workbook.createSheet("Training Sessions & Signatures");
+        detailsSheet.setDisplayGridlines(true);
+
+        String[] detailHeaders = {
+                FORMATION_ID_HEADER, FORMATION_NAME_HEADER, SCHEDULED_DATE_HEADER, "Status",
+                CHECK_IN_TIME_HEADER, CHECK_OUT_TIME_HEADER, DURATION_MINUTES_HEADER, "Duration (Formatted)",
+                SIGNATURE_PRESENT_HEADER, "Integrity Verification Hash"
+        };
+        createHeaderRow(detailsSheet, styles, detailHeaders);
+
+        int dRow = 1;
+        if (details != null) {
+            for (UserFormationDetailDTO d : details) {
+                appendUserDetailRow(detailsSheet.createRow(dRow++), d, styles, (dRow % 2 == 0));
+            }
+        }
+
+        autoSizeColumns(detailsSheet, detailHeaders.length);
     }
 
     private void addDossierField(Row row, String fieldName, String fieldValue, StyleRegistry styles) {
@@ -546,7 +585,7 @@ public class ExcelExportStrategy implements DataExportStrategy {
 
         String hash = NOT_AVAILABLE;
         if (hasSig && d.getSignature() != null) {
-            hash = org.springframework.samples.smartcheckin.util.HashUtils.generateHash(
+            hash = HashUtils.generateHash(
                     String.valueOf(d.getFormationId()) + safe(d.getFormationName()) + d.getSignature());
         }
         setStringCell(row.createCell(9), hash, cntrStyle);

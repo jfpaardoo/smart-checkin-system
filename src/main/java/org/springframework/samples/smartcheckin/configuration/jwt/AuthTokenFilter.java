@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.lang.NonNull;
 
+import org.springframework.samples.smartcheckin.auth.session.UserSessionService;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsServiceImpl;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,13 +22,13 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 	private final JwtUtils jwtUtils;
 	private final UserDetailsServiceImpl userDetailsService;
 	private final JwtBlacklistService jwtBlacklistService;
-	private final org.springframework.samples.smartcheckin.auth.session.UserSessionService userSessionService;
+	private final UserSessionService userSessionService;
 
 	public AuthTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService, JwtBlacklistService jwtBlacklistService) {
 		this(jwtUtils, userDetailsService, jwtBlacklistService, null);
 	}
 
-	public AuthTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService, JwtBlacklistService jwtBlacklistService, org.springframework.samples.smartcheckin.auth.session.UserSessionService userSessionService) {
+	public AuthTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService, JwtBlacklistService jwtBlacklistService, UserSessionService userSessionService) {
 		this.jwtUtils = jwtUtils;
 		this.userDetailsService = userDetailsService;
 		this.jwtBlacklistService = jwtBlacklistService;

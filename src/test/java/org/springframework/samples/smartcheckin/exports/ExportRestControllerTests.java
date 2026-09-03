@@ -30,9 +30,12 @@ import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserRepository;
 import org.springframework.samples.smartcheckin.user.UserService;
 import org.springframework.samples.smartcheckin.analytics.AnalyticsService;
+import org.springframework.samples.smartcheckin.analytics.UserAnalyticsDTO;
 import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.audit.AuditLogRepository;
 import org.springframework.samples.smartcheckin.auth.session.UserSessionRepository;
+import org.springframework.samples.smartcheckin.company.Company;
+import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -87,9 +90,10 @@ class ExportRestControllerTests {
 	private OfficialFormationSheetService officialFormationSheetService;
 
 	@MockitoBean
-	private org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter cloudStorageAdapter;
+	private CloudStorageAdapter cloudStorageAdapter;
 
 	@Autowired
+	@SuppressWarnings("java:S6813")
 	private MockMvc mockMvc;
 
 	private User user;
@@ -438,7 +442,7 @@ class ExportRestControllerTests {
     @Test
     @WithMockUser(authorities = {"ADMIN"})
     void shouldExportCheckinsCsvWithCompanyFilter() throws Exception {
-        org.springframework.samples.smartcheckin.company.Company comp = new org.springframework.samples.smartcheckin.company.Company();
+        Company comp = new Company();
         comp.setId(5);
         user.setCompany(comp);
         checkin.setUser(user);
@@ -452,7 +456,7 @@ class ExportRestControllerTests {
     @Test
     @WithMockUser(authorities = {"ADMIN"})
     void shouldExportFormationsExcelWithCompanyFilter() throws Exception {
-        org.springframework.samples.smartcheckin.company.Company comp = new org.springframework.samples.smartcheckin.company.Company();
+        Company comp = new Company();
         comp.setId(5);
         user.setCompany(comp);
         attendance.setUser(user);
@@ -507,7 +511,7 @@ class ExportRestControllerTests {
     @Test
     @WithMockUser(authorities = {"ADMIN"})
     void shouldExportSingleUserDossierSuccessfully() throws Exception {
-        org.springframework.samples.smartcheckin.analytics.UserAnalyticsDTO uDto = org.springframework.samples.smartcheckin.analytics.UserAnalyticsDTO.builder()
+        UserAnalyticsDTO uDto = UserAnalyticsDTO.builder()
                 .userId(1)
                 .username("testuser")
                 .firstName("Test")

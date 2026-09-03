@@ -10,6 +10,7 @@ import java.security.NoSuchAlgorithmException;
 import java.nio.charset.StandardCharsets;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,7 +29,11 @@ import java.time.temporal.ChronoUnit;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "audit_logs")
+@Table(name = "audit_logs", indexes = {
+    @Index(name = "idx_audit_logs_timestamp", columnList = "timestamp"),
+    @Index(name = "idx_audit_logs_action", columnList = "action"),
+    @Index(name = "idx_audit_logs_username", columnList = "username")
+})
 public class AuditLog extends BaseEntity {
 
     private LocalDateTime timestamp;

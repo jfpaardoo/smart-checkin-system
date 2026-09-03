@@ -188,14 +188,16 @@ export default function FormationDetailsAdmin() {
               </Link>
             )}
 
-            <Link
-              className={`da-btn-blue ${formation.isClosed ? 'col-span-3 sm:col-span-1' : 'col-span-1'} sm:w-auto px-2 sm:px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-1.5 sm:gap-2 text-decoration-none shadow-xs hover:scale-105 active:scale-95 transition-all min-h-[40px]`}
-              to={`/qr-generator?formationId=${id}`}
-              title={t('formationDetails.qrButton')}
-            >
-              <FontAwesomeIcon icon={faQrcode} />
-              <span className="whitespace-nowrap">{t('formationDetails.qrButton', 'QR')}</span>
-            </Link>
+            {!formation.isClosed && formation.status !== 'CLOSED' && (
+              <Link
+                className="da-btn-blue col-span-1 sm:w-auto px-2 sm:px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-1.5 sm:gap-2 text-decoration-none shadow-xs hover:scale-105 active:scale-95 transition-all min-h-[40px]"
+                to={`/qr-generator?formationId=${id}`}
+                title={t('formationDetails.qrButton')}
+              >
+                <FontAwesomeIcon icon={faQrcode} />
+                <span className="whitespace-nowrap">{t('formationDetails.qrButton', 'QR')}</span>
+              </Link>
+            )}
 
             {!formation.isClosed && (
               <button

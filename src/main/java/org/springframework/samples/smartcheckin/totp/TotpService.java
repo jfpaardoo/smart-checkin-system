@@ -45,6 +45,11 @@ public class TotpService {
         this.twoFactorVerifier = twoFactV;
     }
 
+    private static final String GLOBAL_KEY = "GLOBAL";
+
+    // Key: formationId (or GLOBAL_KEY), Value: manual rotation counter
+    private final ConcurrentHashMap<String, Integer> formationRotationCount = new ConcurrentHashMap<>();
+
     public String getCurrentToken() {
         return getCurrentToken((Object) null);
     }
@@ -59,6 +64,13 @@ public class TotpService {
         }
     }
 
+    public String regenerateToken(Object formationId) {
+        String formIdStr = (formationId != null) ? String.valueOf(formationId).trim() : null;
+        String key = (formIdStr == null || formIdStr.isEmpty() || "null".equalsIgnoreCase(formIdStr)) ? GLOBAL_KEY : formIdStr;
+        formationRotationCount.compute(key, (k, v) -> v == null ? 1 : v + 1);
+        return getCurrentToken(formationId);
+    }
+
     public boolean verifyToken(String token) {
         return verifyToken(token, (Object) null);
     }
@@ -67,15 +79,29 @@ public class TotpService {
         if (token == null || token.trim().isEmpty()) {
             return false;
         }
-        String targetSecret = getHashedSecretForFormation(formationId);
-        return qrVerifier.isValidCode(targetSecret, token);
+        String targetSecret = getHashedSecretForFormation(formationId, 0);
+        if (qrVerifier.isValidCode(targetSecret, token)) {
+            return true;
+        }
+        String previousSecret = getHashedSecretForFormation(formationId, -1);
+        return qrVerifier.isValidCode(previousSecret, token);
     }
 
     private String getHashedSecretForFormation(Object formationId) {
+        return getHashedSecretForFormation(formationId, 0);
+    }
+
+    private String getHashedSecretForFormation(Object formationId, int rotationOffset) {
         String formIdStr = (formationId != null) ? String.valueOf(formationId).trim() : null;
+        String key = (formIdStr == null || formIdStr.isEmpty() || "null".equalsIgnoreCase(formIdStr)) ? GLOBAL_KEY : formIdStr;
+        int currentRotation = Math.max(0, formationRotationCount.getOrDefault(key, 0) + rotationOffset);
+
         String rawSecret = (formIdStr == null || formIdStr.isEmpty() || "null".equalsIgnoreCase(formIdStr))
                 ? secret
                 : secret + "_FORMATION_" + formIdStr;
+        if (currentRotation > 0) {
+            rawSecret += "_ROTATION_" + currentRotation;
+        }
 
         Base32 base32 = new Base32();
         try {
@@ -108,12 +134,12 @@ public class TotpService {
 
     public void cacheAdminLocation(Object formationId, Double lat, Double lng) {
         if (lat == null || lng == null) return;
-        String key = (formationId != null) ? String.valueOf(formationId).trim() : "GLOBAL";
+        String key = (formationId != null) ? String.valueOf(formationId).trim() : GLOBAL_KEY;
         adminLocationCache.put(key, new double[]{lat, lng});
     }
 
     public double[] getCachedAdminLocation(Object formationId) {
-        String key = (formationId != null) ? String.valueOf(formationId).trim() : "GLOBAL";
+        String key = (formationId != null) ? String.valueOf(formationId).trim() : GLOBAL_KEY;
         return adminLocationCache.get(key);
     }
 }

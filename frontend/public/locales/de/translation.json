@@ -89,7 +89,8 @@
     "verifyAndEnter": "Überprüfen & Anmelden",
     "forgotPassword": "Passwort vergessen?",
     "privacyPolicy": "Datenschutzerklärung",
-    "backupCodeInvalidFormat": "Der Wiederherstellungscode muss das Format XXXX-XXXX haben."
+    "backupCodeInvalidFormat": "Der Wiederherstellungscode muss das Format XXXX-XXXX haben.",
+    "usernamePlaceholder": "Benutzername oder E-Mail eingeben"
   },
   "users": {
     "allActive": "Alle Aktiven",
@@ -160,7 +161,12 @@
     "allStates": "Alle Status",
     "pendingFilterHint": "Anzeige von Anfragen, die auf Validierung warten",
     "subtitle": "Rollen, zugeordnete Standorte, Aktivitätsstatus und Registrierungsanfragen verwalten",
-    "locatorPlaceholder": "Standortcode eingeben (Z. B. MAD, BCN, PT...)"
+    "locatorPlaceholder": "Standortcode eingeben (Z. B. MAD, BCN, PT...)",
+    "noUsersFound": "Keine übereinstimmenden Mitarbeiter gefunden.",
+    "deleteConfirmTitle": "Benutzer löschen",
+    "deleteConfirmMessage": "Sind Sie sicher, dass Sie den Benutzer dauerhaft löschen möchten:",
+    "deleteWarning": "Diese Aktion kann nicht rückgängig gemacht werden. Systemzugänge und zugehörige Datensätze werden entfernt.",
+    "duplicateEmail": "Die E-Mail-Adresse ist bereits registriert."
   },
   "formations": {
     "filterAll": "Alle Termine",
@@ -218,7 +224,11 @@
     "subtitle": "Schulungen planen, Anwesenheiten und Lehrmaterialien verwalten",
     "location": "Schulungsort",
     "trainer": "Trainer",
-    "titleUppercase": "SCHULUNG"
+    "titleUppercase": "SCHULUNG",
+    "filterAllStatus": "Alle Status",
+    "filterStatus": "Nach Status filtern",
+    "savedAsDraft": "Schulung als Entwurf gespeichert.",
+    "publishedSuccess": "Schulung erfolgreich veröffentlicht! Benachrichtigungen wurden versendet."
   },
   "formationDetails": {
     "title": "Schulungsdetails",
@@ -292,7 +302,12 @@
     "closeError": "Fehler beim Beenden der Schulung.",
     "signatureRequired": "Bitte leisten Sie Ihre Unterschrift als Trainer, um die Schulung zu schließen.",
     "officialSheetDownloaded": "Offizielles Protokoll FOR 99 erfolgreich heruntergeladen und synchronisiert.",
-    "downloadOfficialSheetError": "Fehler beim Herunterladen des offiziellen Protokolls FOR 99."
+    "downloadOfficialSheetError": "Fehler beim Herunterladen des offiziellen Protokolls FOR 99.",
+    "confirmClose": "Schulung abschließen",
+    "statusPublished": "Veröffentlicht / Offen",
+    "syncCalendar": "Kalender synchronisieren",
+    "calendarDownloaded": "Kalendereinladung (.ics) heruntergeladen.",
+    "calendarError": "Fehler beim Herunterladen der Kalendereinladung."
   },
   "qr": {
     "title": "Schulungs-QR",
@@ -303,7 +318,28 @@
     "selectFormationPrompt2": "um den QR zu generieren",
     "totpSecurity": "TOTP-Sicherheit: Aktualisiert alle 20s",
     "maxBrightnessBtn": "Maximale Helligkeit",
-    "brightnessHint": "Auf iPhone / iPad: Wischen Sie im Kontrollzentrum nach unten, um die Helligkeit bei Bedarf zu erhöhen."
+    "brightnessHint": "Auf iPhone / iPad: Wischen Sie im Kontrollzentrum nach unten, um die Helligkeit bei Bedarf zu erhöhen.",
+    "autoUpdateBadge": "Automatische Aktualisierung",
+    "captureShield": "Aufnahmeschutz-Schild",
+    "liveSync": "Live",
+    "localMode": "Lokaler Modus",
+    "liveSyncTitle": "Aktive Verbindung in Echtzeit synchronisiert",
+    "localModeTitle": "Lokaler Modus: Der QR-Code rotiert autonom mit der internen Uhr weiter",
+    "gpsLinked": "Admin-GPS verknüpft",
+    "gpsSearching": "Admin-GPS wird ermittelt...",
+    "copyPin": "PIN kopieren",
+    "pinCopied": "Kopiert",
+    "shortcuts": "Tastenkürzel",
+    "projector": "Projektor",
+    "refresh": "Aktualisieren",
+    "exit": "Beenden",
+    "fullscreenHint": "Doppelklick für Vollbildmodus (Taste F)",
+    "closeFullscreen": "Vollbildmodus schließen (Esc oder F-Taste)",
+    "captureBlockedTitle": "Aufnahme blockiert",
+    "captureBlockedDesc": "Der QR-Code und die dynamische PIN sind vor Screenshots geschützt.",
+    "pinHidden": "PIN ausgeblendet",
+    "pinHiddenDesc": "Geschützt vor Bildschirmaufnahme",
+    "presenterShortcutsHint": "Drücken Sie F oder Esc zum Beenden · Leertaste zum Neugenerieren"
   },
   "dashboard": {
     "hello": "Hallo",
@@ -348,7 +384,29 @@
     "camera": "Kamera",
     "viewDocumentation": "Dokumentation anzeigen",
     "filterAllFormations": "Alle Schulungen",
-    "filterStatus": "Status filtern"
+    "filterStatus": "Status filtern",
+    "welcomeSub": "Prüfen Sie Ihre bevorstehenden Termine, laufende Sitzungen und laden Sie Ihre Zertifikate herunter.",
+    "tabUpcoming": "Bevorstehend geplant",
+    "tabInProgress": "Laufend",
+    "tabCompleted": "Abgeschlossen & Zertifikate",
+    "tabAll": "Alle",
+    "statusScheduled": "Geplant",
+    "scheduledDate": "Datum & Uhrzeit",
+    "todayAt": "Heute um",
+    "tomorrowAt": "Morgen um",
+    "inDays": "In {{count}} Tagen",
+    "trainerLocation": "Ort & Trainer",
+    "noUpcoming": "Sie haben derzeit keine anstehenden Schulungen.",
+    "noInProgress": "Sie haben derzeit keine laufenden Schulungen.",
+    "noCompleted": "Sie haben bisher noch keine Schulungen abgeschlossen.",
+    "scheduledTip": "Der Check-in wird durch Scannen des QR-Codes im Raum am Tag der Veranstaltung freigeschaltet.",
+    "syncCalendar": "Kalender synchronisieren",
+    "statusClosedNonAttended": "Abgeschlossen",
+    "docLockedTitle": "Dokumentation & Lehrmaterial",
+    "docLockedBadge": "Gesperrt bis zum Check-in oder Abschluss",
+    "docLockedDesc": "Lehrmaterialien und Präsentationen werden automatisch freigeschaltet, wenn Sie Ihre Anwesenheit beim Check-in bestätigen oder der Trainer die Sitzung beendet.",
+    "unlockedPostSession": "Nach Sitzungsende freigeschaltet",
+    "clickToPreview": "Klicken Sie für eine Vorschau"
   },
   "checkin": {
     "schedulePrompt": "Im Moment bin ich:",
@@ -398,7 +456,18 @@
     "formationLabel": "Ausbildung",
     "dateLabel": "Datum",
     "close": "Schließen",
-    "switchCamera": "Kamera wechseln"
+    "switchCamera": "Kamera wechseln",
+    "savedOffline": "Offline: Check-in lokal auf Ihrem Gerät gespeichert. Wird automatisch synchronisiert, sobald wieder Verbindung besteht.",
+    "offlineQueued": "Ihr Eintrag wurde auf dem Gerät gespeichert und wird bei Verbindung gesendet.",
+    "offlineSynced": "Offline-Check-ins erfolgreich mit dem Server synchronisiert.",
+    "gpsActive": "GPS-Standort bestätigt",
+    "enableGpsTooltip": "Tippen, um Standortzugriff zu erlauben",
+    "enableGps": "Zugriff auf GPS-Standort erlauben",
+    "type": "Erfassungsart",
+    "dateTime": "Datum und Uhrzeit",
+    "signatureStatus": "Signatur",
+    "entry": "KOMMEN",
+    "exit": "GEHEN"
   },
   "common": {
     "clear": "Löschen",
@@ -444,7 +513,20 @@
     "selectOption": "Auswählen",
     "clearSearch": "Suche löschen",
     "logoutWarning": "Ihre Sitzung wird auf diesem Gerät sicher beendet.",
-    "companyLogo": "Unternehmenslogo"
+    "companyLogo": "Unternehmenslogo",
+    "status": "Status",
+    "selectAll": "Alle",
+    "deselectAll": "Keine",
+    "saveChanges": "Änderungen speichern",
+    "deletedSuccess": "Eintrag erfolgreich gelöscht",
+    "appUpdated": "Neue Version verfügbar",
+    "appUpdatedDesc": "Ein Update der Anwendung wurde bereitgestellt. Bitte laden Sie die Seite neu.",
+    "reloadApp": "Anwendung neu laden",
+    "noResults": "Keine Ergebnisse gefunden",
+    "view": "Ansehen",
+    "tapToExpand": "Tippen zum Erweitern des Textes",
+    "generating": "Generieren...",
+    "reset": "Zurücksetzen"
   },
   "lang": {
     "es": "Español",
@@ -561,7 +643,18 @@
     "userFormationsPdf": "Vollständige Matrix (PDF)",
     "userFormationsCsv": "Vollständige Matrix (CSV)",
     "exportDossier": "Dossier:",
-    "records": "Einträge"
+    "records": "Einträge",
+    "company": "Unternehmen",
+    "allCompanies": "Alle Unternehmen",
+    "locator": "Kennung",
+    "role": "Rolle",
+    "perfRate": "Leistungsrate",
+    "allStatuses": "Alle Status",
+    "workStatus": "Arbeitsstatus",
+    "exportSuccess": "Bericht erfolgreich exportiert",
+    "exportError": "Fehler beim Generieren des Analyseberichts",
+    "filtered": "Gefiltert",
+    "filterCompany": "Nach Unternehmen filtern"
   },
   "profile": {
     "myProfileTitle": "Mein Profil",
@@ -669,7 +762,26 @@
     "regenerate": "Neu generieren",
     "backupCodesDesc": "Wenn Sie den Zugriff auf Ihr Gerät verlieren, können Sie einen Ihrer Einmal-Wiederherstellungscodes verwenden, um sich anzumelden.",
     "twoFactorEmail": "E-Mail",
-    "twoFactorApp": "Authenticator-App"
+    "twoFactorApp": "Authenticator-App",
+    "checkinHistory": "Verlauf der Check-ins und Arbeitszeit",
+    "totalRecords": "Einträge",
+    "noCheckinsYet": "Noch keine Check-ins erfasst",
+    "noCheckinsDesc": "Ihre Kommen- und Gehen-Einträge werden hier aufgelistet.",
+    "backupCodesKeepSafe": "Sichern Sie Ihre Wiederherstellungscodes",
+    "backupCodesKeepSafeDesc": "Falls Sie den Zugriff auf Ihre Authentifikator-App verlieren, können Sie diese Codes nutzen. Jeder Code ist einmalig verwendbar.",
+    "copied": "Kopiert",
+    "copyAll": "Alle kopieren",
+    "downloadTxt": ".txt herunterladen",
+    "backupCodesSavedConfirmation": "Ich habe meine Codes gesichert",
+    "twoFactorEnabledSuccess": "Zwei-Faktor-Authentifizierung erfolgreich aktiviert.",
+    "twoFactorInvalidCode": "Ungültiger oder abgelaufener Code.",
+    "twoFactorDisabledSuccess": "Zwei-Faktor-Authentifizierung deaktiviert.",
+    "enter2FACodeToRegenerate": "Geben Sie Ihren 6-stelligen 2FA-Code ein, um neue Wiederherstellungscodes zu generieren:",
+    "backupCodesRegenerateError": "Fehler beim Neugenerieren der Codes. Überprüfen Sie Ihren 2FA-Code.",
+    "backupCodesCopied": "Wiederherstellungscodes in die Zwischenablage kopiert.",
+    "twoFactorMethodLabel": "Methode:",
+    "regenerateBackupCodes": "Codes neu generieren",
+    "disablePromptMsg": "Um 2FA zu deaktivieren, geben Sie einen aktuellen Bestätigungscode ein:"
   },
   "register": {
     "company": "Unternehmen / Arbeitsplatz",
@@ -702,7 +814,10 @@
     "email": "E-Mail",
     "captchaRequired": "Bitte schließen Sie die Sicherheitsüberprüfung ab.",
     "hidePasswordVisibility": "Passwort verbergen",
-    "showPasswordVisibility": "Passwort anzeigen"
+    "showPasswordVisibility": "Passwort anzeigen",
+    "firstNamePlaceholder": "Ihr Vorname",
+    "lastNamePlaceholder": "Ihr Nachname",
+    "usernamePlaceholder": "benutzername"
   },
   "audit": {
     "filterAll": "Alle Ereignisse",
@@ -720,7 +835,8 @@
       "action": "Aktion",
       "user": "Benutzer",
       "details": "Details",
-      "ip": "Quell-IP"
+      "ip": "Quell-IP",
+      "timestamp": "Datum/Uhrzeit"
     },
     "exportCSV": "In CSV exportieren",
     "actions": {
@@ -763,7 +879,21 @@
     "integrityVerified": "Kette Intakt",
     "verifyChain": "Integrität Prüfen",
     "verifying": "SHA-256 Überprüfung...",
-    "verifyChainTooltip": "Kryptografische SHA-256-Integrität aller Audit-Einträge prüfen"
+    "verifyChainTooltip": "Kryptografische SHA-256-Integrität aller Audit-Einträge prüfen",
+    "anomalyDetected": "Check-in-Anomalie erkannt",
+    "integritySuccess": "Integritätsprüfung erfolgreich abgeschlossen. Alle Einträge sind gültig.",
+    "integrityError": "WARNUNG: Eine Manipulation oder Unterbrechung im Audit-Log wurde festgestellt.",
+    "integrityCheckFailed": "Fehler beim Überprüfen der kryptografischen Integrität.",
+    "exportSuccess": "Datei erfolgreich exportiert",
+    "exportError": "Fehler beim Exportieren der Audit-Protokolle",
+    "categories": {
+      "all": "Alle Ereignisse",
+      "security": "Sicherheit & Anomalien",
+      "auth": "Authentifizierung & 2FA",
+      "checkin": "Check-ins (Kommen/Gehen)",
+      "crud": "Datensatzverwaltung (CRUD)",
+      "filterPlaceholder": "Nach Kategorie filtern"
+    }
   },
   "cloudSettings": {
     "saveSuccess": "Cloud-Einstellungen erfolgreich gespeichert",
@@ -802,7 +932,9 @@
   "notifications": {
     "title": "Benachrichtigungen",
     "empty": "Keine Benachrichtigungen",
-    "clearAll": "Alles reinigen"
+    "clearAll": "Alles reinigen",
+    "enablePushPrompt": "Benachrichtigungen auf diesem Gerät aktivieren",
+    "enableButton": "Aktivieren"
   },
   "web-vitals": "web-vitals",
   "genericError": "Fehler beim Laden der Schulungen",
@@ -834,7 +966,21 @@
     "saveError": "Fehler beim Speichern des Unternehmens.",
     "deleteError": "Unternehmen konnte nicht gelöscht werden.",
     "namePlaceholder": "Z. B. BA Glass Spain SAU",
-    "descriptionPlaceholder": "Zusätzliche Informationen über die Aktivität oder den Standort..."
+    "descriptionPlaceholder": "Zusätzliche Informationen über die Aktivität oder den Standort...",
+    "addressLabel": "Physische Adresse",
+    "addressPlaceholder": "z.B. Gewerbegebiet, Musterstraße 12",
+    "latitudeLabel": "Breitengrad",
+    "longitudeLabel": "Längengrad",
+    "radiusLabel": "Maximaler Radius (Meter)",
+    "geofenceTitle": "Standort- und Geofencing-Kontrolle",
+    "geofenceSubtitle": "Suchen Sie den Standort, klicken Sie auf die Karte oder nutzen Sie GPS zur Festlegung des Perimeters.",
+    "searchAddressPlaceholder": "Adresse, Gewerbegebiet, Standort oder Stadt suchen...",
+    "myGpsLocation": "Mein GPS",
+    "detectGpsBtn": "Aktuelles GPS erfassen",
+    "gpsCaptured": "Aktuelle GPS-Koordinaten erfolgreich erfasst",
+    "gpsError": "Aktuelle GPS-Position konnte nicht ermittelt werden",
+    "geofenceHelp": "Wenn GPS-Koordinaten konfiguriert sind, können Mitarbeiter an diesem Standort nur innerhalb des festgelegten Radius einchecken.",
+    "gpsNotSupported": "Standortbestimmung wird von diesem Browser nicht unterstützt."
   },
   "privacy": {
     "secNotCollectedTitle": "2. NICHT erhobene Daten & Schutz der Privatsphäre",
@@ -983,7 +1129,8 @@
     "updateBtn": "Aktualisieren",
     "iosTitle": "App auf dem iPhone installieren",
     "iosInstructions": "Tippen Sie auf Teilen",
-    "iosInstructions2": "und dann \"Zum Home-Bildschirm\""
+    "iosInstructions2": "und dann \"Zum Home-Bildschirm\"",
+    "updating": "Wird aktualisiert..."
   },
   "support": {
     "modalTitle": "Hilfe- & Support-Center",
@@ -1006,5 +1153,27 @@
     "faq4_q": "Wie setze ich mein Passwort zurück?",
     "faq4_a": "Klicken Sie auf 'Passwort vergessen?' auf dem Anmeldebildschirm, um einen sicheren Wiederherstellungslink per E-Mail zu erhalten.",
     "confidentiality": "Distribution Academy · Sicherer technischer Support"
+  },
+  "formation": {
+    "statusDraft": "Entwurf",
+    "statusPublished": "Veröffentlicht",
+    "statusClosed": "Abgeschlossen",
+    "publishTitle": "Schulung veröffentlichen",
+    "publishImmediately": "Erstellen und Veröffentlichen",
+    "saveAsDraft": "Als Entwurf speichern",
+    "saveAndPublish": "Speichern und Veröffentlichen",
+    "confirmPublish": "Bestätigen und Veröffentlichen",
+    "publishing": "Wird veröffentlicht und benachrichtigt...",
+    "publishedSuccess": "Schulung erfolgreich veröffentlicht! Benachrichtigungen wurden versendet.",
+    "publishError": "Fehler beim Veröffentlichen der Schulung.",
+    "selectAtLeastOneUser": "Sie müssen mindestens einen Mitarbeiter auswählen, um ihn einzuladen.",
+    "activeEmployees": "aktive Mitarbeiter",
+    "publishNoticeTitle": "Automatische Multikanal-Verteilung",
+    "publishNoticeDesc": "Nach der Veröffentlichung ist die Schulung sofort im Mitarbeiter-Dashboard sichtbar. Benachrichtigungen werden per Web Push, E-Mail und Echtzeit-WebSocket versendet.",
+    "targetAudience": "Zielgruppe der Einberufung",
+    "allEmployees": "Alle aktiven Mitarbeiter",
+    "customSelection": "Teilnehmer anpassen",
+    "draftBannerTitle": "Schulung im Entwurfsmodus",
+    "draftBannerDesc": "Diese Schulung ist für Mitarbeiter nicht sichtbar und lässt keine Anwesenheitserfassung zu, bis sie veröffentlicht wird."
   }
 }

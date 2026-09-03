@@ -23,6 +23,8 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest;
+import org.springframework.samples.smartcheckin.auth.service.HaveIBeenPwnedService;
+import org.springframework.samples.smartcheckin.auth.service.TwoFactorBackupCodeService;
 import org.springframework.samples.smartcheckin.configuration.SecurityConfiguration;
 import org.springframework.samples.smartcheckin.exceptions.AccessDeniedException;
 import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
@@ -88,10 +90,10 @@ class UserControllerTests {
 	private TotpService totpService;
 
 	@MockitoBean
-	private org.springframework.samples.smartcheckin.auth.service.HaveIBeenPwnedService haveIBeenPwnedService;
+	private HaveIBeenPwnedService haveIBeenPwnedService;
 
 	@MockitoBean
-	private org.springframework.samples.smartcheckin.auth.service.TwoFactorBackupCodeService backupCodeService;
+	private TwoFactorBackupCodeService backupCodeService;
 
 	@Autowired
 	private ObjectMapper objectMapper;

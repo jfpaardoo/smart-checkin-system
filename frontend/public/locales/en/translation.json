@@ -89,7 +89,8 @@
     "verifyAndEnter": "Verify & Enter",
     "forgotPassword": "Forgot your password?",
     "privacyPolicy": "Privacy Policy",
-    "backupCodeInvalidFormat": "The recovery code must be in XXXX-XXXX format."
+    "backupCodeInvalidFormat": "The recovery code must be in XXXX-XXXX format.",
+    "usernamePlaceholder": "Enter username or email"
   },
   "users": {
     "allActive": "All Active",
@@ -160,7 +161,12 @@
     "allStates": "All statuses",
     "pendingFilterHint": "Showing requests pending validation",
     "subtitle": "Manage roles, associated facilities, activity status and registration requests",
-    "locatorPlaceholder": "Enter locator code (E.g. MAD, BCN, PT...)"
+    "locatorPlaceholder": "Enter locator code (E.g. MAD, BCN, PT...)",
+    "noUsersFound": "No matching employees found.",
+    "deleteConfirmTitle": "Delete User",
+    "deleteConfirmMessage": "Are you sure you want to permanently delete",
+    "deleteWarning": "This action cannot be undone. System accesses and associated records will be removed.",
+    "duplicateEmail": "The email address is already registered."
   },
   "formations": {
     "filterAll": "All dates",
@@ -220,7 +226,9 @@
     "titleUppercase": "TRAINING",
     "filterAllStatus": "All statuses",
     "savedAsDraft": "Training saved as draft.",
-    "publishedSuccess": "Training published successfully! Notifications have been dispatched."
+    "publishedSuccess": "Training published successfully! Notifications have been dispatched.",
+    "filterStatus": "Filter by status",
+    "subtitle": "Schedule training sessions, manage attendance and course materials"
   },
   "formation": {
     "statusDraft": "Draft",
@@ -316,7 +324,12 @@
     "closeError": "Error finishing formation.",
     "signatureRequired": "Please provide trainer signature to close the session.",
     "officialSheetDownloaded": "Official record FOR 99 downloaded and synced successfully.",
-    "downloadOfficialSheetError": "Error downloading official record FOR 99."
+    "downloadOfficialSheetError": "Error downloading official record FOR 99.",
+    "confirmClose": "Close Training Session",
+    "statusPublished": "Published / Open",
+    "syncCalendar": "Sync Calendar",
+    "calendarDownloaded": "Calendar invite (.ics) downloaded.",
+    "calendarError": "Error downloading calendar invite."
   },
   "qr": {
     "title": "Formation QR",
@@ -327,7 +340,28 @@
     "selectFormationPrompt2": "to generate the QR",
     "totpSecurity": "TOTP Security: Refreshes every 20s",
     "maxBrightnessBtn": "Max Brightness Mode",
-    "brightnessHint": "On iPhone / iPad: Swipe down Control Center to turn device brightness up to 100% if it is low."
+    "brightnessHint": "On iPhone / iPad: Swipe down Control Center to turn device brightness up to 100% if it is low.",
+    "autoUpdateBadge": "Automatic update",
+    "captureShield": "Anti-Capture Shield",
+    "liveSync": "Live",
+    "localMode": "Local Mode",
+    "liveSyncTitle": "Active connection synchronized in real time",
+    "localModeTitle": "Local mode: The QR code continues rotating autonomously with internal clock",
+    "gpsLinked": "Admin GPS Linked",
+    "gpsSearching": "Obtaining Admin GPS...",
+    "copyPin": "Copy PIN",
+    "pinCopied": "Copied",
+    "shortcuts": "Shortcuts",
+    "projector": "Projector",
+    "refresh": "Refresh",
+    "exit": "Exit",
+    "fullscreenHint": "Double click to toggle fullscreen (F key)",
+    "closeFullscreen": "Close fullscreen (Esc or F key)",
+    "captureBlockedTitle": "Capture Blocked",
+    "captureBlockedDesc": "The QR code and dynamic PIN are protected against screenshots and crops.",
+    "pinHidden": "PIN Hidden",
+    "pinHiddenDesc": "Protected against screen capture",
+    "presenterShortcutsHint": "Press F or Esc to exit · Space to regenerate"
   },
   "dashboard": {
     "hello": "Hello",
@@ -387,7 +421,14 @@
     "noDescription": "No description.",
     "formationDate": "Formation date:",
     "checkInTime": "Check-in time:",
-    "checkOutTime": "Check-out time:"
+    "checkOutTime": "Check-out time:",
+    "date": "Date",
+    "statusClosedNonAttended": "Completed",
+    "docLockedTitle": "Documentation & Course Material",
+    "docLockedBadge": "Locked until Check-in or Completion",
+    "docLockedDesc": "Course materials and presentations will be automatically unlocked when you confirm attendance via Check-in or when the trainer concludes the session.",
+    "unlockedPostSession": "Unlocked after session completion",
+    "clickToPreview": "Click to preview"
   },
   "checkin": {
     "invalidOrExpiredQr": "Invalid or expired QR code",
@@ -437,7 +478,18 @@
     "insideWorkingHours": "Within working hours",
     "outsideWorkingHours": "Outside working hours",
     "insideWorkingHoursShort": "In hours",
-    "outsideWorkingHoursShort": "Out of hours"
+    "outsideWorkingHoursShort": "Out of hours",
+    "savedOffline": "Offline: Check-in saved locally on your device. It will automatically sync when connectivity is restored.",
+    "offlineQueued": "Your record has been stored on the device and will be submitted once reconnected.",
+    "offlineSynced": "Offline check-ins synchronized successfully with the server.",
+    "gpsActive": "GPS location verified",
+    "enableGpsTooltip": "Tap to grant location permission",
+    "enableGps": "Allow access to GPS location",
+    "type": "Record Type",
+    "dateTime": "Date and Time",
+    "signatureStatus": "Signature",
+    "entry": "ENTRY",
+    "exit": "EXIT"
   },
   "common": {
     "clear": "Clear",
@@ -483,7 +535,20 @@
     "selectOption": "Select",
     "clearSearch": "Clear search",
     "logoutWarning": "Your session will be securely closed on this device.",
-    "companyLogo": "Company logo"
+    "companyLogo": "Company logo",
+    "status": "Status",
+    "selectAll": "All",
+    "deselectAll": "None",
+    "saveChanges": "Save Changes",
+    "deletedSuccess": "Record deleted successfully",
+    "appUpdated": "New version available",
+    "appUpdatedDesc": "An update to the application has been deployed. Please reload the page.",
+    "reloadApp": "Reload application",
+    "noResults": "No results found",
+    "view": "View",
+    "tapToExpand": "Tap to expand text",
+    "generating": "Generating...",
+    "reset": "Reset"
   },
   "lang": {
     "es": "Español",
@@ -600,7 +665,18 @@
     "userFormationsPdf": "Full Matrix (PDF)",
     "userFormationsCsv": "Full Matrix (CSV)",
     "exportDossier": "Dossier:",
-    "records": "records"
+    "records": "records",
+    "company": "Company",
+    "allCompanies": "All companies",
+    "locator": "Locator",
+    "role": "Role",
+    "perfRate": "Performance Rate",
+    "allStatuses": "All statuses",
+    "workStatus": "Work Status",
+    "exportSuccess": "Report exported successfully",
+    "exportError": "Error generating analytics report",
+    "filtered": "Filtered",
+    "filterCompany": "Filter by company"
   },
   "profile": {
     "myProfileTitle": "My Profile",
@@ -708,7 +784,26 @@
     "regenerate": "Regenerate",
     "backupCodesDesc": "If you lose access to your device, you can use one of your single-use recovery codes to sign in.",
     "twoFactorEmail": "Email",
-    "twoFactorApp": "Authenticator App"
+    "twoFactorApp": "Authenticator App",
+    "checkinHistory": "Check-in & Workday History",
+    "totalRecords": "records",
+    "noCheckinsYet": "No check-ins recorded yet",
+    "noCheckinsDesc": "Your entry and exit records will appear listed here.",
+    "backupCodesKeepSafe": "Save your backup recovery codes",
+    "backupCodesKeepSafeDesc": "If you lose access to your authenticator app or email, these codes will let you access your account. Each code is single-use.",
+    "copied": "Copied",
+    "copyAll": "Copy all",
+    "downloadTxt": "Download .txt",
+    "backupCodesSavedConfirmation": "I have saved my codes",
+    "twoFactorEnabledSuccess": "Two-factor authentication enabled successfully.",
+    "twoFactorInvalidCode": "Invalid or expired code.",
+    "twoFactorDisabledSuccess": "Two-factor authentication disabled.",
+    "enter2FACodeToRegenerate": "Enter your 6-digit 2FA code to regenerate new backup recovery codes:",
+    "backupCodesRegenerateError": "Error regenerating codes. Verify your 2FA code.",
+    "backupCodesCopied": "Backup codes copied to clipboard.",
+    "twoFactorMethodLabel": "Method:",
+    "regenerateBackupCodes": "Regenerate Codes",
+    "disablePromptMsg": "To disable 2FA, enter a current verification code:"
   },
   "register": {
     "company": "Company / Workspace",
@@ -741,7 +836,10 @@
     "email": "Email",
     "captchaRequired": "Please complete the security verification.",
     "hidePasswordVisibility": "Hide password",
-    "showPasswordVisibility": "Show password"
+    "showPasswordVisibility": "Show password",
+    "firstNamePlaceholder": "Your first name",
+    "lastNamePlaceholder": "Your last name",
+    "usernamePlaceholder": "username"
   },
   "audit": {
     "filterAll": "All events",
@@ -759,7 +857,8 @@
       "action": "Action",
       "user": "User",
       "details": "Details",
-      "ip": "Source IP"
+      "ip": "Source IP",
+      "timestamp": "Date/Time"
     },
     "exportCSV": "Export to CSV",
     "actions": {
@@ -802,7 +901,21 @@
     "integrityVerified": "Chain Verified",
     "verifyChain": "Verify Integrity",
     "verifying": "Verifying SHA-256...",
-    "verifyChainTooltip": "Verify SHA-256 cryptographic integrity of all audit records"
+    "verifyChainTooltip": "Verify SHA-256 cryptographic integrity of all audit records",
+    "anomalyDetected": "Check-in Anomaly Detected",
+    "integritySuccess": "Integrity verification completed successfully. All records are valid.",
+    "integrityError": "ALERT: A tamper or gap was detected in the audit log blockchain sequence.",
+    "integrityCheckFailed": "Error verifying cryptographic integrity.",
+    "exportSuccess": "File exported successfully",
+    "exportError": "Error exporting audit records",
+    "categories": {
+      "all": "All events",
+      "security": "Security & Anomalies",
+      "auth": "Authentication & 2FA",
+      "checkin": "Check-ins (Entry/Exit)",
+      "crud": "Record Management (CRUD)",
+      "filterPlaceholder": "Filter by category"
+    }
   },
   "cloudSettings": {
     "saveSuccess": "Cloud settings saved successfully",
@@ -841,7 +954,9 @@
   "notifications": {
     "title": "Notifications",
     "empty": "No notifications",
-    "clearAll": "Clean everything"
+    "clearAll": "Clean everything",
+    "enablePushPrompt": "Enable notifications on this device",
+    "enableButton": "Enable"
   },
   "web-vitals": "web-vitals",
   "genericError": "Error loading trainings",
@@ -886,7 +1001,8 @@
     "detectGpsBtn": "Detect Current GPS",
     "gpsCaptured": "Current GPS coordinates captured successfully",
     "gpsError": "Could not retrieve current GPS position",
-    "geofenceHelp": "If GPS coordinates are configured, employees assigned to this site can only check in within the specified radius."
+    "geofenceHelp": "If GPS coordinates are configured, employees assigned to this site can only check in within the specified radius.",
+    "gpsNotSupported": "Geolocation is not supported by this browser."
   },
   "privacy": {
     "secNotCollectedTitle": "2. Data We Do NOT Collect & Non-Intrusion Guarantees",
@@ -1035,7 +1151,8 @@
     "updateBtn": "Update",
     "iosTitle": "Install App on iPhone",
     "iosInstructions": "Tap Share",
-    "iosInstructions2": "and then \"Add to Home Screen\""
+    "iosInstructions2": "and then \"Add to Home Screen\"",
+    "updating": "Updating..."
   },
   "support": {
     "modalTitle": "Help & Support Center",

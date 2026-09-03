@@ -13,6 +13,8 @@ import java.time.Month;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.samples.smartcheckin.analytics.UserAnalyticsDTO;
+import org.springframework.samples.smartcheckin.analytics.UserFormationDetailDTO;
+import org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO;
 import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.checkin.Checkin;
 import org.springframework.samples.smartcheckin.checkin.CheckinType;
@@ -289,7 +291,7 @@ class CsvExportStrategyTests {
 
     @Test
     void testExportUserFormationsWithDataReturnsFormattedRow() throws IOException {
-        org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO dto = org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO.builder()
+        UserFormationExportDTO dto = UserFormationExportDTO.builder()
                 .userId(1)
                 .username("jdoe")
                 .personalCode("PC01")
@@ -301,10 +303,10 @@ class CsvExportStrategyTests {
                 .isWorking(true)
                 .formationId(10)
                 .formationName("Java Training")
-                .formationDate(LocalDateTime.of(2026, 8, 1, 10, 0))
+                .formationDate(LocalDateTime.of(2026, Month.AUGUST, 1, 10, 0))
                 .status("ASISTIÓ")
-                .checkInDate(LocalDateTime.of(2026, 8, 1, 10, 5))
-                .checkOutDate(LocalDateTime.of(2026, 8, 1, 12, 0))
+                .checkInDate(LocalDateTime.of(2026, Month.AUGUST, 1, 10, 5))
+                .checkOutDate(LocalDateTime.of(2026, Month.AUGUST, 1, 12, 0))
                 .durationMinutes(115L)
                 .durationHoursFormatted("1h 55m (1.9h)")
                 .hasSignature(true)
@@ -337,10 +339,10 @@ class CsvExportStrategyTests {
                 .totalFormationMinutes(240L)
                 .build();
 
-        org.springframework.samples.smartcheckin.analytics.UserFormationDetailDTO detail = org.springframework.samples.smartcheckin.analytics.UserFormationDetailDTO.builder()
+        UserFormationDetailDTO detail = UserFormationDetailDTO.builder()
                 .formationId(101)
                 .formationName("Security 101")
-                .formationDate(LocalDateTime.of(2026, 8, 10, 9, 0))
+                .formationDate(LocalDateTime.of(2026, Month.AUGUST, 10, 9, 0))
                 .status("COMPLETED")
                 .durationMinutes(120L)
                 .hasSignature(true)

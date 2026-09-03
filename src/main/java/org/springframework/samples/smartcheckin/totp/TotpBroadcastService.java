@@ -26,22 +26,23 @@ public class TotpBroadcastService {
         this.messagingTemplate = messagingTemplate;
     }
 
-    // Se ejecuta cada 250ms para verificar y emitir instantáneamente el cambio de token TOTP
-    @Scheduled(fixedRate = 250)
+    // Se ejecuta cada 1000ms para verificar y emitir la señal de sincronización cuando cambia el ciclo TOTP
+    @Scheduled(fixedRate = 1000)
     public void broadcastTokenIfChanged() {
         try {
             String currentToken = totpService.getCurrentToken();
             if (currentToken != null && !currentToken.equals(lastBroadcastedToken)) {
-                log.debug("Nuevo token TOTP generado: {}. Emitiendo por WebSocket.", currentToken);
+                log.debug("Nuevo ciclo de token TOTP generado. Emitiendo pulso de sincronización por WebSocket.");
                 
-                Map<String, String> payload = new HashMap<>();
-                payload.put("token", currentToken);
+                Map<String, Object> payload = new HashMap<>();
+                payload.put("event", "TOTP_TICK");
+                payload.put("timestamp", System.currentTimeMillis());
                 
                 messagingTemplate.convertAndSend("/topic/totp", payload);
                 lastBroadcastedToken = currentToken;
             }
         } catch (Exception e) {
-            log.error("Error al emitir el token TOTP por WebSocket", e);
+            log.error("Error al emitir la señal de sincronización TOTP por WebSocket", e);
         }
     }
 }

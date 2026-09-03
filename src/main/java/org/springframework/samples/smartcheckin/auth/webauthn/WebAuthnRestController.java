@@ -22,6 +22,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.samples.smartcheckin.audit.AnomalyDetectionService;
+import org.springframework.samples.smartcheckin.metrics.AppMetricsService;
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.List;
 import java.util.Map;
 
@@ -36,9 +40,9 @@ public class WebAuthnRestController {
     private final UserService userService;
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtUtils jwtUtils;
-    private final org.springframework.samples.smartcheckin.audit.AnomalyDetectionService anomalyDetectionService;
-    private final org.springframework.samples.smartcheckin.metrics.AppMetricsService metricsService;
-    private final jakarta.servlet.http.HttpServletRequest servletRequest;
+    private final AnomalyDetectionService anomalyDetectionService;
+    private final AppMetricsService metricsService;
+    private final HttpServletRequest servletRequest;
 
     @Operation(summary = "Genera las opciones de desafío para registrar una nueva Passkey")
     @PostMapping("/register/options")

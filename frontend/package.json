@@ -1,7 +1,7 @@
 {
   "proxy": "http://localhost:8080",
   "name": "smartcheckin",
-  "version": "1.2.0",
+  "version": "1.2.2",
   "private": true,
   "reactDoctor": {
     "rules": {

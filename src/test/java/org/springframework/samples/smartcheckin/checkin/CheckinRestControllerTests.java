@@ -70,9 +70,11 @@ class CheckinRestControllerTests {
 	private NotificationContext notificationContext;
 
 	@Autowired
+	@SuppressWarnings("java:S6813")
 	private ObjectMapper objectMapper;
 
 	@Autowired
+	@SuppressWarnings("java:S6813")
 	private MockMvc mockMvc;
 
 	private User user;

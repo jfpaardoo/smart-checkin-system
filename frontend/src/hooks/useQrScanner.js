@@ -74,6 +74,19 @@ const isIOS = typeof navigator !== 'undefined' && (
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
 );
 
+function applyVideoAttributes(video) {
+  if (!video) return;
+  video.setAttribute('playsinline', 'true');
+  video.setAttribute('webkit-playsinline', 'true');
+  video.setAttribute('muted', 'true');
+  video.muted = true;
+  video.playsInline = true;
+  video.autoplay = true;
+  if (video.paused) {
+    Promise.resolve(video.play()).catch(() => {});
+  }
+}
+
 export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
   const [cameras, setCameras] = useState([]);
   const [selectedCameraId, setSelectedCameraId] = useState(() => {
@@ -181,24 +194,8 @@ export function useQrScanner(elementId, isScanningEnabled, onScanSuccess) {
   // Asegurar atributos playsinline y autoplay para WebKit / iOS Safari
   const enforceVideoPlaybackOnIOS = useCallback((containerId) => {
     try {
-      const container = document.getElementById(containerId);
-      if (container) {
-        const video = container.querySelector('video');
-        if (video) {
-          video.setAttribute('playsinline', 'true');
-          video.setAttribute('webkit-playsinline', 'true');
-          video.setAttribute('muted', 'true');
-          video.muted = true;
-          video.playsInline = true;
-          video.autoplay = true;
-          if (video.paused) {
-            const p = video.play();
-            if (p !== undefined) {
-              p.catch(e => console.debug('Video auto-play resume:', e));
-            }
-          }
-        }
-      }
+      const video = document.getElementById(containerId)?.querySelector('video');
+      applyVideoAttributes(video);
     } catch (e) {
       console.debug('Playsinline enforcement ignored:', e);
     }

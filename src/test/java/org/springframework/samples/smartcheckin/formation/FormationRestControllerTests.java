@@ -25,6 +25,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.samples.smartcheckin.notification.NotificationContext;
 import org.springframework.samples.smartcheckin.notifications.PushNotificationSender;
 import org.springframework.samples.smartcheckin.configuration.SecurityConfiguration;
 import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter;
@@ -78,7 +79,7 @@ class FormationRestControllerTests {
     private CloudStorageAdapter cloudStorageAdapter;
 
     @MockitoBean
-    private org.springframework.samples.smartcheckin.notification.NotificationContext notificationContext;
+    private NotificationContext notificationContext;
 
     @Autowired
     private ObjectMapper objectMapper;

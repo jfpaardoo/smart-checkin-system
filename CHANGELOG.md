@@ -4,6 +4,68 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), y este proyecto sigue [Versionado Semántico (SemVer)](https://semver.org/lang/es/).
 
+## [1.2.2](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.2.2) - 2026-09-03
+
+### Añadido (Features) & Blindaje de Seguridad
+- **Sistema Anti-Captura de Pantalla para Códigos QR y PIN Dinámico (*Blackout Shield estilo DRM*)**:
+  - Creado el componente de protección activa [`SecureCaptureShield.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/components/SecureCaptureShield.js) e integrado en [`QRGeneratorAdmin.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/admin/qr/QRGeneratorAdmin.js) para evitar la fotografía, recorte o envío no autorizado de credenciales de fichaje a terceros.
+  - **Pantalla Negra Instantánea (Netflix/Prime Video effect)**: Sustitución automática del área del código QR y del PIN de 6 dígitos por una superficie negra pura (`#000000`) con insignia de protección activa al detectar pérdida de foco (`window.blur`), conmutación de pestañas o minimización (`document.visibilitychange`), y atajos de captura del sistema operativo (`Win+Shift+S`, `PrintScreen`, `Cmd+Shift+4`).
+  - **Vaciado Proactivo del Portapapeles**: Neutralización del búfer de copia del sistema (`navigator.clipboard.writeText('')`) ante pulsaciones de la tecla `PrintScreen`, impidiendo que capturas residuales se peguen en plataformas de mensajería (WhatsApp, Slack, Telegram).
+  - **Migración a Renderizado Gráfico en Canvas**: Reemplazado `QRCodeSVG` por `QRCodeCanvas` (`qrcode.react`), blindando el búfer de píxeles contra inspecciones de vectores SVG en el DOM y bloqueando el menú contextual de guardado de imagen (`contextmenu`), el arrastre (`dragstart`) y las pulsaciones táctiles prolongadas (`-webkit-touch-callout: none`).
+  - **Protección contra Impresión (@media print)**: Regla CSS que oculta permanentemente el QR y el PIN si el usuario intenta invocar la impresión (`Ctrl+P`) o exportar la página a PDF.
+- **Bloqueo Absoluto de Visualización de QR en Formaciones Finalizadas**:
+  - **Frontend (`QRGeneratorAdmin.js`)**: Comprobación del estado `isClosed` y `status = CLOSED`. Si se selecciona una formación finalizada, el código QR y el PIN no se solicitan ni se renderizan, mostrando en su lugar una tarjeta *Liquid Glass* informativa con insignia `Finalizada y Cerrada`, explicando la deshabilitación del acceso y ofreciendo accesos directos al detalle de la formación y a la descarga del acta oficial FOR 99.
+  - **Detalle de Formación (`FormationDetailsAdmin.js`)**: Ocultación automática del botón de acceso al QR en la botonera de acciones cuando la formación se encuentra cerrada y certificada.
+  - **Hardening en Backend (`TotpRestController.java`)**: Inyectado `FormationRepository` en el endpoint `GET /api/v1/totp/current`. Si se solicita un token para una formación cerrada (`isClosed == true` o `status == CLOSED`), el servidor deniega la petición devolviendo `400 Bad Request` con mensaje explicativo.
+- **Restricción de Acceso y Hardening de Endpoints TOTP**:
+  - Modificado [`SecurityConfiguration.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/configuration/SecurityConfiguration.java) para restringir `/api/v1/totp/**` estrictamente al rol `ADMIN` (`hasAuthority("ADMIN")`), cerrando la brecha que permitía a empleados regulares consultar tokens TOTP vía API REST.
+- **Sanitización del Canal WebSocket `/topic/totp`**:
+  - Refactorizado [`TotpBroadcastService.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/totp/TotpBroadcastService.java) para emitir pulsos de sincronización neutros (`{"event": "TOTP_TICK"}`) sin divulgar el token sensible en texto plano a través de WebSockets públicos.
+  - Reducida la frecuencia de sondeo de 250 ms a 1000 ms, reduciendo en un 75% el uso innecesario de ciclos de CPU en el servidor.
+
+### Calidad de Vida (UX / QoL 2026) & Fluidez de la Aplicación
+- **Screen Wake Lock API (Pantalla Siempre Encendida en Kiosco/Proyector)**:
+  - Integrado el custom hook `useScreenWakeLock` en [`QRGeneratorAdmin.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/admin/qr/QRGeneratorAdmin.js) para mantener la pantalla del formador activa e impedir que el monitor o tablet entre en suspensión durante la sesión presencial.
+  - Reconexión reactiva ante el evento `visibilitychange`: si el formador minimiza el navegador o cambia de aplicación y regresa, el bloqueo de pantalla se restablece automáticamente.
+- **Modo Proyector de Alto Brillo y Pantalla Completa**:
+  - Modal inmersivo a pantalla completa optimizado con contraste puro (`#FFFFFF` de fondo y `#000000` en módulos) a 340×340 px, facilitando la lectura óptica desde varios metros de distancia y bajo cualquier condición de iluminación en almacenes y aulas.
+- **Micro-animaciones Predictivas y Prevención de Lectura Caducada**:
+  - **Barra de Progreso Líquida**: Barra con efecto de cristal esmerilado (*backdrop-blur*) y gradiente reactivo verde oliva (`#b3c34c`) que muta a rojo vibrante (`#ef4444`) con halo de advertencia (*box-shadow glow*) en los últimos 3 segundos.
+  - **Atenuación Progresiva (`fadeStyle`)**: Opacidad reducida gradualmente al 35% en los últimos 2 segundos del ciclo de vida del TOTP, evitando que los alumnos capturen un código a punto de invalidarse.
+- **Sincronización Dual de Reloj (WebSocket STOMP + Cron Local)**:
+  - Sincronización instantánea con pulsos del servidor WebSocket (`/topic/totp`) combinada con un reloj local de alta precisión (`Math.floor(Date.now() / 1000) % 20`) para una animación a 60 FPS sin saltos ni congelaciones de red.
+- **Atajos de Teclado Profesionales (Modo Presentador / Kiosco)**:
+  - Tecla `F`: Alterna instantáneamente el **Modo Proyector de Pantalla Completa y Alto Brillo**.
+  - Tecla `Espacio`: Fuerza la regeneración y sincronización inmediata del token TOTP.
+  - Tecla `Esc`: Cierra el modo pantalla completa.
+  - Soporte para **doble clic** sobre el contenedor del código QR para maximizar a pantalla completa.
+- **Marca de Agua Forense contra Capturas Físicas (*Forensic Watermark*)**:
+  - Superposición diagonal de baja opacidad con la firma criptográfica `SESSION #ID · SMART-CHECKIN VERIFIED · FECHA` embebida sobre el contenedor del código QR (tanto en vista reducida como en pantalla completa). Disuade el fraude de asistentes que intentan fotografiar la pantalla con un segundo dispositivo móvil para enviárselo a terceros.
+- **Insignia Reactiva de Conectividad en Tiempo Real (Resiliencia Offline)**:
+  - Monitorización reactiva de red (`navigator.onLine`, `online`, `offline`): muestra `Sincronizado en Vivo` (verde esmeralda pulsante) o `Modo Local Autónomo` (ámbar), indicando que el código QR continúa rotando de forma autónoma con el reloj interno del dispositivo si se pierde el Wi-Fi del aula.
+- **Copia Rápida de PIN con Feedback Háptico**:
+  - Botón de copia directa junto al PIN de 6 dígitos con confirmación visual interactiva y vibración física háptica (`navigator.vibrate([40, 60, 40])`) para dictado o asistencia de alumnos con cámaras dañadas.
+- **Estrategia de Geolocalización en Capas (3-Tier Fallback)**:
+  - Custom hook `useAdminGeolocation` con degradación escalonada: Tarea 1 de alta precisión (GPS, 4 s) → Tarea 2 estándar (Wi-Fi/Red, 6 s) → Tarea 3 extendida (8 s), garantizando que la interfaz nunca se bloquee si el dispositivo tarda en fijar coordenadas.
+
+### Optimización (Performance, Consistencia & Versiones)
+- **Migración Flyway V8 y Optimización de Índices de Alto Rendimiento (Estándares 2026)**:
+  - Creada la migración [`V8__add_composite_and_range_performance_indexes.sql`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/resources/db/migration/V8__add_composite_and_range_performance_indexes.sql) para acelerar consultas analíticas y filtrado de grandes volúmenes de datos.
+  - **Índice compuesto en fichajes (`idx_checkins_user_date`)**: Optimiza búsquedas temporales de fichajes por empleado (`user_id`, `check_in_date`) eliminando ordenaciones costosas en memoria para el cálculo de jornadas y exportación de expedientes laborales.
+  - **Índices de formación (`idx_formations_date` e `idx_formations_status_date`)**: Acelera drásticamente el listado de convocatorias activas y el ordenamiento cronológico.
+  - **Índice de asistencia (`idx_formation_attendances_form_user`)**: Búsqueda instantánea de asistencias por par `(formation_id, user_id)` para el control de aforo y actas.
+  - **Índice de aprobación (`idx_appusers_comp_approved`)**: Acelera la carga de bandejas de administración y aprobación de usuarios por empresa.
+  - **Sincronización de Entidades JPA**: Actualizadas las anotaciones `@Table(indexes = ...)` en [`Checkin.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/checkin/Checkin.java), [`Formation.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/formation/Formation.java), [`FormationAttendance.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/formation/FormationAttendance.java), [`User.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/user/User.java) y [`AuditLog.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/main/java/org/springframework/samples/smartcheckin/audit/AuditLog.java).
+- **Sincronización Global de Versiones (v1.2.2)**:
+  - Sincronizados todos los descriptores del proyecto a la versión oficial **1.2.2**: `pom.xml`, `frontend/package.json`, `version.json` y la caché del Service Worker a `da-cache-v1.2.2` en `sw.js`.
+- **Insignias Informativas en Selector de Formaciones**:
+  - Enriquecido el selector desplegable en [`QRGeneratorAdmin.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/admin/qr/QRGeneratorAdmin.js) mostrando etiquetas contextuales `(Finalizada)` y `(Borrador)` para una discriminación inmediata de convocatorias.
+- **Suite de Pruebas Automatizadas Unitarias**:
+  - Creada la suite [`SecureCaptureShield.test.js`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/frontend/src/components/SecureCaptureShield.test.js) con 5 pruebas de validación de eventos de pérdida de foco, teclado e interceptación.
+  - Actualizado [`TotpRestControllerTests.java`](file:///c:/Users/JFPARDO/OneDrive/Escritorio/smart-checkin-system/src/test/java/org/springframework/samples/smartcheckin/totp/TotpRestControllerTests.java) con casos de prueba para el rechazo de emisión en formaciones cerradas.
+
+---
+
 ## [1.2.1](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.2.1) - 2026-08-27
 
 ### Añadido (Features) & Mejoras de Seguridad

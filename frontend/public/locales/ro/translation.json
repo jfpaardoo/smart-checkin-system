@@ -89,7 +89,8 @@
     "verifyAndEnter": "Verifică și Intră",
     "forgotPassword": "Ați uitat parola?",
     "privacyPolicy": "Politică de Confidențialitate",
-    "backupCodeInvalidFormat": "Codul de recuperare trebuie să aibă formatul XXXX-XXXX."
+    "backupCodeInvalidFormat": "Codul de recuperare trebuie să aibă formatul XXXX-XXXX.",
+    "usernamePlaceholder": "Introduceți utilizatorul sau e-mailul"
   },
   "users": {
     "allActive": "Toți cei Activi",
@@ -160,7 +161,12 @@
     "allStates": "Toate stările",
     "pendingFilterHint": "Se afișează solicitările în așteptarea validării",
     "subtitle": "Gestionați rolurile, centrele asociate, starea de activitate și cererile de înregistrare",
-    "locatorPlaceholder": "Introduceți codul de localizare (Ex: MAD, BCN, PT...)"
+    "locatorPlaceholder": "Introduceți codul de localizare (Ex: MAD, BCN, PT...)",
+    "noUsersFound": "Nu s-au găsit angajați corespunzători.",
+    "deleteConfirmTitle": "Șterge utilizatorul",
+    "deleteConfirmMessage": "Sigur doriți să ștergeți definitiv pe",
+    "deleteWarning": "Această acțiune nu poate fi anulată. Accesul la sistem și înregistrările asociate vor fi eliminate.",
+    "duplicateEmail": "Adresa de e-mail este deja înregistrată."
   },
   "formations": {
     "filterAll": "Toate datele",
@@ -218,7 +224,11 @@
     "subtitle": "Programează sesiuni de instruire, gestionează prezența și materialele didactice",
     "location": "Locație Formare",
     "trainer": "Formator",
-    "titleUppercase": "FORMARE"
+    "titleUppercase": "FORMARE",
+    "filterAllStatus": "Toate stările",
+    "filterStatus": "Filtrare după stare",
+    "savedAsDraft": "Instruirea a fost salvată ca ciornă.",
+    "publishedSuccess": "Instruirea a fost publicată cu succes! Notificările au fost trimise."
   },
   "formationDetails": {
     "title": "Detalii Formare",
@@ -292,7 +302,12 @@
     "closeError": "Eroare la finalizarea formării.",
     "signatureRequired": "Vă rugăm să aplicați semnătura în calitate de formator pentru a închide sesiunea.",
     "officialSheetDownloaded": "Registru oficial FOR 99 descărcat și sincronizat cu succes.",
-    "downloadOfficialSheetError": "Eroare la descărcarea registrului oficial FOR 99."
+    "downloadOfficialSheetError": "Eroare la descărcarea registrului oficial FOR 99.",
+    "confirmClose": "Finalizează instruirea",
+    "statusPublished": "Publicată / Deschisă",
+    "syncCalendar": "Sincronizare calendar",
+    "calendarDownloaded": "Invitația de calendar (.ics) a fost descărcată.",
+    "calendarError": "Eroare la descărcarea invitației de calendar."
   },
   "qr": {
     "title": "QR Formare",
@@ -303,7 +318,28 @@
     "selectFormationPrompt2": "pentru a genera codul QR",
     "totpSecurity": "Securitate TOTP: Se actualizează la fiecare 20s",
     "maxBrightnessBtn": "Mod Luminozitate Maximă",
-    "brightnessHint": "Pe iPhone / iPad: Glisați Centrul de control pentru a crește luminozitatea dispozitivului dacă este scăzută."
+    "brightnessHint": "Pe iPhone / iPad: Glisați Centrul de control pentru a crește luminozitatea dispozitivului dacă este scăzută.",
+    "autoUpdateBadge": "Actualizare automată",
+    "captureShield": "Scut Anti-Captură",
+    "liveSync": "În Direct",
+    "localMode": "Mod Local",
+    "liveSyncTitle": "Conexiune activă sincronizată în timp real",
+    "localModeTitle": "Mod local: Codul QR continuă să se rotească autonom cu ceasul intern",
+    "gpsLinked": "GPS Administrator Conectat",
+    "gpsSearching": "Se obține GPS-ul Administratorului...",
+    "copyPin": "Copiere PIN",
+    "pinCopied": "Copiat",
+    "shortcuts": "Comenzi rapide",
+    "projector": "Proiector",
+    "refresh": "Reîmprospătare",
+    "exit": "Ieșire",
+    "fullscreenHint": "Dublu clic pentru a comuta ecran complet (Tasta F)",
+    "closeFullscreen": "Închide ecranul complet (Tasta Esc sau F)",
+    "captureBlockedTitle": "Captură Blocată",
+    "captureBlockedDesc": "Codul QR și PIN-ul dinamic sunt protejate împotriva capturilor de ecran.",
+    "pinHidden": "PIN Ascuns",
+    "pinHiddenDesc": "Protejat împotriva capturii de ecran",
+    "presenterShortcutsHint": "Apăsați F sau Esc pentru a ieși · Spațiu pentru regenerare"
   },
   "dashboard": {
     "qrValidated": "Cod QR validat",
@@ -348,7 +384,29 @@
     "camera": "Cameră",
     "viewDocumentation": "Vizualizare Documentație",
     "filterAllFormations": "Toate instruirile",
-    "filterStatus": "Filtrează starea"
+    "filterStatus": "Filtrează starea",
+    "welcomeSub": "Verificați convocările viitoare, sesiunile în desfășurare și descărcați certificatele.",
+    "tabUpcoming": "Programate viitoare",
+    "tabInProgress": "În desfășurare",
+    "tabCompleted": "Finalizate și Diplome",
+    "tabAll": "Toate",
+    "statusScheduled": "Programată",
+    "scheduledDate": "Data și Ora",
+    "todayAt": "Astăzi la",
+    "tomorrowAt": "Mâine la",
+    "inDays": "În {{count}} zile",
+    "trainerLocation": "Locație & Formator",
+    "noUpcoming": "Nu aveți instruiri programate în curând.",
+    "noInProgress": "Nu aveți nicio instruire în desfășurare în acest moment.",
+    "noCompleted": "Nu ați finalizat încă nicio instruire.",
+    "scheduledTip": "Înregistrarea va fi disponibilă la scanarea codului QR în sală în ziua evenimentului.",
+    "syncCalendar": "Sincronizare calendar",
+    "statusClosedNonAttended": "Finalizată",
+    "docLockedTitle": "Documentație și Material Didactic",
+    "docLockedBadge": "Blocat până la Check-in sau Finalizare",
+    "docLockedDesc": "Materialele didactice și prezentările se vor debloca automat când vă confirmați prezența prin Check-in sau când formatorul încheie sesiunea.",
+    "unlockedPostSession": "Deblocat după finalizarea sesiunii",
+    "clickToPreview": "Faceți clic pentru previzualizare"
   },
   "checkin": {
     "schedulePrompt": "În acest moment, sunt:",
@@ -398,7 +456,18 @@
     "formationLabel": "Antrenamentul",
     "dateLabel": "Data",
     "close": "Aproape",
-    "switchCamera": "Schimbă Camera"
+    "switchCamera": "Schimbă Camera",
+    "savedOffline": "Fără conexiune: Pontajul a fost salvat local. Se va sincroniza automat la revenirea semnalului.",
+    "offlineQueued": "Înregistrarea dvs. a fost salvată pe dispozitiv și va fi trimisă la reconectare.",
+    "offlineSynced": "Pontajele offline au fost sincronizate cu succes cu serverul.",
+    "gpsActive": "Locație GPS verificată",
+    "enableGpsTooltip": "Atingeți pentru permisiunea de localizare",
+    "enableGps": "Permiteți accesul la locația GPS",
+    "type": "Tip de înregistrare",
+    "dateTime": "Data și Ora",
+    "signatureStatus": "Semnătură",
+    "entry": "INTRARE",
+    "exit": "IEȘIRE"
   },
   "common": {
     "clear": "Șterge",
@@ -444,7 +513,20 @@
     "selectOption": "Selectează",
     "clearSearch": "Șterge căutarea",
     "logoutWarning": "Sesiunea dvs. se va închide în siguranță pe acest dispozitiv.",
-    "companyLogo": "Sigla companiei"
+    "companyLogo": "Sigla companiei",
+    "status": "Stare",
+    "selectAll": "Toți",
+    "deselectAll": "Niciunul",
+    "saveChanges": "Salvează modificările",
+    "deletedSuccess": "Înregistrarea a fost ștearsă cu succes",
+    "appUpdated": "Versiune nouă disponibilă",
+    "appUpdatedDesc": "A fost implementată o actualizare a aplicației. Vă rugăm să reîncărcați pagina.",
+    "reloadApp": "Reîncarcă aplicația",
+    "noResults": "Nu s-au găsit rezultate",
+    "view": "Vizualizează",
+    "tapToExpand": "Atingeți pentru a extinde textul",
+    "generating": "Se generează...",
+    "reset": "Resetează"
   },
   "lang": {
     "es": "Español",
@@ -561,7 +643,18 @@
     "userFormationsPdf": "Matrice Completă (PDF)",
     "userFormationsCsv": "Matrice Completă (CSV)",
     "exportDossier": "Dosar:",
-    "records": "înregistrări"
+    "records": "înregistrări",
+    "company": "Companie",
+    "allCompanies": "Toate companiile",
+    "locator": "Localizator",
+    "role": "Rol",
+    "perfRate": "Rată de performanță",
+    "allStatuses": "Toate stările",
+    "workStatus": "Statut de muncă",
+    "exportSuccess": "Raport exportat cu succes",
+    "exportError": "Eroare la generarea raportului de analiză",
+    "filtered": "Filtrat",
+    "filterCompany": "Filtrare după companie"
   },
   "profile": {
     "myProfileTitle": "Profilul Meu",
@@ -669,7 +762,26 @@
     "regenerate": "Regenerează",
     "backupCodesDesc": "Dacă pierdeți accesul la dispozitiv, puteți folosi unul dintre codurile de recuperare de unică folosință pentru a vă conecta.",
     "twoFactorEmail": "E-mail",
-    "twoFactorApp": "Aplicație de Autentificare"
+    "twoFactorApp": "Aplicație de Autentificare",
+    "checkinHistory": "Istoricul pontajelor și al programului de lucru",
+    "totalRecords": "înregistrări",
+    "noCheckinsYet": "Nu există pontaje înregistrate",
+    "noCheckinsDesc": "Înregistrările dvs. de intrare și ieșire vor fi afișate aici.",
+    "backupCodesKeepSafe": "Salvați codurile de recuperare",
+    "backupCodesKeepSafeDesc": "Dacă pierdeți accesul la aplicație, aceste coduri vă vor permite accesul la cont. Fiecare cod este de unică folosință.",
+    "copied": "Copiate",
+    "copyAll": "Copiază tot",
+    "downloadTxt": "Descarcă .txt",
+    "backupCodesSavedConfirmation": "Mi-am salvat codurile",
+    "twoFactorEnabledSuccess": "Autentificarea în doi pași a fost activată cu succes.",
+    "twoFactorInvalidCode": "Cod invalid sau expirat.",
+    "twoFactorDisabledSuccess": "Autentificarea în doi pași a fost dezactivată.",
+    "enter2FACodeToRegenerate": "Introduceți codul 2FA de 6 cifre pentru a genera noi coduri de recuperare:",
+    "backupCodesRegenerateError": "Eroare la regenerarea codurilor. Verificați codul 2FA.",
+    "backupCodesCopied": "Codurile de recuperare au fost copiate în clipboard.",
+    "twoFactorMethodLabel": "Metodă:",
+    "regenerateBackupCodes": "Regenerează codurile",
+    "disablePromptMsg": "Pentru a dezactiva 2FA, introduceți un cod curent de verificare:"
   },
   "register": {
     "company": "Companie / Loc de Muncă",
@@ -702,7 +814,10 @@
     "email": "E-mail",
     "captchaRequired": "Vă rugăm să finalizați verificarea de securitate.",
     "hidePasswordVisibility": "Ascunde parola",
-    "showPasswordVisibility": "Arată parola"
+    "showPasswordVisibility": "Arată parola",
+    "firstNamePlaceholder": "Prenumele tău",
+    "lastNamePlaceholder": "Numele de familie",
+    "usernamePlaceholder": "numedeutilizator"
   },
   "audit": {
     "filterAll": "Toate evenimentele",
@@ -720,7 +835,8 @@
       "action": "Acțiune",
       "user": "Utilizator",
       "details": "Detalii",
-      "ip": "IP Sursă"
+      "ip": "IP Sursă",
+      "timestamp": "Data/Ora"
     },
     "exportCSV": "Exportă în CSV",
     "actions": {
@@ -763,7 +879,21 @@
     "integrityVerified": "Lanț Integru",
     "verifyChain": "Verifică Integritatea",
     "verifying": "Verificare SHA-256...",
-    "verifyChainTooltip": "Verifică integritatea criptografică SHA-256 a tuturor înregistrărilor de audit"
+    "verifyChainTooltip": "Verifică integritatea criptografică SHA-256 a tuturor înregistrărilor de audit",
+    "anomalyDetected": "Anomalie de pontaj detectată",
+    "integritySuccess": "Verificarea integrității s-a finalizat cu succes. Toate înregistrările sunt valide.",
+    "integrityError": "ALERTĂ: S-a detectat o modificare sau o întrerupere în jurnalul de audit.",
+    "integrityCheckFailed": "Eroare la verificarea integrității criptografice.",
+    "exportSuccess": "Fișier exportat cu succes",
+    "exportError": "Eroare la exportarea înregistrărilor de audit",
+    "categories": {
+      "all": "Toate evenimentele",
+      "security": "Securitate și anomalii",
+      "auth": "Autentificare și 2FA",
+      "checkin": "Pontaje (Intrare/Ieșire)",
+      "crud": "Gestionarea înregistrărilor (CRUD)",
+      "filterPlaceholder": "Filtrare după categorie"
+    }
   },
   "cloudSettings": {
     "saveSuccess": "Setările cloud au fost salvate cu succes",
@@ -802,7 +932,9 @@
   "notifications": {
     "title": "Notificări",
     "empty": "Fără notificări",
-    "clearAll": "Curățați totul"
+    "clearAll": "Curățați totul",
+    "enablePushPrompt": "Activează notificările pe acest dispozitiv",
+    "enableButton": "Activează"
   },
   "web-vitals": "web-vitals",
   "genericError": "Eroare la încărcarea antrenamentelor",
@@ -834,7 +966,21 @@
     "saveError": "Eroare la salvarea companiei.",
     "deleteError": "Compania nu a putut fi ștearsă.",
     "namePlaceholder": "Ex. BA Glass Spain SAU",
-    "descriptionPlaceholder": "Informații suplimentare despre activitatea sau locația centrului..."
+    "descriptionPlaceholder": "Informații suplimentare despre activitatea sau locația centrului...",
+    "addressLabel": "Adresă fizică",
+    "addressPlaceholder": "Ex. Parcul Industrial, Str. Exemplu 12",
+    "latitudeLabel": "Latitudine",
+    "longitudeLabel": "Longitudine",
+    "radiusLabel": "Raza maximă (metri)",
+    "geofenceTitle": "Controlul locației și perimetrare (Geofencing)",
+    "geofenceSubtitle": "Căutați sediul, faceți clic pe hartă sau folosiți GPS pentru a stabili perimetrul de pontaj.",
+    "searchAddressPlaceholder": "Căutați adresa, zona industrială, sediul sau orașul...",
+    "myGpsLocation": "GPS-ul Meu",
+    "detectGpsBtn": "Detectează GPS-ul curent",
+    "gpsCaptured": "Coordonatele GPS curente au fost preluate cu succes",
+    "gpsError": "Nu s-a putut obține poziția GPS curentă",
+    "geofenceHelp": "Dacă sunt configurate coordonate GPS, angajații alocați acestui sediu vor putea ponta doar în limita razei stabilite.",
+    "gpsNotSupported": "Geolocația nu este acceptată de acest browser."
   },
   "privacy": {
     "secNotCollectedTitle": "2. Date pe care NU le colectăm și Garanții de Non-Intruziune",
@@ -983,7 +1129,8 @@
     "updateBtn": "Actualizează",
     "iosTitle": "Instalează Aplicația pe iPhone",
     "iosInstructions": "Apasă Distribuie",
-    "iosInstructions2": "și apoi \"Adaugă la ecranul principal\""
+    "iosInstructions2": "și apoi \"Adaugă la ecranul principal\"",
+    "updating": "Se actualizează..."
   },
   "support": {
     "modalTitle": "Centru de Ajutor și Asistență",
@@ -1006,5 +1153,27 @@
     "faq4_q": "Cum îmi recuperez parola de acces?",
     "faq4_a": "Faceți clic pe 'Ați uitat parola?' pe ecranul de autentificare pentru a primi un link securizat de resetare prin e-mail.",
     "confidentiality": "Distribution Academy · Suport Tehnic Securizat"
+  },
+  "formation": {
+    "statusDraft": "Ciornă",
+    "statusPublished": "Publicată",
+    "statusClosed": "Finalizată",
+    "publishTitle": "Publică instruirea",
+    "publishImmediately": "Creează și publică",
+    "saveAsDraft": "Salvează ca ciornă",
+    "saveAndPublish": "Salvează și publică",
+    "confirmPublish": "Confirmă și publică",
+    "publishing": "Se publică și se notifică...",
+    "publishedSuccess": "Instruirea a fost publicată cu succes! Notificările au fost trimise.",
+    "publishError": "Eroare la publicarea instruirii.",
+    "selectAtLeastOneUser": "Trebuie să selectați cel puțin un angajat pentru a-l convoca.",
+    "activeEmployees": "angajați activi",
+    "publishNoticeTitle": "Difuzare automată pe mai multe canale",
+    "publishNoticeDesc": "La publicare, instruirea devine imediat vizibilă în panoul angajaților. Notificările vor fi transmise prin Web Push, e-mail și WebSocket în timp real.",
+    "targetAudience": "Destinatarii convocării",
+    "allEmployees": "Toți angajații activi",
+    "customSelection": "Personalizează participanții",
+    "draftBannerTitle": "Instruire în ciornă",
+    "draftBannerDesc": "Această instruire nu este vizibilă angajaților și nu permite înregistrarea prezenței până când nu este publicată."
   }
 }
