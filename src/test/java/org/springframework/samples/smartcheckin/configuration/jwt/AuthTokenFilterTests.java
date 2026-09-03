@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.samples.smartcheckin.auth.session.UserSessionService;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsServiceImpl;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -151,7 +152,7 @@ class AuthTokenFilterTests {
 
     @Test
     void testAuthTokenFilterWithUserSessionServiceActiveAndInactive() throws Exception {
-        org.springframework.samples.smartcheckin.auth.session.UserSessionService sessionService = mock(org.springframework.samples.smartcheckin.auth.session.UserSessionService.class);
+        UserSessionService sessionService = mock(UserSessionService.class);
         AuthTokenFilter filterWithSession = new AuthTokenFilter(jwtUtils, userDetailsService, jwtBlacklistService, sessionService);
 
         // Case 1: Inactive session

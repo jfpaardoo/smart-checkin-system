@@ -33,6 +33,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import org.springframework.samples.smartcheckin.exports.strategy.DataExportStrategy;
 import org.springframework.samples.smartcheckin.exports.strategy.ExportFactory;
+import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter;
+import org.springframework.samples.smartcheckin.util.ByteArrayMultipartFile;
 import org.springframework.samples.smartcheckin.exports.strategy.ExportUtils;
 
 import java.util.ArrayList;
@@ -60,7 +62,7 @@ public class ExportRestController {
     private final AnalyticsService analyticsService;
     private final ExportFactory exportFactory;
     private final OfficialFormationSheetService officialFormationSheetService;
-    private final org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter cloudStorageAdapter;
+    private final CloudStorageAdapter cloudStorageAdapter;
 
     @Autowired
     public ExportRestController(CheckinRepository checkinRepository,
@@ -72,7 +74,7 @@ public class ExportRestController {
                                 AnalyticsService analyticsService,
                                 ExportFactory exportFactory,
                                 OfficialFormationSheetService officialFormationSheetService,
-                                @Autowired(required = false) org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter cloudStorageAdapter) {
+                                @Autowired(required = false) CloudStorageAdapter cloudStorageAdapter) {
         this.checkinRepository = checkinRepository;
         this.attendanceRepository = attendanceRepository;
         this.formationRepository = formationRepository;
@@ -135,8 +137,8 @@ public class ExportRestController {
             return;
         }
         try {
-            org.springframework.samples.smartcheckin.util.ByteArrayMultipartFile multipartFile = 
-                    new org.springframework.samples.smartcheckin.util.ByteArrayMultipartFile(
+            ByteArrayMultipartFile multipartFile = 
+                    new ByteArrayMultipartFile(
                             filename, 
                             filename, 
                             mimeType, 

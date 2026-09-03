@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.samples.smartcheckin.analytics.UserAnalyticsDTO;
+import org.springframework.samples.smartcheckin.analytics.UserFormationDetailDTO;
+import org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO;
 import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.checkin.Checkin;
 import org.springframework.samples.smartcheckin.checkin.CheckinType;
@@ -206,7 +208,7 @@ class PdfReportGeneratorTests {
 
     @Test
     void shouldGenerateUserFormationsPdf() {
-        org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO dto = org.springframework.samples.smartcheckin.analytics.UserFormationExportDTO.builder()
+        UserFormationExportDTO dto = UserFormationExportDTO.builder()
                 .userId(1)
                 .username("jdoe")
                 .personalCode("PC01")
@@ -247,7 +249,7 @@ class PdfReportGeneratorTests {
                 .formationsAttended(2)
                 .build();
 
-        org.springframework.samples.smartcheckin.analytics.UserFormationDetailDTO detail = org.springframework.samples.smartcheckin.analytics.UserFormationDetailDTO.builder()
+        UserFormationDetailDTO detail = UserFormationDetailDTO.builder()
                 .formationId(10)
                 .formationName("Java Course")
                 .formationDate(LocalDateTime.now())

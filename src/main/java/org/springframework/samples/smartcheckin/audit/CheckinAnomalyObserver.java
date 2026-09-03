@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.samples.smartcheckin.notifications.EmailNotificationSender;
 import org.springframework.samples.smartcheckin.notifications.AlertNotification;
 import org.springframework.samples.smartcheckin.notifications.Notification;
+import org.springframework.samples.smartcheckin.metrics.AppMetricsService;
+import org.springframework.samples.smartcheckin.notification.WebhookIntegrationService;
 
 @Component
 @ObserverPattern.Observer
@@ -22,8 +24,8 @@ public class CheckinAnomalyObserver {
     private final AuditService auditService;
     private final CheckinRepository checkinRepository;
     private final EmailNotificationSender emailNotificationSender;
-    private org.springframework.samples.smartcheckin.metrics.AppMetricsService metricsService;
-    private org.springframework.samples.smartcheckin.notification.WebhookIntegrationService webhookIntegrationService;
+    private AppMetricsService metricsService;
+    private WebhookIntegrationService webhookIntegrationService;
 
     @Autowired
     public CheckinAnomalyObserver(AuditService auditService, CheckinRepository checkinRepository, EmailNotificationSender emailNotificationSender) {
@@ -33,12 +35,12 @@ public class CheckinAnomalyObserver {
     }
 
     @Autowired(required = false)
-    public void setWebhookIntegrationService(org.springframework.samples.smartcheckin.notification.WebhookIntegrationService webhookIntegrationService) {
+    public void setWebhookIntegrationService(WebhookIntegrationService webhookIntegrationService) {
         this.webhookIntegrationService = webhookIntegrationService;
     }
 
     @Autowired(required = false)
-    public void setMetricsService(org.springframework.samples.smartcheckin.metrics.AppMetricsService metricsService) {
+    public void setMetricsService(AppMetricsService metricsService) {
         this.metricsService = metricsService;
     }
 

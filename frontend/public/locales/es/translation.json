@@ -89,7 +89,8 @@
     "verifyAndEnter": "Verificar y Acceder",
     "forgotPassword": "¿Has olvidado tu contraseña?",
     "privacyPolicy": "Política de Privacidad",
-    "backupCodeInvalidFormat": "El código de recuperación debe tener el formato XXXX-XXXX."
+    "backupCodeInvalidFormat": "El código de recuperación debe tener el formato XXXX-XXXX.",
+    "usernamePlaceholder": "Introduce tu usuario o correo"
   },
   "users": {
     "allActive": "Todos Activos",
@@ -160,7 +161,12 @@
     "allStates": "Todos los estados",
     "pendingFilterHint": "Mostrando solicitudes que esperan validación",
     "subtitle": "Administra los roles, centros asociados, estado de actividad y solicitudes de registro",
-    "locatorPlaceholder": "Escribe el localizador (Ej: MAD, BCN, PT...)"
+    "locatorPlaceholder": "Escribe el localizador (Ej: MAD, BCN, PT...)",
+    "noUsersFound": "No se encontraron empleados coincidentes.",
+    "deleteConfirmTitle": "Eliminar Usuario",
+    "deleteConfirmMessage": "¿Estás seguro de que deseas eliminar permanentemente a",
+    "deleteWarning": "Esta acción no se puede deshacer. Se eliminarán sus accesos al sistema y registros asociados.",
+    "duplicateEmail": "El correo electrónico ya se encuentra registrado."
   },
   "formations": {
     "filterAll": "Todas las fechas",
@@ -220,7 +226,9 @@
     "titleUppercase": "FORMACIÓN",
     "filterAllStatus": "Todos los estados",
     "savedAsDraft": "Formación guardada como borrador.",
-    "publishedSuccess": "¡Formación publicada con éxito! Se han enviado las notificaciones."
+    "publishedSuccess": "¡Formación publicada con éxito! Se han enviado las notificaciones.",
+    "filterStatus": "Filtrar por estado",
+    "subtitle": "Programa sesiones de formación, gestiona asistencias y material didáctico"
   },
   "formation": {
     "statusDraft": "Borrador",
@@ -316,7 +324,12 @@
     "closeError": "Error al finalizar la formación.",
     "signatureRequired": "Por favor, estampe su firma como formador para cerrar la convocatoria.",
     "officialSheetDownloaded": "Registro oficial FOR 99 descargado y sincronizado con éxito.",
-    "downloadOfficialSheetError": "Error al descargar el registro oficial FOR 99."
+    "downloadOfficialSheetError": "Error al descargar el registro oficial FOR 99.",
+    "confirmClose": "Finalizar Formación",
+    "statusPublished": "Publicada / Abierta",
+    "syncCalendar": "Sincronizar Calendario",
+    "calendarDownloaded": "Convocatoria descargada (.ics) para tu calendario.",
+    "calendarError": "Error al descargar la convocatoria de calendario."
   },
   "qr": {
     "title": "QR de Formación",
@@ -327,7 +340,28 @@
     "selectFormationPrompt2": "para generar el QR",
     "totpSecurity": "Seguridad TOTP: Se actualiza cada 20s",
     "maxBrightnessBtn": "Modo Brillo Máximo",
-    "brightnessHint": "En iPhone / iPad: Desliza el Centro de Control para subir el brillo del dispositivo si está bajo."
+    "brightnessHint": "En iPhone / iPad: Desliza el Centro de Control para subir el brillo del dispositivo si está bajo.",
+    "autoUpdateBadge": "Actualización automática",
+    "captureShield": "Blindaje Anti-Captura",
+    "liveSync": "En Vivo",
+    "localMode": "Modo Local",
+    "liveSyncTitle": "Conexión activa y sincronizada en tiempo real",
+    "localModeTitle": "Modo local: El código QR continúa rotando de forma autónoma con el reloj interno",
+    "gpsLinked": "GPS del Administrador Vinculado",
+    "gpsSearching": "Obteniendo GPS del Administrador...",
+    "copyPin": "Copiar PIN",
+    "pinCopied": "Copiado",
+    "shortcuts": "Atajos",
+    "projector": "Proyector",
+    "refresh": "Refrescar",
+    "exit": "Salir",
+    "fullscreenHint": "Doble clic para alternar pantalla completa (Tecla F)",
+    "closeFullscreen": "Cerrar pantalla completa (Tecla Esc o F)",
+    "captureBlockedTitle": "Captura Bloqueada",
+    "captureBlockedDesc": "El código QR y PIN dinámico están protegidos contra capturas y recortes.",
+    "pinHidden": "PIN Oculto",
+    "pinHiddenDesc": "Protegido contra capturas",
+    "presenterShortcutsHint": "Presiona F o Esc para salir · Espacio para regenerar"
   },
   "dashboard": {
     "hello": "Hola",
@@ -387,7 +421,14 @@
     "noDescription": "Sin descripción.",
     "formationDate": "Fecha de la formación:",
     "checkInTime": "Hora de entrada (Check-in):",
-    "checkOutTime": "Hora de salida (Check-out):"
+    "checkOutTime": "Hora de salida (Check-out):",
+    "date": "Fecha",
+    "statusClosedNonAttended": "Finalizada",
+    "docLockedTitle": "Documentación y Material Didáctico",
+    "docLockedBadge": "Bloqueado hasta Check-in o Finalización",
+    "docLockedDesc": "El material didáctico y presentaciones adjuntas se desbloquearán automáticamente cuando confirmes tu asistencia realizando el Check-in o cuando el formador finalice la sesión.",
+    "unlockedPostSession": "Desbloqueado tras finalización",
+    "clickToPreview": "Haz clic para previsualizar"
   },
   "checkin": {
     "invalidOrExpiredQr": "Código QR no válido o expirado",
@@ -437,7 +478,18 @@
     "insideWorkingHours": "Dentro del horario de trabajo",
     "outsideWorkingHours": "Fuera del horario de trabajo",
     "insideWorkingHoursShort": "Dentro horario",
-    "outsideWorkingHoursShort": "Fuera horario"
+    "outsideWorkingHoursShort": "Fuera horario",
+    "savedOffline": "Sin conexión: Fichaje guardado localmente en tu dispositivo. Se sincronizará automáticamente al recuperar cobertura.",
+    "offlineQueued": "Tu registro ha quedado almacenado en el dispositivo y se enviará al recuperar conexión.",
+    "offlineSynced": "Fichajes offline sincronizados con éxito con el servidor.",
+    "gpsActive": "Ubicación GPS verificada",
+    "enableGpsTooltip": "Pulsa para conceder permiso de ubicación",
+    "enableGps": "Permitir acceso a ubicación GPS",
+    "type": "Tipo de Registro",
+    "dateTime": "Fecha y Hora",
+    "signatureStatus": "Firma",
+    "entry": "ENTRADA",
+    "exit": "SALIDA"
   },
   "common": {
     "clear": "Limpiar",
@@ -483,7 +535,20 @@
     "selectOption": "Seleccionar",
     "clearSearch": "Limpiar búsqueda",
     "logoutWarning": "Tu sesión se cerrará de forma segura en este dispositivo.",
-    "companyLogo": "Logo de la empresa"
+    "companyLogo": "Logo de la empresa",
+    "status": "Estado",
+    "selectAll": "Todos",
+    "deselectAll": "Ninguno",
+    "saveChanges": "Guardar Cambios",
+    "deletedSuccess": "Registro eliminado correctamente",
+    "appUpdated": "Nueva versión disponible",
+    "appUpdatedDesc": "Se ha desplegado una actualización de la aplicación. Por favor, recarga la página.",
+    "reloadApp": "Recargar aplicación",
+    "noResults": "No se encontraron resultados",
+    "view": "Ver",
+    "tapToExpand": "Toca para expandir el texto",
+    "generating": "Generando...",
+    "reset": "Restablecer"
   },
   "lang": {
     "es": "Español",
@@ -600,7 +665,18 @@
     "userFormationsPdf": "Matriz Completa (PDF)",
     "userFormationsCsv": "Matriz Completa (CSV)",
     "exportDossier": "Expediente:",
-    "records": "registros"
+    "records": "registros",
+    "company": "Empresa",
+    "allCompanies": "Todas las empresas",
+    "locator": "Localizador",
+    "role": "Rol",
+    "perfRate": "Tasa de Rendimiento",
+    "allStatuses": "Todos los estados",
+    "workStatus": "Estado Laboral",
+    "exportSuccess": "Informe exportado correctamente",
+    "exportError": "Error al generar el informe de analíticas",
+    "filtered": "Filtrado",
+    "filterCompany": "Filtrar por empresa"
   },
   "profile": {
     "myProfileTitle": "Mi Perfil",
@@ -708,7 +784,26 @@
     "regenerate": "Regenerar",
     "backupCodesDesc": "Si pierdes acceso a tu dispositivo, puedes usar uno de tus códigos de recuperación de un solo uso para iniciar sesión.",
     "twoFactorEmail": "Correo Electrónico",
-    "twoFactorApp": "App de Autenticación"
+    "twoFactorApp": "App de Autenticación",
+    "checkinHistory": "Historial de Fichajes y Jornada",
+    "totalRecords": "registros",
+    "noCheckinsYet": "No hay fichajes registrados",
+    "noCheckinsDesc": "Tus registros de entrada y salida aparecerán listados aquí.",
+    "backupCodesKeepSafe": "Guarda tus códigos de recuperación",
+    "backupCodesKeepSafeDesc": "Si pierdes acceso a tu aplicación o correo de autenticación, estos códigos te permitirán acceder a tu cuenta. Cada código es de un solo uso.",
+    "copied": "Copiados",
+    "copyAll": "Copiar todos",
+    "downloadTxt": "Descargar .txt",
+    "backupCodesSavedConfirmation": "He guardado mis códigos",
+    "twoFactorEnabledSuccess": "Autenticación en dos pasos activada con éxito.",
+    "twoFactorInvalidCode": "Código inválido o expirado.",
+    "twoFactorDisabledSuccess": "Autenticación en dos pasos desactivada.",
+    "enter2FACodeToRegenerate": "Introduce tu código 2FA de 6 dígitos para generar nuevos códigos de recuperación:",
+    "backupCodesRegenerateError": "Error al regenerar códigos. Verifica tu código 2FA.",
+    "backupCodesCopied": "Códigos de recuperación copiados al portapapeles.",
+    "twoFactorMethodLabel": "Método:",
+    "regenerateBackupCodes": "Regenerar Códigos",
+    "disablePromptMsg": "Para desactivar 2FA, introduce un código de verificación actual:"
   },
   "register": {
     "company": "Empresa / Centro de Trabajo",
@@ -741,7 +836,10 @@
     "email": "Correo Electrónico",
     "captchaRequired": "Por favor, completa la verificación de seguridad.",
     "hidePasswordVisibility": "Ocultar contraseña",
-    "showPasswordVisibility": "Mostrar contraseña"
+    "showPasswordVisibility": "Mostrar contraseña",
+    "firstNamePlaceholder": "Tu nombre",
+    "lastNamePlaceholder": "Tus apellidos",
+    "usernamePlaceholder": "nombredeusuario"
   },
   "audit": {
     "filterAll": "Todos los eventos",
@@ -759,7 +857,8 @@
       "action": "Acción",
       "user": "Usuario",
       "details": "Detalles",
-      "ip": "IP Origen"
+      "ip": "IP Origen",
+      "timestamp": "Fecha/Hora"
     },
     "exportCSV": "Exportar a CSV",
     "actions": {
@@ -802,7 +901,21 @@
     "integrityVerified": "Cadena Íntegra",
     "verifyChain": "Verificar Integridad",
     "verifying": "Verificando SHA-256...",
-    "verifyChainTooltip": "Verificar integridad criptográfica SHA-256 de todos los registros de auditoría"
+    "verifyChainTooltip": "Verificar integridad criptográfica SHA-256 de todos los registros de auditoría",
+    "anomalyDetected": "Anomalía de Fichaje Detectada",
+    "integritySuccess": "Verificación de integridad completada con éxito. Todos los registros son válidos.",
+    "integrityError": "ALERTA: Se ha detectado una alteración o salto en la cadena de bloques del log de auditoría.",
+    "integrityCheckFailed": "Error al verificar la integridad criptográfica.",
+    "exportSuccess": "Archivo exportado correctamente",
+    "exportError": "Error al exportar los registros de auditoría",
+    "categories": {
+      "all": "Todos los eventos",
+      "security": "Seguridad y Anomalías",
+      "auth": "Autenticación y 2FA",
+      "checkin": "Fichajes (Entrada/Salida)",
+      "crud": "Gestión de Registros (CRUD)",
+      "filterPlaceholder": "Filtrar por categoría"
+    }
   },
   "cloudSettings": {
     "saveSuccess": "Ajustes de nube guardados correctamente",
@@ -841,7 +954,9 @@
   "notifications": {
     "title": "Notificaciones",
     "empty": "Sin notificaciones",
-    "clearAll": "Limpiar todo"
+    "clearAll": "Limpiar todo",
+    "enablePushPrompt": "Activar avisos en este dispositivo",
+    "enableButton": "Activar"
   },
   "web-vitals": "web-vitals",
   "genericError": "Error al cargar formaciones",
@@ -886,7 +1001,8 @@
     "detectGpsBtn": "Detectar GPS Actual",
     "gpsCaptured": "Coordenadas GPS actuales capturadas con éxito",
     "gpsError": "No se pudo obtener la posición GPS actual",
-    "geofenceHelp": "Si se configuran las coordenadas GPS, los empleados asignados a esta sede solo podrán fichar dentro del radio establecido."
+    "geofenceHelp": "Si se configuran las coordenadas GPS, los empleados asignados a esta sede solo podrán fichar dentro del radio establecido.",
+    "gpsNotSupported": "Geolocalización no soportada en este navegador."
   },
   "privacy": {
     "secNotCollectedTitle": "2. Datos que NO recopilamos y Garantías de No Intrusión",
@@ -1035,7 +1151,8 @@
     "updateBtn": "Actualizar",
     "iosTitle": "Instala la App en iPhone",
     "iosInstructions": "Pulsa Compartir",
-    "iosInstructions2": "y luego \"Añadir a pantalla de inicio\""
+    "iosInstructions2": "y luego \"Añadir a pantalla de inicio\"",
+    "updating": "Actualizando..."
   },
   "support": {
     "modalTitle": "Centro de Ayuda y Soporte",

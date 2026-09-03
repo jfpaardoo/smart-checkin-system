@@ -8,6 +8,7 @@ import org.springframework.samples.smartcheckin.formation.Formation;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.samples.smartcheckin.formation.FormationAttendanceRepository;
 import org.springframework.samples.smartcheckin.formation.FormationRepository;
+import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserRepository;
 import org.springframework.samples.smartcheckin.exports.strategy.ExportUtils;
@@ -105,7 +106,7 @@ public class AnalyticsService {
         return locator.equalsIgnoreCase(userLocator);
     }
 
-    private boolean matchesRole(org.springframework.samples.smartcheckin.user.Authorities auth, String role) {
+    private boolean matchesRole(Authorities auth, String role) {
         if (role == null || role.isBlank() || "ALL".equalsIgnoreCase(role)) {
             return true;
         }

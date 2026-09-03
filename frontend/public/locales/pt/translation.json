@@ -89,7 +89,8 @@
     "verifyAndEnter": "Verificar e Entrar",
     "forgotPassword": "Esqueceu sua senha?",
     "privacyPolicy": "Política de Privacidade",
-    "backupCodeInvalidFormat": "O código de recuperação deve ter o formato XXXX-XXXX."
+    "backupCodeInvalidFormat": "O código de recuperação deve ter o formato XXXX-XXXX.",
+    "usernamePlaceholder": "Introduza o seu utilizador ou e-mail"
   },
   "users": {
     "allActive": "Todos os Ativos",
@@ -160,7 +161,12 @@
     "allStates": "Todos os estados",
     "pendingFilterHint": "Mostrando solicitações aguardando validação",
     "subtitle": "Gerencie funções, centros associados, status de atividade e solicitações de registro",
-    "locatorPlaceholder": "Digite o localizador (Ex: MAD, BCN, PT...)"
+    "locatorPlaceholder": "Digite o localizador (Ex: MAD, BCN, PT...)",
+    "noUsersFound": "Não foram encontrados colaboradores correspondentes.",
+    "deleteConfirmTitle": "Eliminar Utilizador",
+    "deleteConfirmMessage": "Tem a certeza de que deseja eliminar permanentemente",
+    "deleteWarning": "Esta ação não pode ser anulada. Os acessos ao sistema e registos associados serão eliminados.",
+    "duplicateEmail": "O endereço de e-mail já se encontra registado."
   },
   "formations": {
     "filterAll": "Todas as datas",
@@ -218,7 +224,11 @@
     "subtitle": "Agende sessões de formação, gira presenças e material didático",
     "location": "Local da Formação",
     "trainer": "Formador",
-    "titleUppercase": "FORMAÇÃO"
+    "titleUppercase": "FORMAÇÃO",
+    "filterAllStatus": "Todos os estados",
+    "filterStatus": "Filtrar por estado",
+    "savedAsDraft": "Formação guardada como rascunho.",
+    "publishedSuccess": "Formação publicada com sucesso! As notificações foram enviadas."
   },
   "formationDetails": {
     "title": "Detalhes da Formação",
@@ -292,7 +302,12 @@
     "closeError": "Erro ao finalizar a formação.",
     "signatureRequired": "Por favor, introduza a sua assinatura como formador para encerrar a sessão.",
     "officialSheetDownloaded": "Registo oficial FOR 99 descarregado e sincronizado com sucesso.",
-    "downloadOfficialSheetError": "Erro ao descarregar o registo oficial FOR 99."
+    "downloadOfficialSheetError": "Erro ao descarregar o registo oficial FOR 99.",
+    "confirmClose": "Finalizar Formação",
+    "statusPublished": "Publicada / Aberta",
+    "syncCalendar": "Sincronizar Calendário",
+    "calendarDownloaded": "Convocatória descarregada (.ics) para o calendário.",
+    "calendarError": "Erro ao descarregar a convocatória de calendário."
   },
   "qr": {
     "title": "QR de Formação",
@@ -303,7 +318,28 @@
     "selectFormationPrompt2": "para gerar o QR",
     "totpSecurity": "Segurança TOTP: Atualiza a cada 20s",
     "maxBrightnessBtn": "Modo de Brilho Máximo",
-    "brightnessHint": "No iPhone / iPad: Deslize a Central de Controle para aumentar o brilho do dispositivo se estiver baixo."
+    "brightnessHint": "No iPhone / iPad: Deslize a Central de Controle para aumentar o brilho do dispositivo se estiver baixo.",
+    "autoUpdateBadge": "Atualização automática",
+    "captureShield": "Proteção Anti-Captura",
+    "liveSync": "Ao Vivo",
+    "localMode": "Modo Local",
+    "liveSyncTitle": "Conexão ativa sincronizada em tempo real",
+    "localModeTitle": "Modo local: O código QR continua rodando autonomamente com o relógio interno",
+    "gpsLinked": "GPS do Administrador Vinculado",
+    "gpsSearching": "Obtendo GPS do Administrador...",
+    "copyPin": "Copiar PIN",
+    "pinCopied": "Copiado",
+    "shortcuts": "Atalhos",
+    "projector": "Projetor",
+    "refresh": "Atualizar",
+    "exit": "Sair",
+    "fullscreenHint": "Clique duplo para alternar tela cheia (Tecla F)",
+    "closeFullscreen": "Fechar tela cheia (Tecla Esc ou F)",
+    "captureBlockedTitle": "Captura Bloqueada",
+    "captureBlockedDesc": "O código QR e o PIN dinâmico estão protegidos contra capturas e recortes.",
+    "pinHidden": "PIN Oculto",
+    "pinHiddenDesc": "Protegido contra capturas",
+    "presenterShortcutsHint": "Pressione F ou Esc para sair · Espaço para regenerar"
   },
   "dashboard": {
     "hello": "Olá",
@@ -348,7 +384,29 @@
     "camera": "Câmara",
     "viewDocumentation": "Ver Documentação",
     "filterAllFormations": "Todas as formações",
-    "filterStatus": "Filtrar estado"
+    "filterStatus": "Filtrar estado",
+    "welcomeSub": "Consulte as suas próximas convocatórias, sessões em curso e descarregue os seus diplomas.",
+    "tabUpcoming": "Próximas Agendadas",
+    "tabInProgress": "Em Curso",
+    "tabCompleted": "Concluídas & Diplomas",
+    "tabAll": "Todas",
+    "statusScheduled": "Agendada",
+    "scheduledDate": "Data e Horário",
+    "todayAt": "Hoje às",
+    "tomorrowAt": "Amanhã às",
+    "inDays": "Em {{count}} dias",
+    "trainerLocation": "Local & Formador",
+    "noUpcoming": "Não tem formações agendadas proximamente.",
+    "noInProgress": "Não tem nenhuma formação em curso neste momento.",
+    "noCompleted": "Ainda não concluiu nenhuma formação.",
+    "scheduledTip": "O registo de presença estará disponível ao ler o QR code na sala no dia do evento.",
+    "syncCalendar": "Sincronizar Calendário",
+    "statusClosedNonAttended": "Concluída",
+    "docLockedTitle": "Documentação e Material Didático",
+    "docLockedBadge": "Bloqueado até ao Check-in ou Conclusão",
+    "docLockedDesc": "O material didático e apresentações serão desbloqueados automaticamente quando confirmar a sua presença fazendo o Check-in ou quando o formador concluir a sessão.",
+    "unlockedPostSession": "Desbloqueado após conclusão",
+    "clickToPreview": "Clique para pré-visualizar"
   },
   "checkin": {
     "schedulePrompt": "Neste momento, estou:",
@@ -398,7 +456,18 @@
     "formationLabel": "Treinamento",
     "dateLabel": "Data",
     "close": "Fechar",
-    "switchCamera": "Alternar Câmera"
+    "switchCamera": "Alternar Câmera",
+    "savedOffline": "Sem ligação: Registo guardado localmente no dispositivo. Sincronizará automaticamente quando recuperar rede.",
+    "offlineQueued": "O seu registo ficou guardado no dispositivo e será enviado quando restabelecer a ligação.",
+    "offlineSynced": "Registos offline sincronizados com sucesso com o servidor.",
+    "gpsActive": "Localização GPS verificada",
+    "enableGpsTooltip": "Toque para conceder permissão de localização",
+    "enableGps": "Permitir acesso à localização GPS",
+    "type": "Tipo de Registo",
+    "dateTime": "Data e Hora",
+    "signatureStatus": "Assinatura",
+    "entry": "ENTRADA",
+    "exit": "SAÍDA"
   },
   "common": {
     "clear": "Limpar",
@@ -444,7 +513,20 @@
     "selectOption": "Selecionar",
     "clearSearch": "Limpar pesquisa",
     "logoutWarning": "A sua sessão será encerrada com segurança neste dispositivo.",
-    "companyLogo": "Logotipo da empresa"
+    "companyLogo": "Logotipo da empresa",
+    "status": "Estado",
+    "selectAll": "Todos",
+    "deselectAll": "Nenhum",
+    "saveChanges": "Guardar Alterações",
+    "deletedSuccess": "Registo eliminado com sucesso",
+    "appUpdated": "Nova versão disponível",
+    "appUpdatedDesc": "Foi implementada uma atualização da aplicação. Por favor, recarregue a página.",
+    "reloadApp": "Recarregar aplicação",
+    "noResults": "Nenhum resultado encontrado",
+    "view": "Ver",
+    "tapToExpand": "Toque para expandir o texto",
+    "generating": "A gerar...",
+    "reset": "Repor"
   },
   "lang": {
     "es": "Español",
@@ -561,7 +643,18 @@
     "userFormationsPdf": "Matriz Completa (PDF)",
     "userFormationsCsv": "Matriz Completa (CSV)",
     "exportDossier": "Dossier:",
-    "records": "registos"
+    "records": "registos",
+    "company": "Empresa",
+    "allCompanies": "Todas as empresas",
+    "locator": "Localizador",
+    "role": "Função",
+    "perfRate": "Taxa de Desempenho",
+    "allStatuses": "Todos os estados",
+    "workStatus": "Estado Laboral",
+    "exportSuccess": "Relatório exportado com sucesso",
+    "exportError": "Erro ao gerar o relatório analítico",
+    "filtered": "Filtrado",
+    "filterCompany": "Filtrar por empresa"
   },
   "profile": {
     "myProfileTitle": "Meu Perfil",
@@ -669,7 +762,26 @@
     "regenerate": "Regenerar",
     "backupCodesDesc": "Se perder o acesso ao seu dispositivo, pode usar um dos seus códigos de recuperação de uso único para iniciar sessão.",
     "twoFactorEmail": "E-mail",
-    "twoFactorApp": "App de Autenticação"
+    "twoFactorApp": "App de Autenticação",
+    "checkinHistory": "Histórico de Registos e Jornada",
+    "totalRecords": "registos",
+    "noCheckinsYet": "Ainda não existem registos de presença",
+    "noCheckinsDesc": "Os seus registos de entrada e saída serão listados aqui.",
+    "backupCodesKeepSafe": "Guarde os seus códigos de recuperação",
+    "backupCodesKeepSafeDesc": "Se perder o acesso à sua aplicação ou e-mail, estes códigos permitirão aceder à sua conta. Cada código é de uso único.",
+    "copied": "Copiados",
+    "copyAll": "Copiar todos",
+    "downloadTxt": "Descarregar .txt",
+    "backupCodesSavedConfirmation": "Guardei os meus códigos",
+    "twoFactorEnabledSuccess": "Autenticação de dois fatores ativada com sucesso.",
+    "twoFactorInvalidCode": "Código inválido ou expirado.",
+    "twoFactorDisabledSuccess": "Autenticação de dois fatores desativada.",
+    "enter2FACodeToRegenerate": "Introduza o seu código 2FA de 6 dígitos para gerar novos códigos de recuperação:",
+    "backupCodesRegenerateError": "Erro ao regenerar códigos. Verifique o seu código 2FA.",
+    "backupCodesCopied": "Códigos de recuperação copiados para a área de transferência.",
+    "twoFactorMethodLabel": "Método:",
+    "regenerateBackupCodes": "Regenerar Códigos",
+    "disablePromptMsg": "Para desativar a 2FA, introduza o código de verificação atual:"
   },
   "register": {
     "company": "Empresa / Centro de Trabalho",
@@ -702,7 +814,10 @@
     "email": "E-mail",
     "captchaRequired": "Por favor, complete a verificação de segurança.",
     "hidePasswordVisibility": "Ocultar senha",
-    "showPasswordVisibility": "Mostrar senha"
+    "showPasswordVisibility": "Mostrar senha",
+    "firstNamePlaceholder": "O seu nome",
+    "lastNamePlaceholder": "Os seus apelidos",
+    "usernamePlaceholder": "nomedeutilizador"
   },
   "audit": {
     "filterAll": "Todos os eventos",
@@ -720,7 +835,8 @@
       "action": "Ação",
       "user": "Utilizador",
       "details": "Detalhes",
-      "ip": "IP de Origem"
+      "ip": "IP de Origem",
+      "timestamp": "Data/Hora"
     },
     "exportCSV": "Exportar para CSV",
     "actions": {
@@ -763,7 +879,21 @@
     "integrityVerified": "Cadeia Íntegra",
     "verifyChain": "Verificar Integridade",
     "verifying": "Verificando SHA-256...",
-    "verifyChainTooltip": "Verificar integridade criptográfica SHA-256 de todos os registros de auditoria"
+    "verifyChainTooltip": "Verificar integridade criptográfica SHA-256 de todos os registros de auditoria",
+    "anomalyDetected": "Anomalia de Registo Detetada",
+    "integritySuccess": "Verificação de integridade concluída com sucesso. Todos os registos são válidos.",
+    "integrityError": "ALERTA: Foi detetada uma alteração ou falha na cadeia do registo de auditoria.",
+    "integrityCheckFailed": "Erro ao verificar a integridade criptográfica.",
+    "exportSuccess": "Ficheiro exportado com sucesso",
+    "exportError": "Erro ao exportar os registos de auditoria",
+    "categories": {
+      "all": "Todos os eventos",
+      "security": "Segurança e Anomalias",
+      "auth": "Autenticação e 2FA",
+      "checkin": "Registos (Entrada/Saída)",
+      "crud": "Gestão de Registos (CRUD)",
+      "filterPlaceholder": "Filtrar por categoria"
+    }
   },
   "cloudSettings": {
     "saveSuccess": "Definições de nuvem guardadas com sucesso",
@@ -802,7 +932,9 @@
   "notifications": {
     "title": "Notificações",
     "empty": "Sem notificações",
-    "clearAll": "Limpe tudo"
+    "clearAll": "Limpe tudo",
+    "enablePushPrompt": "Ativar notificações neste dispositivo",
+    "enableButton": "Ativar"
   },
   "web-vitals": "web-vitals",
   "genericError": "Erro ao carregar treinamentos",
@@ -825,7 +957,7 @@
     "nameLabel": "Nome da Empresa",
     "descriptionLabel": "Descrição / Observações",
     "geofenceTitle": "Controlo de Localização e Geofencing",
-    "geofenceSubtitle": "Pesquise a sede, clique no mapa ou utilize o GPS para definir o perímetro de registo de ponto.",
+    "geofenceSubtitle": "Pesquise a sede, clique no mapa ou use o GPS para definir o perímetro de registo.",
     "searchAddressPlaceholder": "Pesquisar endereço, parque industrial, sede ou cidade...",
     "myGpsLocation": "Meu GPS",
     "createBtn": "Criar Empresa",
@@ -840,14 +972,15 @@
     "namePlaceholder": "Ex. BA Glass Spain SAU",
     "descriptionPlaceholder": "Informações adicionais sobre a atividade ou localização do centro...",
     "addressLabel": "Endereço Físico",
-    "addressPlaceholder": "Ex. Parque Industrial Los Villares, Rua Vidrio 12",
+    "addressPlaceholder": "Ex. Parque Industrial, Rua Principal 12",
     "latitudeLabel": "Latitude",
     "longitudeLabel": "Longitude",
     "radiusLabel": "Raio Máximo (Metros)",
     "detectGpsBtn": "Detetar GPS Atual",
     "gpsCaptured": "Coordenadas GPS atuais capturadas com sucesso",
     "gpsError": "Não foi possível obter a posição GPS atual",
-    "geofenceHelp": "Se as coordenadas GPS forem configuradas, os colaboradores desta sede só poderão registar o ponto dentro do raio estabelecido."
+    "geofenceHelp": "Se forem configuradas coordenadas GPS, os colaboradores atribuídos a esta sede só poderão registar presença dentro do raio definido.",
+    "gpsNotSupported": "A geolocalização não é suportada por este navegador."
   },
   "privacy": {
     "secNotCollectedTitle": "2. Dados que NÃO Recolhemos e Garantias de Não Intrusão",
@@ -996,7 +1129,8 @@
     "updateBtn": "Atualizar",
     "iosTitle": "Instalar a App no iPhone",
     "iosInstructions": "Toque em Partilhar",
-    "iosInstructions2": "e depois \"Adicionar ao ecrã principal\""
+    "iosInstructions2": "e depois \"Adicionar ao ecrã principal\"",
+    "updating": "A atualizar..."
   },
   "support": {
     "modalTitle": "Centro de Ajuda e Suporte",
@@ -1019,5 +1153,27 @@
     "faq4_q": "Como recupero a minha palavra-passe de acesso?",
     "faq4_a": "Clique em 'Esqueceu-se da sua palavra-passe?' no ecrã de início de sessão e receberá um e-mail seguro com uma ligação de reposição.",
     "confidentiality": "Distribution Academy · Suporte Técnico Seguro"
+  },
+  "formation": {
+    "statusDraft": "Rascunho",
+    "statusPublished": "Publicada",
+    "statusClosed": "Concluída",
+    "publishTitle": "Publicar Formação",
+    "publishImmediately": "Criar e Publicar",
+    "saveAsDraft": "Guardar como Rascunho",
+    "saveAndPublish": "Guardar e Publicar",
+    "confirmPublish": "Confirmar e Publicar",
+    "publishing": "A publicar e notificar...",
+    "publishedSuccess": "Formação publicada com sucesso! As notificações foram enviadas.",
+    "publishError": "Erro ao publicar a formação.",
+    "selectAtLeastOneUser": "Deve selecionar pelo menos um colaborador para convocar.",
+    "activeEmployees": "colaboradores ativos",
+    "publishNoticeTitle": "Difusão Automática Multicanal",
+    "publishNoticeDesc": "Ao publicar, a formação ficará imediatamente visível no painel dos colaboradores. Serão enviadas notificações por Web Push, e-mail e WebSocket em tempo real.",
+    "targetAudience": "Destinatários da Convocatória",
+    "allEmployees": "Todos os Colaboradores",
+    "customSelection": "Personalizar Participantes",
+    "draftBannerTitle": "Formação em Rascunho",
+    "draftBannerDesc": "Esta formação não está visível para os colaboradores nem permite registar presenças até ser publicada."
   }
 }

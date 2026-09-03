@@ -15,6 +15,7 @@ import org.springframework.samples.smartcheckin.audit.Auditable;
 import org.springframework.samples.smartcheckin.auth.payload.request.LoginRequest;
 import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest;
 import org.springframework.samples.smartcheckin.auth.payload.response.JwtResponse;
+import org.springframework.samples.smartcheckin.auth.session.UserSessionService;
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtBlacklistService;
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
@@ -77,7 +78,7 @@ public class AuthController {
     private final UserDetailsServiceImpl userDetailsServiceImpl;
     private final AnomalyDetectionService anomalyDetectionService;
     private final HttpServletRequest request;
-    private final org.springframework.samples.smartcheckin.configuration.jwt.JwtBlacklistService jwtBlacklistService;
+    private final JwtBlacklistService jwtBlacklistService;
     private final EmailNotificationSender emailNotificationSender;
     private final PushNotificationSender pushNotificationSender;
     private final PasswordResetService passwordResetService;
@@ -86,7 +87,7 @@ public class AuthController {
     private final CompanyService companyService;
     private final HaveIBeenPwnedService haveIBeenPwnedService;
     private final TwoFactorBackupCodeService backupCodeService;
-    private final org.springframework.samples.smartcheckin.auth.session.UserSessionService userSessionService;
+    private final UserSessionService userSessionService;
     private static final String CAPTCHA_SUCCESS_MESSAGE = "Error: Verificación de seguridad (Captcha) fallida.";
     private static final String HEADER = "X-Forwarded-For";
 
@@ -105,7 +106,7 @@ public class AuthController {
             PasswordResetService passwordResetService, JavaMailSender javaMailSender,
             CaptchaService captchaService, CompanyService companyService,
             HaveIBeenPwnedService haveIBeenPwnedService, TwoFactorBackupCodeService backupCodeService,
-            org.springframework.samples.smartcheckin.auth.session.UserSessionService userSessionService) {
+            UserSessionService userSessionService) {
         
         this.userService = userService;
         this.authoritiesService = authoritiesService;

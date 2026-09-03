@@ -10,10 +10,12 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
+import org.springframework.samples.smartcheckin.audit.AnomalyDetectionService;
 import org.springframework.samples.smartcheckin.auth.webauthn.dto.*;
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsServiceImpl;
+import org.springframework.samples.smartcheckin.metrics.AppMetricsService;
 import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
@@ -65,10 +67,10 @@ class WebAuthnRestControllerTests {
     private JwtUtils jwtUtils;
 
     @MockitoBean
-    private org.springframework.samples.smartcheckin.audit.AnomalyDetectionService anomalyDetectionService;
+    private AnomalyDetectionService anomalyDetectionService;
 
     @MockitoBean
-    private org.springframework.samples.smartcheckin.metrics.AppMetricsService metricsService;
+    private AppMetricsService metricsService;
 
     private User testUser;
     private UserDetailsImpl userDetails;

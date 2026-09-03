@@ -23,6 +23,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.EqualsAndHashCode;
 
+import jakarta.persistence.Index;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 
@@ -34,7 +35,11 @@ import jakarta.persistence.EnumType;
 @lombok.NoArgsConstructor
 @EqualsAndHashCode(callSuper = false, exclude = {"attendances"})
 @Entity
-@Table(name = "formations")
+@Table(name = "formations", indexes = {
+    @Index(name = "idx_formations_status", columnList = "status"),
+    @Index(name = "idx_formations_date", columnList = "formationDate"),
+    @Index(name = "idx_formations_status_date", columnList = "status, formationDate")
+})
 public class Formation extends BaseEntity {
 
     @NotBlank
@@ -94,6 +99,10 @@ public class Formation extends BaseEntity {
 
     public boolean isPublished() {
         return FormationStatus.PUBLISHED.equals(this.status);
+    }
+
+    public boolean isClosedSession() {
+        return Boolean.TRUE.equals(this.isClosed) || FormationStatus.CLOSED.equals(this.status);
     }
 
 }

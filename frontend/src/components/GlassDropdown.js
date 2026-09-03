@@ -134,12 +134,18 @@ export default function GlassDropdown({
         <FaChevronDown className={`ms-2 flex-shrink-0 transition-transform duration-300 ${chevronSizeClass} ${chevronOpenClass}`} />
       </button>
 
-      {/* Menú: animado en móvil y desktop */}
+      {/* Menú: animado en móvil y desktop con sombra suave sin cortes */}
       <div className={menuContainerClass}>
-        <div className="da-glass-dropdown-panel overflow-hidden sm:overflow-visible rounded-2xl">
-          <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/90 dark:border-white/15 shadow-[0_16px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.6)] rounded-2xl p-1.5 max-h-56 overflow-y-auto">
+        <div 
+          className="da-glass-dropdown-panel rounded-2xl border border-slate-200/90 dark:border-slate-700/80 bg-white dark:bg-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.16)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.65)] p-1"
+          style={{
+            backdropFilter: 'none',
+            WebkitBackdropFilter: 'none'
+          }}
+        >
+          <div className="max-h-56 overflow-y-auto p-1 rounded-xl overscroll-contain">
             {searchable && (
-              <div className="p-1.5 border-b border-slate-100 dark:border-white/10 sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md z-10">
+              <div className="p-1.5 border-b border-slate-100 dark:border-white/10 sticky top-0 bg-white dark:bg-slate-900 z-10">
                 <input 
                   id="dropdownSearchInput"
                   name="dropdownSearchInput"
@@ -154,7 +160,7 @@ export default function GlassDropdown({
               </div>
             )}
             
-            <div className="py-1 flex flex-col gap-0.5">
+            <div className="py-1 pb-3.5 flex flex-col gap-0.5">
               {filteredOptions.length > 0 ? (
                 filteredOptions.map((opt) => (
                   <DropdownOptionItem

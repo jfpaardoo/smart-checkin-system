@@ -7,6 +7,7 @@ import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.checkin.Checkin;
 import org.springframework.samples.smartcheckin.formation.Formation;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
+import org.springframework.samples.smartcheckin.util.HashUtils;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
@@ -27,6 +28,13 @@ public class CsvExportStrategy implements DataExportStrategy {
     private static final String USERNAME_HEADER = "Username";
     private static final String PERSONAL_CODE_HEADER = "PersonalCode";
     private static final String COMPANY_HEADER = "Company";
+    private static final String FULL_NAME_HEADER = "FullName";
+    private static final String SIGNATURE_PRESENT_HEADER = "SignaturePresent";
+    private static final String FORMATION_ID_HEADER = "FormationID";
+    private static final String FORMATION_NAME_HEADER = "FormationName";
+    private static final String SCHEDULED_DATE_HEADER = "ScheduledDate";
+    private static final String CHECK_IN_TIME_HEADER = "CheckInTime";
+    private static final String CHECK_OUT_TIME_HEADER = "CheckOutTime";
     private static final String YES = "YES";
     private static final String NO = "NO";
 
@@ -79,7 +87,7 @@ public class CsvExportStrategy implements DataExportStrategy {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (PrintWriter writer = createUtf8BomWriter(out)) {
             writer.println(String.join(CSV_DELIMITER,
-                    "ID", USERNAME_HEADER, PERSONAL_CODE_HEADER, "FullName", COMPANY_HEADER, "Direction", "Timestamp", "SignaturePresent"
+                    "ID", USERNAME_HEADER, PERSONAL_CODE_HEADER, FULL_NAME_HEADER, COMPANY_HEADER, "Direction", "Timestamp", SIGNATURE_PRESENT_HEADER
             ));
 
             if (checkins != null) {
@@ -113,9 +121,9 @@ public class CsvExportStrategy implements DataExportStrategy {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (PrintWriter writer = createUtf8BomWriter(out)) {
             writer.println(String.join(CSV_DELIMITER,
-                    "FormationID", "FormationName", "ScheduledDate", "UserID", USERNAME_HEADER,
-                    PERSONAL_CODE_HEADER, "FullName", COMPANY_HEADER, "CheckInTime", "CheckOutTime",
-                    "Duration(Minutes)", "SignaturePresent", "AuditVerificationHash"
+                    FORMATION_ID_HEADER, FORMATION_NAME_HEADER, SCHEDULED_DATE_HEADER, "UserID", USERNAME_HEADER,
+                    PERSONAL_CODE_HEADER, FULL_NAME_HEADER, COMPANY_HEADER, CHECK_IN_TIME_HEADER, CHECK_OUT_TIME_HEADER,
+                    "Duration(Minutes)", SIGNATURE_PRESENT_HEADER, "AuditVerificationHash"
             ));
 
             if (formations != null) {
@@ -201,7 +209,7 @@ public class CsvExportStrategy implements DataExportStrategy {
         String details = sanitize(log.getDetails());
         String ip = sanitize(log.getIpAddress());
         String rawData = ts + action + username + ip;
-        String hash = org.springframework.samples.smartcheckin.util.HashUtils.generateHash(rawData);
+        String hash = HashUtils.generateHash(rawData);
 
         return String.join(CSV_DELIMITER, idStr, ts, action, username, details, ip, hash);
     }
@@ -213,11 +221,11 @@ public class CsvExportStrategy implements DataExportStrategy {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (PrintWriter writer = createUtf8BomWriter(out)) {
             writer.println(String.join(CSV_DELIMITER,
-                    "UserID", USERNAME_HEADER, PERSONAL_CODE_HEADER, "FullName", "Email",
+                    "UserID", USERNAME_HEADER, PERSONAL_CODE_HEADER, FULL_NAME_HEADER, "Email",
                     "Locator", COMPANY_HEADER, "Role", "WorkingStatus",
-                    "FormationID", "FormationName", "ScheduledDate", "AttendanceStatus",
-                    "CheckInTime", "CheckOutTime", "DurationMinutes", "DurationFormatted",
-                    "SignaturePresent", "IntegrityHash"
+                    FORMATION_ID_HEADER, FORMATION_NAME_HEADER, SCHEDULED_DATE_HEADER, "AttendanceStatus",
+                    CHECK_IN_TIME_HEADER, CHECK_OUT_TIME_HEADER, "DurationMinutes", "DurationFormatted",
+                    SIGNATURE_PRESENT_HEADER, "IntegrityHash"
             ));
 
             if (records != null) {
@@ -267,44 +275,63 @@ public class CsvExportStrategy implements DataExportStrategy {
     public byte[] exportSingleUserDossier(UserAnalyticsDTO user, List<UserFormationDetailDTO> details) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (PrintWriter writer = createUtf8BomWriter(out)) {
-            writer.println("# --- EMPLOYEE DOSSIER SUMMARY ---");
-            writer.println("Property,Value");
-            writer.println("UserID," + (user != null && user.getUserId() != null ? user.getUserId() : 0));
-            writer.println("Username," + (user != null ? sanitize(user.getUsername()) : NOT_AVAILABLE));
-            writer.println("PersonalCode," + (user != null ? sanitize(user.getPersonalCode()) : NOT_AVAILABLE));
-            writer.println("FullName," + (user != null ? sanitize((safe(user.getFirstName()) + " " + safe(user.getLastName())).trim()) : NOT_AVAILABLE));
-            writer.println("Company," + (user != null && user.getCompanyName() != null ? sanitize(user.getCompanyName()) : NOT_AVAILABLE));
-            writer.println("Locator," + (user != null && user.getLocator() != null ? sanitize(user.getLocator()) : NOT_AVAILABLE));
-            writer.println("Role," + (user != null && user.getAuthority() != null ? sanitize(user.getAuthority()) : NOT_AVAILABLE));
-            writer.println("AttendanceRate," + (user != null && user.getAttendancePercentage() != null ? user.getAttendancePercentage() : 0.0) + "%");
-            writer.println("TotalFormationMinutes," + (user != null && user.getTotalFormationMinutes() != null ? user.getTotalFormationMinutes() : 0));
-            writer.println();
-            writer.println("# --- FORMATION SESSIONS ---");
-            writer.println(String.join(CSV_DELIMITER,
-                    "FormationID", "FormationName", "ScheduledDate", "Status",
-                    "CheckInTime", "CheckOutTime", "DurationMinutes", "SignaturePresent", "VerificationHash"
-            ));
-
-            if (details != null) {
-                for (UserFormationDetailDTO d : details) {
-                    String dFId = String.valueOf(d.getFormationId() != null ? d.getFormationId() : 0);
-                    String dFName = sanitize(d.getFormationName());
-                    String dDate = d.getFormationDate() != null ? d.getFormationDate().format(DATE_FORMATTER) : NOT_AVAILABLE;
-                    String dStatus = sanitize(d.getStatus());
-                    String dIn = d.getCheckInDate() != null ? d.getCheckInDate().format(DATE_FORMATTER) : NOT_AVAILABLE;
-                    String dOut = d.getCheckOutDate() != null ? d.getCheckOutDate().format(DATE_FORMATTER) : NOT_AVAILABLE;
-                    String dDur = String.valueOf(d.getDurationMinutes() != null ? d.getDurationMinutes() : 0);
-                    boolean dSig = Boolean.TRUE.equals(d.getHasSignature());
-                    String dHash = NOT_AVAILABLE;
-                    if (dSig && d.getSignature() != null) {
-                        dHash = org.springframework.samples.smartcheckin.util.HashUtils.generateHash(
-                                String.valueOf(d.getFormationId()) + safe(d.getFormationName()) + d.getSignature());
-                    }
-                    writer.println(String.join(CSV_DELIMITER, dFId, dFName, dDate, dStatus, dIn, dOut, dDur, dSig ? YES : NO, sanitize(dHash)));
-                }
-            }
+            writeDossierSummary(writer, user);
+            writeDossierSessions(writer, details);
         }
         return out.toByteArray();
+    }
+
+    private void writeDossierSummary(PrintWriter writer, UserAnalyticsDTO user) {
+        writer.println("# --- EMPLOYEE DOSSIER SUMMARY ---");
+        writer.println("Property,Value");
+
+        UserAnalyticsDTO safeUser = user != null ? user : UserAnalyticsDTO.builder().build();
+        String uId = String.valueOf(safeUser.getUserId() != null ? safeUser.getUserId() : 0);
+        String fullName = (safe(safeUser.getFirstName()) + " " + safe(safeUser.getLastName())).trim();
+        double rate = safeUser.getAttendancePercentage() != null ? safeUser.getAttendancePercentage() : 0.0;
+        long fMins = safeUser.getTotalFormationMinutes() != null ? safeUser.getTotalFormationMinutes() : 0;
+
+        writer.println("UserID," + uId);
+        writer.println(USERNAME_HEADER + "," + sanitize(safeUser.getUsername()));
+        writer.println(PERSONAL_CODE_HEADER + "," + sanitize(safeUser.getPersonalCode()));
+        writer.println(FULL_NAME_HEADER + "," + sanitize(fullName));
+        writer.println(COMPANY_HEADER + "," + sanitize(safeUser.getCompanyName()));
+        writer.println("Locator," + sanitize(safeUser.getLocator()));
+        writer.println("Role," + sanitize(safeUser.getAuthority()));
+        writer.println("AttendanceRate," + rate + "%");
+        writer.println("TotalFormationMinutes," + fMins);
+        writer.println();
+    }
+
+    private void writeDossierSessions(PrintWriter writer, List<UserFormationDetailDTO> details) {
+        writer.println("# --- FORMATION SESSIONS ---");
+        writer.println(String.join(CSV_DELIMITER,
+                FORMATION_ID_HEADER, FORMATION_NAME_HEADER, SCHEDULED_DATE_HEADER, "Status",
+                CHECK_IN_TIME_HEADER, CHECK_OUT_TIME_HEADER, "DurationMinutes", SIGNATURE_PRESENT_HEADER, "VerificationHash"
+        ));
+
+        if (details != null) {
+            for (UserFormationDetailDTO d : details) {
+                writer.println(buildSessionCsvRow(d));
+            }
+        }
+    }
+
+    private String buildSessionCsvRow(UserFormationDetailDTO d) {
+        String dFId = String.valueOf(d.getFormationId() != null ? d.getFormationId() : 0);
+        String dFName = sanitize(d.getFormationName());
+        String dDate = d.getFormationDate() != null ? d.getFormationDate().format(DATE_FORMATTER) : NOT_AVAILABLE;
+        String dStatus = sanitize(d.getStatus());
+        String dIn = d.getCheckInDate() != null ? d.getCheckInDate().format(DATE_FORMATTER) : NOT_AVAILABLE;
+        String dOut = d.getCheckOutDate() != null ? d.getCheckOutDate().format(DATE_FORMATTER) : NOT_AVAILABLE;
+        String dDur = String.valueOf(d.getDurationMinutes() != null ? d.getDurationMinutes() : 0);
+        boolean dSig = Boolean.TRUE.equals(d.getHasSignature());
+        String dHash = NOT_AVAILABLE;
+        if (dSig && d.getSignature() != null) {
+            dHash = HashUtils.generateHash(
+                    String.valueOf(d.getFormationId()) + safe(d.getFormationName()) + d.getSignature());
+        }
+        return String.join(CSV_DELIMITER, dFId, dFName, dDate, dStatus, dIn, dOut, dDur, dSig ? YES : NO, sanitize(dHash));
     }
 
     private PrintWriter createUtf8BomWriter(ByteArrayOutputStream out) {

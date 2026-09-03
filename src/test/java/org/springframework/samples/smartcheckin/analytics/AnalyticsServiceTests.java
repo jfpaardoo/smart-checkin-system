@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.samples.smartcheckin.checkin.Checkin;
 import org.springframework.samples.smartcheckin.checkin.CheckinRepository;
 import org.springframework.samples.smartcheckin.checkin.CheckinType;
+import org.springframework.samples.smartcheckin.company.Company;
 import org.springframework.samples.smartcheckin.formation.Formation;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.samples.smartcheckin.formation.FormationAttendanceRepository;
@@ -37,7 +38,8 @@ class AnalyticsServiceTests {
         checkinRepository = mock(CheckinRepository.class);
         attendanceRepository = mock(FormationAttendanceRepository.class);
         FormationRepository formationRepository = mock(FormationRepository.class);
-        analyticsService = new AnalyticsService(userRepository, checkinRepository, attendanceRepository, formationRepository);
+        analyticsService = new AnalyticsService(userRepository, checkinRepository, attendanceRepository,
+                formationRepository);
     }
 
     @Test
@@ -53,15 +55,15 @@ class AnalyticsServiceTests {
         user1.setAuthority(auth);
 
         when(userRepository.findAll()).thenReturn(List.of(user1));
-        
+
         Checkin checkin1 = new Checkin();
         checkin1.setCheckInType(CheckinType.ENTRADA);
         checkin1.setCheckInDate(LocalDateTime.of(2026, Month.AUGUST, 1, 9, 0));
-        
+
         Checkin checkin2 = new Checkin();
         checkin2.setCheckInType(CheckinType.SALIDA);
         checkin2.setCheckInDate(LocalDateTime.of(2026, Month.AUGUST, 1, 17, 0));
-        
+
         when(checkinRepository.findByUserIdOrderByCheckInDateDesc(1)).thenReturn(List.of(checkin2, checkin1));
 
         Formation formation = new Formation();
@@ -95,21 +97,21 @@ class AnalyticsServiceTests {
         user1.setFirstName("John");
         user1.setLastName("Doe");
         user1.setPersonalCode("1234");
-        
+
         when(userRepository.findById(1)).thenReturn(Optional.of(user1));
-        
+
         Formation formation = new Formation();
         formation.setId(10);
         formation.setName(COURSE_NAME);
-        
+
         FormationAttendance att = new FormationAttendance();
         att.setFormation(formation);
         att.setCheckInDate(LocalDateTime.of(2026, Month.AUGUST, 1, 10, 0));
         att.setCheckOutDate(LocalDateTime.of(2026, Month.AUGUST, 1, 12, 0));
         att.setSignature("signature");
-        
+
         when(attendanceRepository.findByUserId(1)).thenReturn(List.of(att));
-        
+
         Optional<UserAnalyticsDTO> res = analyticsService.getUserAnalytics(1);
         assertTrue(res.isPresent());
         assertEquals("John", res.get().getFirstName());
@@ -267,7 +269,7 @@ class AnalyticsServiceTests {
         Formation formation = new Formation();
         formation.setId(10);
         formation.setName(COURSE_NAME);
-        
+
         FormationAttendance att = new FormationAttendance();
         att.setFormation(formation);
         att.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
@@ -281,7 +283,7 @@ class AnalyticsServiceTests {
         assertFalse(res.get().getFormationDetails().getFirst().getHasSignature());
     }
 
-	@Test
+    @Test
     void testCalculateWorkMinutesInvalidOrChronologicallyBackwardsCheckins() {
         User user = new User();
         user.setId(1);
@@ -307,11 +309,11 @@ class AnalyticsServiceTests {
 
     @Test
     void testGetAllUsersAnalyticsWithCompanyFilter() {
-        org.springframework.samples.smartcheckin.company.Company compA = new org.springframework.samples.smartcheckin.company.Company();
+        Company compA = new Company();
         compA.setId(10);
         compA.setName("Company A");
 
-        org.springframework.samples.smartcheckin.company.Company compB = new org.springframework.samples.smartcheckin.company.Company();
+        Company compB = new Company();
         compB.setId(20);
         compB.setName("Company B");
 
@@ -349,7 +351,7 @@ class AnalyticsServiceTests {
 
     @Test
     void testGetFilteredUsersAnalyticsWithAllFilters() {
-        org.springframework.samples.smartcheckin.company.Company compA = new org.springframework.samples.smartcheckin.company.Company();
+        Company compA = new Company();
         compA.setId(10);
         compA.setName("Company A");
 
@@ -370,20 +372,18 @@ class AnalyticsServiceTests {
         when(userRepository.findAll()).thenReturn(List.of(u1));
 
         List<UserAnalyticsDTO> res = analyticsService.getFilteredUsersAnalytics(
-                "alice", 10, "MG", "EMPLOYEE", "ALL", true
-        );
+                "alice", 10, "MG", "EMPLOYEE", "ALL", true);
         assertEquals(1, res.size());
         assertEquals("Alice", res.getFirst().getFirstName());
 
         List<UserAnalyticsDTO> resMismatch = analyticsService.getFilteredUsersAnalytics(
-                "alice", 10, "VF", "EMPLOYEE", "ALL", true
-        );
+                "alice", 10, "VF", "EMPLOYEE", "ALL", true);
         assertEquals(0, resMismatch.size());
     }
 
     @Test
     void testGetFilteredUserFormations() {
-        org.springframework.samples.smartcheckin.company.Company compA = new org.springframework.samples.smartcheckin.company.Company();
+        Company compA = new Company();
         compA.setId(10);
         compA.setName("Company A");
 
@@ -418,9 +418,7 @@ class AnalyticsServiceTests {
 
         List<UserFormationExportDTO> records = analyticsService.getFilteredUserFormations(
                 new AnalyticsService.UserFormationFilterCriteria(
-                        null, 10, "MG", "EMPLOYEE", "ALL", true, null, null, "ATTENDED", null, null
-                )
-        );
+                        null, 10, "MG", "EMPLOYEE", "ALL", true, null, null, "ATTENDED", null, null));
 
         assertEquals(1, records.size());
         UserFormationExportDTO r = records.getFirst();

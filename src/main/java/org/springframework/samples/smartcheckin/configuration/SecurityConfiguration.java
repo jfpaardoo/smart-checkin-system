@@ -7,6 +7,7 @@ import org.springframework.samples.smartcheckin.configuration.jwt.AuthEntryPoint
 import org.springframework.samples.smartcheckin.configuration.jwt.AuthTokenFilter;
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtBlacklistService;
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
+import org.springframework.samples.smartcheckin.auth.session.UserSessionService;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -120,8 +121,10 @@ public class SecurityConfiguration {
                         // 8. Formaciones GET y checkout permitidos para autenticados
                         .requestMatchers(FORMATIONS_BASE, FORMATIONS_WILDCARD).authenticated()
 
-                        // 9. Otros endpoints autenticados
-                        .requestMatchers("/api/v1/totp/**").authenticated()
+                        // 9. Endpoints TOTP restringidos a administradores / formadores
+                        .requestMatchers("/api/v1/totp/**").hasAuthority(ADMIN)
+
+                        // 10. Otros endpoints autenticados
                         .requestMatchers("/api/v1/checkins/**").authenticated()
                         .requestMatchers("/api/v1/certificates/**").authenticated()
                         .requestMatchers("/api/v1/push/**").authenticated()
@@ -140,7 +143,7 @@ public class SecurityConfiguration {
             JwtUtils jwtUtils,
             UserDetailsServiceImpl userDetailsService,
             JwtBlacklistService jwtBlacklistService,
-            org.springframework.samples.smartcheckin.auth.session.UserSessionService userSessionService) {
+            UserSessionService userSessionService) {
         return new AuthTokenFilter(jwtUtils, userDetailsService, jwtBlacklistService, userSessionService);
     }
 

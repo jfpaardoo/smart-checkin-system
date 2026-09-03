@@ -28,8 +28,12 @@ import org.springframework.samples.smartcheckin.auth.payload.request.LoginReques
 import org.springframework.samples.smartcheckin.auth.payload.request.ResetPasswordRequest;
 import org.springframework.samples.smartcheckin.auth.payload.request.SignupRequest;
 import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest;
+import org.springframework.samples.smartcheckin.auth.service.HaveIBeenPwnedService;
+import org.springframework.samples.smartcheckin.auth.service.TwoFactorBackupCodeService;
+import org.springframework.samples.smartcheckin.auth.session.UserSessionService;
 import org.springframework.samples.smartcheckin.company.Company;
 import org.springframework.samples.smartcheckin.company.CompanyService;
+import org.springframework.samples.smartcheckin.configuration.RateLimitFilter;
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtBlacklistService;
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
@@ -64,7 +68,7 @@ import io.qameta.allure.Owner;
 @Owner("DP1-tutors")
 @SuppressWarnings("null")
 @WebMvcTest(value = AuthController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
-		WebSecurityConfigurer.class, org.springframework.samples.smartcheckin.configuration.RateLimitFilter.class }), excludeAutoConfiguration = {
+		WebSecurityConfigurer.class, RateLimitFilter.class }), excludeAutoConfiguration = {
 		SecurityAutoConfiguration.class })
 class AuthControllerTests {
 
@@ -121,13 +125,13 @@ class AuthControllerTests {
 	private CompanyService companyService;
 
 	@MockitoBean
-	private org.springframework.samples.smartcheckin.auth.service.HaveIBeenPwnedService haveIBeenPwnedService;
+	private HaveIBeenPwnedService haveIBeenPwnedService;
 
 	@MockitoBean
-	private org.springframework.samples.smartcheckin.auth.service.TwoFactorBackupCodeService backupCodeService;
+	private TwoFactorBackupCodeService backupCodeService;
 
 	@MockitoBean
-	private org.springframework.samples.smartcheckin.auth.session.UserSessionService userSessionService;
+	private UserSessionService userSessionService;
 
 	@Autowired
 	@SuppressWarnings("java:S6813")

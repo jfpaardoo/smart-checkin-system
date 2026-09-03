@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-const CURRENT_CACHE_NAME = 'da-cache-v1.2.1';
+const CURRENT_CACHE_NAME = 'da-cache-v1.2.2';
 
 self.addEventListener('message', function(event) {
   if (event.origin && event.origin !== self.location.origin) {

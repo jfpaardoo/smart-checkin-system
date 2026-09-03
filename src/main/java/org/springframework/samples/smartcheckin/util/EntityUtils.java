@@ -27,7 +27,7 @@ import org.springframework.samples.smartcheckin.model.BaseEntity;
  *
  * @author Juergen Hoeller
  * @author Sam Brannen
- * @see org.springframework.samples.smartcheckin.model.BaseEntity
+ * @see BaseEntity
  * @since 29.10.2003
  */
 @SuppressWarnings("null")
