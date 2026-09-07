@@ -64,7 +64,7 @@ class TotpRestControllerTests {
 
 	@Test
 	@WithMockUser
-	void testGetCurrentTokenWithClosedFormation_ReturnsBadRequest() throws Exception {
+	void testGetCurrentTokenWithClosedFormationReturnsBadRequest() throws Exception {
 		Formation formation = new Formation();
 		formation.setId(2);
 		formation.setIsClosed(true);

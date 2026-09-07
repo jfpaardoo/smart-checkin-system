@@ -44,13 +44,13 @@ function applyTheme(theme) {
     }
   } else {
     root.classList.remove('dark');
-    root.style.backgroundColor = '#f1f5f9';
+    root.style.backgroundColor = '#cbd5e1';
     root.style.colorScheme = 'light';
     if (document.body) {
-      document.body.style.backgroundColor = '#f1f5f9';
+      document.body.style.backgroundColor = '#cbd5e1';
     }
     if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', '#f1f5f9');
+      metaThemeColor.setAttribute('content', '#cbd5e1');
     }
   }
 }

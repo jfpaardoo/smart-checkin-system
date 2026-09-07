@@ -306,12 +306,12 @@
     display: flex;
     flex-direction: column;
     margin-bottom: 1.25rem !important;
-    background: rgba(255, 255, 255, 0.95) !important;
+    background: rgba(255, 255, 255, 0.35) !important;
     backdrop-filter: var(--da-glass-blur-med);
     -webkit-backdrop-filter: var(--da-glass-blur-med);
-    border: 1px solid rgba(226, 232, 240, 0.9) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.65) !important;
     border-radius: 20px !important;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04) !important;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
     overflow: hidden;
     padding: 0 !important;
   }

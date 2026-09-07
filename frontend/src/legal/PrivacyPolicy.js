@@ -12,18 +12,20 @@ export default function PrivacyPolicy() {
   }, []);
 
   return (
-    <div className="da-container flex flex-col items-center justify-center min-h-screen py-8 px-4">
-      <div className="w-full max-w-4xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl shadow-2xl rounded-[36px] p-6 sm:p-10 border border-white/60 dark:border-white/10 my-4">
+    <div className="da-container">
+      <div className="da-card">
         
         {/* BOTÓN VOLVER */}
-        <button 
-          type="button"
-          onClick={() => navigate(-1)} 
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/60 dark:bg-slate-800/60 border border-white/80 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 text-xs sm:text-sm font-semibold transition-all duration-200 mb-6 cursor-pointer"
-        >
-          <FaArrowLeft />
-          <span>{t('common.back', 'Volver')}</span>
-        </button>
+        <div className="flex items-center justify-between mb-4">
+          <button 
+            type="button"
+            onClick={() => navigate(-1)} 
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/50 dark:bg-slate-800/50 border border-white/70 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-700/80 text-xs sm:text-sm font-semibold transition-all duration-200 shadow-xs cursor-pointer"
+          >
+            <FaArrowLeft />
+            <span>{t('common.back', 'Volver')}</span>
+          </button>
+        </div>
 
         {/* CABECERA CENTRADA */}
         <div className="text-center mb-8 pb-6 border-b border-white/40 dark:border-white/10">

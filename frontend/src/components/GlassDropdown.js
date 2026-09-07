@@ -25,7 +25,8 @@ function getAccordionClasses(openUpwards, isOpen) {
   const stateClass = isOpen 
     ? 'grid-rows-[1fr] opacity-100 mt-2 z-10 sm:scale-100 sm:translate-y-0 sm:pointer-events-auto sm:visible' 
     : 'grid-rows-[0fr] opacity-0 mt-0 z-0 sm:scale-95 sm:-translate-y-1 sm:pointer-events-none sm:invisible pointer-events-none';
-  return `grid transition-all duration-300 ease-out sm:block sm:absolute sm:left-0 sm:w-full sm:z-[9999] ${positionClass} ${stateClass}`;
+  const overflowClass = isOpen ? 'overflow-visible' : 'overflow-hidden';
+  return `grid transition-all duration-300 ease-out rounded-2xl sm:block sm:absolute sm:left-0 sm:w-full sm:z-[9999] sm:overflow-visible ${overflowClass} ${positionClass} ${stateClass}`;
 }
 
 function DropdownOptionItem({ opt, isSelected, onSelect }) {
@@ -63,6 +64,7 @@ export default function GlassDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [openUpwards, setOpenUpwards] = useState(false);
+  const [maxMenuHeight, setMaxMenuHeight] = useState(250);
   const dropdownRef = useRef(null);
 
   const toggle = () => {
@@ -81,7 +83,12 @@ export default function GlassDropdown({
 
     const rect = dropdownRef.current.getBoundingClientRect();
     const spaceBelow = window.innerHeight - rect.bottom;
-    setOpenUpwards(spaceBelow < 220 && rect.top > spaceBelow);
+    const spaceAbove = rect.top;
+    const shouldDropUp = spaceBelow < 280 && spaceAbove > spaceBelow;
+    setOpenUpwards(shouldDropUp);
+
+    const availableSpace = shouldDropUp ? (spaceAbove - 24) : (spaceBelow - 24);
+    setMaxMenuHeight(Math.max(140, Math.min(260, Math.floor(availableSpace))));
   }, [isOpen, dropup]);
 
   useEffect(() => {
@@ -136,45 +143,53 @@ export default function GlassDropdown({
 
       {/* Menú: animado en móvil y desktop con sombra suave sin cortes */}
       <div className={menuContainerClass}>
-        <div 
-          className="da-glass-dropdown-panel rounded-2xl border border-slate-200/90 dark:border-slate-700/80 bg-white dark:bg-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.16)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.65)] p-1"
-          style={{
-            backdropFilter: 'none',
-            WebkitBackdropFilter: 'none'
-          }}
-        >
-          <div className="max-h-56 overflow-y-auto p-1 rounded-xl overscroll-contain">
-            {searchable && (
-              <div className="p-1.5 border-b border-slate-100 dark:border-white/10 sticky top-0 bg-white dark:bg-slate-900 z-10">
-                <input 
-                  id="dropdownSearchInput"
-                  name="dropdownSearchInput"
-                  type="text" 
-                  autoComplete="off"
-                  className="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-medium placeholder-slate-400 border border-slate-200 dark:border-white/15 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#b3c34c]/50"
-                  placeholder={t('common.search', 'Buscar...')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </div>
-            )}
-            
-            <div className="py-1 pb-3.5 flex flex-col gap-0.5">
-              {filteredOptions.length > 0 ? (
-                filteredOptions.map((opt) => (
-                  <DropdownOptionItem
-                    key={opt.value}
-                    opt={opt}
-                    isSelected={String(value) === String(opt.value)}
-                    onSelect={handleSelect}
+        <div className={`min-h-0 rounded-2xl ${isOpen ? 'overflow-visible' : 'overflow-hidden'} sm:overflow-visible`}>
+          <div 
+            className="da-glass-dropdown-panel rounded-2xl border border-slate-200/90 dark:border-slate-700/80 bg-white dark:bg-slate-900 shadow-[0_16px_36px_-6px_rgba(0,0,0,0.16),0_4px_12px_rgba(0,0,0,0.06)] dark:shadow-[0_20px_45px_-8px_rgba(0,0,0,0.7)] p-1 overflow-hidden"
+            style={{
+              backdropFilter: 'none',
+              WebkitBackdropFilter: 'none'
+            }}
+          >
+            <div 
+              className="overflow-y-auto p-1 rounded-xl overscroll-contain"
+              style={{
+                maxHeight: `${maxMenuHeight}px`,
+                scrollbarWidth: 'thin'
+              }}
+            >
+              {searchable && (
+                <div className="p-1.5 pb-1">
+                  <input 
+                    id="dropdownSearchInput"
+                    name="dropdownSearchInput"
+                    type="text" 
+                    autoComplete="off"
+                    className="w-full px-3 py-1.5 text-xs bg-slate-100/70 dark:bg-slate-800/60 text-slate-800 dark:text-slate-100 font-medium placeholder-slate-400 border border-slate-200/60 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#b3c34c]/50"
+                    placeholder={t('common.search', 'Buscar...')}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
                   />
-                ))
-              ) : (
-                <div className="px-3.5 py-2 text-xs text-slate-400 dark:text-slate-500 text-center">
-                  {t('common.noResults', 'No se encontraron resultados')}
                 </div>
               )}
+              
+              <div className="py-1 pb-2 flex flex-col gap-0.5">
+                {filteredOptions.length > 0 ? (
+                  filteredOptions.map((opt) => (
+                    <DropdownOptionItem
+                      key={opt.value}
+                      opt={opt}
+                      isSelected={String(value) === String(opt.value)}
+                      onSelect={handleSelect}
+                    />
+                  ))
+                ) : (
+                  <div className="px-3.5 py-2 text-xs text-slate-400 dark:text-slate-500 text-center">
+                    {t('common.noResults', 'No se encontraron resultados')}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

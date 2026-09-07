@@ -119,15 +119,24 @@ export class Office365CalendarStrategy extends CalendarStrategy {
 }
 
 /**
- * 4. Apple Calendar Strategy
+ * Helper to detect mobile devices
+ */
+export const isMobileDevice = () => {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || navigator.vendor || window.opera || "";
+  return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+};
+
+/**
+ * 4. Apple Calendar / Native Device Strategy
  */
 export class AppleCalendarStrategy extends CalendarStrategy {
   constructor() {
-    super("apple", "Apple Calendar / iCloud", FaApple, "Abrir iCloud Calendar");
+    super("apple", "Apple Calendar / Dispositivo", FaApple, "Añadir a la app nativa de Calendario");
   }
 
-  async sync() {
-    window.open("https://www.icloud.com/calendar/", "_blank", "noopener,noreferrer");
+  async sync(formation) {
+    await downloadIcsFile(formation);
   }
 }
 
@@ -145,7 +154,7 @@ export class IcsCalendarStrategy extends CalendarStrategy {
 }
 
 /**
- * Download .ics helper function
+ * Download / Open .ics helper function with native iOS/mobile support
  */
 async function downloadIcsFile(formation) {
   if (!formation?.id) return;
@@ -153,7 +162,22 @@ async function downloadIcsFile(formation) {
     const response = await api.get(`/formations/${formation.id}/calendar.ics`, {
       responseType: "blob",
     });
-    const url = window.URL.createObjectURL(new Blob([response.data], { type: "text/calendar;charset=utf-8" }));
+    const blob = new Blob([response.data], { type: "text/calendar;charset=utf-8" });
+    const url = window.URL.createObjectURL(blob);
+
+    const isIOS = typeof navigator !== "undefined" && (
+      /iPad|iPhone|iPod/.test(navigator.userAgent || "") || 
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+    );
+
+    if (isIOS) {
+      // En iOS Safari, navegar a la URL text/calendar abre directamente el prompt nativo
+      // de la aplicación Calendario de Apple ("Añadir a Calendario").
+      window.location.href = url;
+      setTimeout(() => window.URL.revokeObjectURL(url), 10000);
+      return;
+    }
+
     const link = document.createElement("a");
     link.href = url;
     const sanitizedTitle = (formation.name || "convocatoria").replace(/[^a-zA-Z0-9_-]/g, "_");
@@ -161,7 +185,7 @@ async function downloadIcsFile(formation) {
     document.body.appendChild(link);
     link.click();
     link.remove();
-    window.URL.revokeObjectURL(url);
+    setTimeout(() => window.URL.revokeObjectURL(url), 1500);
   } catch (err) {
     console.error("Error al descargar archivo de calendario .ics:", err);
     throw err;
@@ -174,10 +198,10 @@ async function downloadIcsFile(formation) {
 class CalendarSyncManager {
   constructor() {
     this.strategies = {
+      apple: new AppleCalendarStrategy(),
       google: new GoogleCalendarStrategy(),
       office365: new Office365CalendarStrategy(),
       outlook: new OutlookCalendarStrategy(),
-      apple: new AppleCalendarStrategy(),
       ics: new IcsCalendarStrategy(),
     };
   }

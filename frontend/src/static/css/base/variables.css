@@ -16,15 +16,15 @@
   --da-text-muted: #64748b;
 
   /* Glassmorphism Tokens - Enhanced Realism */
-  --da-glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.15));
-  --da-glass-card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.15));
+  --da-glass-bg: rgba(255, 255, 255, 0.32);
+  --da-glass-card-bg: rgba(255, 255, 255, 0.35);
   --da-glass-panel-bg: rgba(255, 255, 255, 0.25);
-  --da-glass-border: linear-gradient(135deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.2));
-  --da-glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  --da-glass-border: rgba(255, 255, 255, 0.65);
+  --da-glass-shadow: 0 16px 40px 0 rgba(15, 23, 42, 0.08), inset 0 1.5px 2px rgba(255, 255, 255, 0.9);
   
-  --da-glass-blur-high: blur(60px) saturate(180%);
-  --da-glass-blur-med: blur(40px) saturate(160%);
-  --da-glass-blur-low: blur(20px) saturate(140%);
+  --da-glass-blur-high: blur(50px) saturate(180%);
+  --da-glass-blur-med: blur(30px) saturate(160%);
+  --da-glass-blur-low: blur(16px) saturate(140%);
 
   /* Radius Tokens */
   --da-radius-xl: 44px;
