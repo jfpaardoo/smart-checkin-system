@@ -167,12 +167,12 @@ button, a, input, select, textarea, .da-btn, .da-nav-btn {
   backdrop-filter: var(--da-glass-blur-high);
   -webkit-backdrop-filter: var(--da-glass-blur-high);
   border-radius: 44px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.05), inset 0 1.5px 3px rgba(255, 255, 255, 0.95), inset 0 -1px 2px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.07), inset 0 1.5px 3px rgba(255, 255, 255, 0.95), inset 0 -1px 2px rgba(255, 255, 255, 0.3);
   padding: 35px 45px;
   margin-bottom: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.35) !important;
-  border-top: 1.5px solid rgba(255, 255, 255, 0.8) !important;
-  border-left: 1.5px solid rgba(255, 255, 255, 0.6) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.65) !important;
+  border-top: 2px solid rgba(255, 255, 255, 0.95) !important;
+  border-left: 1.5px solid rgba(255, 255, 255, 0.8) !important;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -185,7 +185,7 @@ button, a, input, select, textarea, .da-btn, .da-nav-btn {
 
 .da-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 35px 80px rgba(31, 38, 135, 0.15), 0 0 40px rgba(179, 195, 76, 0.15), inset 0 2px 4px rgba(255, 255, 255, 1);
+  box-shadow: 0 35px 80px rgba(15, 23, 42, 0.12), 0 0 35px rgba(179, 195, 76, 0.15), inset 0 2px 4px rgba(255, 255, 255, 1);
 }
 
 @keyframes fade-in-up {
@@ -195,12 +195,13 @@ button, a, input, select, textarea, .da-btn, .da-nav-btn {
 
 /* Quick Actions Liquid Glass Action Cards */
 .da-action-card, .da-glass-panel {
-  background: var(--da-glass-card-bg) !important;
+  background: rgba(255, 255, 255, 0.28) !important;
   backdrop-filter: var(--da-glass-blur-med) !important;
   -webkit-backdrop-filter: var(--da-glass-blur-med) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.75) !important;
+  border-top: 2px solid rgba(255, 255, 255, 0.95) !important;
   border-radius: 24px !important;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05), inset 0 1.5px 2px rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05), inset 0 1.5px 2px rgba(255, 255, 255, 0.95) !important;
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
@@ -214,10 +215,10 @@ button, a, input, select, textarea, .da-btn, .da-nav-btn {
 }
 
 .da-action-card:hover, .da-glass-panel:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 248, 240, 0.85)) !important;
+  background: rgba(255, 255, 255, 0.55) !important;
   border-color: rgba(179, 195, 76, 0.9) !important;
   transform: translateY(-6px) scale(1.02) !important;
-  box-shadow: 0 25px 55px rgba(179, 195, 76, 0.25), inset 0 1.5px 2px rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 20px 45px rgba(179, 195, 76, 0.22), inset 0 1.5px 2px rgba(255, 255, 255, 1) !important;
 }
 
 .da-action-icon-wrapper {

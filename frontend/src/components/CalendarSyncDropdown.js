@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FaCalendarPlus, FaCheckCircle, FaSpinner } from "react-icons/fa";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLocationDot, faClock } from "@fortawesome/free-solid-svg-icons";
-import { calendarSyncManager } from "../services/calendar/CalendarSyncStrategies";
+import { calendarSyncManager, isMobileDevice } from "../services/calendar/CalendarSyncStrategies";
 import { useToast } from "./ToastProvider";
 import GlassModal from "./GlassModal";
 import GlassButton from "./GlassButton";
@@ -60,6 +60,7 @@ export default function CalendarSyncDropdown({
     try {
       await calendarSyncManager.sync(strategyId, formation);
       setIsOpen(false);
+      toast.success("Añadido al calendario de tu dispositivo.");
     } catch (err) {
       console.error("Error al sincronizar evento de calendario:", err);
       toast.error("No se pudo sincronizar el evento en el calendario.");
@@ -68,26 +69,38 @@ export default function CalendarSyncDropdown({
     }
   };
 
+  const handleMainButtonClick = () => {
+    if (isMobileDevice()) {
+      // En móvil (iPhone/Android), añade automáticamente a la app nativa instalada por defecto
+      handleSync(recommendedId);
+    } else {
+      // En ordenador, abre el selector de plataformas web (Outlook, Google, 365, etc.)
+      setIsOpen(true);
+    }
+  };
+
   return (
     <>
       {variant === "icon" ? (
         <button
           type="button"
-          onClick={() => setIsOpen(true)}
+          onClick={handleMainButtonClick}
+          disabled={loadingStrategy !== null}
           className={`p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:bg-sky-500/20 active:scale-95 transition shadow-xs inline-flex items-center justify-center cursor-pointer ${className}`}
           title="Añadir a mi Calendario (Google, Outlook, Apple...)"
           aria-label="Añadir a mi Calendario"
         >
-          <FaCalendarPlus size={14} />
+          {loadingStrategy ? <FaSpinner className="animate-spin text-sm" /> : <FaCalendarPlus size={14} />}
         </button>
       ) : (
         <button
           type="button"
-          onClick={() => setIsOpen(true)}
+          onClick={handleMainButtonClick}
+          disabled={loadingStrategy !== null}
           className={`w-full sm:w-auto px-4 py-2.5 rounded-2xl font-bold text-xs inline-flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800 text-slate-800 dark:text-slate-100 shadow-xs hover:bg-white dark:hover:bg-slate-700 active:scale-95 transition cursor-pointer ${className}`}
         >
-          <FaCalendarPlus className="text-sky-500 text-sm" />
-          <span>{buttonLabel}</span>
+          {loadingStrategy ? <FaSpinner className="animate-spin text-sm text-sky-500" /> : <FaCalendarPlus className="text-sky-500 text-sm" />}
+          <span>{loadingStrategy ? "Sincronizando..." : buttonLabel}</span>
         </button>
       )}
 

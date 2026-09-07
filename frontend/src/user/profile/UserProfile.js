@@ -82,7 +82,7 @@ export default function UserProfile() {
 
   return (
     <div className="da-container">
-      <div className="mx-auto w-full max-w-[1000px]">
+      <div className="w-full">
         <ProfileHeader userData={userData} formations={formations} t={t} />
 
         <div className="px-1 mb-6">

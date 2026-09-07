@@ -6,6 +6,7 @@ import useFetchState from "../../util/useFetchState";
 import { useToast } from "../../components/ToastProvider";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import api from "../../services/api";
+import GlassPageHeader from "../../components/GlassPageHeader";
 import { FaCloudUploadAlt, FaDatabase, FaCheckCircle, FaExclamationTriangle, FaUnlink, FaWindows } from "react-icons/fa";
 
 export default function CloudSettingsAdmin() {
@@ -77,94 +78,115 @@ export default function CloudSettingsAdmin() {
 
   return (
     <div className="da-container">
-      <div className="da-card p-4 p-md-5 mx-auto" style={{ maxWidth: '800px', marginTop: '2rem' }}>
+      <div className="da-card">
         
-        {/* Cabecera y botón de Backup */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-3 mb-4 text-center md:text-left">
-          <h2 className="mb-0 text-slate-800 dark:text-slate-100 font-bold flex flex-col md:flex-row items-center">
-            <FaCloudUploadAlt className="mb-2 md:mb-0 me-md-2" style={{ color: 'var(--da-primary)' }} />
-            <span>{t('cloudSettings.title', 'Ajustes de Nube')}</span>
-          </h2>
-          <button 
-            type="button"
-            className="da-btn-primary flex items-center justify-center gap-2 border-0 cursor-pointer disabled:opacity-50" 
-            onClick={handleBackup} 
-            disabled={backingUp || !isConnected}
-          >
-            <FaDatabase /> {backingUp ? t('cloudSettings.backingUp', 'Respaldando...') : t('cloudSettings.forceBackupBtn', 'Forzar Backup DB')}
-          </button>
-        </div>
+        <GlassPageHeader
+          icon={FaCloudUploadAlt}
+          title={t('cloudSettings.title', 'Ajustes de Nube')}
+          subtitle={t('cloudSettings.description', 'Conecta Distribution Academy con Microsoft OneDrive para almacenar la documentación de las formaciones y copias de seguridad de forma automática.')}
+        />
 
-        {/* Descripción */}
-        <p className="text-slate-500 dark:text-slate-400 mb-4 text-center md:text-left border-b border-slate-200 dark:border-slate-700 pb-4 text-sm">
-          {t('cloudSettings.description', 'Conecta Distribution Academy con Microsoft OneDrive para almacenar la documentación de las formaciones y copias de seguridad de forma automática.')}
-        </p>
-
-        {/* Zona de Estado y Conexión (Glassmorphism & Cápsula) */}
-        <div className="text-center my-4 py-4">
-          <div 
-            className="inline-flex items-center gap-2 px-4 py-2 mb-4 rounded-full shadow-sm"
-            style={{
-              background: isConnected ? 'rgba(40, 167, 69, 0.1)' : 'rgba(255, 193, 7, 0.15)',
-              backdropFilter: 'blur(10px)',
-              border: isConnected ? '1px solid rgba(40, 167, 69, 0.3)' : '1px solid rgba(255, 193, 7, 0.4)',
-              color: isConnected ? '#155724' : '#856404',
-              fontSize: '0.95rem',
-              fontWeight: '600'
-            }}
-          >
-            {isConnected ? (
-              <>
-                <FaCheckCircle className="text-emerald-500" />
-                <span>{t('cloudSettings.statusConnected', 'OneDrive Conectado')}</span>
-              </>
-            ) : (
-              <>
-                <FaExclamationTriangle className="text-amber-500" />
-                <span>{t('cloudSettings.statusDisconnected', 'OneDrive No Conectado')}</span>
-              </>
-            )}
-          </div>
-
-          <div>
-            {isConnected ? (
-              <button 
-                type="button"
-                onClick={handleDisconnect}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full shadow-sm transition"
-                style={{
-                  background: 'rgba(246, 222, 225, 0.08)',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(220, 53, 69, 0.3)',
-                  color: '#dc3545',
-                  fontSize: '0.95rem',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(220, 53, 69, 0.16)';
-                  e.currentTarget.style.borderColor = 'rgba(220, 53, 69, 0.5)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(220, 53, 69, 0.08)';
-                  e.currentTarget.style.borderColor = 'rgba(220, 53, 69, 0.3)';
-                }}
-              >
-                <FaUnlink style={{ color: '#dc3545' }} />
-                <span>{t('cloudSettings.disconnectBtn', 'Desconectar cuenta de OneDrive')}</span>
-              </button>
-            ) : (
-              <button 
-                type="button"
-                onClick={handleConnectOneDrive}
-                className="da-btn-primary px-5 py-3 rounded-full font-bold shadow-sm inline-flex items-center gap-2 border-0 cursor-pointer text-base"
-              >
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-4">
+          
+          {/* Panel 1: Sincronización con OneDrive */}
+          <div className="da-glass-panel p-6 sm:p-8 flex flex-col justify-between items-center text-center rounded-3xl">
+            <div className="flex flex-col items-center w-full">
+              <div className="w-16 h-16 rounded-2xl bg-[#0078d4]/15 border border-[#0078d4]/30 text-[#0078d4] dark:text-[#50a3eb] flex items-center justify-center text-2xl shadow-xs mb-4">
                 <FaWindows />
-                {t('cloudSettings.connectBtn', 'Conectar con Microsoft OneDrive')}
-              </button>
-            )}
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+                {t('cloudSettings.oneDriveTitle', 'Microsoft OneDrive')}
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-md">
+                {t('cloudSettings.oneDriveDescription', 'Sincroniza automáticamente actas formativas, firmas de asistencia y documentos generados con la nube de OneDrive mediante Microsoft Graph API.')}
+              </p>
+
+              {/* Indicador de Estado */}
+              <div 
+                className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full shadow-xs"
+                style={{
+                  background: isConnected ? 'rgba(40, 167, 69, 0.12)' : 'rgba(255, 193, 7, 0.15)',
+                  backdropFilter: 'blur(10px)',
+                  border: isConnected ? '1px solid rgba(40, 167, 69, 0.35)' : '1px solid rgba(255, 193, 7, 0.4)',
+                  color: isConnected ? '#155724' : '#856404',
+                  fontSize: '0.9rem',
+                  fontWeight: '600'
+                }}
+              >
+                {isConnected ? (
+                  <>
+                    <FaCheckCircle className="text-emerald-500" />
+                    <span>{t('cloudSettings.statusConnected', 'OneDrive Conectado')}</span>
+                  </>
+                ) : (
+                  <>
+                    <FaExclamationTriangle className="text-amber-500" />
+                    <span>{t('cloudSettings.statusDisconnected', 'OneDrive No Conectado')}</span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Acción de Conexión */}
+            <div className="w-full">
+              {isConnected ? (
+                <button 
+                  type="button"
+                  onClick={handleDisconnect}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-semibold shadow-xs transition cursor-pointer border border-red-500/30 text-red-600 dark:text-red-400 bg-red-500/10 hover:bg-red-500/20 text-sm"
+                >
+                  <FaUnlink />
+                  <span>{t('cloudSettings.disconnectBtn', 'Desconectar cuenta de OneDrive')}</span>
+                </button>
+              ) : (
+                <button 
+                  type="button"
+                  onClick={handleConnectOneDrive}
+                  className="da-btn-primary w-full sm:w-auto px-6 py-3 rounded-2xl font-bold shadow-md inline-flex items-center justify-center gap-2 border-0 cursor-pointer text-sm"
+                >
+                  <FaWindows />
+                  <span>{t('cloudSettings.connectBtn', 'Conectar con Microsoft OneDrive')}</span>
+                </button>
+              )}
+            </div>
           </div>
+
+          {/* Panel 2: Copia de Seguridad de Base de Datos */}
+          <div className="da-glass-panel p-6 sm:p-8 flex flex-col justify-between items-center text-center rounded-3xl">
+            <div className="flex flex-col items-center w-full">
+              <div className="w-16 h-16 rounded-2xl bg-[#b3c34c]/20 border border-[#b3c34c]/40 text-[#73841e] dark:text-[#d4e84a] flex items-center justify-center text-2xl shadow-xs mb-4">
+                <FaDatabase />
+              </div>
+              <h3 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+                {t('cloudSettings.backupTitle', 'Copia de Seguridad de la Base de Datos')}
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-md">
+                {t('cloudSettings.backupDescription', 'Genera un volcado completo de la base de datos MySQL (tablas, usuarios, registros y auditoría) y almacénalo en la nube o descárgalo como respaldo.')}
+              </p>
+
+              {/* Indicador de Estado del Respaldo */}
+              <div 
+                className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full shadow-xs bg-slate-500/10 border border-slate-400/20 text-slate-700 dark:text-slate-300 text-xs font-semibold"
+              >
+                <FaCloudUploadAlt className="text-[#73841e] dark:text-[#d4e84a]" />
+                <span>{isConnected ? t('cloudSettings.backupReady', 'Destino: Microsoft OneDrive') : t('cloudSettings.backupNeedsCloud', 'Requiere conexión con OneDrive')}</span>
+              </div>
+            </div>
+
+            {/* Acción de Backup */}
+            <div className="w-full">
+              <button 
+                type="button"
+                className="da-btn-primary w-full sm:w-auto px-6 py-3 rounded-2xl font-bold shadow-md inline-flex items-center justify-center gap-2 border-0 cursor-pointer text-sm disabled:opacity-50" 
+                onClick={handleBackup} 
+                disabled={backingUp || !isConnected}
+              >
+                <FaDatabase />
+                <span>{backingUp ? t('cloudSettings.backingUp', 'Respaldando...') : t('cloudSettings.forceBackupBtn', 'Forzar Backup DB')}</span>
+              </button>
+            </div>
+          </div>
+
         </div>
 
       </div>

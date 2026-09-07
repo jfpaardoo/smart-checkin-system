@@ -555,8 +555,8 @@ class FormationServiceTests {
 
         FormationAttendance att = new FormationAttendance();
         att.setId(10);
-        att.setCheckInDate(LocalDateTime.now().minusHours(2));
-        att.setCheckOutDate(LocalDateTime.now().minusHours(1));
+        att.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()).minusHours(2));
+        att.setCheckOutDate(LocalDateTime.now(ZoneId.systemDefault()).minusHours(1));
         att.setSignature("sig_base64_or_ref");
         formation.setAttendances(new ArrayList<>(List.of(att)));
 
@@ -615,7 +615,7 @@ class FormationServiceTests {
 
         FormationAttendance att = new FormationAttendance();
         att.setId(10);
-        att.setCheckInDate(LocalDateTime.now().minusHours(1));
+        att.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()).minusHours(1));
         // No checkOutDate
         formation.setAttendances(new ArrayList<>(List.of(att)));
 

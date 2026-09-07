@@ -112,4 +112,20 @@ describe('SecureCaptureShield Component', () => {
         expect(contextDefaultPrevented).toBe(true);
         expect(dragDefaultPrevented).toBe(true);
     });
+
+    test('triggers blackout on 3-finger touch gesture and pagehide', () => {
+        render(
+            <SecureCaptureShield>
+                <div data-testid="protected-content">Secret QR Content</div>
+            </SecureCaptureShield>
+        );
+
+        act(() => {
+            const touchEvent = new Event('touchstart');
+            touchEvent.touches = [{ clientX: 10 }, { clientX: 20 }, { clientX: 30 }];
+            window.dispatchEvent(touchEvent);
+        });
+
+        expect(screen.getByText(/Contenido protegido contra capturas/i)).toBeInTheDocument();
+    });
 });

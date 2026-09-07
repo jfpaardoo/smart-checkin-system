@@ -16,7 +16,7 @@
 @tailwind utilities;
 
 html {
-  background-color: #f1f5f9;
+  background-color: #cbd5e1;
   color-scheme: light;
   min-height: 100%;
 }
@@ -31,8 +31,8 @@ body {
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #cbd5e1 100%);
-  background-color: #f1f5f9;
+  background: #cbd5e1;
+  background-color: #cbd5e1;
   background-attachment: fixed;
   color: var(--da-dark);
   min-height: 100vh;
@@ -64,9 +64,9 @@ body::before {
   left: -5%;
   width: 60vw;
   height: 60vw;
-  background: radial-gradient(circle, rgba(179, 195, 76, 0.45) 0%, rgba(179, 195, 76, 0) 70%);
+  background: radial-gradient(circle, rgba(179, 195, 76, 0.16) 0%, rgba(179, 195, 76, 0) 70%);
   border-radius: 50%;
-  filter: blur(100px);
+  filter: blur(120px);
   z-index: -1;
   pointer-events: none;
   animation: orb-float-1 20s infinite ease-in-out;
@@ -79,7 +79,7 @@ body::after {
   right: -5%;
   width: 65vw;
   height: 65vw;
-  background: radial-gradient(circle, rgba(30, 41, 59, 0.20) 0%, rgba(30, 41, 59, 0) 75%);
+  background: radial-gradient(circle, rgba(30, 41, 59, 0.16) 0%, rgba(30, 41, 59, 0) 75%);
   border-radius: 50%;
   filter: blur(120px);
   z-index: -1;

@@ -167,7 +167,7 @@ function PublicNavLinks({ t, onOpenSupport }) {
 
 function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggleMobileLang, currentLangCode, closeAll, t, i18n, onOpenSupport }) {
     return (
-        <div className={`md:hidden transition-all duration-500 ease-in-out w-full rounded-b-[40px] ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[85vh] opacity-100 bg-white/60 dark:bg-slate-900/80 backdrop-blur-3xl border-t border-slate-300/40 dark:border-white/20 overflow-y-auto'}`}>
+        <div className={`md:hidden transition-all duration-500 ease-in-out w-full rounded-b-[40px] ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[85vh] opacity-100 bg-white/10 dark:bg-slate-900/30 backdrop-blur-2xl border-t border-white/40 dark:border-white/10 overflow-y-auto'}`}>
             <div className="px-6 pt-4 pb-8 space-y-2">
                 {roles.includes("ADMIN") && (
                     <div className="py-2 border-b border-slate-300/40 dark:border-white/10 mb-3">
@@ -232,7 +232,7 @@ function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggl
                             <ThemeToggleButton />
                         </div>
                         <div className={`w-full transition-all duration-300 overflow-hidden ${mobileLangOpen ? 'max-h-60 mt-3 opacity-100' : 'max-h-0 opacity-0'}`}>
-                            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-2 space-y-1 border border-white/10 max-h-48 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                            <div className="bg-white/30 dark:bg-white/5 backdrop-blur-md rounded-2xl p-2 space-y-1 border border-slate-300/50 dark:border-white/10 max-h-48 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                                 {LANGUAGES.map(({ code, label }) => {
                                     const isSelected = currentLangCode === code;
                                     return (
@@ -243,10 +243,10 @@ function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggl
                                                 i18n.changeLanguage(code);
                                                 closeAll();
                                             }}
-                                            className={`flex items-center gap-3 px-[18px] py-[10px] my-1 text-[0.95rem] font-medium text-white rounded-[20px] hover:bg-white/20 transition-all duration-300 w-full text-left ${isSelected ? 'bg-white/20 font-bold' : ''}`}
+                                            className={`flex items-center gap-3 px-[18px] py-[10px] my-1 text-[0.95rem] font-medium text-slate-800 dark:text-white rounded-[20px] hover:bg-white/50 dark:hover:bg-white/15 transition-all duration-300 w-full text-left cursor-pointer border-0 ${isSelected ? 'bg-white/60 dark:bg-white/20 font-bold shadow-xs' : 'bg-transparent'}`}
                                         >
                                             <span>{label}</span>
-                                            {isSelected && <FaCheck className="text-[#b3c34c] text-xs ml-auto" />}
+                                            {isSelected && <FaCheck className="text-[#73841e] dark:text-[#b3c34c] text-xs ml-auto" />}
                                         </button>
                                     );
                                 })}
@@ -262,17 +262,17 @@ function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggl
 function MobileNotificationDrawer({ isOpen, t }) {
     const { notifications, clearAll } = useNotifications();
     return (
-        <div className={`md:hidden transition-all duration-500 ease-in-out w-full rounded-b-[40px] ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[75vh] opacity-100 bg-slate-800/25 backdrop-blur-sm border-t border-white/20 overflow-y-auto shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]'}`}>
+        <div className={`md:hidden transition-all duration-500 ease-in-out w-full rounded-b-[40px] ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[75vh] opacity-100 bg-white/10 dark:bg-slate-900/30 backdrop-blur-2xl border-t border-white/40 dark:border-white/10 overflow-y-auto shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]'}`}>
             <div className="px-6 pt-3 pb-6">
-                <div className="flex justify-between items-center pb-2 border-b border-white/10 mb-3">
-                    <span className="text-[11px] font-extrabold text-white/40 uppercase tracking-widest flex items-center gap-1.5">
-                        <FaBell className="text-[#d4e157] text-xs" />
+                <div className="flex justify-between items-center pb-2 border-b border-slate-300/40 dark:border-white/10 mb-3">
+                    <span className="text-[11px] font-extrabold text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-1.5">
+                        <FaBell className="text-[#73841e] dark:text-[#d4e157] text-xs" />
                         {t('notifications.title', 'Notificaciones')}
                     </span>
                     {notifications.length > 0 && (
                         <button
                             type="button"
-                            className="text-[10px] text-white/60 hover:text-white transition-colors uppercase font-bold cursor-pointer bg-transparent border-0"
+                            className="text-[10px] text-slate-500 hover:text-slate-900 dark:text-white/60 dark:hover:text-white transition-colors uppercase font-bold cursor-pointer bg-transparent border-0"
                             onClick={clearAll}
                         >
                             {t('notifications.clearAll', 'Limpiar todo')}
@@ -282,19 +282,19 @@ function MobileNotificationDrawer({ isOpen, t }) {
                 <div className="space-y-2">
                     {notifications.length === 0 ? (
                         <div className="text-center py-6">
-                            <FaBell className="mx-auto mb-2 text-white/20" size={28} />
-                            <p className="text-xs text-white/50 m-0">{t('notifications.empty', 'Sin notificaciones')}</p>
+                            <FaBell className="mx-auto mb-2 text-slate-400 dark:text-white/30" size={28} />
+                            <p className="text-xs text-slate-600 dark:text-white/60 font-medium m-0">{t('notifications.empty', 'Sin notificaciones')}</p>
                         </div>
                     ) : (
                         notifications.map(n => (
                             <div 
                                 key={n.id} 
-                                className={`block px-4 py-3 rounded-2xl border border-white/10 transition-colors ${!n.read ? 'bg-white/15 text-white shadow-sm' : 'bg-white/5 text-white/70'}`}
+                                className={`block px-4 py-3 rounded-2xl border transition-colors ${!n.read ? 'bg-white/60 dark:bg-white/15 text-slate-900 dark:text-white border-slate-200/80 dark:border-white/10 shadow-xs' : 'bg-white/30 dark:bg-white/5 text-slate-700 dark:text-white/70 border-slate-200/40 dark:border-white/5'}`}
                             >
-                                <div className={`text-xs mb-1 leading-snug break-words ${!n.read ? 'font-bold text-white' : 'font-medium'}`}>
+                                <div className={`text-xs mb-1 leading-snug break-words ${!n.read ? 'font-bold text-slate-900 dark:text-white' : 'font-medium'}`}>
                                     {n.text}
                                 </div>
-                                <div className="text-[10px] text-white/40">
+                                <div className="text-[10px] text-slate-400 dark:text-white/40">
                                     {new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </div>
                             </div>
@@ -357,7 +357,7 @@ export default function AppNavbar() {
 
     return (
         <>
-            <nav className={`sticky top-3 z-40 mx-auto w-[calc(100%-24px)] md:w-[calc(100%-48px)] max-w-[1440px] mb-6 sm:mb-8 rounded-[40px] bg-white/50 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/60 dark:border-white/10 border-t-white/80 dark:border-t-white/15 shadow-[0_12px_40px_rgba(31,38,135,0.10),inset_0_1px_1.5px_rgba(255,255,255,0.8)] dark:shadow-[0_15px_35px_rgba(0,0,0,0.35),inset_0_1px_1px_rgba(255,255,255,0.06)] transition-all duration-300 ${isMobileDrawerOpen ? 'overflow-hidden md:overflow-visible' : 'md:overflow-visible'}`}>
+            <nav className={`sticky top-3 z-40 mx-auto w-[calc(100%-24px)] md:w-[calc(100%-48px)] max-w-[1440px] mb-6 sm:mb-8 rounded-[40px] bg-white/35 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/60 dark:border-white/10 border-t-white/80 dark:border-t-white/15 shadow-[0_12px_40px_rgba(15,23,42,0.07),inset_0_1px_1.5px_rgba(255,255,255,0.85)] dark:shadow-[0_15px_35px_rgba(0,0,0,0.35),inset_0_1px_1px_rgba(255,255,255,0.06)] transition-all duration-300 ${isMobileDrawerOpen ? 'overflow-hidden md:overflow-visible' : 'md:overflow-visible'}`}>
                 <div className="w-full px-3.5 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-[58px] sm:h-[64px]">
                         <div className="flex items-center min-w-0 flex-1">

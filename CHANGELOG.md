@@ -4,6 +4,33 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), y este proyecto sigue [Versionado Semántico (SemVer)](https://semver.org/lang/es/).
 
+## [1.2.3](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.2.3) - 2026-09-07
+
+### Añadido (Features) & Blindaje de Seguridad
+- **Refinamiento del Blindaje de Seguridad contra Capturas (*SecureCaptureShield*)**:
+  - Ajuste de jerarquía de capas (`z-index`): el escudo de seguridad en modo compacto para el PIN dinámico utiliza ahora `z-20` en lugar de `z-50`, permitiendo que menús desplegables del sistema floten limpiamente por encima de los bloqueos de captura.
+  - Sincronización instantánea de bloqueo de pantalla ante atajos de recortes (`Win+Shift+S`, `PrintScreen`, `Cmd+Shift+4`) y gestos multitáctiles en dispositivos móviles.
+
+### Correcciones (Bug Fixes) & Mejoras de UI/UX
+- **Homogeneización del Contenedor de Códigos QR (`QRGeneratorAdmin.js`)**:
+  - Estandarizadas las dimensiones del panel a `280×280 px` (`rounded-3xl`) de manera uniforme en todos los estados: sin formación seleccionada (placeholder con borde punteado), código QR activo en vivo y convocatorias concluidas.
+  - Eliminado el colapso visual del marcador de posición al ancho del texto, previniendo saltos de maquetación (*layout shifts*) y garantizando una simetría perfecta con la tarjeta de información.
+- **Desplegables Líquidos Inteligentes sin Cortes de Sombra (`GlassDropdown.js`)**:
+  - **Inversión Dinámica (`dropup`)**: Umbral de detección aumentado a `280 px`. Si el espacio inferior hasta el borde del viewport es insuficiente y hay mayor margen superior, el menú se despliega automáticamente hacia arriba.
+  - **Altura Máxima Adaptativa**: Cálculo dinámico del `maxHeight` basado en las dimensiones reales de la ventana para asegurar que el desplegable nunca desborde ni sea recortado horizontalmente por los límites del navegador.
+  - **Sombra Suave Continua en 360°**: Panel con bordes redondeados continuos (`rounded-2xl overflow-hidden`) y sombra difuminada con *negative spread* (`shadow-[0_16px_36px_-6px_rgba(...)]`), erradicando líneas horizontales abruptas o recortes en su proyección.
+- **Internacionalización Completa en Ajustes de Nube (`CloudSettingsAdmin.js`)**:
+  - Incorporadas 6 claves de traducción pendientes (`oneDriveTitle`, `oneDriveDescription`, `backupTitle`, `backupDescription`, `backupReady`, `backupNeedsCloud`) en los 8 idiomas soportados (`en`, `es`, `pt`, `fr`, `de`, `pl`, `bg`, `ro`).
+  - Actualizado el subtítulo principal de la cabecera en todos los paquetes de traducción.
+  - La pantalla de Cloud Settings ahora se muestra 100% en el idioma seleccionado por el usuario, sin fallbacks mezclados en español.
+- **Diseño Glassmorphism Unificado en Modo Claro y Móvil**:
+  - Eliminados degradados a color sólido en vistas como `PrivacyPolicy.js` y `CloudSettingsAdmin.js`, homogeneizando su anchura y estética *Liquid Glass* con el estándar de los paneles principales (Usuarios, Formaciones y Analítica).
+  - Corregida la visibilidad tipográfica en el selector de idiomas y en el panel de notificaciones para el modo claro.
+
+### Optimización y Versiones
+- **Sincronización Global de Descriptores a v1.2.3**:
+  - Actualizados `pom.xml`, `frontend/package.json`, `frontend/package-lock.json`, `frontend/public/version.json` y la caché del Service Worker a `da-cache-v1.2.3` en `sw.js`.
+
 ## [1.2.2](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.2.2) - 2026-09-03
 
 ### Añadido (Features) & Blindaje de Seguridad
