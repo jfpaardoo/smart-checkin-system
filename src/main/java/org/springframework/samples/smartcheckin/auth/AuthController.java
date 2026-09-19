@@ -61,6 +61,7 @@ import org.springframework.samples.smartcheckin.auth.service.TwoFactorBackupCode
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.samples.smartcheckin.auth.webauthn.WebAuthnService;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -88,6 +89,7 @@ public class AuthController {
     private final HaveIBeenPwnedService haveIBeenPwnedService;
     private final TwoFactorBackupCodeService backupCodeService;
     private final UserSessionService userSessionService;
+    private final WebAuthnService webAuthnService;
     private static final String CAPTCHA_SUCCESS_MESSAGE = "Error: Verificación de seguridad (Captcha) fallida.";
     private static final String HEADER = "X-Forwarded-For";
 
@@ -106,7 +108,7 @@ public class AuthController {
             PasswordResetService passwordResetService, JavaMailSender javaMailSender,
             CaptchaService captchaService, CompanyService companyService,
             HaveIBeenPwnedService haveIBeenPwnedService, TwoFactorBackupCodeService backupCodeService,
-            UserSessionService userSessionService) {
+            UserSessionService userSessionService, WebAuthnService webAuthnService) {
         
         this.userService = userService;
         this.authoritiesService = authoritiesService;
@@ -129,6 +131,7 @@ public class AuthController {
         this.haveIBeenPwnedService = haveIBeenPwnedService;
         this.backupCodeService = backupCodeService;
         this.userSessionService = userSessionService;
+        this.webAuthnService = webAuthnService;
     }
 
     private String extractJwtFromRequest(HttpServletRequest req) {
@@ -171,19 +174,11 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<Object> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        
-        // Validación del Captcha
         if (!captchaService.validateCaptcha(loginRequest.getCaptchaToken())) {
             return ResponseEntity.badRequest().body(new MessageResponse(CAPTCHA_SUCCESS_MESSAGE));
         }
         
-        User user = null;
-        try {
-            user = userService.findUser(loginRequest.getUsername());
-        } catch (ResourceNotFoundException e) {
-            // no hace nada
-        }
-
+        User user = findUserOrNull(loginRequest.getUsername());
         if (user != null && Boolean.FALSE.equals(user.getIsApproved())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(new MessageResponse("Tu cuenta está pendiente de aprobación por un administrador."));
@@ -194,49 +189,110 @@ public class AuthController {
             return lockoutResponse;
         }
 
-        try{
+        try {
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
-            // Si las credenciales son correctas pero el usuario tiene activado 2FA, 
-            // detenemos la emisión del JWT y exigimos el código del segundo factor.
-            if (user != null && Boolean.TRUE.equals(user.getTwoFactorEnabled())) {
-                sendTwoFactorEmailIfConfigured(user);
-                JwtResponse challengeResponse = new JwtResponse();
-                challengeResponse.setRequiresTwoFactor(true);
-                challengeResponse.setUsername(user.getUsername());
-                return ResponseEntity.ok().body(challengeResponse);
+            Integer userId = resolveUserId(authentication, user);
+            boolean hasPasskeys = webAuthnService != null && userId != null && webAuthnService.hasPasskeys(userId);
+            boolean has2FA = user != null && Boolean.TRUE.equals(user.getTwoFactorEnabled());
+
+            // Si las credenciales son correctas pero el usuario tiene activado Passkey o 2FA, 
+            // detenemos la emisión del JWT y exigimos la verificación del segundo factor / Passkey.
+            if (hasPasskeys || has2FA) {
+                return buildChallengeResponse(user, authentication, has2FA, hasPasskeys);
             }
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(authentication);
-
-            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-            List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority())
-                .toList();
-
-            if (user != null && user.getFailedLoginAttempts() != null && user.getFailedLoginAttempts() > 0) {
-                user.setFailedLoginAttempts(0);
-                userService.saveUser(user);
-            }
-
-            String clientIp = request.getHeader(HEADER) != null ? request.getHeader(HEADER).split(",")[0].trim() : request.getRemoteAddr();
-            anomalyDetectionService.recordSuccessfulLogin(userDetails.getUsername(), clientIp, "Password");
-
-            // Enviar notificación Push de éxito de inicio de sesión
-            if (user != null) {
-                Notification authNotif = new AuthNotification(pushNotificationSender, "IP: " + clientIp);
-                authNotif.notify(user.getUsername());
-            }
-
-            return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                .body(new JwtResponse(null, userDetails.getId(), userDetails.getUsername(), roles));
-        }catch(BadCredentialsException exception){
-            String ipAddress = request.getHeader(HEADER) != null ? request.getHeader(HEADER).split(",")[0].trim() : request.getRemoteAddr();
+            return completeSuccessfulLogin(authentication, user, userId, hasPasskeys);
+        } catch (BadCredentialsException exception) {
+            String ipAddress = extractClientIp(request);
             handleFailedLogin(user, loginRequest.getUsername(), ipAddress);
             return ResponseEntity.badRequest().body(new MessageResponse("Bad Credentials!"));
         }
+    }
+
+    private User findUserOrNull(String username) {
+        try {
+            return userService.findUser(username);
+        } catch (ResourceNotFoundException e) {
+            return null;
+        }
+    }
+
+    private Integer resolveUserId(Authentication authentication, User user) {
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetailsImpl uDetails) {
+            return uDetails.getId();
+        }
+        return user != null ? user.getId() : null;
+    }
+
+    private ResponseEntity<Object> buildChallengeResponse(User user, Authentication authentication, boolean has2FA, boolean hasPasskeys) {
+        if (has2FA) {
+            sendTwoFactorEmailIfConfigured(user);
+        }
+        String username = resolveUsername(null, user, authentication);
+        JwtResponse challengeResponse = new JwtResponse();
+        challengeResponse.setUsername(username);
+        challengeResponse.setRequiresTwoFactor(has2FA);
+        challengeResponse.setRequiresPasskey(hasPasskeys);
+        challengeResponse.setHasPasskeys(hasPasskeys);
+        return ResponseEntity.ok().body(challengeResponse);
+    }
+
+    private ResponseEntity<Object> completeSuccessfulLogin(Authentication authentication, User user, Integer userId, boolean hasPasskeys) {
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(authentication);
+
+        UserDetailsImpl userDetails = (authentication != null && authentication.getPrincipal() instanceof UserDetailsImpl uDetails) ? uDetails : null;
+        List<String> roles = resolveRoles(userDetails, authentication);
+
+        if (user != null && user.getFailedLoginAttempts() != null && user.getFailedLoginAttempts() > 0) {
+            user.setFailedLoginAttempts(0);
+            userService.saveUser(user);
+        }
+
+        String clientIp = extractClientIp(request);
+        String username = resolveUsername(userDetails, user, authentication);
+        anomalyDetectionService.recordSuccessfulLogin(username, clientIp, "Password");
+
+        // Enviar notificación Push de éxito de inicio de sesión
+        if (user != null) {
+            Notification authNotif = new AuthNotification(pushNotificationSender, "IP: " + clientIp);
+            authNotif.notify(user.getUsername());
+        }
+
+        JwtResponse jwtResponse = new JwtResponse(null, userId, username, roles, hasPasskeys);
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+            .body(jwtResponse);
+    }
+
+    private String resolveUsername(UserDetailsImpl userDetails, User user, Authentication authentication) {
+        if (userDetails != null && userDetails.getUsername() != null) {
+            return userDetails.getUsername();
+        }
+        if (user != null && user.getUsername() != null) {
+            return user.getUsername();
+        }
+        if (authentication != null && authentication.getName() != null) {
+            return authentication.getName();
+        }
+        return null;
+    }
+
+    private List<String> resolveRoles(UserDetailsImpl userDetails, Authentication authentication) {
+        if (userDetails != null) {
+            return userDetails.getAuthorities().stream().map(item -> item.getAuthority()).toList();
+        }
+        if (authentication != null && authentication.getAuthorities() != null) {
+            return authentication.getAuthorities().stream().map(item -> item.getAuthority()).toList();
+        }
+        return List.of();
+    }
+
+    private String extractClientIp(HttpServletRequest req) {
+        return req.getHeader(HEADER) != null ? req.getHeader(HEADER).split(",")[0].trim() : req.getRemoteAddr();
     }
 
     @PostMapping("/verify-2fa")
@@ -279,9 +335,13 @@ public class AuthController {
         String clientIp = this.request.getHeader(HEADER) != null ? this.request.getHeader(HEADER).split(",")[0].trim() : this.request.getRemoteAddr();
         anomalyDetectionService.recordSuccessfulLogin(user.getUsername(), clientIp, isTotpValid ? "2FA TOTP" : "2FA Backup Code");
 
+        boolean hasPasskeys = webAuthnService != null && user != null && webAuthnService.hasPasskeys(user.getId());
+        JwtResponse jwtResponse = new JwtResponse(null, user.getId().longValue(), user.getUsername(), roles);
+        jwtResponse.setHasPasskeys(hasPasskeys);
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                .body(new JwtResponse(null, user.getId().longValue(), user.getUsername(), roles));
+                .body(jwtResponse);
     }
 
     @PostMapping("/signup")
@@ -479,6 +539,11 @@ public class AuthController {
         
         // Consumimos y destruimos el token (One-Time Use)
         passwordResetService.deleteToken(resetToken);
+
+        // Revocar todas las sesiones activas existentes por seguridad
+        if (userSessionService != null && user.getUsername() != null) {
+            userSessionService.revokeAllUserSessions(user.getUsername());
+        }
 
         return ResponseEntity.ok(new MessageResponse("Contraseña restablecida con éxito. Ya puedes iniciar sesión con tu nueva contraseña."));
     }

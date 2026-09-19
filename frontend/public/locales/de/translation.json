@@ -90,7 +90,14 @@
     "forgotPassword": "Passwort vergessen?",
     "privacyPolicy": "Datenschutzerklärung",
     "backupCodeInvalidFormat": "Der Wiederherstellungscode muss das Format XXXX-XXXX haben.",
-    "usernamePlaceholder": "Benutzername oder E-Mail eingeben"
+    "usernamePlaceholder": "Benutzername oder E-Mail eingeben",
+    "passkeyRequiredNotice": "Ihr Konto erfordert eine Verifizierung per Passkey.",
+    "passkeyRequiredHeader": "Passkey-Verifizierung erforderlich",
+    "passkeyRequiredPrompt": "Für Ihr Konto ist ein Passkey eingerichtet. Bitte bestätigen Sie aus Sicherheitsgründen Ihre Identität auf diesem Gerät, um sich anzumelden als",
+    "passkeyVerificationHint": "Klicken Sie auf die Schaltfläche unten, um Touch ID, Face ID, Windows Hello oder Ihren Sicherheitsschlüssel zu aktivieren.",
+    "verifyPasskeyBtn": "Mit Passkey verifizieren",
+    "use2FAInstead": "Schlüssel nicht zur Hand? Stattdessen 2FA-Code verwenden",
+    "backToLogin": "Zurück zur Anmeldung"
   },
   "users": {
     "allActive": "Alle Aktiven",
@@ -543,7 +550,9 @@
     "view": "Ansehen",
     "tapToExpand": "Tippen zum Erweitern des Textes",
     "generating": "Generieren...",
-    "reset": "Zurücksetzen"
+    "reset": "Zurücksetzen",
+    "verifying": "Wird überprüft...",
+    "deleting": "Wird gelöscht..."
   },
   "lang": {
     "es": "Español",
@@ -798,7 +807,8 @@
     "backupCodesCopied": "Wiederherstellungscodes in die Zwischenablage kopiert.",
     "twoFactorMethodLabel": "Methode:",
     "regenerateBackupCodes": "Codes neu generieren",
-    "disablePromptMsg": "Um 2FA zu deaktivieren, geben Sie einen aktuellen Bestätigungscode ein:"
+    "disablePromptMsg": "Um 2FA zu deaktivieren, geben Sie einen aktuellen Bestätigungscode ein:",
+    "incorrectPassword": "Das eingegebene Passwort ist falsch."
   },
   "register": {
     "company": "Unternehmen / Arbeitsplatz",
@@ -1096,7 +1106,28 @@
     "registerError": "Fehler beim Registrieren des Passkeys.",
     "deleteConfirm": "Möchten Sie diesen Passkey wirklich trennen?",
     "deleteSuccess": "Passkey erfolgreich getrennt.",
-    "deleteError": "Passkey konnte nicht gelöscht werden."
+    "deleteError": "Passkey konnte nicht gelöscht werden.",
+    "promptTitle": "Biometrische Anmeldung aktivieren?",
+    "promptSubtitle": "Wir haben erkannt, dass dieses Gerät biometrische Authentifizierung ({{device}}) unterstützt. Verknüpfen Sie es jetzt, um sich künftig mit einem Fingertipp ohne Passworteingabe anzumelden.",
+    "promptBenefit1": "Blitzschnelle Anmeldung per Fingerabdruck, Gesichtserkennung oder System-PIN",
+    "promptBenefit2": "Höchste kryptografische Sicherheit mit Schutz vor Phishing",
+    "promptBenefit3": "Kein Merken oder Eintippen Ihres Passworts mehr nötig",
+    "promptAccept": "Dieses Gerät verknüpfen",
+    "promptDismiss": "Jetzt nicht",
+    "promptDontAskAgain": "Auf diesem Gerät nicht mehr nachfragen",
+    "promptSuccess": "Passkey erfolgreich eingerichtet! Beim nächsten Login können Sie sich direkt biometrisch anmelden.",
+    "promptCancelled": "Passkey-Verknüpfung abgebrochen.",
+    "detected": "erkannt",
+    "confirmDeleteTitle": "Sicherheitsüberprüfung",
+    "confirmDeleteSubtitle": "Geben Sie Ihr Passwort ein oder bestätigen Sie Ihren Passkey, um die Trennung zu bestätigen.",
+    "confirmDeleteWarning": "Sind Sie sicher, dass Sie den Schlüssel löschen möchten",
+    "confirmDeleteNote": "Aus Sicherheitsgründen müssen Sie Ihre Identität bestätigen, bevor Sie fortfahren.",
+    "promptToUsePasskey": "Klicken Sie auf die Schaltfläche, um Ihren biometrischen Scanner (Face ID, Touch ID, Windows Hello oder Sicherheitsschlüssel) zu aktivieren.",
+    "verifyPasskeyBtn": "Passkey bestätigen und löschen",
+    "usePasswordFallback": "Passkey kann nicht verwendet werden? Passwort nutzen",
+    "backToPasskey": "← Zurück zur Passkey-Überprüfung",
+    "confirmDeleteBtn": "Bestätigen und löschen",
+    "verificationCancelled": "Passkey-Überprüfung abgebrochen."
   },
   "pagination": {
     "first": "Erste Seite",

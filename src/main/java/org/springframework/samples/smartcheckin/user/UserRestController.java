@@ -36,6 +36,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.samples.smartcheckin.auth.session.UserSessionService;
+import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.samples.smartcheckin.audit.Auditable;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -53,6 +57,8 @@ class UserRestController {
     private final TotpService totpService;
     private final TwoFactorBackupCodeService backupCodeService;
     private final HaveIBeenPwnedService haveIBeenPwnedService;
+    private final UserSessionService userSessionService;
+    private final JwtUtils jwtUtils;
     private static final String TOPIC_UPDATE_USERS = "/topic/users";
     private static final String UPDATE = "update";
 	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
@@ -62,7 +68,7 @@ class UserRestController {
     public UserRestController(UserService userService, AuthoritiesService authService, 
             PasswordEncoder passwordEncoder, SimpMessagingTemplate messagingTemplate, TotpService totpService,
             TwoFactorBackupCodeService backupCodeService, HaveIBeenPwnedService haveIBeenPwnedService,
-            JavaMailSender javaMailSender) {
+            JavaMailSender javaMailSender, UserSessionService userSessionService, JwtUtils jwtUtils) {
         this.userService = userService;
         this.authService = authService;
         this.passwordEncoder = passwordEncoder;
@@ -71,6 +77,8 @@ class UserRestController {
         this.backupCodeService = backupCodeService;
         this.haveIBeenPwnedService = haveIBeenPwnedService;
         this.javaMailSender = javaMailSender;
+        this.userSessionService = userSessionService;
+        this.jwtUtils = jwtUtils;
     }
 
     @GetMapping
@@ -184,7 +192,7 @@ class UserRestController {
 
     @PutMapping("me/password")
     @Auditable(action = "PASSWORD_CHANGE", details = "User changed their password")
-    public ResponseEntity<MessageResponse> changePassword(@RequestBody @Valid ChangePasswordRequest request) {
+    public ResponseEntity<MessageResponse> changePassword(@RequestBody @Valid ChangePasswordRequest request, HttpServletRequest httpRequest) {
         User currentUser = userService.findCurrentUser();
         if (request.getCurrentPassword() == null || !passwordEncoder.matches(request.getCurrentPassword(), currentUser.getPassword())) {
             return ResponseEntity.badRequest().body(new MessageResponse("La contraseña actual no es correcta."));
@@ -200,7 +208,26 @@ class UserRestController {
         }
         currentUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userService.saveUser(currentUser);
+        if (userSessionService != null && jwtUtils != null && httpRequest != null) {
+            try {
+                String currentJwt = jwtUtils.getJwtFromCookies(httpRequest);
+                userSessionService.revokeOtherSessions(currentUser.getUsername(), currentJwt);
+            } catch (Exception ignored) {
+                // Ignore session revocation errors during password change
+            }
+        }
         return ResponseEntity.ok(new MessageResponse("Contraseña actualizada con éxito."));
+    }
+
+    @PostMapping("me/verify-password")
+    @Auditable(action = "PASSWORD_VERIFY", details = "User verified current password for sensitive operation")
+    public ResponseEntity<MessageResponse> verifyCurrentPassword(@RequestBody Map<String, String> body) {
+        String password = body != null ? body.get("password") : null;
+        User currentUser = userService.findCurrentUser();
+        if (password == null || !passwordEncoder.matches(password, currentUser.getPassword())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("La contraseña introducida no es correcta."));
+        }
+        return ResponseEntity.ok(new MessageResponse("Contraseña válida."));
     }
 
     @PostMapping("2fa/setup")

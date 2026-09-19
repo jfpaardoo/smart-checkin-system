@@ -406,6 +406,7 @@
 						</goals>
 						<phase>prepare-package</phase>
 						<configuration>
+							<overwrite>true</overwrite>
 							<outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
 							<resources>
 								<resource>

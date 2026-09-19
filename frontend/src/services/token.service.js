@@ -11,8 +11,10 @@ class TokenService {
 
     setUser(user) {
         const displayUser = {
+            id: user.id,
             username: user.username,
             roles: user.roles,
+            hasPasskeys: user.hasPasskeys,
             authority: { authority: (user.roles && user.roles.length > 0) ? user.roles[0] : null }
         };
         window.localStorage.setItem("user", JSON.stringify(displayUser));

@@ -71,7 +71,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String ip = getClientIP(request);
         Bucket bucket;
 
-        if (uri.startsWith("/api/v1/auth/signin") || uri.startsWith("/api/v1/checkins/qr-fichaje")) {
+        if (uri.startsWith("/api/v1/auth/signin") 
+                || uri.startsWith("/api/v1/checkins/qr-fichaje")
+                || uri.startsWith("/api/v1/auth/verify-2fa")
+                || uri.startsWith("/api/v1/auth/forgot-password")
+                || uri.startsWith("/api/v1/auth/reset-password")
+                || uri.startsWith("/api/v1/auth/webauthn/login")) {
             bucket = resolveBucketStrict(ip);
         } else {
             bucket = resolveBucketGlobal(ip);

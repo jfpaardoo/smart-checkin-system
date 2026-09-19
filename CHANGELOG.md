@@ -4,6 +4,59 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), y este proyecto sigue [Versionado Semántico (SemVer)](https://semver.org/lang/es/).
 
+## [1.2.4](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.2.4) - 2026-09-19
+
+### Añadido (Features) & Blindaje de Seguridad
+- **Integración PWA Nativa para Apple iOS (`index.html`)**:
+  - Incorporadas metaetiquetas oficiales `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style="black-translucent"`, `apple-mobile-web-app-title` y `format-detection="telephone=no"`. Al anclar la aplicación a la pantalla de inicio en dispositivos iPhone/iPad, se ejecuta en modo *Standalone* a pantalla completa eliminando las barras de Safari y ofreciendo una experiencia idéntica a una aplicación nativa.
+- **Modo Linterna Óptica de Alto Brillo en Presentación de QR (`QRGeneratorAdmin.js`)**:
+  - Implementado el conmutador dinámico de **Modo Linterna (Blanco Puro `#FFFFFF`)** dentro de la visualización de pantalla completa del código QR. Al activarse, la totalidad del viewport y el `<meta name="theme-color">` del sistema se transforman en blanco absoluto, maximizando los lúmenes y la emisión fotónica de las pantallas OLED/LCD para garantizar lecturas instantáneas por escáneres ópticos en salas oscuras o bajo reflejos.
+  - Sincronización dinámica de la barra de estado del sistema operativo (iOS Safari y Android Chrome) con restauración automática al cerrar el modal.
+  - Añadido soporte de feedback háptico táctil en dispositivos móviles (`soundAndHaptics.playClick()`) al alternar modos de iluminación o maximizar el código QR.
+- **Prevención de Exposición de Secretos 2FA (`User.java`)**:
+  - Añadida la anotación `@JsonIgnore` al atributo sensible `twoFactorSecret` en la entidad `User`. Aunque el secreto ya se almacena cifrado en reposo con AES mediante `StringCryptoConverter`, esta anotación bloquea permanentemente su serialización JSON en `GET /api/v1/users/me` y `GET /api/v1/users`, mitigando cualquier fuga o divulgación de credenciales TOTP hacia el cliente.
+- **Protección a Nivel de Filtro de Endpoints de Credenciales WebAuthn (`SecurityConfiguration.java`)**:
+  - Reubicados y endurecidos los matchers de Spring Security para requerir autenticación explícita (`.authenticated()`) en las rutas `/api/v1/auth/webauthn/register/**`, `/api/v1/auth/webauthn/credentials` y `/api/v1/auth/webauthn/credentials/**` antes de evaluar la regla pública permisiva `/api/v1/auth/**`.
+- **Revocación Concurrente de Sesiones al Cambiar Contraseña (`UserRestController.java`)**:
+  - Inyectados `UserSessionService` y `JwtUtils`. Al modificar con éxito la contraseña desde el perfil de usuario (`PUT /api/v1/users/me/password`), el sistema revoca automáticamente todas las demás sesiones activas abiertas en otros dispositivos y navegadores, garantizando estricta conformidad con OWASP ASVS L3.
+- **Validación Criptográfica de Origen FIDO2 / WebAuthn (`WebAuthnService.java`)**:
+  - Implementada la verificación del parámetro `origin` en `clientDataJSON` durante la verificación de aserciones de autenticación y registros de Passkeys. El backend comprueba que la petición provenga exclusivamente del origen autorizado (`app.frontend.url` y `app.cors.allowed-origins`), frustrando ataques de phishing entre dominios y cross-origin token injection.
+- **Ampliación de Rate Limiting Estricto en Endpoints de Autenticación (`RateLimitFilter.java`)**:
+  - Extendida la limitación estricta de 10 peticiones por minuto por IP (`resolveBucketStrict`) a los endpoints sensibles de verificación de segundo factor (`/api/v1/auth/verify-2fa`), recuperación y restablecimiento de contraseña (`/forgot-password`, `/reset-password`) y autenticación biométrica (`/api/v1/auth/webauthn/login/**`), neutralizando ataques de fuerza bruta contra tokens TOTP y correos masivos.
+- **Trazabilidad y Auditoría FIDO2 / Passkeys (`WebAuthnRestController.java`)**:
+  - Añadida la anotación `@Auditable` a los flujos de registro (`PASSKEY_REGISTER`), autenticación biométrica (`PASSKEY_LOGIN`) y eliminación de credenciales (`PASSKEY_DELETE`), registrando la IP del cliente, timestamp y detalles en la bitácora de auditoría.
+- **Endpoint de Verificación de Contraseña para Step-Up Auth (`UserRestController.java`)**:
+  - Añadido el endpoint autenticado `POST /api/v1/users/me/verify-password` para comprobar la contraseña de usuarios con sesión activa sin requerir tokens públicos de CAPTCHA / Cloudflare Turnstile, permitiendo autorizaciones sensibles fluidas y seguras.
+- **Ocultación de Consultas SQL en Producción (`application.properties`)**:
+  - Parametrizadas las propiedades `spring.jpa.show-sql` e `hibernate.format_sql` para desactivar por defecto el volcado de consultas SQL en logs (`${SHOW_SQL:false}`), evitando la exposición accidental de esquemas o datos sensibles en entornos de despliegue.
+
+### Correcciones (Bug Fixes) & Mejoras de UI/UX
+- **Fusión en Esfera y Morfología Líquida Apple en Notificaciones Toast (`ToastProvider.js`)**:
+  - **Animación Líquida Apple-Style**: Transición suave de píldora compacta a panel expandido sin saltos de maquetación, anclando el encabezado y expandiendo los detalles mediante CSS Grid de una fracción (`grid-template-rows: 1fr`).
+  - **Retracción en Bola Perfecta (*Ball Retract Animation*)**: Al expirar o cerrar la notificación, el elemento se contrae matemáticamente hacia una esfera circular perfecta de 38px (`clip-path: inset(calc(50% - 19px) ... round 9999px)`) antes de desvanecerse y elevarse fluidamente hacia la barra superior sin saltos ni recortes irregulares.
+  - **Persistencia de la Barra de Progreso**: La barra de caducidad temporal pausa su estado (`animationPlayState: paused`) al hacer hover o interactuar sin reiniciar el tiempo transcurrido.
+  - **Soporte de Áreas Seguras (*Safe Area Insets*)**: Contenedor posicionado con `calc(4.75rem + env(safe-area-inset-top, 0px))` para evitar interferencias con el Notch y la Dynamic Island en iPhones.
+  - **Accesibilidad**: Contenedor principal transformado a etiqueta semántica `<output>` para resolver advertencias de compatibilidad ARIA `status`.
+- **Evolución Visual a Auténtico Cristal Líquido (*Liquid Glass*) en Diálogos ([GlassModal.js](file:///c:/Users/JFPARDO/OneDrive/Escritorio/Proyectos/smart-checkin-system/frontend/src/components/GlassModal.js) & [variables.css](file:///c:/Users/JFPARDO/OneDrive/Escritorio/Proyectos/smart-checkin-system/frontend/src/static/css/base/variables.css))**:
+  - Sustituida la opacidad rígida (`0.95`) por una superficie translúcida profunda (`rgba(255, 255, 255, 0.75)` en modo claro y gradiente vítreo `rgba(15, 23, 42, 0.82) / rgba(15, 23, 42, 0.74)` en modo oscuro).
+  - Filtrado óptico con `backdrop-filter: blur(30px) saturate(180%)`, dobles bordes especulares de luz rasante y homogeneización de elementos secundarios (pastillas de fecha de escaneo en `ScannerCheckin.js` y botones de cierre translúcidos).
+- **Refactorización Limpia y Modularidad en Panel QR (`QRGeneratorAdmin.js`)**:
+  - Descompuesto el componente `FullscreenModal` en subcomponentes atómicos (`useDynamicThemeColor`, `FullscreenHeader`, `FullscreenQrCard` y `FullscreenPinFooter`), reduciendo la complejidad cognitiva por debajo del límite de SonarQube / ESLint y optimizando la mantenibilidad del código.
+- **Robustez en Construcción y Empaquetado Maven (`pom.xml`)**:
+  - Añadido `<overwrite>true</overwrite>` a la fase de copia de estáticos React (`position-react-build`) en `maven-resources-plugin`, previniendo bloqueos y excepciones `AccessDeniedException` por atributos de solo lectura heredados en entornos Windows/OneDrive.
+- **Protección de Rutas Basada en Roles (`PrivateRoute` y `App.js`)**:
+  - Actualizado el componente `PrivateRoute` para admitir la propiedad `roles`. Si un usuario autenticado intenta acceder directamente por URL a una ruta administrativa sin disponer del rol `ADMIN`, el sistema lo redirige de forma segura a `/dashboard`.
+  - Blindadas todas las rutas de administración en `App.js` (`/users/**`, `/formations/**`, `/companies/**`, `/qr-generator`, `/analytics`, `/audit`, `/admin/cloud-settings`, `/settings`, `/docs`).
+- **Verificación Biométrica Obligatoria para Desvincular Passkeys (`PasskeySettings.js`)**:
+  - Implementado flujo de re-autenticación (*step-up auth*) al eliminar una llave de acceso: el sistema invoca activamente el lector biométrico o dispositivo FIDO2 del usuario (`loginWithPasskey`) exigiendo validar la identidad con Touch ID, Face ID o Windows Hello antes de autorizar la baja de la credencial en el servidor.
+  - Se incluye alternativa de confirmación mediante la contraseña de la cuenta para casos de fallo del sensor biométrico conectada al endpoint de verificación segura, con alertas de error *in-situ* dentro del modal.
+- **Flujo Fluido en Tarjeta de Regeneración de Códigos 2FA (`TwoFactorSettings.js`)**:
+  - Reemplazado el `window.prompt` del navegador por un panel interactivo con estilo *Liquid Glass* que solicita el código 2FA de 6 dígitos dentro de la tarjeta antes de emitir nuevos códigos de recuperación.
+- **Internacionalización Completa en Diálogos de Seguridad de Passkeys (`translation.json`)**:
+  - Incorporadas las cadenas de traducción en los 8 idiomas soportados (`es`, `en`, `fr`, `de`, `pt`, `pl`, `ro`, `bg`) para los diálogos de verificación de seguridad, validación biométrica y confirmación por contraseña al gestionar Passkeys, eliminando textos en castellano forzados cuando la interfaz se encuentra en otros idiomas.
+- **Refactorización de Código Limpio en Enrutado (`PrivateRoute/index.js`)**:
+  - Desanidado el operador ternario en la resolución de roles del usuario, garantizando código limpio conforme a las normas de análisis estático Sonar.
+
 ## [1.2.3](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.2.3) - 2026-09-07
 
 ### Añadido (Features) & Blindaje de Seguridad

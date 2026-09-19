@@ -90,7 +90,14 @@
     "forgotPassword": "Mot de passe oublié ?",
     "privacyPolicy": "Politique de Confidentialité",
     "backupCodeInvalidFormat": "Le code de récupération doit être au format XXXX-XXXX.",
-    "usernamePlaceholder": "Entrez votre identifiant ou e-mail"
+    "usernamePlaceholder": "Entrez votre identifiant ou e-mail",
+    "passkeyRequiredNotice": "Votre compte nécessite une vérification par clé d'accès (Passkey).",
+    "passkeyRequiredHeader": "Vérification par Clé d'Accès",
+    "passkeyRequiredPrompt": "Votre compte a configuré une clé d'accès (Passkey). Par sécurité, veuillez vérifier votre identité sur cet appareil pour vous connecter en tant que",
+    "passkeyVerificationHint": "Cliquez sur le bouton ci-dessous pour activer Touch ID, Face ID, Windows Hello ou votre clé de sécurité.",
+    "verifyPasskeyBtn": "Vérifier avec la Clé d'Accès",
+    "use2FAInstead": "Vous n'avez pas votre clé ? Utiliser le code 2FA",
+    "backToLogin": "Retour à la connexion"
   },
   "users": {
     "allActive": "Tous les Actifs",
@@ -543,7 +550,9 @@
     "view": "Voir",
     "tapToExpand": "Appuyez pour agrandir le texte",
     "generating": "Génération...",
-    "reset": "Réinitialiser"
+    "reset": "Réinitialiser",
+    "verifying": "Vérification...",
+    "deleting": "Suppression..."
   },
   "lang": {
     "es": "Español",
@@ -798,7 +807,8 @@
     "backupCodesCopied": "Codes de récupération copiés dans le presse-papiers.",
     "twoFactorMethodLabel": "Méthode :",
     "regenerateBackupCodes": "Régénérer les codes",
-    "disablePromptMsg": "Pour désactiver le 2FA, entrez un code de vérification actuel :"
+    "disablePromptMsg": "Pour désactiver le 2FA, entrez un code de vérification actuel :",
+    "incorrectPassword": "Le mot de passe saisi est incorrect."
   },
   "register": {
     "company": "Entreprise / Centre de Travail",
@@ -1096,7 +1106,28 @@
     "registerError": "Erreur lors de l'enregistrement de la clé.",
     "deleteConfirm": "Voulez-vous vraiment dissocier cette clé d'accès ?",
     "deleteSuccess": "Clé d'accès dissociée avec succès.",
-    "deleteError": "Impossible de supprimer la clé d'accès."
+    "deleteError": "Impossible de supprimer la clé d'accès.",
+    "promptTitle": "Activer la connexion biométrique ?",
+    "promptSubtitle": "Nous avons détecté que cet appareil prend en charge l'authentification biométrique ({{device}}). Associez-le maintenant pour vous connecter en un clic sans saisir votre mot de passe.",
+    "promptBenefit1": "Connexion instantanée par empreinte, reconnaissance faciale ou code PIN",
+    "promptBenefit2": "Sécurité cryptographique avancée résistante au phishing",
+    "promptBenefit3": "Plus besoin de mémoriser ou ressaisir votre mot de passe",
+    "promptAccept": "Associer cet appareil",
+    "promptDismiss": "Pas maintenant",
+    "promptDontAskAgain": "Ne plus demander sur cet appareil",
+    "promptSuccess": "Clé d'accès configurée avec succès ! Vous pourrez l'utiliser dès votre prochaine connexion.",
+    "promptCancelled": "Association annulée.",
+    "detected": "détecté",
+    "confirmDeleteTitle": "Vérification de sécurité",
+    "confirmDeleteSubtitle": "Entrez votre mot de passe ou validez votre clé d'accès pour confirmer la dissociation.",
+    "confirmDeleteWarning": "Êtes-vous sûr de vouloir supprimer la clé",
+    "confirmDeleteNote": "Pour des raisons de sécurité, vous devez valider votre identité avant de continuer.",
+    "promptToUsePasskey": "Cliquez sur le bouton pour activer votre lecteur biométrique (Face ID, Touch ID, Windows Hello ou clé physique).",
+    "verifyPasskeyBtn": "Valider la clé d'accès et supprimer",
+    "usePasswordFallback": "Impossible d'utiliser la clé d'accès ? Utiliser le mot de passe",
+    "backToPasskey": "← Revenir à la validation par clé d'accès",
+    "confirmDeleteBtn": "Confirmer et supprimer",
+    "verificationCancelled": "Vérification par clé d'accès annulée."
   },
   "pagination": {
     "first": "Première page",

@@ -114,23 +114,23 @@ function AnimatedRoutes() {
             <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
 
             {/* Rutas de Administración */}
-            <Route path="/users" element={<PrivateRoute><UserListAdmin /></PrivateRoute>} />
-            <Route path="/users/:id" element={<PrivateRoute><UserEditAdmin /></PrivateRoute>} />
-            <Route path="/users/:username" element={<PrivateRoute><UserEditAdmin /></PrivateRoute>} />
-            <Route path="/formations" element={<PrivateRoute><FormationListAdmin /></PrivateRoute>} />
-            <Route path="/formations/new" element={<PrivateRoute><FormationEditAdmin /></PrivateRoute>} />
-            <Route path="/formations/:id" element={<PrivateRoute><FormationEditAdmin /></PrivateRoute>} />
-            <Route path="/formations/:id/edit" element={<PrivateRoute><FormationEditAdmin /></PrivateRoute>} />
-            <Route path="/formations/:id/details" element={<PrivateRoute><FormationDetailsAdmin /></PrivateRoute>} />
-            <Route path="/companies" element={<PrivateRoute><CompanyListAdmin /></PrivateRoute>} />
-            <Route path="/companies/new" element={<PrivateRoute><CompanyEditAdmin /></PrivateRoute>} />
-            <Route path="/companies/:id" element={<PrivateRoute><CompanyEditAdmin /></PrivateRoute>} />
-            <Route path="/qr-generator" element={<PrivateRoute><QRGeneratorAdmin /></PrivateRoute>} />
-            <Route path="/analytics" element={<PrivateRoute><AnalyticsDashboard /></PrivateRoute>} />
-            <Route path="/audit" element={<PrivateRoute><AuditDashboard /></PrivateRoute>} />
-            <Route path="/admin/cloud-settings" element={<PrivateRoute><CloudSettingsAdmin /></PrivateRoute>} />
-            <Route path="/settings" element={<PrivateRoute><CloudSettingsAdmin /></PrivateRoute>} />
-            <Route path="/docs" element={<PrivateRoute><SwaggerDocs /></PrivateRoute>} />
+            <Route path="/users" element={<PrivateRoute roles={['ADMIN']}><UserListAdmin /></PrivateRoute>} />
+            <Route path="/users/:id" element={<PrivateRoute roles={['ADMIN']}><UserEditAdmin /></PrivateRoute>} />
+            <Route path="/users/:username" element={<PrivateRoute roles={['ADMIN']}><UserEditAdmin /></PrivateRoute>} />
+            <Route path="/formations" element={<PrivateRoute roles={['ADMIN']}><FormationListAdmin /></PrivateRoute>} />
+            <Route path="/formations/new" element={<PrivateRoute roles={['ADMIN']}><FormationEditAdmin /></PrivateRoute>} />
+            <Route path="/formations/:id" element={<PrivateRoute roles={['ADMIN']}><FormationEditAdmin /></PrivateRoute>} />
+            <Route path="/formations/:id/edit" element={<PrivateRoute roles={['ADMIN']}><FormationEditAdmin /></PrivateRoute>} />
+            <Route path="/formations/:id/details" element={<PrivateRoute roles={['ADMIN']}><FormationDetailsAdmin /></PrivateRoute>} />
+            <Route path="/companies" element={<PrivateRoute roles={['ADMIN']}><CompanyListAdmin /></PrivateRoute>} />
+            <Route path="/companies/new" element={<PrivateRoute roles={['ADMIN']}><CompanyEditAdmin /></PrivateRoute>} />
+            <Route path="/companies/:id" element={<PrivateRoute roles={['ADMIN']}><CompanyEditAdmin /></PrivateRoute>} />
+            <Route path="/qr-generator" element={<PrivateRoute roles={['ADMIN']}><QRGeneratorAdmin /></PrivateRoute>} />
+            <Route path="/analytics" element={<PrivateRoute roles={['ADMIN']}><AnalyticsDashboard /></PrivateRoute>} />
+            <Route path="/audit" element={<PrivateRoute roles={['ADMIN']}><AuditDashboard /></PrivateRoute>} />
+            <Route path="/admin/cloud-settings" element={<PrivateRoute roles={['ADMIN']}><CloudSettingsAdmin /></PrivateRoute>} />
+            <Route path="/settings" element={<PrivateRoute roles={['ADMIN']}><CloudSettingsAdmin /></PrivateRoute>} />
+            <Route path="/docs" element={<PrivateRoute roles={['ADMIN']}><SwaggerDocs /></PrivateRoute>} />
           </Routes>
         </Suspense>
       </PageTransition>

@@ -31,6 +31,7 @@ import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVe
 import org.springframework.samples.smartcheckin.auth.service.HaveIBeenPwnedService;
 import org.springframework.samples.smartcheckin.auth.service.TwoFactorBackupCodeService;
 import org.springframework.samples.smartcheckin.auth.session.UserSessionService;
+import org.springframework.samples.smartcheckin.auth.webauthn.WebAuthnService;
 import org.springframework.samples.smartcheckin.company.Company;
 import org.springframework.samples.smartcheckin.company.CompanyService;
 import org.springframework.samples.smartcheckin.configuration.RateLimitFilter;
@@ -66,7 +67,7 @@ import io.qameta.allure.Owner;
 @Epic("Users & Admin Module")
 @Feature("Authentication")
 @Owner("DP1-tutors")
-@SuppressWarnings("null")
+@SuppressWarnings({ "null", "java:S1313" })
 @WebMvcTest(value = AuthController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
 		WebSecurityConfigurer.class, RateLimitFilter.class }), excludeAutoConfiguration = {
 		SecurityAutoConfiguration.class })
@@ -132,6 +133,9 @@ class AuthControllerTests {
 
 	@MockitoBean
 	private UserSessionService userSessionService;
+
+	@MockitoBean
+	private WebAuthnService webAuthnService;
 
 	@Autowired
 	@SuppressWarnings("java:S6813")
@@ -225,6 +229,27 @@ class AuthControllerTests {
 				.content(objectMapper.writeValueAsString(loginRequest)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.requiresTwoFactor").value(true));
+	}
+
+	@Test
+	void shouldChallengePasskeyWhenUserHasPasskeysConfigured() throws Exception {
+		User userWithPasskey = new User();
+		userWithPasskey.setId(99);
+		userWithPasskey.setIsApproved(true);
+		userWithPasskey.setTwoFactorEnabled(false);
+		userWithPasskey.setUsername("passkeyUser");
+
+		when(userService.findUser(loginRequest.getUsername())).thenReturn(userWithPasskey);
+		when(webAuthnService.hasPasskeys(99)).thenReturn(true);
+		Authentication auth = mock(Authentication.class);
+		when(this.authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
+
+		mockMvc.perform(post(SIGNIN_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(loginRequest)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.requiresPasskey").value(true))
+				.andExpect(jsonPath("$.requiresTwoFactor").value(false))
+				.andExpect(jsonPath("$.username").value("passkeyUser"));
 	}
 
 	@Test
@@ -520,6 +545,7 @@ class AuthControllerTests {
     }
 
     @Test
+    @SuppressWarnings("java:S1313")
     void testLogoutWithExpiredJwtInCookie() throws Exception {
         when(jwtUtils.getJwtFromCookies(any())).thenReturn("EXPIRED_JWT");
         when(jwtUtils.getUserNameFromJwtToken("EXPIRED_JWT")).thenThrow(new RuntimeException("Token expired"));
@@ -646,6 +672,7 @@ class AuthControllerTests {
     }
 
     @Test
+    @SuppressWarnings("java:S1313")
     void testSigninBadCredentialsLocksAccountAfter5Attempts() throws Exception {
         User user = new User();
         user.setUsername(loginRequest.getUsername());
@@ -968,6 +995,7 @@ class AuthControllerTests {
         assertNull(user.getAccountLockedUntil());
         verify(passwordResetService).deleteToken(resetToken);
         verify(userService).saveUser(user);
+        verify(userSessionService).revokeAllUserSessions("resetUser");
     }
 
     @Test

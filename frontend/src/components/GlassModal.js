@@ -86,7 +86,7 @@ export default function GlassModal({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           className="fixed inset-0 z-[1050] flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(15, 23, 42, 0.55)', backdropFilter: 'blur(4px)' }}
+          style={{ backgroundColor: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(10px) saturate(150%)', WebkitBackdropFilter: 'blur(10px) saturate(150%)' }}
           onClick={handleBackdropClick}
           aria-modal="true"
           role="dialog"
@@ -104,20 +104,19 @@ export default function GlassModal({
             style={{
               maxWidth: resolvedMaxWidth,
               maxHeight: '92vh',
-              background: 'var(--da-glass-card-bg)',
-              backdropFilter: 'blur(40px) saturate(160%)',
-              WebkitBackdropFilter: 'blur(40px) saturate(160%)',
-              border: '1.5px solid rgba(255, 255, 255, 0.5)',
+              background: 'var(--da-glass-modal-bg, rgba(255, 255, 255, 0.75))',
+              backdropFilter: 'blur(30px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+              border: '1.5px solid rgba(255, 255, 255, 0.75)',
               borderRadius: '28px',
-              boxShadow: '0 25px 60px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.5)',
+              boxShadow: '0 25px 60px rgba(15, 23, 42, 0.18), inset 0 1.5px 2px rgba(255, 255, 255, 0.95), inset 0 -1px 1.5px rgba(255, 255, 255, 0.3)',
               overflow: 'hidden',
             }}
           >
             {/* Header */}
             {title !== undefined && (
               <div
-                className="flex items-center justify-between px-5 py-3.5 flex-shrink-0"
-                style={{ borderBottom: '1px solid rgba(255,255,255,0.2)' }}
+                className="flex items-center justify-between px-6 py-4 flex-shrink-0 border-b border-white/60 dark:border-white/10 bg-white/20 dark:bg-white/[0.03]"
               >
                 <h5
                   className="m-0 font-bold text-slate-800 dark:text-slate-100 text-base"
@@ -130,9 +129,9 @@ export default function GlassModal({
                     type="button"
                     onClick={closeCallback}
                     aria-label="Cerrar"
-                    className="ml-3 flex-shrink-0 p-1.5 rounded-full text-slate-500 hover:text-slate-800 hover:bg-black/10 dark:hover:text-white dark:hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-da-primary cursor-pointer"
+                    className="ml-3 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-white/50 hover:bg-white/80 dark:bg-white/10 dark:hover:bg-white/20 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white border border-white/70 dark:border-white/15 shadow-2xs transition-all duration-150 focus:outline-none cursor-pointer p-0"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
                   </button>
@@ -142,7 +141,7 @@ export default function GlassModal({
 
             {/* Body */}
             <div
-              className="px-5 py-4 overflow-y-auto flex-1 text-slate-800 dark:text-slate-100"
+              className="px-6 py-5 overflow-y-auto flex-1 text-slate-800 dark:text-slate-100"
               style={{ overscrollBehavior: 'contain' }}
             >
               {children}
@@ -151,8 +150,7 @@ export default function GlassModal({
             {/* Footer */}
             {footer && (
               <div
-                className="px-5 py-3.5 flex-shrink-0 flex justify-end gap-2"
-                style={{ borderTop: '1px solid rgba(255,255,255,0.2)' }}
+                className="px-6 py-4 flex-shrink-0 flex justify-end gap-2 border-t border-white/60 dark:border-white/10 bg-white/15 dark:bg-white/[0.02]"
               >
                 {footer}
               </div>

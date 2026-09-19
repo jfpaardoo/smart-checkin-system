@@ -90,7 +90,14 @@
     "forgotPassword": "Ați uitat parola?",
     "privacyPolicy": "Politică de Confidențialitate",
     "backupCodeInvalidFormat": "Codul de recuperare trebuie să aibă formatul XXXX-XXXX.",
-    "usernamePlaceholder": "Introduceți utilizatorul sau e-mailul"
+    "usernamePlaceholder": "Introduceți utilizatorul sau e-mailul",
+    "passkeyRequiredNotice": "Contul dvs. necesită verificare cu cheie de acces (Passkey).",
+    "passkeyRequiredHeader": "Verificare necesară cu Cheie de Acces",
+    "passkeyRequiredPrompt": "Contul dvs. are configurată o cheie de acces (Passkey). Din motive de securitate, verificați-vă identitatea pe acest dispozitiv pentru a vă conecta ca",
+    "passkeyVerificationHint": "Apăsați butonul de mai jos pentru a activa Touch ID, Face ID, Windows Hello sau cheia de securitate USB.",
+    "verifyPasskeyBtn": "Verifică cu Cheie de Acces",
+    "use2FAInstead": "Nu aveți cheia la îndemână? Folosiți codul 2FA",
+    "backToLogin": "Înapoi la conectare"
   },
   "users": {
     "allActive": "Toți cei Activi",
@@ -543,7 +550,9 @@
     "view": "Vizualizează",
     "tapToExpand": "Atingeți pentru a extinde textul",
     "generating": "Se generează...",
-    "reset": "Resetează"
+    "reset": "Resetează",
+    "verifying": "Se verifică...",
+    "deleting": "Se șterge..."
   },
   "lang": {
     "es": "Español",
@@ -798,7 +807,8 @@
     "backupCodesCopied": "Codurile de recuperare au fost copiate în clipboard.",
     "twoFactorMethodLabel": "Metodă:",
     "regenerateBackupCodes": "Regenerează codurile",
-    "disablePromptMsg": "Pentru a dezactiva 2FA, introduceți un cod curent de verificare:"
+    "disablePromptMsg": "Pentru a dezactiva 2FA, introduceți un cod curent de verificare:",
+    "incorrectPassword": "Parola introdusă este incorectă."
   },
   "register": {
     "company": "Companie / Loc de Muncă",
@@ -1096,7 +1106,28 @@
     "registerError": "Eroare la înregistrarea cheii de acces.",
     "deleteConfirm": "Sunteți sigur că doriți să deconectați această cheie?",
     "deleteSuccess": "Cheie de acces deconectată cu succes.",
-    "deleteError": "Nu s-a putut șterge cheia de acces."
+    "deleteError": "Nu s-a putut șterge cheia de acces.",
+    "promptTitle": "Activați autentificarea biometrică?",
+    "promptSubtitle": "Am detectat că acest dispozitiv acceptă autentificarea biometrică ({{device}}). Îl puteți asocia acum pentru a vă conecta rapid, fără a mai introduce parola.",
+    "promptBenefit1": "Autentificare instantanee prin amprentă, recunoaștere facială sau PIN",
+    "promptBenefit2": "Securitate criptografică avansată și rezistență la phishing",
+    "promptBenefit3": "Nu mai este nevoie să memorați sau să reintroduceți parola",
+    "promptAccept": "Asociază acest dispozitiv",
+    "promptDismiss": "Nu acum",
+    "promptDontAskAgain": "Nu mai întreba pe acest dispozitiv",
+    "promptSuccess": "Cheie de acces configurată cu succes! Data viitoare vă puteți conecta cu o singură atingere.",
+    "promptCancelled": "Înregistrarea cheii a fost anulată.",
+    "detected": "detectat",
+    "confirmDeleteTitle": "Verificare de securitate",
+    "confirmDeleteSubtitle": "Introduceți parola sau validați cheia de acces pentru a confirma deconectarea.",
+    "confirmDeleteWarning": "Sigur doriți să ștergeți cheia",
+    "confirmDeleteNote": "Din motive de securitate, trebuie să vă confirmați identitatea înainte de a continua.",
+    "promptToUsePasskey": "Faceți clic pe buton pentru a activa cititorul biometric (Face ID, Touch ID, Windows Hello sau cheie de securitate).",
+    "verifyPasskeyBtn": "Validați cheia și ștergeți",
+    "usePasswordFallback": "Nu puteți folosi cheia de acces? Utilizați parola",
+    "backToPasskey": "← Înapoi la validarea cu cheie de acces",
+    "confirmDeleteBtn": "Confirmați și ștergeți",
+    "verificationCancelled": "Verificarea cheii de acces a fost anulată."
   },
   "pagination": {
     "first": "Prima pagină",

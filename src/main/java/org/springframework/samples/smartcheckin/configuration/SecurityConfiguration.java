@@ -89,7 +89,14 @@ public class SecurityConfiguration {
                                 "/swagger-resources/**")
                         .hasAuthority(ADMIN)
 
-                        // 4. Endpoints públicos
+                        // 4. Endpoints de gestión de credenciales WebAuthn / Passkeys (deben ir antes de /api/v1/auth/**)
+                        .requestMatchers(
+                                "/api/v1/auth/webauthn/register/**",
+                                "/api/v1/auth/webauthn/credentials",
+                                "/api/v1/auth/webauthn/credentials/**")
+                        .authenticated()
+
+                        // 5. Endpoints públicos (login, registro, 2FA, login biométrico)
                         .requestMatchers("/api/v1/auth/**", "/ws/**", "/api/v1/cloud-settings/oauth/callback", "/actuator/health", "/actuator/info", "/actuator/prometheus")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/companies").permitAll()

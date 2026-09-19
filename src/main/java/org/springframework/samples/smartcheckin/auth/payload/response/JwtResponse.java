@@ -15,6 +15,8 @@ public class JwtResponse {
     private String username;
     private List<String> roles;
     private Boolean requiresTwoFactor = false;
+    private Boolean hasPasskeys = false;
+    private Boolean requiresPasskey = false;
 
     public JwtResponse() {
     }
@@ -33,9 +35,17 @@ public class JwtResponse {
         this.roles = roles;
     }
 
+    public JwtResponse(String accessToken, Integer id, String username, List<String> roles, Boolean hasPasskeys) {
+        this.token = accessToken;
+        this.id = id;
+        this.username = username;
+        this.roles = roles;
+        this.hasPasskeys = hasPasskeys != null && hasPasskeys;
+    }
+
     @Override
     public String toString() {
         return "JwtResponse [token=" + token + ", type=" + type + ", id=" + id + ", username=" + username
-                + ", roles=" + roles + ", requiresTwoFactor=" + requiresTwoFactor + "]";
+                + ", roles=" + roles + ", requiresTwoFactor=" + requiresTwoFactor + ", hasPasskeys=" + hasPasskeys + "]";
     }
 }

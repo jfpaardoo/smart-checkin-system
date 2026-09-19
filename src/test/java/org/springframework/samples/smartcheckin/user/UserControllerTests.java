@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest;
 import org.springframework.samples.smartcheckin.auth.service.HaveIBeenPwnedService;
 import org.springframework.samples.smartcheckin.auth.service.TwoFactorBackupCodeService;
+import org.springframework.samples.smartcheckin.auth.session.UserSessionService;
+import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.samples.smartcheckin.configuration.SecurityConfiguration;
 import org.springframework.samples.smartcheckin.exceptions.AccessDeniedException;
 import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
@@ -47,7 +50,7 @@ import io.qameta.allure.Owner;
 @Epic("Users & Admin Module")
 @Feature("Users Management")
 @Owner("DP1-tutors")
-@SuppressWarnings("null")
+@SuppressWarnings({"null", "java:S1075", "java:S6813", "java:S2068"})
 @WebMvcTest(controllers = UserRestController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebSecurityConfigurer.class), excludeAutoConfiguration = SecurityConfiguration.class)
 class UserControllerTests {
 
@@ -94,6 +97,12 @@ class UserControllerTests {
 
 	@MockitoBean
 	private TwoFactorBackupCodeService backupCodeService;
+
+	@MockitoBean
+	private UserSessionService userSessionService;
+
+	@MockitoBean
+	private JwtUtils jwtUtils;
 
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -385,6 +394,36 @@ class UserControllerTests {
 
 		mockMvc.perform(put(BASE_URL + PASSWORD_PATH).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldVerifyCurrentPasswordSuccess() throws Exception {
+		user.setPassword(ENCODED_OLD_PASS);
+		when(userService.findCurrentUser()).thenReturn(user);
+		when(passwordEncoder.matches(OLD_PASS, ENCODED_OLD_PASS)).thenReturn(true);
+
+		Map<String, String> req = Map.of("password", OLD_PASS);
+
+		mockMvc.perform(post(BASE_URL + "/me/verify-password").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.message").value("Contraseña válida."));
+	}
+
+	@Test
+	@WithMockUser("admin")
+	void shouldVerifyCurrentPasswordFailure() throws Exception {
+		user.setPassword(ENCODED_OLD_PASS);
+		when(userService.findCurrentUser()).thenReturn(user);
+		when(passwordEncoder.matches("wrongPass", ENCODED_OLD_PASS)).thenReturn(false);
+
+		Map<String, String> req = Map.of("password", "wrongPass");
+
+		mockMvc.perform(post(BASE_URL + "/me/verify-password").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req)))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("La contraseña introducida no es correcta."));
 	}
 
 	@Test

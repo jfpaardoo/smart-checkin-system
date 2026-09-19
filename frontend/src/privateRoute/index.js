@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 import tokenService from '../services/token.service';
 import Login from '../auth/login';
 import { CardGhostLoader } from '../components/GhostLoader';
@@ -7,9 +8,19 @@ import { CardGhostLoader } from '../components/GhostLoader';
 let lastAuthValidationTime = 0;
 const AUTH_VALIDATION_TTL = 30000; // 30 segundos de vigencia en navegación interna
 
-const PrivateRoute = ({ children }) => {
+const PrivateRoute = ({ children, roles = [] }) => {
     const user = tokenService.getUser();
     const username = user?.username;
+
+    // Extraer roles del usuario (soporta array en user.roles o string en user.authority)
+    let userRoles = [];
+    if (Array.isArray(user?.roles)) {
+        userRoles = user.roles;
+    } else if (user?.authority) {
+        userRoles = [user.authority];
+    }
+
+    const hasRequiredRole = roles.length === 0 || roles.some(role => userRoles.includes(role));
 
     // Si ya fue validado en los últimos 30s y el usuario existe en local, renderizar de inmediato
     const isRecentlyValidated = !!(username && (Date.now() - lastAuthValidationTime < AUTH_VALIDATION_TTL));
@@ -91,7 +102,15 @@ const PrivateRoute = ({ children }) => {
         return <CardGhostLoader />;
     }
 
-    return isValid === true ? children : <Login message={message} navigation={true} />;
+    if (isValid !== true) {
+        return <Login message={message} navigation={true} />;
+    }
+
+    if (!hasRequiredRole) {
+        return <Navigate to="/dashboard" replace />;
+    }
+
+    return children;
 };
 
 export default PrivateRoute;

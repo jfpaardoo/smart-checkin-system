@@ -421,7 +421,7 @@ export default function ScannerCheckin() {
             {t('checkin.formationLabel', 'Formación')}: <strong>{formationDetails?.name}</strong>
           </p>
           {formationDetails?.formationDate && (
-            <div className="p-3 mx-auto bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700 inline-block shadow-sm">
+            <div className="p-3 mx-auto bg-white/50 dark:bg-white/5 rounded-2xl border border-white/70 dark:border-white/10 inline-block shadow-2xs backdrop-blur-md">
               <p className="mb-0 font-medium text-slate-700 dark:text-slate-200 text-sm">
                 <FontAwesomeIcon icon={faCalendarCheck} className="me-2" style={{ color: 'var(--da-primary)' }} />
                 {t('checkin.dateLabel', 'Fecha')}: {formatDate(formationDetails.formationDate)}
