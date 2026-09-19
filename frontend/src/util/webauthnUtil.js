@@ -45,6 +45,55 @@ export function isWebAuthnSupported() {
 }
 
 /**
+ * Comprueba si el dispositivo actual cuenta con un autenticador de plataforma integrado
+ * (Windows Hello, Apple Touch ID / Face ID, huella Android, etc.)
+ */
+export async function isPlatformAuthenticatorAvailable() {
+  if (!isWebAuthnSupported()) return false;
+  if (typeof window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable !== 'function') {
+    return false;
+  }
+  try {
+    return await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+  } catch (err) {
+    console.warn('Error comprobando disponibilidad de autenticador de plataforma:', err);
+    return false;
+  }
+}
+
+/**
+ * Comprueba si este navegador/dispositivo ya tiene registrada una Passkey para este usuario
+ */
+export function hasPasskeyOnDevice(userId) {
+  if (!userId || typeof window === 'undefined') return false;
+  return window.localStorage.getItem(`sc_passkey_enrolled_${userId}`) === 'true';
+}
+
+/**
+ * Marca este navegador/dispositivo como que tiene registrada una Passkey para este usuario
+ */
+export function markPasskeyOnDevice(userId) {
+  if (!userId || typeof window === 'undefined') return;
+  window.localStorage.setItem(`sc_passkey_enrolled_${userId}`, 'true');
+}
+
+/**
+ * Comprueba si el usuario ha marcado "no volver a sugerir en este dispositivo"
+ */
+export function isPasskeyPromptDismissed(userId) {
+  if (!userId || typeof window === 'undefined') return false;
+  return window.localStorage.getItem(`sc_passkey_dismissed_${userId}`) === 'true';
+}
+
+/**
+ * Registra que el usuario no desea que se le vuelva a sugerir Passkey en este dispositivo
+ */
+export function dismissPasskeyPrompt(userId) {
+  if (!userId || typeof window === 'undefined') return;
+  window.localStorage.setItem(`sc_passkey_dismissed_${userId}`, 'true');
+}
+
+/**
  * Detecta de forma amigable el tipo de dispositivo/sistema operativo
  */
 export function detectDeviceType() {

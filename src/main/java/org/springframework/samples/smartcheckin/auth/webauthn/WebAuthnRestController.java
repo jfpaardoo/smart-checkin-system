@@ -23,6 +23,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.samples.smartcheckin.audit.AnomalyDetectionService;
+import org.springframework.samples.smartcheckin.audit.Auditable;
 import org.springframework.samples.smartcheckin.metrics.AppMetricsService;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -54,6 +55,7 @@ public class WebAuthnRestController {
 
     @Operation(summary = "Verifica y guarda la nueva Passkey vinculada a la cuenta")
     @PostMapping("/register/verify")
+    @Auditable(action = "PASSKEY_REGISTER", details = "User registered a new Passkey")
     public ResponseEntity<PasskeyDTO> verifyRegister(@Valid @RequestBody RegistrationVerifyRequest request) {
         User currentUser = userService.findCurrentUser();
         PasskeyDTO dto = webAuthnService.verifyAndSaveRegistration(currentUser, request);
@@ -74,9 +76,21 @@ public class WebAuthnRestController {
 
     @Operation(summary = "Verifica la aserción biométrica e inicia sesión emitiendo token JWT")
     @PostMapping("/login/verify")
+    @Auditable(action = "PASSKEY_LOGIN", details = "User authenticated via Passkey")
     public ResponseEntity<Object> verifyLogin(@Valid @RequestBody LoginVerifyRequest request) {
         try {
             User user = webAuthnService.verifyLogin(request);
+
+            if (user.getAccountLockedUntil() != null) {
+                if (user.getAccountLockedUntil().isAfter(java.time.LocalDateTime.now(java.time.ZoneId.systemDefault()))) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                            .body(new MessageResponse("Account is locked due to too many failed attempts. Try again later."));
+                } else {
+                    user.setAccountLockedUntil(null);
+                    user.setFailedLoginAttempts(0);
+                    userService.saveUser(user);
+                }
+            }
 
             UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(user.getUsername());
             Authentication authentication = new UsernamePasswordAuthenticationToken(
@@ -104,7 +118,7 @@ public class WebAuthnRestController {
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                    .body(new JwtResponse(null, user.getId().longValue(), user.getUsername(), roles));
+                    .body(new JwtResponse(null, user.getId(), user.getUsername(), roles, true));
 
         } catch (Exception e) {
             log.error("Error durante el inicio de sesión con Passkey", e);
@@ -123,6 +137,7 @@ public class WebAuthnRestController {
 
     @Operation(summary = "Elimina una Passkey registrada por el usuario")
     @DeleteMapping("/credentials/{id}")
+    @Auditable(action = "PASSKEY_DELETE", details = "User deleted a Passkey")
     public ResponseEntity<MessageResponse> deletePasskey(@PathVariable("id") Integer id) {
         User currentUser = userService.findCurrentUser();
         webAuthnService.deleteUserPasskey(id, currentUser.getId());

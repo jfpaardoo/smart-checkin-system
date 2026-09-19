@@ -114,6 +114,7 @@ public class User extends BaseEntity implements OrganizationalUnit {
 
     @Column(name = "two_factor_secret")
     @Convert(converter = StringCryptoConverter.class)
+    @JsonIgnore
     private String twoFactorSecret;
 
     @ElementCollection(fetch = FetchType.EAGER)

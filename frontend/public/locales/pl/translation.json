@@ -90,7 +90,14 @@
     "forgotPassword": "Nie pamiętasz hasła?",
     "privacyPolicy": "Polityka Prywatności",
     "backupCodeInvalidFormat": "Kod odzyskiwania musi mieć format XXXX-XXXX.",
-    "usernamePlaceholder": "Wprowadź nazwę użytkownika lub e-mail"
+    "usernamePlaceholder": "Wprowadź nazwę użytkownika lub e-mail",
+    "passkeyRequiredNotice": "Twoje konto wymaga weryfikacji za pomocą klucza dostępu (Passkey).",
+    "passkeyRequiredHeader": "Wymagana weryfikacja kluczem dostępu",
+    "passkeyRequiredPrompt": "Twoje konto ma skonfigurowany klucz dostępu (Passkey). Ze względów bezpieczeństwa potwierdź swoją tożsamość na tym urządzeniu, aby zalogować się jako",
+    "passkeyVerificationHint": "Kliknij poniższy przycisk, aby aktywować Touch ID, Face ID, Windows Hello lub klucz bezpieczeństwa USB.",
+    "verifyPasskeyBtn": "Weryfikuj za pomocą klucza dostępu",
+    "use2FAInstead": "Nie masz klucza? Użyj kodu weryfikacyjnego 2FA",
+    "backToLogin": "Powrót do logowania"
   },
   "users": {
     "allActive": "Wszyscy Aktywni",
@@ -543,7 +550,9 @@
     "view": "Zobacz",
     "tapToExpand": "Dotknij, aby rozwinąć tekst",
     "generating": "Generowanie...",
-    "reset": "Resetuj"
+    "reset": "Resetuj",
+    "verifying": "Weryfikacja...",
+    "deleting": "Usuwanie..."
   },
   "lang": {
     "es": "Español",
@@ -798,7 +807,8 @@
     "backupCodesCopied": "Kody zapasowe skopiowane do schowka.",
     "twoFactorMethodLabel": "Metoda:",
     "regenerateBackupCodes": "Generuj kody ponownie",
-    "disablePromptMsg": "Aby wyłączyć 2FA, wprowadź bieżący kod weryfikacyjny:"
+    "disablePromptMsg": "Aby wyłączyć 2FA, wprowadź bieżący kod weryfikacyjny:",
+    "incorrectPassword": "Wprowadzone hasło jest nieprawidłowe."
   },
   "register": {
     "company": "Firma / Miejsce Pracy",
@@ -1096,7 +1106,28 @@
     "registerError": "Błąd rejestracji klucza dostępu.",
     "deleteConfirm": "Czy na pewno chcesz odłączyć ten klucz dostępu?",
     "deleteSuccess": "Klucz dostępu został pomyślnie odłączony.",
-    "deleteError": "Nie udało się usunąć klucza dostępu."
+    "deleteError": "Nie udało się usunąć klucza dostępu.",
+    "promptTitle": "Włączyć logowanie biometryczne?",
+    "promptSubtitle": "Wykryto, że to urządzenie obsługuje uwierzytelnianie biometryczne ({{device}}). Powiąż je teraz, aby logować się jednym dotknięciem bez wpisywania hasła.",
+    "promptBenefit1": "Błyskawiczne logowanie odciskiem palca, twarzą lub kodem PIN",
+    "promptBenefit2": "Zaawansowane bezpieczeństwo kryptograficzne odporne na phishing",
+    "promptBenefit3": "Brak konieczności pamiętania i wpisywania hasła",
+    "promptAccept": "Powiąż to urządzenie",
+    "promptDismiss": "Nie teraz",
+    "promptDontAskAgain": "Nie pytaj ponownie na tym urządzeniu",
+    "promptSuccess": "Klucz dostępu skonfigurowany pomyślnie! Następnym razem zalogujesz się jednym dotknięciem.",
+    "promptCancelled": "Rejestracja klucza anulowana.",
+    "detected": "wykryto",
+    "confirmDeleteTitle": "Weryfikacja bezpieczeństwa",
+    "confirmDeleteSubtitle": "Wprowadź hasło lub zweryfikuj klucz dostępu, aby potwierdzić odłączenie.",
+    "confirmDeleteWarning": "Czy na pewno chcesz usunąć klucz",
+    "confirmDeleteNote": "Ze względów bezpieczeństwa musisz zweryfikować swoją tożsamość przed kontynuowaniem.",
+    "promptToUsePasskey": "Kliknij przycisk, aby aktywować czytnik biometryczny (Face ID, Touch ID, Windows Hello lub klucz sprzętowy).",
+    "verifyPasskeyBtn": "Zweryfikuj klucz i usuń",
+    "usePasswordFallback": "Nie możesz użyć klucza dostępu? Użyj hasła",
+    "backToPasskey": "← Wróć do weryfikacji kluczem dostępu",
+    "confirmDeleteBtn": "Potwierdź i usuń",
+    "verificationCancelled": "Weryfikacja klucza dostępu anulowana."
   },
   "pagination": {
     "first": "Pierwsza strona",

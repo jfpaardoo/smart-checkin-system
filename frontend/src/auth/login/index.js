@@ -5,10 +5,22 @@ import { useToast } from "../../components/ToastProvider";
 import { Turnstile } from '@marsidev/react-turnstile';
 import tokenService from "../../services/token.service";
 import { FaSignInAlt, FaKey, FaFingerprint } from "react-icons/fa";
-import { isWebAuthnSupported, loginWithPasskey } from "../../util/webauthnUtil";
+import { 
+  isWebAuthnSupported, 
+  loginWithPasskey, 
+  isPlatformAuthenticatorAvailable, 
+  detectDeviceType, 
+  hasPasskeyOnDevice, 
+  markPasskeyOnDevice, 
+  isPasskeyPromptDismissed, 
+  dismissPasskeyPrompt, 
+  registerPasskey 
+} from "../../util/webauthnUtil";
 import { useCaptchaSiteKey } from "../../hooks/useCaptchaSiteKey";
 import { useTheme } from "../../context/ThemeContext";
 import TwoFactorLoginForm from "./components/TwoFactorLoginForm";
+import PasskeyPromptModal from "./components/PasskeyPromptModal";
+import PasskeyVerifyLoginForm from "./components/PasskeyVerifyLoginForm";
 
 export default function Login() {
   const { t } = useTranslation();
@@ -19,13 +31,20 @@ export default function Login() {
   const navigate = useNavigate();
   const [requires2FA, setRequires2FA] = useState(false);
   const [username2FA, setUsername2FA] = useState("");
+  const [requiresPasskey, setRequiresPasskey] = useState(false);
+  const [passkeyUsername, setPasskeyUsername] = useState("");
+  const [canFallbackTo2FA, setCanFallbackTo2FA] = useState(false);
   const [loading, setLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState(null);
   const [captchaKey, setCaptchaKey] = useState(0);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPasskeyPrompt, setShowPasskeyPrompt] = useState(false);
+  const [promptLoading, setPromptLoading] = useState(false);
+  const [pendingUser, setPendingUser] = useState(null);
   const isPasskeySupported = isWebAuthnSupported();
+  const detectedDevice = detectDeviceType();
   const notifiedReasonRef = useRef(false);
 
   useEffect(() => {
@@ -49,6 +68,56 @@ export default function Login() {
     }
   }, [toast, t]);
 
+  async function processSuccessfulLogin(userData) {
+    tokenService.setUser(userData);
+
+    const isPlatformAuth = await isPlatformAuthenticatorAvailable();
+    const userId = userData.id;
+    const isEnrolled = hasPasskeyOnDevice(userId);
+    const isDismissed = isPasskeyPromptDismissed(userId);
+
+    if (isPlatformAuth && !isEnrolled && !isDismissed) {
+      setPendingUser(userData);
+      setShowPasskeyPrompt(true);
+    } else {
+      toast.success(t('login.success', 'Sesión iniciada con éxito'));
+      setTimeout(() => { navigate("/"); }, 1000);
+    }
+  }
+
+  async function handlePasskeyPromptAccept() {
+    setPromptLoading(true);
+    try {
+      await registerPasskey(`Mi ${detectedDevice}`);
+      if (pendingUser?.id) {
+        markPasskeyOnDevice(pendingUser.id);
+      }
+      toast.success(t('passkeys.promptSuccess', '¡Llave de acceso configurada con éxito! La próxima vez podrás entrar con un solo toque.'));
+      setShowPasskeyPrompt(false);
+      setTimeout(() => { navigate("/"); }, 800);
+    } catch (error) {
+      console.warn('Passkey prompt registration cancelled or failed:', error);
+      if (error.name === 'NotAllowedError' || error.message?.includes('cancelled')) {
+        toast.info(t('passkeys.promptCancelled', 'Vinculación cancelada.'));
+      } else {
+        toast.error(error.message || t('passkeys.registerError', 'Error al vincular la llave de acceso.'));
+      }
+      setShowPasskeyPrompt(false);
+      setTimeout(() => { navigate("/"); }, 800);
+    } finally {
+      setPromptLoading(false);
+    }
+  }
+
+  function handlePasskeyPromptDismiss(dontAskAgain) {
+    if (dontAskAgain && pendingUser?.id) {
+      dismissPasskeyPrompt(pendingUser.id);
+    }
+    setShowPasskeyPrompt(false);
+    toast.success(t('login.success', 'Sesión iniciada con éxito'));
+    navigate("/");
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
 
@@ -71,14 +140,18 @@ export default function Login() {
       const data = await response.json();
 
       if (response.status === 200) {
-        if (data.requiresTwoFactor) {
+        if (data.requiresPasskey) {
+          setRequiresPasskey(true);
+          setPasskeyUsername(data.username);
+          setCanFallbackTo2FA(Boolean(data.requiresTwoFactor));
+          toast.info(t('login.passkeyRequiredNotice', "Tu cuenta requiere verificación con Llave de Acceso (Passkey)."));
+          handleVerifyPasskeyChallenge(data.username);
+        } else if (data.requiresTwoFactor) {
           setRequires2FA(true);
           setUsername2FA(data.username);
           toast.info(t('login.2faInfo', "Introduce el código de tu aplicación de autenticación (2FA)."));
         } else {
-          toast.success(t('login.success', 'Sesión iniciada con éxito'));
-          tokenService.setUser(data);
-          setTimeout(() => { navigate("/"); }, 1000);
+          await processSuccessfulLogin(data);
         }
       } else if (data.message === "Bad Credentials!") {
         setCaptchaToken(null);
@@ -100,10 +173,34 @@ export default function Login() {
     }
   }
 
+  async function handleVerifyPasskeyChallenge(targetUser) {
+    const userToVerify = targetUser || passkeyUsername;
+    setLoading(true);
+    try {
+      const data = await loginWithPasskey(userToVerify);
+      if (data?.id) {
+        markPasskeyOnDevice(data.id);
+      }
+      toast.success(t('login.passkeySuccess', '¡Acceso biométrico verificado con éxito!'));
+      tokenService.setUser(data);
+      setTimeout(() => { navigate("/"); }, 800);
+    } catch (error) {
+      console.warn("Passkey challenge verification cancelled or failed:", error);
+      if (error.name !== 'NotAllowedError' && !error.message?.includes('cancelled')) {
+        toast.error(error.message || t('login.passkeyError', 'Error al verificar la llave de acceso.'));
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handlePasskeyLogin() {
     setLoading(true);
     try {
       const data = await loginWithPasskey(username.trim() || null);
+      if (data?.id) {
+        markPasskeyOnDevice(data.id);
+      }
       toast.success(t('login.passkeySuccess', '¡Acceso biométrico verificado con éxito!'));
       tokenService.setUser(data);
       setTimeout(() => { navigate("/"); }, 800);
@@ -140,9 +237,7 @@ export default function Login() {
       const data = await response.json();
 
       if (response.status === 200) {
-        toast.success(t('login.success'));
-        tokenService.setUser(data);
-        setTimeout(() => { navigate("/"); }, 1000);
+        await processSuccessfulLogin(data);
       } else {
         throw new Error(data.message || "Código 2FA o código de recuperación incorrecto.");
       }
@@ -155,6 +250,148 @@ export default function Login() {
 
   const glassButtonClass = "w-full mt-2 h-[50px] rounded-2xl font-bold text-slate-950 dark:text-slate-950 bg-[#b3c34c] hover:bg-[#a3b33d] shadow-[0_8px_25px_rgba(179,195,76,0.35)] transition-all duration-200 active:scale-95 flex justify-center items-center gap-2 cursor-pointer border-0";
 
+  const renderContent = () => {
+    if (requiresPasskey) {
+      return (
+        <PasskeyVerifyLoginForm
+          username={passkeyUsername}
+          loading={loading}
+          onVerify={() => handleVerifyPasskeyChallenge(passkeyUsername)}
+          canFallbackTo2FA={canFallbackTo2FA}
+          onFallbackTo2FA={() => {
+            setRequiresPasskey(false);
+            setRequires2FA(true);
+            setUsername2FA(passkeyUsername);
+          }}
+          onCancel={() => {
+            setRequiresPasskey(false);
+            setPasskeyUsername("");
+            setCaptchaToken(null);
+            setCaptchaKey((k) => k + 1);
+          }}
+          t={t}
+          glassButtonClass={glassButtonClass}
+        />
+      );
+    }
+
+    if (requires2FA) {
+      return (
+        <TwoFactorLoginForm
+          username2FA={username2FA}
+          loading={loading}
+          onVerify={handleVerify2FA}
+          t={t}
+          glassButtonClass={glassButtonClass}
+        />
+      );
+    }
+
+    return (
+      <div className="flex flex-col gap-4">
+        {/* Iniciar Sesión con Passkey */}
+        {isPasskeySupported && (
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={handlePasskeyLogin}
+              disabled={loading}
+              className="w-full min-h-[48px] py-2.5 px-3.5 rounded-2xl font-bold text-slate-800 dark:text-slate-200 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/80 dark:border-white/10 shadow-sm hover:bg-white dark:hover:bg-slate-700 hover:shadow-md transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer text-xs sm:text-sm text-center"
+            >
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <FaFingerprint className="text-[#73841e] dark:text-[#d4e84a] text-base sm:text-lg" />
+                <FaKey className="text-[#8fa228] dark:text-[#d4e84a] text-xs sm:text-sm" />
+              </div>
+              <span className="leading-tight">{t('login.passkeyBtn', 'Acceder con Llave de Acceso (Biometría)')}</span>
+            </button>
+
+            <div className="flex items-center gap-3 my-2">
+              <div className="h-px bg-white/40 dark:bg-white/10 flex-1"></div>
+              <span className="text-[11px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                {t('common.or', 'o con credenciales')}
+              </span>
+              <div className="h-px bg-white/40 dark:bg-white/10 flex-1"></div>
+            </div>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* Input Usuario */}
+          <div className="flex flex-col w-full text-left">
+            <label htmlFor="username" className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5 ml-1">
+              {t('login.usernameOrEmail', 'Usuario o Correo Electrónico')} <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="username"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={loading}
+              placeholder={t('login.usernamePlaceholder', 'Introduce tu usuario o correo')}
+              autoComplete="username webauthn"
+              className="w-full px-4 py-3 rounded-2xl border border-white/60 dark:border-white/10 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm focus:border-[#b3c34c] dark:focus:border-[#d4e84a] focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition-all duration-200 text-slate-800 dark:text-slate-100 shadow-inner text-sm font-medium"
+            />
+          </div>
+
+          {/* Input Contraseña */}
+          <div className="flex flex-col w-full text-left">
+            <div className="flex justify-between items-center mb-1.5 ml-1">
+              <label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                {t('login.password', 'Contraseña')} <span className="text-rose-500">*</span>
+              </label>
+              <Link to="/forgot-password" className="text-xs text-[#68771b] dark:text-[#d4e84a] hover:underline font-semibold">
+                {t('login.forgotPassword', '¿Olvidaste tu contraseña?')}
+              </Link>
+            </div>
+            <input
+              type="password"
+              id="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+              placeholder="••••••••"
+              autoComplete="current-password"
+              className="w-full px-4 py-3 rounded-2xl border border-white/60 dark:border-white/10 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm focus:border-[#b3c34c] dark:focus:border-[#d4e84a] focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition-all duration-200 text-slate-800 dark:text-slate-100 shadow-inner text-sm font-medium"
+            />
+          </div>
+
+          <div className="flex justify-center items-center my-1 w-full overflow-hidden rounded-2xl">
+            <div style={{ transform: 'scale(var(--turnstile-scale, 1))', transformOrigin: 'center center' }}
+              ref={el => {
+                if (el) {
+                  const parentWidth = el.parentElement?.offsetWidth || 300;
+                  const scale = Math.min(1, parentWidth / 310);
+                  el.style.setProperty('--turnstile-scale', scale);
+                  document.documentElement.style.setProperty('--turnstile-scale', scale);
+                }
+              }}
+            >
+              <Turnstile 
+                key={`${siteKey}-${captchaKey}-${isDark ? 'dark' : 'light'}`}
+                siteKey={siteKey} 
+                onSuccess={(token) => setCaptchaToken(token)}
+                onError={() => setCaptchaToken(null)}
+                onExpire={() => setCaptchaToken(null)}
+                options={{ theme: isDark ? 'dark' : 'light' }}
+              />
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={loading || !captchaToken}
+            className={`${glassButtonClass} disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            <FaSignInAlt />
+            <span>{loading ? t('common.loading', 'Iniciando...') : t('login.title', 'Iniciar Sesión')}</span>
+          </button>
+        </form>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] w-full px-4 py-8 overflow-y-auto">
       
@@ -164,119 +401,18 @@ export default function Login() {
           {t('login.title', 'Iniciar Sesión')}
         </h1>
 
-        {!requires2FA ? (
-          <div className="flex flex-col gap-4">
-            
-            {/* Iniciar Sesión con Passkey */}
-            {isPasskeySupported && (
-              <div className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={handlePasskeyLogin}
-                  disabled={loading}
-                  className="w-full min-h-[48px] py-2.5 px-3.5 rounded-2xl font-bold text-slate-800 dark:text-slate-200 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-white/80 dark:border-white/10 shadow-sm hover:bg-white dark:hover:bg-slate-700 hover:shadow-md transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer text-xs sm:text-sm text-center"
-                >
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <FaFingerprint className="text-[#73841e] dark:text-[#d4e84a] text-base sm:text-lg" />
-                    <FaKey className="text-[#8fa228] dark:text-[#d4e84a] text-xs sm:text-sm" />
-                  </div>
-                  <span className="leading-tight">{t('login.passkeyBtn', 'Acceder con Llave de Acceso (Biometría)')}</span>
-                </button>
-
-                <div className="flex items-center gap-3 my-2">
-                  <div className="h-px bg-white/40 dark:bg-white/10 flex-1"></div>
-                  <span className="text-[11px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                    {t('common.or', 'o con credenciales')}
-                  </span>
-                  <div className="h-px bg-white/40 dark:bg-white/10 flex-1"></div>
-                </div>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              {/* Input Usuario */}
-              <div className="flex flex-col w-full text-left">
-                <label htmlFor="username" className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5 ml-1">
-                  {t('login.usernameOrEmail', 'Usuario o Correo Electrónico')} <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="username"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  disabled={loading}
-                  placeholder={t('login.usernamePlaceholder', 'Introduce tu usuario o correo')}
-                  autoComplete="username"
-                  className="w-full px-4 py-3 rounded-2xl border border-white/60 dark:border-white/10 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm focus:border-[#b3c34c] dark:focus:border-[#d4e84a] focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition-all duration-200 text-slate-800 dark:text-slate-100 shadow-inner text-sm font-medium"
-                />
-              </div>
-
-              {/* Input Contraseña */}
-              <div className="flex flex-col w-full text-left">
-                <div className="flex justify-between items-center mb-1.5 ml-1">
-                  <label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                    {t('login.password', 'Contraseña')} <span className="text-rose-500">*</span>
-                  </label>
-                  <Link to="/forgot-password" className="text-xs text-[#68771b] dark:text-[#d4e84a] hover:underline font-semibold">
-                    {t('login.forgotPassword', '¿Olvidaste tu contraseña?')}
-                  </Link>
-                </div>
-                <input
-                  type="password"
-                  id="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                  className="w-full px-4 py-3 rounded-2xl border border-white/60 dark:border-white/10 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm focus:border-[#b3c34c] dark:focus:border-[#d4e84a] focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition-all duration-200 text-slate-800 dark:text-slate-100 shadow-inner text-sm font-medium"
-                />
-              </div>
-
-              <div className="flex justify-center items-center my-1 w-full overflow-hidden rounded-2xl">
-                <div style={{ transform: 'scale(var(--turnstile-scale, 1))', transformOrigin: 'center center' }}
-                  ref={el => {
-                    if (el) {
-                      const parentWidth = el.parentElement?.offsetWidth || 300;
-                      const scale = Math.min(1, parentWidth / 310);
-                      el.style.setProperty('--turnstile-scale', scale);
-                      document.documentElement.style.setProperty('--turnstile-scale', scale);
-                    }
-                  }}
-                >
-                  <Turnstile 
-                    key={`${siteKey}-${captchaKey}-${isDark ? 'dark' : 'light'}`}
-                    siteKey={siteKey} 
-                    onSuccess={(token) => setCaptchaToken(token)}
-                    onError={() => setCaptchaToken(null)}
-                    onExpire={() => setCaptchaToken(null)}
-                    options={{ theme: isDark ? 'dark' : 'light' }}
-                  />
-                </div>
-              </div>
-
-              <button 
-                type="submit" 
-                disabled={loading || !captchaToken}
-                className={`${glassButtonClass} disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                <FaSignInAlt />
-                <span>{loading ? t('common.loading', 'Iniciando...') : t('login.title', 'Iniciar Sesión')}</span>
-              </button>
-            </form>
-          </div>
-        ) : (
-          <TwoFactorLoginForm
-            username2FA={username2FA}
-            loading={loading}
-            onVerify={handleVerify2FA}
-            t={t}
-            glassButtonClass={glassButtonClass}
-          />
-        )}
+        {renderContent()}
       </div>
+
+      {/* Modal de sugerencia de Passkey tras inicio de sesión exitoso */}
+      <PasskeyPromptModal
+        isOpen={showPasskeyPrompt}
+        deviceType={detectedDevice}
+        loading={promptLoading}
+        onAccept={handlePasskeyPromptAccept}
+        onDismiss={handlePasskeyPromptDismiss}
+        t={t}
+      />
 
       <div className="flex flex-col gap-2 mt-8 text-center text-xs text-slate-500 dark:text-slate-400 z-10">
         <div>

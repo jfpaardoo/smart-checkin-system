@@ -15,5 +15,7 @@ public interface UserPasskeyRepository extends JpaRepository<UserPasskey, Intege
 
     Optional<UserPasskey> findByIdAndUserId(Integer id, Integer userId);
 
+    boolean existsByUserId(Integer userId);
+
     void deleteByIdAndUserId(Integer id, Integer userId);
 }

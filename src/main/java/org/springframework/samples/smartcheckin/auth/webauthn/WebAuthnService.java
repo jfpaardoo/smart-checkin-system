@@ -27,6 +27,7 @@ public class WebAuthnService {
     private static final String PUBLIC_KEY_TYPE = "public-key";
     private static final String PREFERRED = "preferred";
     private static final String DEFAULT_DEVICE_TYPE = "Biometric Device";
+    private static final String LOCALHOST = "localhost";
 
     private final UserPasskeyRepository passkeyRepository;
     private final UserRepository userRepository;
@@ -38,6 +39,12 @@ public class WebAuthnService {
 
     @Value("${app.webauthn.rpId:localhost}")
     private String rpId;
+
+    @Value("${app.frontend.url:http://localhost:3000}")
+    private String frontendUrl;
+
+    @Value("${app.cors.allowed-origins:http://localhost:3000}")
+    private String allowedOriginsConfig;
 
     /**
      * Genera las opciones para crear una nueva credencial (registro de Passkey)
@@ -61,7 +68,7 @@ public class WebAuthnService {
                 .challenge(challenge)
                 .rp(RegistrationOptionsResponse.Rp.builder()
                         .name(rpName)
-                        .id(rpId.equals("localhost") ? null : rpId)
+                        .id(LOCALHOST.equalsIgnoreCase(rpId) ? null : rpId)
                         .build())
                 .user(RegistrationOptionsResponse.UserDetails.builder()
                         .id(userIdBase64)
@@ -157,7 +164,7 @@ public class WebAuthnService {
         return LoginOptionsResponse.builder()
                 .challenge(challenge)
                 .timeout(60000L)
-                .rpId(rpId.equals("localhost") ? null : rpId)
+                .rpId(LOCALHOST.equalsIgnoreCase(rpId) ? null : rpId)
                 .userVerification(PREFERRED)
                 .allowCredentials(allowCredentials)
                 .build();
@@ -206,6 +213,17 @@ public class WebAuthnService {
     }
 
     /**
+     * Comprueba si el usuario tiene al menos una Passkey registrada
+     */
+    @Transactional(readOnly = true)
+    public boolean hasPasskeys(Integer userId) {
+        if (userId == null) {
+            return false;
+        }
+        return passkeyRepository.existsByUserId(userId);
+    }
+
+    /**
      * Elimina una llave registrada por el usuario
      */
     @Transactional
@@ -231,12 +249,45 @@ public class WebAuthnService {
             if (!valid) {
                 throw new IllegalArgumentException("El desafío criptográfico (challenge) ha expirado o es inválido.");
             }
+
+            JsonNode originNode = root.get("origin");
+            if (originNode != null && !originNode.isNull() && !originNode.asText().isBlank()) {
+                String origin = originNode.asText();
+                if (!isOriginAllowed(origin)) {
+                    throw new IllegalArgumentException("Origen de la petición WebAuthn no autorizado: " + origin);
+                }
+            }
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
             log.error("Error al procesar clientDataJSON", e);
             throw new IllegalArgumentException("Error al verificar los datos del cliente WebAuthn.");
         }
+    }
+
+    private boolean isOriginAllowed(String clientOrigin) {
+        if (clientOrigin == null || clientOrigin.isBlank()) {
+            return false;
+        }
+        String normalizedClient = clientOrigin.trim().toLowerCase();
+
+        if (LOCALHOST.equalsIgnoreCase(rpId) && (normalizedClient.startsWith("http://" + LOCALHOST + ":") || normalizedClient.startsWith("http://127.0.0.1:"))) {
+            return true;
+        }
+
+        if (frontendUrl != null && !frontendUrl.isBlank() && normalizedClient.equalsIgnoreCase(frontendUrl.trim())) {
+            return true;
+        }
+
+        if (allowedOriginsConfig != null && !allowedOriginsConfig.isBlank()) {
+            for (String allowed : allowedOriginsConfig.split(",")) {
+                if (normalizedClient.equalsIgnoreCase(allowed.trim())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private PasskeyDTO toDTO(UserPasskey pk) {

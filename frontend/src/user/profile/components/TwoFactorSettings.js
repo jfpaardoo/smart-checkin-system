@@ -14,6 +14,9 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
   const [showDisablePrompt, setShowDisablePrompt] = useState(false);
   const [disableCode, setDisableCode] = useState("");
 
+  const [showRegeneratePrompt, setShowRegeneratePrompt] = useState(false);
+  const [regenerateCode, setRegenerateCode] = useState("");
+
   const [backupCodes, setBackupCodes] = useState(null);
   const [copiedCodes, setCopiedCodes] = useState(false);
 
@@ -78,19 +81,20 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
     }
   };
 
-  const handleRegenerateBackupCodes = async () => {
-    const code = window.prompt(t('profile.enter2FACodeToRegenerate', 'Introduce tu código 2FA de 6 dígitos para generar nuevos códigos de recuperación:'));
-    if (code?.trim().length !== 6) {
-      if (code !== null) toast.error(t('profile.codeMustBe6Digits', 'El código debe tener 6 dígitos.'));
+  const handleConfirmRegenerate = async () => {
+    if (regenerateCode.trim().length !== 6) {
+      toast.error(t('profile.codeMustBe6Digits', 'El código debe tener 6 dígitos.'));
       return;
     }
     setLoading2FA(true);
     try {
-      const res = await api.post("/users/2fa/backup-codes/regenerate", { code: code.trim() });
+      const res = await api.post("/users/2fa/backup-codes/regenerate", { code: regenerateCode.trim() });
       if (res.data?.backupCodes?.length > 0) {
         setBackupCodes(res.data.backupCodes);
         toast.success(t('profile.backupCodesRegenerated', 'Nuevos códigos de recuperación generados con éxito.'));
       }
+      setShowRegeneratePrompt(false);
+      setRegenerateCode("");
     } catch (err) {
       const msg = err.response?.data?.message || t('profile.backupCodesRegenerateError', 'Error al regenerar códigos. Verifica tu código 2FA.');
       toast.error(msg);
@@ -141,7 +145,7 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
       <div className="flex flex-col sm:flex-row gap-2 mt-2">
         <button type="button"
           className={`${glassButtonPrimarySmallClass} flex-1`}
-          onClick={handleRegenerateBackupCodes}
+          onClick={() => { setShowRegeneratePrompt(true); setShowDisablePrompt(false); }}
           disabled={loading2FA}
         >
           <FaRedo size={12} />
@@ -149,12 +153,44 @@ export default function TwoFactorSettings({ userData, setUserData, t, toast }) {
         </button>
         <button type="button"
           className="px-4 py-2.5 rounded-xl font-bold text-xs text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer border-0 bg-transparent"
-          onClick={() => setShowDisablePrompt(true)}
+          onClick={() => { setShowDisablePrompt(true); setShowRegeneratePrompt(false); }}
           disabled={loading2FA}
         >
           {t('profile.disable2FA', 'Desactivar 2FA')}
         </button>
       </div>
+
+      {showRegeneratePrompt && (
+        <div className="mt-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex flex-col gap-3">
+          <p className="text-xs font-semibold text-amber-800 dark:text-amber-200 mb-0">
+            {t('profile.regeneratePromptMsg', 'Para regenerar tus códigos de recuperación, introduce tu código 2FA actual:')}
+          </p>
+          <input
+            type="text"
+            inputMode="numeric"
+            maxLength="6"
+            placeholder="000000"
+            value={regenerateCode}
+            onChange={(e) => setRegenerateCode(e.target.value.replace(/\D/g, ""))}
+            className="w-full text-center text-xl tracking-[0.3rem] py-2.5 rounded-xl border border-white/60 dark:border-white/10 bg-white/70 dark:bg-slate-800/70 text-slate-800 dark:text-slate-100 focus:border-amber-400 outline-none transition font-mono"
+          />
+          <div className="flex gap-3">
+            <button type="button"
+              className={glassButtonSecondaryClass}
+              onClick={() => { setShowRegeneratePrompt(false); setRegenerateCode(""); }}
+            >
+              {t('common.cancel', 'Cancelar')}
+            </button>
+            <button type="button"
+              className={glassButtonPrimarySmallClass}
+              onClick={handleConfirmRegenerate}
+              disabled={regenerateCode.length !== 6 || loading2FA}
+            >
+              {loading2FA ? "..." : t('common.confirm', 'Confirmar')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {showDisablePrompt && (
         <div className="mt-4 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex flex-col gap-3">

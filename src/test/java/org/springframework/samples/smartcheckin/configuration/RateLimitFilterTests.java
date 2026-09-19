@@ -13,7 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
-@SuppressWarnings("null")
+@SuppressWarnings({"null", "java:S100", "java:S1313"})
 class RateLimitFilterTests {
 
     private RateLimitFilter rateLimitFilter;
@@ -48,6 +48,24 @@ class RateLimitFilterTests {
         rateLimitFilter.doFilterInternal(request, response, filterChain);
         verify(response).setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
         assertEquals("Too many requests. Please try again later.", stringWriter.toString());
+    }
+
+    @Test
+    void testRateLimit_SensitiveEndpoints_ShouldApplyStrictLimit() throws Exception {
+        when(request.getRequestURI()).thenReturn("/api/v1/auth/verify-2fa");
+        when(request.getRemoteAddr()).thenReturn("192.168.1.105");
+
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter);
+        when(response.getWriter()).thenReturn(printWriter);
+
+        for (int i = 0; i < 10; i++) {
+            rateLimitFilter.doFilterInternal(request, response, filterChain);
+        }
+        verify(filterChain, times(10)).doFilter(request, response);
+
+        rateLimitFilter.doFilterInternal(request, response, filterChain);
+        verify(response).setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
     }
 
     @Test

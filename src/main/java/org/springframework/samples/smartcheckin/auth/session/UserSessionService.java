@@ -22,47 +22,59 @@ public class UserSessionService {
 
     @Transactional
     public void registerOrUpdateSession(String username, String token, String ipAddress, String userAgent) {
-        if (username == null || token == null) return;
+        if (username == null || token == null) {
+            return;
+        }
         String tokenHash = hashToken(token);
-
         List<UserSession> existingList = userSessionRepository.findAllByTokenHash(tokenHash);
         if (!existingList.isEmpty()) {
-            UserSession session = existingList.get(0);
-            session.setLastActivityAt(LocalDateTime.now(java.time.ZoneId.systemDefault()));
-            session.setIpAddress(ipAddress);
-            session.setActive(true);
-            userSessionRepository.save(session);
-            // Clean up any duplicate records if they were created concurrently
-            if (existingList.size() > 1) {
-                for (int i = 1; i < existingList.size(); i++) {
-                    userSessionRepository.delete(existingList.get(i));
-                }
-            }
+            updateExistingSession(existingList, ipAddress);
         } else {
-            String deviceInfo = parseDeviceInfo(userAgent);
-            // Desactivar sesiones anteriores del mismo usuario en el mismo dispositivo para evitar duplicados
-            try {
-                List<UserSession> sameDeviceSessions = userSessionRepository.findAllByUsernameAndDeviceInfoAndActiveTrue(username, deviceInfo);
-                if (sameDeviceSessions != null) {
-                    for (UserSession s : sameDeviceSessions) {
-                        s.setActive(false);
-                        userSessionRepository.save(s);
-                    }
-                }
-            } catch (Exception e) {
-                log.debug("Could not cleanup same device sessions", e);
-            }
+            createNewSession(username, tokenHash, ipAddress, userAgent);
+        }
+    }
 
-            UserSession newSession = UserSession.builder()
-                    .username(username)
-                    .tokenHash(tokenHash)
-                    .ipAddress(ipAddress)
-                    .userAgent(userAgent != null ? userAgent.substring(0, Math.min(userAgent.length(), 500)) : "Desconocido")
-                    .deviceInfo(deviceInfo)
-                    .lastActivityAt(LocalDateTime.now(java.time.ZoneId.systemDefault()))
-                    .active(true)
-                    .build();
-            userSessionRepository.save(newSession);
+    private void updateExistingSession(List<UserSession> existingList, String ipAddress) {
+        UserSession session = existingList.get(0);
+        session.setLastActivityAt(LocalDateTime.now(java.time.ZoneId.systemDefault()));
+        session.setIpAddress(ipAddress);
+        session.setActive(true);
+        userSessionRepository.save(session);
+        // Clean up any duplicate records if they were created concurrently
+        if (existingList.size() > 1) {
+            for (int i = 1; i < existingList.size(); i++) {
+                userSessionRepository.delete(existingList.get(i));
+            }
+        }
+    }
+
+    private void createNewSession(String username, String tokenHash, String ipAddress, String userAgent) {
+        String deviceInfo = parseDeviceInfo(userAgent);
+        deactivateSameDeviceSessions(username, deviceInfo);
+
+        UserSession newSession = UserSession.builder()
+                .username(username)
+                .tokenHash(tokenHash)
+                .ipAddress(ipAddress)
+                .userAgent(userAgent != null ? userAgent.substring(0, Math.min(userAgent.length(), 500)) : "Desconocido")
+                .deviceInfo(deviceInfo)
+                .lastActivityAt(LocalDateTime.now(java.time.ZoneId.systemDefault()))
+                .active(true)
+                .build();
+        userSessionRepository.save(newSession);
+    }
+
+    private void deactivateSameDeviceSessions(String username, String deviceInfo) {
+        try {
+            List<UserSession> sameDeviceSessions = userSessionRepository.findAllByUsernameAndDeviceInfoAndActiveTrue(username, deviceInfo);
+            if (sameDeviceSessions != null) {
+                for (UserSession s : sameDeviceSessions) {
+                    s.setActive(false);
+                    userSessionRepository.save(s);
+                }
+            }
+        } catch (Exception e) {
+            log.debug("Could not cleanup same device sessions", e);
         }
     }
 
@@ -130,6 +142,16 @@ public class UserSessionService {
             }
         }
         return revokedCount;
+    }
+
+    @Transactional
+    public void revokeAllUserSessions(String username) {
+        if (username == null) return;
+        List<UserSession> sessions = userSessionRepository.findAllByUsernameAndActiveTrueOrderByLastActivityAtDesc(username);
+        for (UserSession s : sessions) {
+            s.setActive(false);
+            userSessionRepository.save(s);
+        }
     }
 
     @Transactional(readOnly = true)

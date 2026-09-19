@@ -89,8 +89,15 @@
     "verifyAndEnter": "Verify & Enter",
     "forgotPassword": "Forgot your password?",
     "privacyPolicy": "Privacy Policy",
-    "backupCodeInvalidFormat": "The recovery code must be in XXXX-XXXX format.",
-    "usernamePlaceholder": "Enter username or email"
+    "backupCodeInvalidFormat": "The recovery code must be in the format XXXX-XXXX.",
+    "usernamePlaceholder": "Enter your username or email",
+    "passkeyRequiredNotice": "Your account requires Passkey biometric verification.",
+    "passkeyRequiredHeader": "Passkey Verification Required",
+    "passkeyRequiredPrompt": "Your account has a Passkey configured. For security, please verify your identity on this device to sign in as",
+    "passkeyVerificationHint": "Click the button below to trigger Touch ID, Face ID, Windows Hello, or your security key.",
+    "verifyPasskeyBtn": "Verify with Passkey",
+    "use2FAInstead": "Don't have your key? Use 2FA code instead",
+    "backToLogin": "Back to login"
   },
   "users": {
     "allActive": "All Active",
@@ -565,7 +572,9 @@
     "view": "View",
     "tapToExpand": "Tap to expand text",
     "generating": "Generating...",
-    "reset": "Reset"
+    "reset": "Reset",
+    "verifying": "Verifying...",
+    "deleting": "Deleting..."
   },
   "lang": {
     "es": "Español",
@@ -820,7 +829,8 @@
     "backupCodesCopied": "Backup codes copied to clipboard.",
     "twoFactorMethodLabel": "Method:",
     "regenerateBackupCodes": "Regenerate Codes",
-    "disablePromptMsg": "To disable 2FA, enter a current verification code:"
+    "disablePromptMsg": "To disable 2FA, enter a current verification code:",
+    "incorrectPassword": "The password entered is incorrect."
   },
   "register": {
     "company": "Company / Workspace",
@@ -1118,7 +1128,28 @@
     "registerError": "Failed to register passkey.",
     "deleteConfirm": "Are you sure you want to unlink this passkey?",
     "deleteSuccess": "Passkey unlinked successfully.",
-    "deleteError": "Failed to delete passkey."
+    "deleteError": "Failed to delete passkey.",
+    "promptTitle": "Enable biometric sign-in?",
+    "promptSubtitle": "We detected that this device supports biometric authentication ({{device}}). Link it now to sign in with a single tap without entering your password.",
+    "promptBenefit1": "Instant sign-in with fingerprint, face recognition, or device PIN",
+    "promptBenefit2": "Advanced cryptographic protection resistant to phishing",
+    "promptBenefit3": "No need to remember or re-enter your password",
+    "promptAccept": "Link this device",
+    "promptDismiss": "Not now",
+    "promptDontAskAgain": "Do not ask again on this device",
+    "promptSuccess": "Passkey configured successfully! Next time you can log in with a single tap.",
+    "promptCancelled": "Passkey enrollment cancelled.",
+    "detected": "detected",
+    "confirmDeleteTitle": "Security Verification",
+    "confirmDeleteSubtitle": "Enter your password or validate your Passkey to confirm unlinking.",
+    "confirmDeleteWarning": "Are you sure you want to delete the key",
+    "confirmDeleteNote": "For security reasons, you must verify your identity before proceeding.",
+    "promptToUsePasskey": "Click the button to activate your biometric reader (Face ID, Touch ID, Windows Hello, or hardware key).",
+    "verifyPasskeyBtn": "Verify Passkey and Delete",
+    "usePasswordFallback": "Can't use Passkey? Use password",
+    "backToPasskey": "← Back to Passkey validation",
+    "confirmDeleteBtn": "Confirm & Delete",
+    "verificationCancelled": "Passkey verification cancelled."
   },
   "pagination": {
     "first": "First page",

@@ -90,7 +90,14 @@
     "forgotPassword": "Esqueceu sua senha?",
     "privacyPolicy": "Política de Privacidade",
     "backupCodeInvalidFormat": "O código de recuperação deve ter o formato XXXX-XXXX.",
-    "usernamePlaceholder": "Introduza o seu utilizador ou e-mail"
+    "usernamePlaceholder": "Introduza o seu utilizador ou e-mail",
+    "passkeyRequiredNotice": "A sua conta requer verificação com Chave de Acesso (Passkey).",
+    "passkeyRequiredHeader": "Verificação por Chave de Acesso",
+    "passkeyRequiredPrompt": "A sua conta tem configurada uma Chave de Acesso (Passkey). Por segurança, confirme a sua identidade neste dispositivo para aceder como",
+    "passkeyVerificationHint": "Clique no botão abaixo para ativar Touch ID, Face ID, Windows Hello ou a sua chave de segurança USB.",
+    "verifyPasskeyBtn": "Verificar com Chave de Acesso",
+    "use2FAInstead": "Não tem a sua chave? Utilizar código 2FA",
+    "backToLogin": "Voltar ao início de sessão"
   },
   "users": {
     "allActive": "Todos os Ativos",
@@ -543,7 +550,9 @@
     "view": "Ver",
     "tapToExpand": "Toque para expandir o texto",
     "generating": "A gerar...",
-    "reset": "Repor"
+    "reset": "Repor",
+    "verifying": "Verificando...",
+    "deleting": "Excluindo..."
   },
   "lang": {
     "es": "Español",
@@ -798,7 +807,8 @@
     "backupCodesCopied": "Códigos de recuperação copiados para a área de transferência.",
     "twoFactorMethodLabel": "Método:",
     "regenerateBackupCodes": "Regenerar Códigos",
-    "disablePromptMsg": "Para desativar a 2FA, introduza o código de verificação atual:"
+    "disablePromptMsg": "Para desativar a 2FA, introduza o código de verificação atual:",
+    "incorrectPassword": "A senha inserida está incorreta."
   },
   "register": {
     "company": "Empresa / Centro de Trabalho",
@@ -1096,7 +1106,28 @@
     "registerError": "Erro ao registar chave de acesso.",
     "deleteConfirm": "Tem a certeza de que deseja desassociar esta chave?",
     "deleteSuccess": "Chave de acesso desassociada com sucesso.",
-    "deleteError": "Não foi possível eliminar a chave de acesso."
+    "deleteError": "Não foi possível eliminar a chave de acesso.",
+    "promptTitle": "Ativar início de sessão biométrico?",
+    "promptSubtitle": "Detetámos que este dispositivo suporta autenticação biométrica ({{device}}). Pode associá-lo agora para iniciar sessão com um só toque sem introduzir a sua palavra-passe.",
+    "promptBenefit1": "Início de sessão instantâneo com impressão digital, rosto ou PIN",
+    "promptBenefit2": "Proteção criptográfica avançada resistente a phishing",
+    "promptBenefit3": "Sem necessidade de memorizar ou introduzir a sua palavra-passe",
+    "promptAccept": "Associar este dispositivo",
+    "promptDismiss": "Agora não",
+    "promptDontAskAgain": "Não voltar a sugerir neste dispositivo",
+    "promptSuccess": "Chave de acesso configurada com sucesso! Da próxima vez poderá aceder num só toque.",
+    "promptCancelled": "Associação de chave cancelada.",
+    "detected": "detetado",
+    "confirmDeleteTitle": "Verificação de Segurança",
+    "confirmDeleteSubtitle": "Insira sua senha ou valide sua Passkey para confirmar a desvinculação.",
+    "confirmDeleteWarning": "Tem certeza de que deseja excluir a chave",
+    "confirmDeleteNote": "Por segurança, você deve validar sua identidade antes de prosseguir.",
+    "promptToUsePasskey": "Clique no botão para ativar seu leitor biométrico (Face ID, Touch ID, Windows Hello ou chave física).",
+    "verifyPasskeyBtn": "Validar Passkey e Excluir",
+    "usePasswordFallback": "Não pode usar a Passkey? Usar senha",
+    "backToPasskey": "← Voltar para validação com Passkey",
+    "confirmDeleteBtn": "Confirmar e Excluir",
+    "verificationCancelled": "Verificação com Passkey cancelada."
   },
   "pagination": {
     "first": "Primeira página",
