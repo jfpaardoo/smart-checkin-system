@@ -92,14 +92,7 @@ public class FormationRestController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"));
         User currentUser = !isAdmin ? getCurrentUserSafe() : null;
-        List<Formation> list = formationService.findAllVisible(isAdmin);
-        if (search != null && !search.isBlank()) {
-            String q = search.toLowerCase().trim();
-            list = list.stream().filter(f ->
-                (f.getName() != null && f.getName().toLowerCase().contains(q)) ||
-                (f.getDescription() != null && f.getDescription().toLowerCase().contains(q))
-            ).toList();
-        }
+        List<Formation> list = formationService.findAllVisible(isAdmin, search);
         if (!isAdmin) {
             list = list.stream().map(f -> sanitizeFormationForUser(f, false, currentUser)).toList();
         }

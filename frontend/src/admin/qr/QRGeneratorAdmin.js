@@ -10,6 +10,8 @@ import api from '../../services/api';
 import GlassDropdown from '../../components/GlassDropdown';
 import SecureCaptureShield from '../../components/SecureCaptureShield';
 import soundAndHaptics from '../../util/soundAndHaptics';
+import { useToast } from '../../components/ToastProvider';
+import { copyToClipboard } from '../../util/clipboardUtil';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faQrcode, faSun, faMoon, faExpand, faTimes, faArrowRight, faFileCircleCheck, faCopy, faCheck, faLightbulb } from '@fortawesome/free-solid-svg-icons';
 
@@ -206,18 +208,22 @@ const PINDisplaySection = ({
     t
 }) => {
     const [copied, setCopied] = useState(false);
+    const toast = useToast();
 
     const handleCopyPin = async () => {
         if (!totpToken) return;
-        try {
-            await navigator.clipboard.writeText(totpToken);
+        soundAndHaptics.playClick();
+        const success = await copyToClipboard(totpToken);
+        if (success) {
             setCopied(true);
+            soundAndHaptics.playSuccess();
             if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
                 navigator.vibrate([40, 60, 40]);
             }
-            setTimeout(() => setCopied(false), 2000);
-        } catch (err) {
-            console.warn('Error al copiar PIN:', err);
+            toast.success(t('qr.pinCopiedToast', '¡PIN copiado al portapapeles!'));
+            setTimeout(() => setCopied(false), 2200);
+        } else {
+            toast.error(t('qr.copyPinError', 'No se pudo copiar el PIN al portapapeles.'));
         }
     };
 
@@ -276,7 +282,7 @@ const PINDisplaySection = ({
                     onClick={handleCopyPin}
                     className={`px-3 py-2 rounded-xl border text-xs font-bold transition-all duration-200 flex items-center gap-1.5 shadow-xs cursor-pointer shrink-0 ${
                         copied
-                            ? 'bg-emerald-500/20 border-emerald-500 text-emerald-600 dark:text-emerald-400 scale-105'
+                            ? 'bg-emerald-500/20 border-emerald-500 text-emerald-600 dark:text-emerald-400 scale-105 shadow-emerald-500/10'
                             : 'bg-white/60 dark:bg-slate-800/50 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:scale-105 active:scale-95'
                     }`}
                     title={copied ? t('qr.pinCopiedTooltip', '¡PIN copiado al portapapeles!') : t('qr.copyPinTooltip', 'Copiar PIN de 6 dígitos')}
@@ -287,12 +293,14 @@ const PINDisplaySection = ({
                 </button>
             </div>
 
-            <div className="w-full rounded-full overflow-hidden mb-3" style={{
-                height: '6px',
-                background: 'rgba(255,255,255,0.15)',
-                backdropFilter: 'blur(8px)',
-                boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.12)'
-            }}>
+            <div 
+                className="w-full rounded-full overflow-hidden mb-3 bg-slate-200/80 dark:bg-white/15" 
+                style={{
+                    height: '6px',
+                    backdropFilter: 'blur(8px)',
+                    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.12)'
+                }}
+            >
                 <div
                     style={{
                         width: `${progress}%`,
@@ -476,20 +484,62 @@ const FullscreenQrCard = ({ isFlashlightMode, selectedFormationId, fadeStyle, qr
     </SecureCaptureShield>
 );
 
-const FullscreenPinFooter = ({ isFlashlightMode, totpToken, progress, isEnding, t }) => (
-    <div className="w-full max-w-[250px] sm:max-w-[300px] flex flex-col items-center gap-1">
-        <SecureCaptureShield
-            compact={true}
-            className="rounded-2xl"
-            overlayMessage={t('qr.pinHidden', 'PIN Oculto')}
-            overlaySubmessage={t('qr.pinHiddenDesc', 'Protegido contra capturas')}
-        >
-            <div className={`text-3xl sm:text-4xl font-extrabold tracking-widest font-mono da-protected-screen drop-shadow-sm ${
-                isFlashlightMode ? 'text-slate-900' : 'text-white'
-            }`}>
-                {totpToken}
+const FullscreenPinFooter = ({ isFlashlightMode, totpToken, progress, isEnding, t }) => {
+    const [copied, setCopied] = useState(false);
+    const toast = useToast();
+
+    const handleCopyPin = async (e) => {
+        e?.stopPropagation?.();
+        if (!totpToken) return;
+        soundAndHaptics.playClick();
+        const success = await copyToClipboard(totpToken);
+        if (success) {
+            setCopied(true);
+            soundAndHaptics.playSuccess();
+            toast.success(t('qr.pinCopiedToast', '¡PIN copiado al portapapeles!'));
+            setTimeout(() => setCopied(false), 2200);
+        } else {
+            toast.error(t('qr.copyPinError', 'No se pudo copiar el PIN al portapapeles.'));
+        }
+    };
+
+    return (
+        <div className="w-full max-w-[280px] sm:max-w-[320px] flex flex-col items-center gap-1">
+            <div className="flex items-center justify-center gap-2">
+                <SecureCaptureShield
+                    compact={true}
+                    className="rounded-2xl"
+                    overlayMessage={t('qr.pinHidden', 'PIN Oculto')}
+                    overlaySubmessage={t('qr.pinHiddenDesc', 'Protegido contra capturas')}
+                >
+                    <div 
+                        className={`text-3xl sm:text-4xl font-extrabold tracking-widest font-mono da-protected-screen drop-shadow-sm ${
+                            isFlashlightMode ? 'text-slate-900' : 'text-white'
+                        }`}
+                    >
+                        {totpToken}
+                    </div>
+                </SecureCaptureShield>
+                {(() => {
+                    let btnClass = isFlashlightMode
+                        ? 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200'
+                        : 'bg-slate-800/80 border-slate-700 text-slate-200 hover:bg-slate-700';
+                    if (copied) {
+                        btnClass = 'bg-emerald-500/20 border-emerald-500 text-emerald-600 scale-105';
+                    }
+                    return (
+                        <button
+                            type="button"
+                            onClick={handleCopyPin}
+                            className={`p-2 px-2.5 rounded-xl text-xs font-bold transition-all duration-200 border cursor-pointer flex items-center justify-center ${btnClass}`}
+                            title={copied ? t('qr.pinCopiedTooltip', '¡PIN copiado al portapapeles!') : t('qr.copyPinTooltip', 'Copiar PIN de 6 dígitos')}
+                            aria-label={t('qr.copyPin', 'Copiar PIN')}
+                        >
+                            <FontAwesomeIcon icon={copied ? faCheck : faCopy} className="text-xs" />
+                        </button>
+                    );
+                })()}
             </div>
-        </SecureCaptureShield>
 
         <div className={`w-full rounded-full overflow-hidden h-2 mt-0.5 ${
             isFlashlightMode ? 'bg-slate-200' : 'bg-slate-800'
@@ -531,7 +581,8 @@ const FullscreenPinFooter = ({ isFlashlightMode, totpToken, progress, isEnding, 
             {t('qr.mobileBrightnessTip', '💡 En iPhone/Android, usa el botón "Luz Máx" o sube el brillo desde el Centro de Control de tu dispositivo.')}
         </p>
     </div>
-);
+    );
+};
 
 const FullscreenModal = ({
     isOpen,

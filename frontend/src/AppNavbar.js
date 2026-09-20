@@ -9,6 +9,7 @@ import { useNotifications } from './context/NotificationContext';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import NotificationBell from './components/NotificationBell';
 import HelpSupportModal from './components/HelpSupportModal';
+import soundAndHaptics from './util/soundAndHaptics';
 import { preload } from 'swr';
 import api from './services/api';
 
@@ -41,10 +42,14 @@ const LANGUAGES = [
 /** Botón sol/luna para cambiar entre modo claro y oscuro */
 function ThemeToggleButton() {
     const { isDark, toggleTheme } = useTheme();
+    const handleToggle = () => {
+        soundAndHaptics.playClick();
+        toggleTheme();
+    };
     return (
         <button
             type="button"
-            onClick={toggleTheme}
+            onClick={handleToggle}
             aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
             title={isDark ? 'Modo claro' : 'Modo oscuro'}
             className="relative p-2 rounded-[20px] text-slate-700 dark:text-white hover:bg-white/50 dark:hover:bg-white/15 focus:outline-none transition-all duration-300 group"
@@ -321,12 +326,14 @@ export default function AppNavbar() {
 
     const toggleMenu = (menuName, e) => {
         if (e) e.stopPropagation();
+        soundAndHaptics.playClick();
         setOpenMenu(prev => prev === menuName ? null : menuName);
         setMobileLangOpen(false);
     };
 
     const toggleMobileLang = (e) => {
         if (e) e.stopPropagation();
+        soundAndHaptics.playClick();
         setMobileLangOpen(prev => !prev);
     };
 

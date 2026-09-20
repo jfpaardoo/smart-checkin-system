@@ -9,6 +9,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
@@ -40,7 +41,7 @@ public class Checkin extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private CheckinType checkInType;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @NotNull
     @JsonIgnore

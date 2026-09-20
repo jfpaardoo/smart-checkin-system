@@ -36,7 +36,9 @@ instance.interceptors.response.use(
                 originalConfig._retry = true;
                 
                 TokenService.removeUser();
-                window.location.href = '/login';
+                if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
+                    window.location.href = '/login';
+                }
             }
         }
 

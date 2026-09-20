@@ -91,6 +91,22 @@ public class FormationService {
     }
 
     @Transactional(readOnly = true)
+    public List<Formation> findAllVisible(boolean isAdmin, String search) {
+        String cleanSearch = (search != null && !search.isBlank()) ? search.trim() : null;
+        if (cleanSearch == null) {
+            if (isAdmin) {
+                return (List<Formation>) formationRepository.findAll();
+            }
+            return formationRepository.findByStatusIn(List.of(FormationStatus.PUBLISHED, FormationStatus.CLOSED));
+        }
+        if (isAdmin) {
+            return formationRepository.searchAll(cleanSearch);
+        }
+        return formationRepository.findByStatusInAndSearch(
+            List.of(FormationStatus.PUBLISHED, FormationStatus.CLOSED), cleanSearch);
+    }
+
+    @Transactional(readOnly = true)
     public Optional<Formation> findById(Integer id) {
         return formationRepository.findById(id);
     }

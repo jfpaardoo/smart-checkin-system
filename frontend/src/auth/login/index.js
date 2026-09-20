@@ -167,7 +167,11 @@ export default function Login() {
         throw new Error(data.message || t('login.error', 'Error al iniciar sesión'));
       }
     } catch (error) {
-      toast.error(error.message || t('login.genericError', 'Ha ocurrido un error inesperado.'));
+      const isFetchFail = error?.message === 'Failed to fetch' || error?.name === 'TypeError';
+      const errMsg = isFetchFail
+        ? t('common.networkError', 'Error de conexión con el servidor. Verifica tu conexión a internet.')
+        : (error.message || t('login.genericError', 'Ha ocurrido un error inesperado.'));
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }
@@ -187,7 +191,11 @@ export default function Login() {
     } catch (error) {
       console.warn("Passkey challenge verification cancelled or failed:", error);
       if (error.name !== 'NotAllowedError' && !error.message?.includes('cancelled')) {
-        toast.error(error.message || t('login.passkeyError', 'Error al verificar la llave de acceso.'));
+        const isFetchFail = error?.message === 'Failed to fetch';
+        const errMsg = isFetchFail
+          ? t('common.networkError', 'Error de conexión con el servidor.')
+          : (error.message || t('login.passkeyError', 'Error al verificar la llave de acceso.'));
+        toast.error(errMsg);
       }
     } finally {
       setLoading(false);
@@ -207,7 +215,11 @@ export default function Login() {
     } catch (error) {
       console.warn("Passkey login cancelled or failed:", error);
       if (error.name !== 'NotAllowedError' && !error.message?.includes('cancelled')) {
-        toast.error(error.message || t('login.passkeyError', 'Error al verificar la llave de acceso.'));
+        const isFetchFail = error?.message === 'Failed to fetch';
+        const errMsg = isFetchFail
+          ? t('common.networkError', 'Error de conexión con el servidor.')
+          : (error.message || t('login.passkeyError', 'Error al verificar la llave de acceso.'));
+        toast.error(errMsg);
       }
     } finally {
       setLoading(false);
@@ -393,7 +405,7 @@ export default function Login() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] w-full px-4 py-8 overflow-y-auto">
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] min-h-[calc(100dvh-80px)] w-full px-4 py-8 overflow-y-auto">
       
       <div className="w-full max-w-md bg-white/50 dark:bg-slate-900/60 backdrop-blur-2xl shadow-2xl rounded-[32px] p-6 sm:p-8 border border-white/60 dark:border-white/10">
         
@@ -417,6 +429,13 @@ export default function Login() {
       <div className="flex flex-col gap-2 mt-8 text-center text-xs text-slate-500 dark:text-slate-400 z-10">
         <div>
           &copy; {new Date().getFullYear()} Distribution Academy |{' '}
+          <Link 
+            to="/terms" 
+            className="font-semibold text-slate-600 dark:text-slate-300 hover:text-[#73841e] dark:hover:text-[#d4e84a] transition-colors"
+          >
+            {t('login.termsAndConditions', 'Términos y Condiciones')}
+          </Link>
+          {' '}•{' '}
           <Link 
             to="/privacy-policy" 
             className="font-semibold text-slate-600 dark:text-slate-300 hover:text-[#73841e] dark:hover:text-[#d4e84a] transition-colors"

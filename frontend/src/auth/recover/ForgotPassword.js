@@ -55,7 +55,7 @@ export default function ForgotPassword() {
     const glassButtonClass = "w-full mt-2 h-[52px] rounded-full font-bold text-slate-900 bg-[#b3c34c]/80 backdrop-blur-md border border-white/50 shadow-[0_8px_25px_0_rgba(179,195,76,0.35)] hover:bg-[#b3c34c] hover:shadow-[0_8px_30px_0_rgba(179,195,76,0.55)] transition-colors duration-200 active:scale-95 flex justify-center items-center gap-2 box-border cursor-pointer";
 
     return (
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] w-full px-4 py-8 overflow-y-auto">
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] min-h-[calc(100dvh-80px)] w-full px-4 py-8 overflow-y-auto">
         
         <h1 className="text-3xl md:text-4xl font-extrabold text-slate-800 dark:text-slate-100 mb-6 drop-shadow-sm text-center">
           {t('recover.forgotTitle', 'Recuperar Contraseña')}

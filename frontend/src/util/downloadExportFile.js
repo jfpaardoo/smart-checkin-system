@@ -103,6 +103,17 @@ export async function saveBlobFile(blobData, filename, mimeType = 'application/o
  * @returns {Promise<boolean>} True if download succeeded, false otherwise
  */
 export async function downloadExportFile(endpoint, defaultFilename, toast, t) {
+  if (!endpoint) return false;
+
+  // Fallback si por error se pasó directamente el Blob de datos en vez del endpoint URL
+  if (endpoint instanceof Blob || typeof endpoint !== 'string') {
+    const success = await saveBlobFile(endpoint, defaultFilename);
+    if (success && toast && t) {
+      toast.success(t('common.exportSuccess', 'Informe descargado con éxito'));
+    }
+    return success;
+  }
+
   const cleanEndpoint = endpoint.replace(/^\/api\/v1\/exports\//, '').replace(/^\/exports\//, '');
   
   if (activeExports.has(cleanEndpoint)) {

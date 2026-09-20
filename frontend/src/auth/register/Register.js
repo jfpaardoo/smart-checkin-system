@@ -124,7 +124,11 @@ export default function Register() {
       setSubmittedSuccess(true);
       toast.success(t('register.successMessage', 'Solicitud de registro enviada con éxito. El administrador activará tu cuenta.'));
     } catch (err) {
-      toast.error(err.message);
+      const isFetchFail = err?.message === 'Failed to fetch' || err?.name === 'TypeError';
+      const errMsg = isFetchFail
+        ? t('common.networkError', 'Error de conexión con el servidor. Verifica tu conexión a internet.')
+        : (err.message || t('register.error', 'Error al registrar usuario'));
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }
@@ -160,7 +164,7 @@ export default function Register() {
   );
 
   return (
-    <div className="da-container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
+    <div className="da-container min-h-[100vh] min-h-[100dvh] flex items-center">
       
       <div className="da-card" style={{ maxWidth: '1080px', margin: '2rem auto', padding: '50px' }}>
         

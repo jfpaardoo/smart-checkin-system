@@ -4,9 +4,24 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), y este proyecto sigue [Versionado Semántico (SemVer)](https://semver.org/lang/es/).
 
-## [1.2.4](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.2.4) - 2026-09-19
+## [1.2.4](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.2.4) - 2026-09-20
 
 ### Añadido (Features) & Blindaje de Seguridad
+- **Sistema de Notificaciones Múltiples Apiladas en 3D con Relieve y Deduplicación Inteligente (`ToastProvider.js`)**:
+  - **Efecto Apilado 3D (Stacked Cards estilo iOS / Sonner)**: Cuando conviven varias notificaciones, se organizan tridimensionalmente con escala y desfase dinámico (`scale(0.96)`, `scale(0.92)`, `translateY(11px/21px)` y relieve de cristal difuminado), dejando entrever las alertas secundarias sin saturar el campo de visión.
+  - **Despliegue y Plegado Interactivo**: Al hacer clic sobre la pila de notificaciones o en la barra de control flotante superior, se despliegan fluidamente en cascada completa, incorporando contador numérico activo, acción rápida de repliegue y botón global "Cerrar todas".
+  - **Deduplicación Anti-Spam Inteligente (`×N`)**: Si se emite el mismo mensaje repetidamente, el sistema no satura la pantalla con tarjetas duplicadas; en su lugar, incrementa un contador visual animado con insignia de rebote (`×2`, `×3`...) y reinicia fluidamente el temporizador de caducidad.
+  - **Congelación Completa del Temporizador al Pasar el Ratón (*Hover Freeze*)**: Resuelto el problema por el cual el temporizador continuaba consumiendo tiempo al situar el ratón encima del toast. Se unificó el ciclo de vida bajo el estado reactivo `isSuspended`, deteniendo de forma absoluta tanto el countdown en JavaScript como la barra de progreso en CSS de forma estrictamente sincronizada.
+  - **Arquitectura Limpia**: Desacopladas las funciones de cálculo visual (`getStackInlineStyle`, `getToastAnimation`) fuera del cuerpo del componente funcional, reduciendo la complejidad cognitiva de SonarQube muy por debajo de 15.
+- **Ergonomía Móvil Táctil con Retroalimentación Háptica (`AppNavbar.js`)**:
+  - Integrada retroalimentación háptica y sonora instantánea (`soundAndHaptics.playClick()`) en el conmutador de tema claro/oscuro, botón de menú móvil tipo hamburguesa y selector dinámico de idiomas.
+- **Adaptación Integral a Viewports Móviles Dinámicos (`100dvh`)**:
+  - Ajustados los contenedores de las pantallas críticas de autenticación (`Login`, `Register`, `ForgotPassword`, `ResetPassword`) a `100dvh`, previniendo desbordamientos y saltos bruscos provocados por la barra de navegación retráctil en iOS Safari y Android Chrome.
+- **Blindaje Criptográfico y Actualización de Seguridad Bouncy Castle (`pom.xml`)**:
+  - Actualizadas las dependencias `org.bouncycastle:bcprov-jdk18on` y `bcpkix-jdk18on` a la versión `1.85`. Resueltas las dos alertas de seguridad de Dependabot: bypass de restricciones de nombres en certificados (*Name Constraints bypass*, CVE-2026-8763 / GHSA-9pwp-9qqc-pr26) y reseteo de guarda de profundidad en secuencias ASN.1 (*Lazy ASN.1 sequence forcing*, CVE-2026-13506 / GHSA-qp49-qgx5-5m26).
+- **Optimización y Limpieza de Estilos Globales (`App.css`, `index.css`, `index.html`)**:
+  - Eliminados selectores conflictivos duplicados de `body` y `@keyframes floatBlobs` en `App.css`, otorgando prioridad a los orbes de fondo acelerados por GPU de `index.css` (`will-change: transform`, `translate3d(0, 0, 0)`, `backface-visibility: hidden`) para un renderizado ultra-fluido a 60/120 FPS.
+  - Incorporado el peso tipográfico `800` en el enlace de Google Fonts (`Outfit`) en `index.html` para máxima nitidez en títulos y logotipos.
 - **Integración PWA Nativa para Apple iOS (`index.html`)**:
   - Incorporadas metaetiquetas oficiales `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style="black-translucent"`, `apple-mobile-web-app-title` y `format-detection="telephone=no"`. Al anclar la aplicación a la pantalla de inicio en dispositivos iPhone/iPad, se ejecuta en modo *Standalone* a pantalla completa eliminando las barras de Safari y ofreciendo una experiencia idéntica a una aplicación nativa.
 - **Modo Linterna Óptica de Alto Brillo en Presentación de QR (`QRGeneratorAdmin.js`)**:
@@ -30,7 +45,36 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 - **Ocultación de Consultas SQL en Producción (`application.properties`)**:
   - Parametrizadas las propiedades `spring.jpa.show-sql` e `hibernate.format_sql` para desactivar por defecto el volcado de consultas SQL en logs (`${SHOW_SQL:false}`), evitando la exposición accidental de esquemas o datos sensibles en entornos de despliegue.
 
+### Rendimiento (Performance) & Modernización de Infraestructura
+- **Migración Flyway V9 de Índices de Alto Rendimiento (`V9__add_passkey_and_audit_performance_indexes.sql`)**:
+  - Creados índices específicos sobre claves foráneas y campos de consulta intensiva:
+    * `idx_user_passkeys_user_id` sobre `user_passkeys(user_id)`: acelera la autenticación WebAuthn y elimina scans secuenciales en eliminaciones en cascada.
+    * `idx_push_subscriptions_user_id` sobre `push_subscriptions(user_id)` y `idx_password_reset_tokens_user_id` sobre `password_reset_tokens(user_id)`.
+    * `idx_audit_logs_action_timestamp` compuesto sobre `audit_logs(action, timestamp DESC)` para filtrado veloz en el panel de auditoría.
+    * `idx_formations_trainer` sobre `formations(trainer)`.
+- **Batching de Hibernate y Mitigación Global de N+1 (`application.properties`)**:
+  - Habilitado procesamiento en lotes de inserciones y actualizaciones (`hibernate.jdbc.batch_size=25`, `order_inserts=true`, `order_updates=true`, `batch_versioned_data=true`).
+  - Configurado `hibernate.default_batch_fetch_size=25` globalmente, reduciendo drásticamente las consultas de carga en colecciones y relaciones asociadas.
+  - Ajuste dinámico del pool de conexiones Hikari: `spring.datasource.hikari.maximum-pool-size=${DB_MAX_POOL_SIZE:10}`.
+  - Eliminada directiva obsoleta de Spring Boot (`spring.resources.cache.cachecontrol.max-age`).
+- **Optimización de Carga Perezosa en Fichajes (`CheckIn.java`)**:
+  - Configurada la relación `user` en `CheckIn` como `FetchType.LAZY`, eliminando la carga eager del grafo de usuario en consultas y reportes de fichaje.
+- **Búsqueda Filtrada a Nivel de Base de Datos en Formaciones (`FormationRepository.java`, `FormationService.java`, `FormationRestController.java`)**:
+  - Reemplazado el filtrado en memoria de Java (`stream().filter()`) por consultas JPQL directas (`searchAll` y `findByStatusInAndSearch`) con búsqueda `LOWER(...) LIKE` a nivel de base de datos, optimizando el consumo de CPU y memoria.
+- **Modernización de Dependencias XML a Estándar Jakarta EE (`pom.xml`)**:
+  - Sustituidos los artefactos legados Java EE (`javax.xml.bind:jaxb-api` y `com.sun.xml.bind:jaxb-impl`) por las librerías oficiales de Jakarta EE y Spring Boot 3 (`jakarta.xml.bind:jakarta.xml.bind-api` y `org.glassfish.jaxb:jaxb-runtime`), garantizando total compatibilidad modular en Java 21 sin advertencias de compatibilidad.
+- **Preconexión Temprana de Recursos CAPTCHA (`index.html`)**:
+  - Añadidos encabezados de `<link rel="preconnect" href="https://challenges.cloudflare.com">` y `dns-prefetch`, reduciendo en ~200-300ms la latencia de inicialización del widget de Cloudflare Turnstile en pantallas de autenticación.
+
 ### Correcciones (Bug Fixes) & Mejoras de UI/UX
+- **Subsanación de Fallo en Exportación de Auditoría (`downloadExportFile.js` & `AuditDashboard.js`)**:
+  - Resuelto el error crítico en tiempo de ejecución `TypeError: endpoint.replace is not a function` al descargar informes de auditoría en formato PDF y CSV. Se corrigió el paso del parámetro de endpoint y se reforzó `downloadExportFile` con validación defensiva para objetos de tipo `Blob`.
+- **Aumento de Contraste en Carril de Progreso TOTP en Modo Claro (`QRGeneratorAdmin.js`)**:
+  - Sustituida la pista translúcida de baja opacidad por `bg-slate-200/80 dark:bg-white/15`, garantizando visibilidad nítida y contraste accesible del tiempo restante del código QR tanto bajo luz natural como en modo oscuro.
+- **Traducción Amigable de Excepciones de Red (`Login/index.js` & `Register.js`)**:
+  - Detección de fallos de conectividad del navegador (`TypeError: Failed to fetch`) y presentación de mensajes informativos en el idioma seleccionado por el usuario (`t('common.networkError')`), suprimiendo avisos técnicos en inglés.
+- **Inmunidad contra Bucles de Redirección 401 en Interceptor HTTP (`api.js`)**:
+  - Evitadas recargas o redirecciones cíclicas indeseadas cuando se recibe un código de estado 401 mientras el usuario se encuentra en las páginas de acceso (`/login`, `/register`).
 - **Fusión en Esfera y Morfología Líquida Apple en Notificaciones Toast (`ToastProvider.js`)**:
   - **Animación Líquida Apple-Style**: Transición suave de píldora compacta a panel expandido sin saltos de maquetación, anclando el encabezado y expandiendo los detalles mediante CSS Grid de una fracción (`grid-template-rows: 1fr`).
   - **Retracción en Bola Perfecta (*Ball Retract Animation*)**: Al expirar o cerrar la notificación, el elemento se contrae matemáticamente hacia una esfera circular perfecta de 38px (`clip-path: inset(calc(50% - 19px) ... round 9999px)`) antes de desvanecerse y elevarse fluidamente hacia la barra superior sin saltos ni recortes irregulares.

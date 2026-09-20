@@ -41,9 +41,68 @@ const TOAST_CONFIG = {
 };
 
 export function ToastProvider({ children }) {
+  const { t } = useTranslation();
   const [toasts, setToasts] = useState([]);
+  const [isStackExpanded, setIsStackExpanded] = useState(false);
+  const containerRef = useRef(null);
+  const toastsRef = useRef(toasts);
+
+  useEffect(() => {
+    toastsRef.current = toasts;
+  }, [toasts]);
+
+  // Si queda 1 o ninguna notificación, colapsar el stack automáticamente
+  useEffect(() => {
+    if (toasts.length <= 1) {
+      setIsStackExpanded(false);
+    }
+  }, [toasts.length]);
+
+  // Cerrar el stack al hacer clic fuera o presionar la tecla Escape
+  useEffect(() => {
+    if (!isStackExpanded) return;
+
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsStackExpanded(false);
+      }
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setIsStackExpanded(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isStackExpanded]);
 
   const addToast = useCallback((type, message, options = {}) => {
+    // 1. DEDUPLICACIÓN INTELIGENTE: Si ya existe un toast idéntico activo, incrementamos su contador
+    const existing = toastsRef.current.find(
+      (toast) => !toast.exiting && toast.type === type && toast.message === message
+    );
+
+    if (existing) {
+      setToasts((prev) =>
+        prev.map((toast) =>
+          toast.id === existing.id
+            ? {
+                ...toast,
+                count: (toast.count || 1) + 1,
+                bumpKey: Date.now(), // Provoca el pulso visual y reinicia el timer
+              }
+            : toast
+        )
+      );
+      return existing.id;
+    }
+
     const id = ++toastIdCounter;
 
     // Trigger audible and tactile feedback
@@ -57,12 +116,19 @@ export function ToastProvider({ children }) {
       soundAndHaptics.playInfo();
     }
 
-    setToasts((prev) => [...prev, { id, type, message, ...options }]);
+    setToasts((prev) => [
+      ...prev,
+      { id, type, message, count: 1, bumpKey: id, ...options },
+    ]);
     return id;
   }, []);
 
   const removeToast = useCallback((id) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const removeAllToasts = useCallback(() => {
+    setToasts((prev) => prev.map((t) => ({ ...t, exiting: true })));
   }, []);
 
   const toastApi = React.useMemo(() => ({
@@ -71,40 +137,176 @@ export function ToastProvider({ children }) {
     warning: (msg) => addToast("warning", msg),
     info: (msg) => addToast("info", msg),
     confirm: (msg, onConfirm) => addToast("confirm", msg, { onConfirm, persistent: true }),
-  }), [addToast]);
+    clearAll: removeAllToasts,
+  }), [addToast, removeAllToasts]);
+
+  // Ordenamos para que la notificación más reciente esté al frente (arriba de la pila)
+  const orderedToasts = [...toasts].reverse();
 
   return (
     <ToastContext.Provider value={toastApi}>
       {children}
       {/* Contenedor flotante centrado bajo la barra superior, respetando el notch/Dynamic Island de iOS */}
       <div 
-        className="fixed left-0 right-0 z-[999999] flex flex-col items-center pointer-events-none px-3"
+        ref={containerRef}
+        className="fixed left-0 right-0 z-[999999] flex flex-col items-center pointer-events-none px-3 select-none"
         style={{ top: 'calc(4.75rem + env(safe-area-inset-top, 0px))' }}
       >
-        {toasts.map((t) => (
-          <ToastItem key={t.id} toast={t} onRemove={removeToast} />
-        ))}
+        {/* Barra de control superior cuando la pila de notificaciones está desplegada */}
+        {toasts.length > 1 && isStackExpanded && (
+          <div className="da-fade-in pointer-events-auto flex items-center justify-between w-full max-w-[calc(100vw-32px)] sm:max-w-[440px] px-3.5 py-1.5 mb-2.5 rounded-full bg-white/80 dark:bg-slate-900/85 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-[0_10px_30px_rgba(15,23,42,0.12)]">
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#73841e] dark:bg-[#b3c34c] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#73841e] dark:bg-[#b3c34c]" />
+              </span>
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                {toasts.length} {t('common.notifications', 'notificaciones')}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setIsStackExpanded(false)}
+                className="px-2.5 py-1 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer border-0 bg-transparent"
+              >
+                {t('common.collapse', 'Plegar')}
+              </button>
+              <button
+                type="button"
+                onClick={removeAllToasts}
+                className="px-2.5 py-1 rounded-full text-xs font-bold text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 hover:bg-rose-500/10 transition-colors cursor-pointer border-0 bg-transparent"
+              >
+                {t('common.clearAll', 'Cerrar todas')}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Pila de Notificaciones con efecto de relieve (Stack de profundidad) */}
+        <div className={`relative flex flex-col items-center w-full max-w-[calc(100vw-32px)] sm:max-w-[440px] ${isStackExpanded ? 'gap-2' : ''}`}>
+          {orderedToasts.map((toast, index) => (
+            <ToastItem
+              key={toast.id}
+              toast={toast}
+              index={index}
+              totalCount={orderedToasts.length}
+              isStackExpanded={isStackExpanded}
+              onToggleStack={() => setIsStackExpanded((prev) => !prev)}
+              onRemove={removeToast}
+            />
+          ))}
+        </div>
       </div>
     </ToastContext.Provider>
   );
 }
 
-function ToastItem({ toast, onRemove }) {
+function getStackInlineStyle(isStacked, index) {
+  if (!isStacked) {
+    return {
+      position: 'relative',
+      transform: 'translate3d(0, 0, 0) scale(1)',
+      zIndex: 20,
+      opacity: 1,
+      pointerEvents: 'auto',
+    };
+  }
+
+  const STACK_LEVELS = [
+    {
+      position: 'relative',
+      transform: 'translate3d(0, 0, 0) scale(1)',
+      zIndex: 40,
+      opacity: 1,
+      pointerEvents: 'auto',
+    },
+    {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      marginLeft: 'auto',
+      marginRight: 'auto',
+      transform: 'translate3d(0, 11px, 0) scale(0.96)',
+      zIndex: 30,
+      opacity: 0.82,
+      pointerEvents: 'none',
+      filter: 'brightness(0.97)',
+    },
+    {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      marginLeft: 'auto',
+      marginRight: 'auto',
+      transform: 'translate3d(0, 21px, 0) scale(0.92)',
+      zIndex: 20,
+      opacity: 0.55,
+      pointerEvents: 'none',
+      filter: 'brightness(0.93)',
+    },
+  ];
+
+  return STACK_LEVELS[index] || {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    transform: 'translate3d(0, 27px, 0) scale(0.88)',
+    zIndex: 10,
+    opacity: 0,
+    pointerEvents: 'none',
+  };
+}
+
+function getToastAnimation(exiting, isStacked, index) {
+  if (exiting) {
+    return "daLiquidRetractToBall 0.46s cubic-bezier(0.25, 1, 0.35, 1) forwards";
+  }
+  if (!isStacked || index === 0) {
+    return "daLiquidDropIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards";
+  }
+  return "none";
+}
+
+function ToastItem({ 
+  toast, 
+  index, 
+  totalCount, 
+  isStackExpanded, 
+  onToggleStack, 
+  onRemove 
+}) {
   const { t } = useTranslation();
   const [exiting, setExiting] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const DURATION = 4500;
   const remainingRef = useRef(DURATION);
   const lastStartRef = useRef(Date.now());
-  const timerRef = useRef(null);
-  const isHoveredRef = useRef(false);
-  const isExpandedRef = useRef(false);
 
+  const isStacked = totalCount > 1 && !isStackExpanded;
+
+  // Estado único de suspensión: mientras esté activo, el temporizador NO corre bajo ningún concepto
+  const isSuspended = 
+    toast.persistent || 
+    isHovered || 
+    isExpanded || 
+    isStackExpanded || 
+    (isStacked && index > 0) || 
+    exiting;
+
+  // Si la notificación recibe señal externa de salida (ej. "Cerrar todas")
   useEffect(() => {
-    isExpandedRef.current = isExpanded;
-  }, [isExpanded]);
+    if (toast.exiting && !exiting) {
+      setExiting(true);
+    }
+  }, [toast.exiting, exiting]);
 
   const cfg = TOAST_CONFIG[toast.type] || TOAST_CONFIG.info;
 
@@ -117,45 +319,39 @@ function ToastItem({ toast, onRemove }) {
   };
   const typeLabel = typeLabels[toast.type] || typeLabels.info;
 
-  const pauseTimer = useCallback(() => {
-    if (toast.persistent) return;
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-      const elapsed = Date.now() - lastStartRef.current;
-      remainingRef.current = Math.max(0, remainingRef.current - elapsed);
-    }
-    setIsPaused(true);
-  }, [toast.persistent]);
+  // Si se repite la notificación (deduplicada): reiniciar el tiempo de lectura a 4.5s
+  useEffect(() => {
+    if (!toast.bumpKey || toast.bumpKey === toast.id) return;
+    remainingRef.current = DURATION;
+    lastStartRef.current = Date.now();
+  }, [toast.bumpKey, toast.id]);
 
-  const resumeTimer = useCallback(() => {
-    if (toast.persistent) return;
+  // Temporizador unificado estricto:
+  // - Si isSuspended es true: limpia inmediatamente el timeout y guarda el tiempo restante.
+  //   NO se programa ningún timeout mientras siga suspendido (hover, lectura de mensaje, pila, etc.).
+  // - Si isSuspended es false: programa un timeout con exactamente el tiempo que restaba.
+  useEffect(() => {
+    if (isSuspended) return;
+
     if (remainingRef.current <= 0) {
       setExiting(true);
       return;
     }
-    lastStartRef.current = Date.now();
-    timerRef.current = setTimeout(() => {
-      setExiting(true);
-    }, remainingRef.current);
-    setIsPaused(false);
-  }, [toast.persistent]);
 
-  useEffect(() => {
-    if (toast.persistent) return;
     lastStartRef.current = Date.now();
-    timerRef.current = setTimeout(() => {
+    const timerId = setTimeout(() => {
       setExiting(true);
     }, remainingRef.current);
 
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      clearTimeout(timerId);
+      const elapsed = Date.now() - lastStartRef.current;
+      remainingRef.current = Math.max(0, remainingRef.current - elapsed);
     };
-  }, [toast.persistent]);
+  }, [isSuspended, toast.bumpKey]);
 
   const handleClose = (e) => {
     if (e) e.stopPropagation();
-    if (timerRef.current) clearTimeout(timerRef.current);
     setExiting(true);
   };
 
@@ -167,52 +363,39 @@ function ToastItem({ toast, onRemove }) {
 
   const toggleExpand = (e) => {
     if (e) e.stopPropagation();
-    setIsExpanded((prev) => {
-      const next = !prev;
-      if (next) {
-        pauseTimer();
-      } else if (!isHoveredRef.current) {
-        resumeTimer();
-      }
-      return next;
-    });
+    setIsExpanded((prev) => !prev);
   };
+
+  const stackInlineStyle = getStackInlineStyle(isStacked, index);
+  const toastAnimation = getToastAnimation(exiting, isStacked, index);
 
   return (
     <output
-      onMouseEnter={() => {
-        isHoveredRef.current = true;
-        pauseTimer();
-      }}
-      onMouseLeave={() => {
-        isHoveredRef.current = false;
-        if (!isExpandedRef.current) {
-          resumeTimer();
-        }
-      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className={`
-        pointer-events-auto relative overflow-hidden block
-        transition-[width,max-width,border-radius,padding,box-shadow] duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]
-        bg-white/85 dark:bg-slate-900/85
-        backdrop-blur-2xl backdrop-saturate-180
-        border border-white/70 dark:border-white/15
-        border-t-2 border-t-white dark:border-t-white/30
-        border-l border-l-white/80 dark:border-l-white/20
+        pointer-events-auto relative overflow-hidden block w-full
+        transition-[transform,opacity,box-shadow,filter,width,border-radius,padding] duration-350 ease-[cubic-bezier(0.16,1,0.3,1)]
+        bg-white/40 dark:bg-slate-900/50
+        backdrop-blur-2xl
+        border border-white/60 dark:border-white/10
+        border-t-white/80 dark:border-t-white/15
+        shadow-[0_12px_40px_rgba(15,23,42,0.08),inset_0_1px_1.5px_rgba(255,255,255,0.85)]
+        dark:shadow-[0_15px_35px_rgba(0,0,0,0.35),inset_0_1px_1px_rgba(255,255,255,0.06)]
+        ${isStacked && index === 0 ? 'shadow-[0_18px_45px_rgba(15,23,42,0.16),inset_0_1px_1.5px_rgba(255,255,255,0.9)]' : ''}
         ${isExpanded 
-          ? 'w-[calc(100vw-32px)] sm:w-[420px] rounded-[24px] p-4 sm:p-4.5 my-2 shadow-[0_20px_45px_rgba(15,23,42,0.10),inset_0_1.5px_2px_rgba(255,255,255,0.95),inset_0_-1px_1.5px_rgba(255,255,255,0.4)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.65),inset_0_1px_1px_rgba(255,255,255,0.15)]' 
-          : 'w-auto max-w-[calc(100vw-32px)] sm:max-w-md rounded-full px-4 py-2 sm:px-4.5 sm:py-2.5 my-1.5 shadow-[0_12px_32px_rgba(15,23,42,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.95),inset_0_-1px_1.5px_rgba(255,255,255,0.35)] dark:shadow-[0_16px_36px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.12)]'
+          ? 'rounded-[24px] p-4 sm:p-4.5 my-2' 
+          : 'rounded-full px-4 py-2 sm:px-4.5 sm:py-2.5 my-1'
         }
         ${exiting ? 'da-toast-exiting' : ''}
       `}
       style={{
-        animation: !exiting 
-          ? "daLiquidDropIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards" 
-          : "daLiquidRetractToBall 0.46s cubic-bezier(0.25, 1, 0.35, 1) forwards",
+        ...stackInlineStyle,
+        animation: toastAnimation,
         transformOrigin: "center center",
         willChange: "transform, opacity, clip-path",
         backfaceVisibility: "hidden",
         WebkitBackfaceVisibility: "hidden",
-        transform: "translate3d(0, 0, 0)",
         isolation: "isolate",
       }}
       onAnimationEnd={(e) => {
@@ -222,17 +405,17 @@ function ToastItem({ toast, onRemove }) {
       }}
     >
       {/* Núcleo central luminoso que brilla al fusionarse en bolita */}
-      <div className="da-toast-exit-orb absolute inset-0 m-auto w-3.5 h-3.5 rounded-full opacity-0 pointer-events-none flex items-center justify-center z-10">
+      <div className="da-toast-exit-orb absolute inset-0 m-auto w-3.5 h-3.5 rounded-full opacity-0 pointer-events-none flex items-center justify-center z-20">
         <span className={`w-2.5 h-2.5 rounded-full ${cfg.badgeDot} shadow-sm`} />
       </div>
 
       {/* Contenedor interno que se desvanece suavemente cuando el toast se fusiona en bola */}
-      <div className="da-toast-inner w-full flex flex-col">
-        {/* Fila principal alineada: dot, texto/título y controles */}
+      <div className="da-toast-inner relative z-10 w-full flex flex-col">
+        {/* Fila principal alineada: dot, contador, título y controles */}
         <div className="flex items-center justify-between gap-3 w-full select-none">
           <button
             type="button"
-            onClick={toggleExpand}
+            onClick={isStacked ? onToggleStack : toggleExpand}
             aria-expanded={isExpanded}
             className="flex items-center gap-2.5 min-w-0 flex-1 bg-transparent border-0 p-0 text-left cursor-pointer focus:outline-none"
           >
@@ -247,12 +430,23 @@ function ToastItem({ toast, onRemove }) {
               </span>
             </div>
 
+            {/* Badge de deduplicación si el mensaje se repite */}
+            {toast.count > 1 && (
+              <span
+                key={toast.bumpKey}
+                className="da-badge-pop shrink-0 px-2 py-0.5 rounded-full text-[10.5px] font-black tracking-tight text-white bg-gradient-to-r from-rose-500 to-red-600 shadow-xs border border-white/40 ring-1 ring-rose-500/30"
+                title={`${toast.count} ${t('common.repetitions', 'repeticiones')}`}
+              >
+                ×{toast.count}
+              </span>
+            )}
+
             {isExpanded ? (
               <div className="flex items-center gap-2 min-w-0 da-fade-in">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Smart Check-in
                 </span>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold bg-black/5 dark:bg-white/10 ${cfg.badgeText}`}>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold bg-white/40 dark:bg-white/10 border border-white/40 dark:border-white/10 ${cfg.badgeText}`}>
                   {typeLabel}
                 </span>
               </div>
@@ -263,30 +457,60 @@ function ToastItem({ toast, onRemove }) {
             )}
           </button>
 
-          {/* Controles: chevron de estado y botón de cierre */}
+          {/* Controles: botón de despliegue de pila, chevron de mensaje y botón de cierre */}
           <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              type="button"
-              onClick={toggleExpand}
-              aria-expanded={isExpanded}
-              className="w-5 h-5 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-transform duration-300 bg-transparent border-0 p-0 cursor-pointer"
-              style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
-              aria-label={isExpanded ? t('common.collapse', 'Contraer') : t('common.expand', 'Expandir')}
-            >
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" className="w-2.5 h-2.5">
-                <path d="M4 6l4 4 4-4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
+            {/* Pill indicador de pila apilada (cuando está colapsado y hay más de 1 notificación) */}
+            {isStacked && index === 0 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleStack();
+                }}
+                className="
+                  flex items-center gap-1 px-2.5 py-1 rounded-full
+                  text-[11px] font-bold text-slate-700 dark:text-slate-200
+                  bg-black/5 hover:bg-black/10 dark:bg-white/15 dark:hover:bg-white/25
+                  border border-black/5 dark:border-white/10
+                  shadow-2xs transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer shrink-0
+                "
+                title={t('common.expandStack', 'Ver todas las notificaciones')}
+              >
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" className="w-3 h-3 text-slate-500 dark:text-slate-400">
+                  <path d="M2 5l6-3 6 3-6 3-6-3z" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2 8.5l6 3 6-3" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2 12l6 3 6-3" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span>+{totalCount - 1}</span>
+              </button>
+            )}
 
-            {toast.type !== "confirm" && (
+            {/* Chevron para ver el mensaje completo en detalle */}
+            {(!isStacked || index === 0) && (
+              <button
+                type="button"
+                onClick={toggleExpand}
+                aria-expanded={isExpanded}
+                className="w-5 h-5 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-transform duration-300 bg-transparent border-0 p-0 cursor-pointer"
+                style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
+                aria-label={isExpanded ? t('common.collapse', 'Contraer') : t('common.expand', 'Expandir')}
+              >
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" className="w-2.5 h-2.5">
+                  <path d="M4 6l4 4 4-4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            )}
+
+            {/* Botón cerrar */}
+            {toast.type !== "confirm" && (!isStacked || index === 0) && (
               <button
                 type="button"
                 onClick={handleClose}
                 className="
                   w-5 h-5 rounded-full flex items-center justify-center
-                  bg-white/60 hover:bg-white/90 text-slate-600 hover:text-slate-950
+                  bg-white/50 hover:bg-white/80 text-slate-600 hover:text-slate-950
                   dark:bg-white/10 dark:hover:bg-white/20 dark:text-slate-300 dark:hover:text-white
-                  border border-white/70 dark:border-white/15
+                  border border-white/60 dark:border-white/15
                   shadow-2xs transition-all duration-150 cursor-pointer p-0
                 "
                 aria-label={t('common.close', 'Cerrar')}
@@ -299,7 +523,7 @@ function ToastItem({ toast, onRemove }) {
           </div>
         </div>
 
-        {/* Contenido desplegable suave mediante CSS Grid (sin saltos bruscos) */}
+        {/* Contenido desplegable suave mediante CSS Grid */}
         <div 
           className={`grid transition-[grid-template-rows,opacity] duration-350 ease-[cubic-bezier(0.16,1,0.3,1)] ${
             isExpanded 
@@ -334,14 +558,15 @@ function ToastItem({ toast, onRemove }) {
         </div>
       </div>
 
-      {/* Barra de progreso continua (nunca se desmonta ni se reinicia al hacer clic) */}
+      {/* Barra de progreso continua */}
       {!toast.persistent && (
         <div className="da-toast-progress-container absolute bottom-0 left-4 right-4 h-[2px] bg-slate-400/20 dark:bg-white/15 rounded-full overflow-hidden">
           <div
+            key={toast.bumpKey || toast.id}
             className={`h-full ${cfg.progressBg}`}
             style={{
               animation: `daToastProgressShrink ${DURATION}ms linear forwards`,
-              animationPlayState: isPaused ? "paused" : "running",
+              animationPlayState: isSuspended ? "paused" : "running",
               transformOrigin: "left",
             }}
           />
@@ -378,19 +603,16 @@ function ToastItem({ toast, onRemove }) {
             opacity: 1;
           }
           45% {
-            /* Se contrae fluidamente desde ambos lados hasta una bola perfectamente circular de 38px */
             clip-path: inset(calc(50% - 19px) calc(50% - 19px) calc(50% - 19px) calc(50% - 19px) round 9999px);
             transform: translate3d(0, 0, 0) scale(1);
             opacity: 1;
           }
           56% {
-            /* Micro-compresión elástica antes del impulso vertical */
             clip-path: inset(calc(50% - 18px) calc(50% - 18px) calc(50% - 18px) calc(50% - 18px) round 9999px);
             transform: translate3d(0, 2px, 0) scale(0.96);
             opacity: 0.98;
           }
           100% {
-            /* Disparo directo hacia arriba con desvanecimiento fluido */
             clip-path: inset(calc(50% - 14px) calc(50% - 14px) calc(50% - 14px) calc(50% - 14px) round 9999px);
             transform: translate3d(0, -48px, 0) scale(0.35);
             opacity: 0;
@@ -456,6 +678,25 @@ function ToastItem({ toast, onRemove }) {
 
         .da-fade-in {
           animation: daFadeIn 0.25s ease-out forwards;
+        }
+
+        @keyframes daBadgePop {
+          0% {
+            transform: scale(0.6);
+            opacity: 0;
+          }
+          60% {
+            transform: scale(1.25);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+
+        .da-badge-pop {
+          animation: daBadgePop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
       `}</style>
     </output>

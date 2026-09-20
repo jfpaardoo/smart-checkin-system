@@ -231,6 +231,31 @@ export default function RegisterForm({ form, companies = [], handleChange, handl
           {captchaComponent}
         </div>
 
+        {/* Aviso Legal y Aceptación de Términos / Privacidad */}
+        <div className="md:col-span-2 text-center my-1 px-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-0">
+            {t('register.legalNoticePrefix', 'Al solicitar el registro, declaras haber leído y aceptas los')}{' '}
+            <Link 
+              to="/terms" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="font-semibold text-[#73841e] dark:text-[#d4e84a] hover:underline"
+            >
+              {t('register.termsLink', 'Términos y Condiciones')}
+            </Link>
+            {' '}{t('register.legalNoticeAnd', 'y la')}{' '}
+            <Link 
+              to="/privacy-policy" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="font-semibold text-[#73841e] dark:text-[#d4e84a] hover:underline"
+            >
+              {t('register.privacyLink', 'Política de Privacidad')}
+            </Link>
+            .
+          </p>
+        </div>
+
         {/* Botón de Envío */}
         <div className="md:col-span-2 mt-2">
           <button

@@ -22,52 +22,9 @@
 /* 6. Responsive Breakpoints (Mobile, Tablet, Desktop) */
 @import './static/css/responsive/responsive.css';
 
-body {
-  font-family: var(--da-font-family);
-  background-color: #f0f5fc;
-  margin: 0;
-  min-height: 100vh;
-  position: relative;
-  overflow-x: hidden;
-}
-
 #root {
   overflow-x: hidden;
   width: 100%;
-}
-
-body::before, body::after {
-  content: "";
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(80px);
-  z-index: -1;
-  pointer-events: none;
-  animation: floatBlobs 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-body::before {
-  top: -10%;
-  left: -10%;
-  width: 50vw;
-  height: 50vw;
-  background: rgba(179, 195, 76, 0.15); /* BA Primary */
-}
-
-body::after {
-  bottom: -10%;
-  right: -10%;
-  width: 60vw;
-  height: 60vw;
-  background: rgba(64, 150, 255, 0.15); /* Soft Blue */
-  animation-delay: -10s;
-}
-
-@keyframes floatBlobs {
-  0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.8; }
-  33% { transform: translate(15vw, 8vh) scale(1.15) rotate(10deg); opacity: 0.6; }
-  66% { transform: translate(-8vw, 18vh) scale(0.9) rotate(-5deg); opacity: 0.7; }
-  100% { transform: translate(-18vw, -8vh) scale(1.1) rotate(5deg); opacity: 0.8; }
 }
 
 .btn-icon-expand,
