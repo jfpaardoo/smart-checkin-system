@@ -155,12 +155,9 @@ export default function AuditDashboard() {
   const handleDownloadCsv = async () => {
     setExportingType('csv');
     try {
-      const res = await api.get('/audit/export/csv', { responseType: 'blob' });
-      downloadExportFile(res.data, 'audit_logs.csv');
-      toast.success(t('audit.exportSuccess', 'Archivo exportado correctamente'));
+      await downloadExportFile('audit/csv', 'audit_logs.csv', toast, t);
     } catch (err) {
       console.error("Error exporting audit csv", err);
-      toast.error(t('audit.exportError', 'Error al exportar los registros de auditoría'));
     } finally {
       setExportingType(null);
     }
@@ -169,12 +166,9 @@ export default function AuditDashboard() {
   const handleDownloadPdf = async () => {
     setExportingType('pdf');
     try {
-      const res = await api.get('/audit/export/pdf', { responseType: 'blob' });
-      downloadExportFile(res.data, 'audit_logs.pdf');
-      toast.success(t('audit.exportSuccess', 'Archivo exportado correctamente'));
+      await downloadExportFile('audit/pdf', 'audit_logs.pdf', toast, t);
     } catch (err) {
       console.error("Error exporting audit pdf", err);
-      toast.error(t('audit.exportError', 'Error al exportar los registros de auditoría'));
     } finally {
       setExportingType(null);
     }

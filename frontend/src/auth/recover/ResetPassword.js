@@ -41,7 +41,7 @@ export default function ResetPassword() {
 
     if (!token) {
         return (
-            <div className="flex flex-col items-center justify-center h-[calc(100vh-80px)] w-full px-4 overflow-hidden">
+            <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] min-h-[calc(100dvh-80px)] w-full px-4 overflow-hidden">
                 <div className="w-full max-w-md bg-white/40 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] rounded-[32px] p-6 md:p-8 border border-white/60 text-center">
                     <h2 className="mb-4 text-2xl font-extrabold text-slate-800">{t('recover.invalidLink', 'Enlace inválido')}</h2>
                     <p className="mb-6 text-sm text-slate-600 font-medium">{t('recover.noTokenFound', 'No se encontró ningún token de recuperación en la URL.')}</p>
@@ -54,7 +54,7 @@ export default function ResetPassword() {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-80px)] w-full px-4 overflow-hidden">
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] min-h-[calc(100dvh-80px)] w-full px-4 overflow-hidden">
             
             <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 mb-8 drop-shadow-sm text-center">
                 {t('recover.resetTitle', 'Restablecer Contraseña')}

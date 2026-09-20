@@ -61,14 +61,12 @@ export default function SecureCaptureShield({
 
     useEffect(() => {
         const handleBlur = () => {
-            // Cuando la ventana pierde el foco, activar blackout inmediato síncrono
+            // Cuando la ventana pierde el foco, activar blackout visual inmediato síncrono
             triggerBlackout();
-            wipeClipboardSafe();
         };
 
         const handleFocus = () => {
-            // Al recuperar el foco, purgar portapapeles y restaurar automáticamente
-            wipeClipboardSafe();
+            // Al recuperar el foco, restaurar automáticamente la visualización
             if (unblackoutTimeoutRef.current) clearTimeout(unblackoutTimeoutRef.current);
             unblackoutTimeoutRef.current = setTimeout(() => {
                 if (document.hasFocus() && document.visibilityState === 'visible') {
@@ -81,7 +79,6 @@ export default function SecureCaptureShield({
         const handleVisibilityChange = () => {
             if (document.visibilityState !== 'visible') {
                 triggerBlackout();
-                wipeClipboardSafe();
             } else {
                 handleFocus();
             }
@@ -93,12 +90,7 @@ export default function SecureCaptureShield({
                 triggerBlackout();
                 wipeClipboardSafe();
             }
-            // Tecla Windows (Meta) - Se adelanta al atajo Win+Shift+S antes de que Recortes congele el buffer de pantalla
-            if (e.key === 'Meta' || e.keyCode === 91 || e.keyCode === 92 || e.keyCode === 93) {
-                triggerBlackout();
-                wipeClipboardSafe();
-            }
-            // Ctrl+Shift+S / Cmd+Shift+3/4 / Alt+PrintScreen
+            // Atajos específicos de captura: Win+Shift+S / Cmd+Shift+3/4 / Ctrl+Shift+S / Alt+PrintScreen
             if (((e.ctrlKey || e.metaKey) && e.shiftKey) || (e.altKey && (e.key === 'PrintScreen' || e.keyCode === 44))) {
                 triggerBlackout();
                 wipeClipboardSafe();
@@ -124,14 +116,12 @@ export default function SecureCaptureShield({
 
         const handlePageHide = () => {
             triggerBlackout();
-            wipeClipboardSafe();
         };
 
         const handleMouseLeave = (e) => {
             // Si el cursor abandona la ventana del navegador (por ej. para interactuar con la app de recortes o barra de tareas)
             if (!e.relatedTarget && !e.toElement) {
                 triggerBlackout();
-                wipeClipboardSafe();
             }
         };
 
@@ -153,7 +143,6 @@ export default function SecureCaptureShield({
             if (typeof document !== 'undefined') {
                 if (typeof document.hasFocus === 'function' && !document.hasFocus() && document.visibilityState === 'visible') {
                     triggerBlackout();
-                    wipeClipboardSafe();
                 }
             }
             rAFId = requestAnimationFrame(checkFocusLoop);

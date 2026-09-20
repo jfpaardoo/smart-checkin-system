@@ -37,6 +37,7 @@ const AnalyticsDashboard = lazyWithRetry(() => import("./admin/analytics/Analyti
 const AuditDashboard = lazyWithRetry(() => import("./admin/audit/AuditDashboard"));
 const CloudSettingsAdmin = lazyWithRetry(() => import("./admin/settings/CloudSettingsAdmin"));
 const PrivacyPolicy = lazyWithRetry(() => import("./legal/PrivacyPolicy"));
+const TermsAndConditions = lazyWithRetry(() => import("./legal/TermsAndConditions"));
 const ForgotPassword = lazyWithRetry(() => import("./auth/recover/ForgotPassword"));
 const ResetPassword = lazyWithRetry(() => import("./auth/recover/ResetPassword"));
 
@@ -106,6 +107,9 @@ function AnimatedRoutes() {
             <Route path="/register" element={<Register />} />
             <Route path="/checkin" element={<PrivateRoute><ScannerCheckin /></PrivateRoute>} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsAndConditions />} />
+            <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+            <Route path="/terminos-y-condiciones" element={<TermsAndConditions />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 

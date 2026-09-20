@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.springframework.samples</groupId>
 	<artifactId>smartcheckin</artifactId>
-	<version>1.2.3</version>
+	<version>1.2.4</version>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -236,16 +236,14 @@
 			<artifactId>jpatterns</artifactId>
 			<version>0.0.1</version>
 		</dependency>
-		<!-- Other J2EE required libraries -->
+		<!-- Jakarta XML Binding (JAXB) for Java 21 / Spring Boot 3 -->
 		<dependency>
-			<groupId>javax.xml.bind</groupId>
-			<artifactId>jaxb-api</artifactId>
-			<version>2.4.0-b180830.0359</version>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-impl</artifactId>
-			<version>2.4.0-b180830.0438</version>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>jaxb-runtime</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.maven</groupId>

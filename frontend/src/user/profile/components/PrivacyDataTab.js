@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FaDownload, FaTrashAlt, FaShieldAlt } from "react-icons/fa";
+import { FaDownload, FaTrashAlt, FaShieldAlt, FaFileContract } from "react-icons/fa";
 
 const ActionButton = ({ variant, isLoading, icon: Icon, children, ...props }) => (
   <button
@@ -89,18 +89,27 @@ export default function PrivacyDataTab({
         </ActionButton>
       </div>
 
-      {/* Enlace a Política de Privacidad */}
+      {/* Enlaces a Política de Privacidad y Términos */}
       <div className="pt-6 border-t border-slate-200/60 dark:border-slate-700/60 flex flex-col sm:flex-row items-center justify-between gap-4">
         <p className="text-slate-600 dark:text-slate-400 text-sm m-0 text-center sm:text-left">
           {t("profile.privacyPolicyPrompt", "¿Tienes dudas sobre cómo gestionamos tus datos, firmas y fichajes?")}
         </p>
-        <Link
-          to="/privacy-policy"
-          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-xs sm:text-sm transition-all border border-white/80 dark:border-white/10 text-slate-700 dark:text-slate-200 bg-white/60 dark:bg-slate-700/60 hover:bg-white dark:hover:bg-slate-600 shadow-xs whitespace-nowrap w-full sm:w-auto text-decoration-none"
-        >
-          <FaShieldAlt className="text-[#82a328] dark:text-[#d4e84a]" />
-          <span>{t("profile.readPrivacyPolicy", "Leer Política de Privacidad")}</span>
-        </Link>
+        <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full sm:w-auto">
+          <Link
+            to="/terms"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-xs sm:text-sm transition-all border border-white/80 dark:border-white/10 text-slate-700 dark:text-slate-200 bg-white/60 dark:bg-slate-700/60 hover:bg-white dark:hover:bg-slate-600 shadow-xs whitespace-nowrap w-full sm:w-auto text-decoration-none"
+          >
+            <FaFileContract className="text-[#82a328] dark:text-[#d4e84a]" />
+            <span>{t("profile.readTerms", "Términos de Uso")}</span>
+          </Link>
+          <Link
+            to="/privacy-policy"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-xs sm:text-sm transition-all border border-white/80 dark:border-white/10 text-slate-700 dark:text-slate-200 bg-white/60 dark:bg-slate-700/60 hover:bg-white dark:hover:bg-slate-600 shadow-xs whitespace-nowrap w-full sm:w-auto text-decoration-none"
+          >
+            <FaShieldAlt className="text-[#82a328] dark:text-[#d4e84a]" />
+            <span>{t("profile.readPrivacyPolicy", "Leer Política de Privacidad")}</span>
+          </Link>
+        </div>
       </div>
 
     </div>

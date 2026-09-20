@@ -264,10 +264,17 @@ export default function Home() {
       <div className="w-full text-center mt-2 pb-4 text-xs text-slate-500 dark:text-slate-400">
         <span>&copy; {new Date().getFullYear()} Distribution Academy | </span>
         <Link 
-          to="/privacy-policy" 
+          to="/terms" 
           className="font-semibold text-slate-600 dark:text-slate-300 hover:text-[#b3c34c] dark:hover:text-[#d4e84a] text-decoration-none transition-colors ml-1"
         >
-          Política de Privacidad
+          {t('login.termsAndConditions', 'Términos y Condiciones')}
+        </Link>
+        <span className="mx-1">•</span>
+        <Link 
+          to="/privacy-policy" 
+          className="font-semibold text-slate-600 dark:text-slate-300 hover:text-[#b3c34c] dark:hover:text-[#d4e84a] text-decoration-none transition-colors"
+        >
+          {t('login.privacyPolicy', 'Política de Privacidad')}
         </Link>
       </div>
 
