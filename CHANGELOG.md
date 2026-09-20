@@ -17,6 +17,8 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
   - Integrada retroalimentación háptica y sonora instantánea (`soundAndHaptics.playClick()`) en el conmutador de tema claro/oscuro, botón de menú móvil tipo hamburguesa y selector dinámico de idiomas.
 - **Adaptación Integral a Viewports Móviles Dinámicos (`100dvh`)**:
   - Ajustados los contenedores de las pantallas críticas de autenticación (`Login`, `Register`, `ForgotPassword`, `ResetPassword`) a `100dvh`, previniendo desbordamientos y saltos bruscos provocados por la barra de navegación retráctil en iOS Safari y Android Chrome.
+- **Blindaje Criptográfico y Actualización de Seguridad Bouncy Castle (`pom.xml`)**:
+  - Actualizadas las dependencias `org.bouncycastle:bcprov-jdk18on` y `bcpkix-jdk18on` a la versión `1.85`. Resueltas las dos alertas de seguridad de Dependabot: bypass de restricciones de nombres en certificados (*Name Constraints bypass*, CVE-2026-8763 / GHSA-9pwp-9qqc-pr26) y reseteo de guarda de profundidad en secuencias ASN.1 (*Lazy ASN.1 sequence forcing*, CVE-2026-13506 / GHSA-qp49-qgx5-5m26).
 - **Optimización y Limpieza de Estilos Globales (`App.css`, `index.css`, `index.html`)**:
   - Eliminados selectores conflictivos duplicados de `body` y `@keyframes floatBlobs` en `App.css`, otorgando prioridad a los orbes de fondo acelerados por GPU de `index.css` (`will-change: transform`, `translate3d(0, 0, 0)`, `backface-visibility: hidden`) para un renderizado ultra-fluido a 60/120 FPS.
   - Incorporado el peso tipográfico `800` en el enlace de Google Fonts (`Outfit`) en `index.html` para máxima nitidez en títulos y logotipos.
