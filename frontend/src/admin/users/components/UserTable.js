@@ -3,11 +3,15 @@ import { Link } from "react-router-dom";
 import { FaEdit, FaTrash, FaCheck, FaUser } from 'react-icons/fa';
 import { useTranslation } from "react-i18next";
 import { TableGhostLoader } from "../../../components/GhostLoader";
+import SortableHeader from "../../../components/SortableHeader";
+import MobileSortBar from "../../../components/MobileSortBar";
 
 function UserTable({
   users,
   activeTab,
   loading,
+  sortConfig,
+  onSort,
   onApprove,
   onReject,
   onDelete,
@@ -16,125 +20,195 @@ function UserTable({
   const handleDeleteAction = onDelete || openDeleteModal;
   const { t } = useTranslation();
 
+  const sortOptions = [
+    { key: 'personalCode', label: t('users.personalCode', 'Código Personal') },
+    { key: 'name', label: t('users.employee', 'Empleado') },
+    { key: 'company', label: t('users.company', 'Empresa / Centro') },
+    { key: 'status', label: t('users.status', 'Estado') },
+  ];
+
   if (loading) {
     return <TableGhostLoader />;
   }
 
   return (
-    <div className="w-full relative z-10 mt-2">
+    <div className="w-full relative z-30 mt-2">
       {/* 1. VISTA ESCRITORIO (md y superior) */}
       <div className="hidden md:block overflow-x-auto rounded-3xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.06)]">
         <table aria-label="users" className="w-full text-left border-collapse align-middle">
           <thead>
             <tr className="border-b border-white/40 dark:border-white/10 bg-white/50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider">
-              <th className="py-4 px-5" style={{ width: '10%' }}>{t('users.personalCode', 'Código')}</th>
-              <th className="py-4 px-5" style={{ width: '25%' }}>{t('users.name', 'Usuario / Nombre')}</th>
-              <th className="py-4 px-5" style={{ width: '22%' }}>{t('users.company', 'Empresa / Centro')}</th>
-              <th className="py-4 px-5 text-center" style={{ width: '18%' }}>{t('users.status', 'Estado')}</th>
-              <th className="py-4 px-5 text-right" style={{ width: '15%' }}>{t('common.actions', 'Acciones')}</th>
+              <SortableHeader
+                label={t('users.personalCode', 'Código Personal')}
+                sortKey="personalCode"
+                currentSort={sortConfig}
+                onSort={onSort}
+                width="16%"
+              />
+              <SortableHeader
+                label={t('users.employee', 'Empleado')}
+                sortKey="name"
+                currentSort={sortConfig}
+                onSort={onSort}
+                width="26%"
+              />
+              <SortableHeader
+                label={t('users.company', 'Empresa / Centro')}
+                sortKey="company"
+                currentSort={sortConfig}
+                onSort={onSort}
+                width="25%"
+              />
+              <SortableHeader
+                label={t('users.status', 'Estado')}
+                sortKey="status"
+                currentSort={sortConfig}
+                onSort={onSort}
+                align="center"
+                width="18%"
+              />
+              <th className="py-4 px-5 text-right font-bold uppercase tracking-wider" style={{ width: '15%' }}>{t('common.actions', 'Acciones')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/40 dark:divide-white/10 text-sm text-slate-800 dark:text-slate-100">
-            {users.map((user) => (
-              <tr key={user.id} className="hover:bg-white/50 dark:hover:bg-slate-700/50 transition duration-150">
-                <td className="py-4 px-5">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-slate-800 dark:text-slate-100 font-mono text-xs sm:text-sm">#{user.personalCode}</span>
-                    {user.locator && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a] border border-[#b3c34c]/30 flex-shrink-0">
-                        {user.locator}
-                      </span>
-                    )}
+            {users.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="py-12 px-5 text-center">
+                  <div className="flex flex-col items-center justify-center gap-2 py-4">
+                    <div className="p-3.5 rounded-2xl bg-[#b3c34c]/10 dark:bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a]">
+                      <FaUser size={22} />
+                    </div>
+                    <p className="font-bold text-slate-700 dark:text-slate-200 text-sm m-0">
+                      {t('users.noUsers', 'No se encontraron empleados')}
+                    </p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 m-0 max-w-sm">
+                      {t('users.emptyFilterHint', 'No hay registros que coincidan con los filtros seleccionados o el término de búsqueda.')}
+                    </p>
                   </div>
-                </td>
-                <td className="py-4 px-5">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-2xl bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a] shadow-xs flex-shrink-0">
-                      <FaUser size={15} />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="font-bold text-slate-800 dark:text-slate-100 tracking-tight leading-tight">
-                        {user.firstName} {user.lastName}
-                      </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        @{user.username}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td className="py-4 px-5 text-slate-600 dark:text-slate-300">
-                  {user.company ? (
-                    <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs truncate max-w-[170px] block" title={user.company.name}>
-                      {user.company.name}
-                    </span>
-                  ) : (
-                    <span className="text-slate-400 dark:text-slate-500 text-xs italic">{t('users.noCompany', 'Sin empresa')}</span>
-                  )}
-                </td>
-                <td className="py-4 px-5 text-center">
-                  <div className="flex justify-center items-center w-full">
-                    {activeTab === 'approved' || activeTab === 'admins' || activeTab === 'employees' ? (
-                      <span className={`da-badge ${user.isWorking ? 'da-badge-active' : 'da-badge-inactive'}`}>
-                        {user.isWorking ? t('users.statusWorking', 'Trabajando') : t('users.statusResting', 'Descansando')}
-                      </span>
-                    ) : (
-                      <span className="da-badge da-badge-warning">{t('users.statusPending', 'Pendiente de Aprobación')}</span>
-                    )}
-                  </div>
-                </td>
-                <td className="py-4 px-5 text-right">
-                  {activeTab === 'approved' || activeTab === 'admins' || activeTab === 'employees' ? (
-                    <div className="inline-flex gap-2 justify-end items-center">
-                      <Link
-                        to={`/users/${user.id}`}
-                        className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-600 hover:scale-105 active:scale-95 transition shadow-xs inline-flex items-center justify-center cursor-pointer text-decoration-none"
-                        title={t('common.edit', 'Editar')}
-                        aria-label={t('common.edit', 'Editar')}
-                      >
-                        <FaEdit size={14} />
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteAction?.(user)}
-                        className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 hover:scale-105 active:scale-95 transition shadow-xs cursor-pointer inline-flex items-center justify-center"
-                        title={t('common.delete', 'Eliminar')}
-                        aria-label={t('common.delete', 'Eliminar')}
-                      >
-                        <FaTrash size={14} />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="inline-flex gap-2 justify-end items-center">
-                      <button
-                        type="button"
-                        onClick={() => onApprove(user.id)}
-                        className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 hover:scale-105 active:scale-95 transition shadow-xs cursor-pointer inline-flex items-center justify-center"
-                        title={t('users.approve', 'Aprobar')}
-                        aria-label={t('users.approve', 'Aprobar')}
-                      >
-                        <FaCheck size={14} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onDelete(user.id)}
-                        className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 hover:scale-105 active:scale-95 transition shadow-xs cursor-pointer inline-flex items-center justify-center"
-                        title={t('users.reject', 'Rechazar')}
-                        aria-label={t('users.reject', 'Rechazar')}
-                      >
-                        <FaTrash size={14} />
-                      </button>
-                    </div>
-                  )}
                 </td>
               </tr>
-            ))}
+            ) : (
+              users.map((user) => (
+                <tr key={user.id} className="hover:bg-white/50 dark:hover:bg-slate-700/50 transition duration-150">
+                  <td className="py-4 px-5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-slate-800 dark:text-slate-100 font-mono text-xs sm:text-sm">#{user.personalCode}</span>
+                      {user.locator && (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a] border border-[#b3c34c]/30 flex-shrink-0">
+                          {user.locator}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="py-4 px-5">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 rounded-2xl bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a] shadow-xs flex-shrink-0">
+                        <FaUser size={15} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-bold text-slate-800 dark:text-slate-100 tracking-tight leading-tight">
+                          {user.firstName} {user.lastName}
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                          @{user.username}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-5 text-slate-600 dark:text-slate-300">
+                    {user.company ? (
+                      <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs truncate max-w-[170px] block" title={user.company.name}>
+                        {user.company.name}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 dark:text-slate-500 text-xs italic">{t('users.noCompany', 'Sin empresa')}</span>
+                    )}
+                  </td>
+                  <td className="py-4 px-5 text-center">
+                    <div className="flex justify-center items-center w-full">
+                      {activeTab === 'approved' || activeTab === 'admins' || activeTab === 'employees' ? (
+                        <span className={`da-badge ${user.isWorking ? 'da-badge-active' : 'da-badge-inactive'}`}>
+                          {user.isWorking ? t('users.statusWorking', 'Trabajando') : t('users.statusResting', 'Descansando')}
+                        </span>
+                      ) : (
+                        <span className="da-badge da-badge-warning">{t('users.statusPending', 'Pendiente de Aprobación')}</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="py-4 px-5 text-right">
+                    {activeTab === 'approved' || activeTab === 'admins' || activeTab === 'employees' ? (
+                      <div className="inline-flex gap-2 justify-end items-center">
+                        <Link
+                          to={`/users/${user.id}`}
+                          className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-600 hover:scale-105 active:scale-95 transition shadow-xs inline-flex items-center justify-center cursor-pointer text-decoration-none"
+                          title={t('common.edit', 'Editar')}
+                          aria-label={t('common.edit', 'Editar')}
+                        >
+                          <FaEdit size={14} />
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteAction?.(user)}
+                          className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 hover:scale-105 active:scale-95 transition shadow-xs cursor-pointer inline-flex items-center justify-center"
+                          title={t('common.delete', 'Eliminar')}
+                          aria-label={t('common.delete', 'Eliminar')}
+                        >
+                          <FaTrash size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="inline-flex gap-2 justify-end items-center">
+                        <button
+                          type="button"
+                          onClick={() => onApprove(user.id)}
+                          className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 hover:scale-105 active:scale-95 transition shadow-xs cursor-pointer inline-flex items-center justify-center"
+                          title={t('users.approve', 'Aprobar')}
+                          aria-label={t('users.approve', 'Aprobar')}
+                        >
+                          <FaCheck size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onDelete(user.id)}
+                          className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 hover:scale-105 active:scale-95 transition shadow-xs cursor-pointer inline-flex items-center justify-center"
+                          title={t('users.reject', 'Rechazar')}
+                          aria-label={t('users.reject', 'Rechazar')}
+                        >
+                          <FaTrash size={14} />
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
       {/* 2. VISTA MÓVIL / TABLET */}
       <div className="md:hidden flex flex-col gap-3 mt-2">
-        {users.map((user) => (
+        {users.length > 0 && (
+          <MobileSortBar
+            options={sortOptions}
+            currentSort={sortConfig}
+            onSort={onSort}
+          />
+        )}
+        {users.length === 0 ? (
+          <div className="p-8 text-center bg-white/70 dark:bg-slate-800/70 backdrop-blur-md rounded-2xl border border-white/40 dark:border-white/10 flex flex-col items-center justify-center gap-2">
+            <div className="p-3.5 rounded-2xl bg-[#b3c34c]/10 dark:bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a]">
+              <FaUser size={20} />
+            </div>
+            <p className="font-bold text-slate-700 dark:text-slate-200 text-sm m-0">
+              {t('users.noUsers', 'No se encontraron empleados')}
+            </p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 m-0">
+              {t('users.emptyFilterHint', 'No hay registros que coincidan con los filtros seleccionados o el término de búsqueda.')}
+            </p>
+          </div>
+        ) : (
+          users.map((user) => (
           <div key={user.id} className="content-auto bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm rounded-2xl p-4 border border-white/40 dark:border-white/10 flex flex-col gap-3 overflow-hidden transition-all duration-150">
             <div className="flex justify-between items-start gap-3">
               <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -208,7 +282,8 @@ function UserTable({
               )}
             </div>
           </div>
-        ))}
+        ))
+      )}
       </div>
     </div>
   );

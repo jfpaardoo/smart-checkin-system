@@ -91,6 +91,29 @@ export async function saveBlobFile(blobData, filename, mimeType = 'application/o
   }
 }
 
+const notifyDownloadSuccess = (toast, t) => {
+  if (toast && t) {
+    toast.success(t('common.exportSuccess', 'Informe descargado con éxito'));
+  }
+};
+
+const notifyDownloadError = (toast, t, error) => {
+  if (!toast || !t) return;
+  if (error.response && error.response.status !== 401) {
+    toast.error(t('common.exportError', 'Error al generar la descarga del informe'));
+  } else if (!error.response) {
+    toast.error(t('common.networkError', 'Error de red o conexión al servidor'));
+  }
+};
+
+async function handleDirectBlob(blobData, defaultFilename, toast, t) {
+  const success = await saveBlobFile(blobData, defaultFilename);
+  if (success) {
+    notifyDownloadSuccess(toast, t);
+  }
+  return success;
+}
+
 /**
  * Utility function to handle secure binary/file downloads (CSV, Excel, PDF)
  * with automated JWT injection, error handling, and localized Toast notifications.
@@ -107,11 +130,7 @@ export async function downloadExportFile(endpoint, defaultFilename, toast, t) {
 
   // Fallback si por error se pasó directamente el Blob de datos en vez del endpoint URL
   if (endpoint instanceof Blob || typeof endpoint !== 'string') {
-    const success = await saveBlobFile(endpoint, defaultFilename);
-    if (success && toast && t) {
-      toast.success(t('common.exportSuccess', 'Informe descargado con éxito'));
-    }
-    return success;
+    return handleDirectBlob(endpoint, defaultFilename, toast, t);
   }
 
   const cleanEndpoint = endpoint.replace(/^\/api\/v1\/exports\//, '').replace(/^\/exports\//, '');
@@ -124,31 +143,18 @@ export async function downloadExportFile(endpoint, defaultFilename, toast, t) {
   
   try {
     const url = `/exports/${cleanEndpoint}`;
-    
-    // Request blob using axios
-    const response = await api.get(url, {
-      responseType: 'blob'
-    });
+    const response = await api.get(url, { responseType: 'blob' });
 
     if (response.status === 200) {
       const mimeType = response.headers['content-type'] || 'application/octet-stream';
       await saveBlobFile(response.data, defaultFilename, mimeType);
-      
-      if (toast && t) {
-        toast.success(t('common.exportSuccess', 'Informe descargado con éxito'));
-      }
+      notifyDownloadSuccess(toast, t);
       return true;
     }
     return false;
   } catch (error) {
     console.error('Failed to download export file:', error);
-    if (toast && t) {
-      if (error.response && error.response.status !== 401) {
-          toast.error(t('common.exportError', 'Error al generar la descarga del informe'));
-      } else if (!error.response) {
-          toast.error(t('common.networkError', 'Error de red o conexión al servidor'));
-      }
-    }
+    notifyDownloadError(toast, t, error);
     return false;
   } finally {
     activeExports.delete(cleanEndpoint);

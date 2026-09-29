@@ -109,6 +109,60 @@ public class FormationCheckinFacade {
         }
     }
 
+    private void dispatchUpdateNotifications(Formation formation, List<Integer> targetUserIds, boolean notifyAll) {
+        if (notificationContext == null || formation == null) {
+            return;
+        }
+
+        String title = "Formación Actualizada: " + formation.getName();
+        String dateStr = formation.getFormationDate() != null ? formation.getFormationDate().toString().replace("T", " ") : "Próximamente";
+        String message = String.format(
+            "Se han actualizado los detalles de la formación '%s' programada para el %s en %s.",
+            formation.getName(), dateStr, formation.getLocation()
+        );
+
+        List<User> recipients = resolveRecipients(targetUserIds, notifyAll);
+        for (User recipient : recipients) {
+            try {
+                notificationContext.sendNotification(recipient, title, message);
+            } catch (Exception e) {
+                log.warn("Error sending update notification to user {}: {}", recipient.getUsername(), e.getMessage());
+            }
+        }
+    }
+
+    private void dispatchCancellationNotifications(Formation formation) {
+        if (notificationContext == null || formation == null) {
+            return;
+        }
+
+        String title = "Formación Cancelada: " + formation.getName();
+        String message = String.format(
+            "La formación '%s' prevista ha sido cancelada por la administración.",
+            formation.getName()
+        );
+
+        List<User> recipients = new ArrayList<>();
+        if (formation.getAttendances() != null && !formation.getAttendances().isEmpty()) {
+            for (FormationAttendance att : formation.getAttendances()) {
+                if (att.getUser() != null) {
+                    recipients.add(att.getUser());
+                }
+            }
+        }
+        if (recipients.isEmpty()) {
+            recipients = resolveAllActiveEmployees();
+        }
+
+        for (User recipient : recipients) {
+            try {
+                notificationContext.sendNotification(recipient, title, message);
+            } catch (Exception e) {
+                log.warn("Error sending cancellation notification to user {}: {}", recipient.getUsername(), e.getMessage());
+            }
+        }
+    }
+
     @Auditable(action = "FORMATION_SAVE", details = "Admin created a formation")
     @Transactional(rollbackFor = Exception.class)
     public Formation createFormation(FormationRequest request, List<MultipartFile> files) {
@@ -160,6 +214,12 @@ public class FormationCheckinFacade {
         
         Formation saved = formationService.updateFormation(existing, id);
         notifyFormationsUpdate(saved.getId());
+
+        if (FormationStatus.PUBLISHED.equals(saved.getStatus())) {
+            boolean notifyAll = request.getTargetUserIds() == null || request.getTargetUserIds().isEmpty();
+            dispatchUpdateNotifications(saved, request.getTargetUserIds(), notifyAll);
+        }
+
         return saved;
     }
 
@@ -250,6 +310,11 @@ public class FormationCheckinFacade {
 
     @Auditable(action = "FORMATION_DELETE", details = "Admin deleted a formation")
     public void deleteFormation(Integer id) {
+        formationService.findById(id).ifPresent(existing -> {
+            if (FormationStatus.PUBLISHED.equals(existing.getStatus())) {
+                dispatchCancellationNotifications(existing);
+            }
+        });
         formationService.deleteFormation(id);
         notifyFormationsUpdate(id);
     }

@@ -214,7 +214,7 @@ Los snapshots de accesibilidad mostraron que la aplicación **redirigía a la pa
 En `frontend/src/privateRoute/index.js`:
 
 ```javascript
-// ❌ CÓDIGO ANTERIOR INVENTADO/DEFECTUOSO
+// [INCORRECTO] CÓDIGO ANTERIOR DEFECTUOSO
 const PrivateRoute = ({ children }) => {
     const jwt = tokenService.getLocalAccessToken();
     const [isLoading, setIsLoading] = useState(true);
@@ -245,7 +245,7 @@ const PrivateRoute = ({ children }) => {
 Encapsular la llamada `fetch` dentro de un `useEffect` con arreglo de dependencias `[jwt]` y una bandera de cancelación (`cancelled`) para evitar carreras de estado al desmontar el componente:
 
 ```javascript
-// ✅ CÓDIGO CORREGIDO (frontend/src/privateRoute/index.js)
+// [CORRECTO] CÓDIGO CORREGIDO (frontend/src/privateRoute/index.js)
 useEffect(() => {
     if (!jwt) {
         setIsLoading(false);
@@ -294,7 +294,7 @@ El frontend evaluaba la condición con **igualdad estricta contra el booleano `t
 
 Sin embargo, los mocks originales de los tests en Playwright retornaban un objeto JSON:
 ```javascript
-// ❌ Mock incorrecto
+// [INCORRECTO] Mock incorrecto
 body: JSON.stringify({ valid: true })
 ```
 Al hacer `response.json()`, `result` recibía el objeto `{ valid: true }`. La expresión `{ valid: true } === true` evaluaba siempre como `false`. Como resultado, a pesar de solucionar el bucle infinito, la aplicación **seguía redirigiendo a la pantalla de Login**.
@@ -303,7 +303,7 @@ Al hacer `response.json()`, `result` recibía el objeto `{ valid: true }`. La ex
 Ajustar los mocks en los archivos `.spec.js` para que retornen el booleano primitivo `true`:
 
 ```javascript
-// ✅ Mock corregido en 2fa-flow.spec.js y admin-approval.spec.js
+// [CORRECTO] Mock corregido en 2fa-flow.spec.js y admin-approval.spec.js
 await page.route('**/api/v1/auth/validate**', async (route) => {
   await route.fulfill({
     status: 200,

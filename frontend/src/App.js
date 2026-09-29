@@ -11,6 +11,7 @@ import { ToastProvider } from "./components/ToastProvider";
 import { NotificationProvider } from "./context/NotificationContext";
 import SessionTimeoutModal from "./components/SessionTimeoutModal";
 import PwaInstallPrompt from "./components/PwaInstallPrompt";
+import PwaTopBanner from "./components/PwaTopBanner";
 import PwaUpdateNotification from "./components/PwaUpdateNotification";
 import PageTransition from "./components/PageTransition";
 import { useTranslation } from "react-i18next";
@@ -148,6 +149,7 @@ function App() {
       <ToastProvider>
         <NotificationProvider>
           <ErrorBoundary FallbackComponent={ErrorFallback}>
+            <PwaTopBanner />
             <AppNavbar />
             <SessionTimeoutModal />
             <PwaInstallPrompt />

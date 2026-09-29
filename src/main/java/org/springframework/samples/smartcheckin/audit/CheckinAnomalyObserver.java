@@ -11,10 +11,13 @@ import org.springframework.samples.smartcheckin.checkin.CheckinService;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.samples.smartcheckin.notifications.EmailNotificationSender;
+import org.springframework.samples.smartcheckin.notifications.PushNotificationSender;
 import org.springframework.samples.smartcheckin.notifications.AlertNotification;
 import org.springframework.samples.smartcheckin.notifications.Notification;
 import org.springframework.samples.smartcheckin.metrics.AppMetricsService;
 import org.springframework.samples.smartcheckin.notification.WebhookIntegrationService;
+import org.springframework.samples.smartcheckin.user.User;
+import org.springframework.samples.smartcheckin.user.UserService;
 
 @Component
 @ObserverPattern.Observer
@@ -26,6 +29,8 @@ public class CheckinAnomalyObserver {
     private final EmailNotificationSender emailNotificationSender;
     private AppMetricsService metricsService;
     private WebhookIntegrationService webhookIntegrationService;
+    private PushNotificationSender pushNotificationSender;
+    private UserService userService;
 
     @Autowired
     public CheckinAnomalyObserver(AuditService auditService, CheckinRepository checkinRepository, EmailNotificationSender emailNotificationSender) {
@@ -42,6 +47,16 @@ public class CheckinAnomalyObserver {
     @Autowired(required = false)
     public void setMetricsService(AppMetricsService metricsService) {
         this.metricsService = metricsService;
+    }
+
+    @Autowired(required = false)
+    public void setPushNotificationSender(PushNotificationSender pushNotificationSender) {
+        this.pushNotificationSender = pushNotificationSender;
+    }
+
+    @Autowired(required = false)
+    public void setUserService(UserService userService) {
+        this.userService = userService;
     }
 
     @EventListener
@@ -68,19 +83,52 @@ public class CheckinAnomalyObserver {
     }
 
     private void logAnomaly(String details) {
+        recordAuditAndMetrics(details);
+        sendWebhookAlert(details);
+        sendEmailAlert(details);
+        sendAdminPushAlert(details);
+    }
+
+    private void recordAuditAndMetrics(String details) {
         AuditLog log = new AuditLog("SECURITY_ANOMALY", "system", details, "127.0.0.1");
         auditService.recordAuditLog(log);
         if (metricsService != null) {
             metricsService.incrementCheckinAnomaly();
         }
         logger.warn("Security Anomaly Logged: {}", details);
+    }
 
+    private void sendWebhookAlert(String details) {
         if (webhookIntegrationService != null) {
             webhookIntegrationService.sendSecurityAnomalyNotification("CHECKIN_ANOMALY", details, "127.0.0.1");
         }
+    }
 
-        // Enviar notificación al administrador usando el patrón Bridge
+    private void sendEmailAlert(String details) {
         Notification alert = new AlertNotification(emailNotificationSender, details);
-        alert.notify("admin@smartcheckin.com"); // Email por defecto para administradores
+        alert.notify("admin@smartcheckin.com");
+    }
+
+    private void sendAdminPushAlert(String details) {
+        if (pushNotificationSender == null) {
+            return;
+        }
+        if (userService == null) {
+            pushNotificationSender.send("admin", "Anomalía en Fichajes", details);
+            return;
+        }
+        try {
+            Iterable<User> admins = userService.findAllByAuthority("ADMIN");
+            if (admins == null) {
+                return;
+            }
+            for (User admin : admins) {
+                if (admin.getUsername() != null && !admin.getUsername().startsWith("GDPR_DEL_")) {
+                    pushNotificationSender.send(admin.getUsername(), "Anomalía en Fichajes", details);
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Error enviando push de anomalía de check-in a admins: {}", e.getMessage());
+        }
     }
 }

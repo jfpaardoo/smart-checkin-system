@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaUsers, FaBuilding, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen, FaChartLine, FaIdCard, FaUserPlus, FaSignInAlt, FaShieldAlt, FaCloudUploadAlt, FaBars, FaTimes, FaCheck, FaBell, FaHeadset } from 'react-icons/fa';
+import { FaUsers, FaBuilding, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen, FaChartLine, FaIdCard, FaUserPlus, FaSignInAlt, FaShieldAlt, FaCloudUploadAlt, FaBars, FaTimes, FaCheck, FaBell, FaHeadset, FaMobileAlt } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
+import { isAppStandalone, executeOrOpenInstall } from './util/pwaHelper';
 import tokenService from './services/token.service';
 import { useTheme } from './context/ThemeContext';
 import { useNotifications } from './context/NotificationContext';
@@ -142,6 +143,18 @@ function UserDropdownMenu({ isOpen, toggleMenu, closeAll, username, t, onOpenSup
                     >
                         <FaHeadset className="text-[#8a9e22] dark:text-[#d4e84a]" /> {t('nav.support', 'Ayuda y Soporte')}
                     </button>
+                    {!isAppStandalone() && (
+                        <button
+                            type="button"
+                            className="da-nav-dropdown-item w-full text-left bg-transparent border-0 cursor-pointer"
+                            onClick={() => {
+                                closeAll();
+                                executeOrOpenInstall();
+                            }}
+                        >
+                            <FaMobileAlt className="text-[#8a9e22] dark:text-[#d4e84a]" /> {t('pwa.menuInstall', 'Instalar Aplicación')}
+                        </button>
+                    )}
                     <div className="border-t border-slate-300/40 dark:border-white/20 my-1 mx-2"></div>
                     <Link to="/logout" className="da-nav-dropdown-item" onClick={closeAll}><FaSignOutAlt className="text-red-500 dark:text-red-400" /> {t('nav.logout', 'Salir')}</Link>
                 </div>
@@ -160,6 +173,15 @@ function PublicNavLinks({ t, onOpenSupport }) {
             >
                 <FaHeadset className="text-[#8a9e22] dark:text-[#d4e84a]" /> {t('nav.support', 'Ayuda y Soporte')}
             </button>
+            {!isAppStandalone() && (
+                <button
+                    type="button"
+                    onClick={executeOrOpenInstall}
+                    className="flex items-center justify-center gap-1.5 text-slate-600 dark:text-white/80 hover:text-slate-900 dark:hover:text-white no-underline font-medium transition-colors duration-300 bg-transparent border-0 cursor-pointer p-0 text-sm"
+                >
+                    <FaMobileAlt className="text-[#8a9e22] dark:text-[#d4e84a]" /> {t('pwa.menuInstall', 'Instalar App')}
+                </button>
+            )}
             <Link to="/register" className="flex items-center justify-center gap-2 text-slate-600 dark:text-white/80 hover:text-slate-900 dark:hover:text-white no-underline font-medium transition-colors duration-300">
                 <FaUserPlus /> {t('nav.register', 'Solicitar Registro')}
             </Link>
@@ -203,6 +225,18 @@ function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggl
                             >
                                 <FaHeadset className="text-[#8a9e22] dark:text-[#d4e84a]" /> {t('nav.support', 'Ayuda y Soporte')}
                             </button>
+                            {!isAppStandalone() && (
+                                <button
+                                    type="button"
+                                    className="da-nav-dropdown-item w-full text-left bg-transparent border-0 cursor-pointer"
+                                    onClick={() => {
+                                        closeAll();
+                                        executeOrOpenInstall();
+                                    }}
+                                >
+                                    <FaMobileAlt className="text-[#8a9e22] dark:text-[#d4e84a]" /> {t('pwa.menuInstall', 'Instalar Aplicación')}
+                                </button>
+                            )}
                             <Link to="/register" className="da-nav-dropdown-item" onClick={closeAll}><FaUserPlus className="text-slate-500 dark:text-white/60" /> {t('nav.register', 'Solicitar Registro')}</Link>
                             <Link to="/login" className="flex items-center gap-3 px-[18px] py-[10px] my-1 text-[0.95rem] bg-[#b3c34c] text-slate-900 rounded-[20px] font-semibold shadow-md" onClick={closeAll}><FaSignInAlt /> {t('nav.login', 'Iniciar Sesión')}</Link>
                         </div>
@@ -221,6 +255,18 @@ function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggl
                                 >
                                     <FaHeadset className="text-[#8a9e22] dark:text-[#d4e84a]" /> {t('nav.support', 'Ayuda y Soporte')}
                                 </button>
+                                {!isAppStandalone() && (
+                                    <button
+                                        type="button"
+                                        className="da-nav-dropdown-item w-full text-left bg-transparent border-0 cursor-pointer"
+                                        onClick={() => {
+                                            closeAll();
+                                            executeOrOpenInstall();
+                                        }}
+                                    >
+                                        <FaMobileAlt className="text-[#8a9e22] dark:text-[#d4e84a]" /> {t('pwa.menuInstall', 'Instalar Aplicación')}
+                                    </button>
+                                )}
                                 <div className="border-t border-slate-300/40 dark:border-white/20 my-1 mx-2"></div>
                                 <Link to="/logout" className="da-nav-dropdown-item" onClick={closeAll}><FaSignOutAlt className="text-red-500 dark:text-red-400" /> {t('nav.logout', 'Salir')}</Link>
                             </div>

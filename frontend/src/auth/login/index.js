@@ -4,17 +4,18 @@ import { useTranslation } from "react-i18next";
 import { useToast } from "../../components/ToastProvider";
 import { Turnstile } from '@marsidev/react-turnstile';
 import tokenService from "../../services/token.service";
-import { FaSignInAlt, FaKey, FaFingerprint } from "react-icons/fa";
-import { 
-  isWebAuthnSupported, 
-  loginWithPasskey, 
-  isPlatformAuthenticatorAvailable, 
-  detectDeviceType, 
-  hasPasskeyOnDevice, 
-  markPasskeyOnDevice, 
-  isPasskeyPromptDismissed, 
-  dismissPasskeyPrompt, 
-  registerPasskey 
+import { FaSignInAlt, FaKey, FaFingerprint, FaMobileAlt } from "react-icons/fa";
+import { isAppStandalone, executeOrOpenInstall } from "../../util/pwaHelper";
+import {
+  isWebAuthnSupported,
+  loginWithPasskey,
+  isPlatformAuthenticatorAvailable,
+  detectDeviceType,
+  hasPasskeyOnDevice,
+  markPasskeyOnDevice,
+  isPasskeyPromptDismissed,
+  dismissPasskeyPrompt,
+  registerPasskey
 } from "../../util/webauthnUtil";
 import { useCaptchaSiteKey } from "../../hooks/useCaptchaSiteKey";
 import { useTheme } from "../../context/ThemeContext";
@@ -27,7 +28,7 @@ export default function Login() {
   const toast = useToast();
   const siteKey = useCaptchaSiteKey();
   const { isDark } = useTheme();
-  
+
   const navigate = useNavigate();
   const [requires2FA, setRequires2FA] = useState(false);
   const [username2FA, setUsername2FA] = useState("");
@@ -380,9 +381,9 @@ export default function Login() {
                 }
               }}
             >
-              <Turnstile 
+              <Turnstile
                 key={`${siteKey}-${captchaKey}-${isDark ? 'dark' : 'light'}`}
-                siteKey={siteKey} 
+                siteKey={siteKey}
                 onSuccess={(token) => setCaptchaToken(token)}
                 onError={() => setCaptchaToken(null)}
                 onExpire={() => setCaptchaToken(null)}
@@ -391,8 +392,8 @@ export default function Login() {
             </div>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading || !captchaToken}
             className={`${glassButtonClass} disabled:opacity-50 disabled:cursor-not-allowed`}
           >
@@ -406,14 +407,27 @@ export default function Login() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] min-h-[calc(100dvh-80px)] w-full px-4 py-8 overflow-y-auto">
-      
+
       <div className="w-full max-w-md bg-white/50 dark:bg-slate-900/60 backdrop-blur-2xl shadow-2xl rounded-[32px] p-6 sm:p-8 border border-white/60 dark:border-white/10">
-        
+
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 dark:text-slate-100 mb-6 drop-shadow-sm text-center">
           {t('login.title', 'Iniciar Sesión')}
         </h1>
 
         {renderContent()}
+
+        {!isAppStandalone() && (
+          <div className="mt-5 pt-4 border-t border-slate-200/60 dark:border-white/10 text-center">
+            <button
+              type="button"
+              onClick={executeOrOpenInstall}
+              className="w-full py-2.5 px-4 rounded-2xl bg-white/70 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center justify-center gap-2 transition shadow-xs cursor-pointer"
+            >
+              <FaMobileAlt className="text-[#7a8a18] dark:text-[#d4e157]" size={14} />
+              <span>{t('pwa.loginPrompt', 'Instalar la aplicación en este dispositivo')}</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Modal de sugerencia de Passkey tras inicio de sesión exitoso */}
@@ -429,15 +443,15 @@ export default function Login() {
       <div className="flex flex-col gap-2 mt-8 text-center text-xs text-slate-500 dark:text-slate-400 z-10">
         <div>
           &copy; {new Date().getFullYear()} Distribution Academy |{' '}
-          <Link 
-            to="/terms" 
+          <Link
+            to="/terms"
             className="font-semibold text-slate-600 dark:text-slate-300 hover:text-[#73841e] dark:hover:text-[#d4e84a] transition-colors"
           >
             {t('login.termsAndConditions', 'Términos y Condiciones')}
           </Link>
           {' '}•{' '}
-          <Link 
-            to="/privacy-policy" 
+          <Link
+            to="/privacy-policy"
             className="font-semibold text-slate-600 dark:text-slate-300 hover:text-[#73841e] dark:hover:text-[#d4e84a] transition-colors"
           >
             {t('login.privacyPolicy', 'Política de Privacidad')}

@@ -645,7 +645,7 @@ Supresión total de las 4 entidades, sus controladores, servicios, repositorios 
 @Service
 public class CheckinService {
     @Autowired
-    private CheckinRepository checkinRepository; // ❌ Field injection
+    private CheckinRepository checkinRepository; // [INCORRECTO] Field injection
     @Autowired
     private UserService userService;
 }
@@ -656,7 +656,7 @@ public class CheckinService {
 @Service
 @RequiredArgsConstructor  // Lombok genera el constructor
 public class CheckinService {
-    private final CheckinRepository checkinRepository; // ✅ final + constructor
+    private final CheckinRepository checkinRepository; // [CORRECTO] final + constructor
     private final UserService userService;
 }
 ```
@@ -672,7 +672,7 @@ public class CheckinService {
 
 **Estado inicial:**
 ```javascript
-// ❌ En FormationDetailsAdmin.js
+// [INCORRECTO] En FormationDetailsAdmin.js
 const content = isLoading ? <Spinner/> 
     : error ? <ErrorMsg/> 
     : formation ? formation.status === 'ACTIVE' 
@@ -683,7 +683,7 @@ const content = isLoading ? <Spinner/>
 
 **Estado refactorizado:**
 ```javascript
-// ✅ Helper function explícita
+// [CORRECTO] Helper function explícita
 function renderFormationContent(isLoading, error, formation, handleCheckout) {
     if (isLoading) return <Spinner />;
     if (error) return <ErrorMsg />;
@@ -703,14 +703,14 @@ function renderFormationContent(isLoading, error, formation, handleCheckout) {
 
 **Estado inicial (defectuoso):**
 ```javascript
-// ❌ fetch en el cuerpo del render → bucle infinito
+// [INCORRECTO] fetch en el cuerpo del render -> bucle infinito
 const PrivateRoute = ({ children }) => {
     const jwt = tokenService.getLocalAccessToken();
     if (jwt) {
         fetch(`/api/v1/auth/validate?token=${jwt}`)  // RE-EJECUTA EN CADA RENDER
             .then(r => r.json())
             .then(isValid => {
-                setIsValid(isValid); // setState → nuevo render → nuevo fetch → ∞
+                setIsValid(isValid); // setState -> nuevo render -> nuevo fetch -> infinito
                 setIsLoading(false);
             });
     }
@@ -720,7 +720,7 @@ const PrivateRoute = ({ children }) => {
 
 **Estado refactorizado:**
 ```javascript
-// ✅ fetch dentro de useEffect con cleanup y bandera de cancelación
+// [CORRECTO] fetch dentro de useEffect con cleanup y bandera de cancelación
 useEffect(() => {
     if (!jwt) { setIsValid(false); setIsLoading(false); return; }
     let cancelled = false;
