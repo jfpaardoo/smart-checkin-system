@@ -37,9 +37,9 @@ export default function EmployeeFilterPanel({
   );
 
   return (
-    <div className="p-4 rounded-3xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.06)] mb-4 flex flex-col gap-3 relative z-20">
+    <div className="p-4 rounded-3xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.06)] mb-4 flex flex-col gap-3 relative z-40">
       {/* Fila 1 de Filtros */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center relative z-20">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
         <div className="md:col-span-6">
           <GlassSearchBar 
             placeholder={t('analytics.searchEmployee', 'Buscar por nombre, código, usuario, empresa o localizador...')}
@@ -60,6 +60,7 @@ export default function EmployeeFilterPanel({
             value={selectedCompany}
             onChange={onCompanyChange}
             placeholder={t('users.filterByCompany', 'Filtrar por Empresa')}
+            dropup={false}
             className="w-full"
           />
         </div>
@@ -74,13 +75,14 @@ export default function EmployeeFilterPanel({
             value={selectedLocator}
             onChange={onLocatorChange}
             placeholder={t('analytics.filterLocator', 'Filtrar por Sede')}
+            dropup={false}
             className="w-full"
           />
         </div>
       </div>
 
       {/* Fila 2 de Filtros */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center pt-2 border-t border-white/30 relative z-10">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center pt-2 border-t border-white/30">
         <div>
           <GlassDropdown
             options={[
@@ -92,6 +94,7 @@ export default function EmployeeFilterPanel({
             value={selectedRole}
             onChange={onRoleChange}
             placeholder={t('analytics.filterRole', 'Rol')}
+            dropup={false}
             className="w-full"
           />
         </div>
@@ -107,6 +110,7 @@ export default function EmployeeFilterPanel({
             value={selectedPerf}
             onChange={onPerfChange}
             placeholder={t('analytics.filterPerf', 'Asistencia')}
+            dropup={false}
             className="w-full"
           />
         </div>
@@ -121,6 +125,7 @@ export default function EmployeeFilterPanel({
             value={selectedStatus}
             onChange={onStatusChange}
             placeholder={t('analytics.filterWorkStatus', 'Estado')}
+            dropup={false}
             className="w-full"
           />
         </div>

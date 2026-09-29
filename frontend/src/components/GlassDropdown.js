@@ -84,7 +84,7 @@ export default function GlassDropdown({
     const rect = dropdownRef.current.getBoundingClientRect();
     const spaceBelow = window.innerHeight - rect.bottom;
     const spaceAbove = rect.top;
-    const shouldDropUp = spaceBelow < 280 && spaceAbove > spaceBelow;
+    const shouldDropUp = spaceBelow < 160 && spaceAbove > 220;
     setOpenUpwards(shouldDropUp);
 
     const availableSpace = shouldDropUp ? (spaceAbove - 24) : (spaceBelow - 24);
@@ -130,7 +130,7 @@ export default function GlassDropdown({
   };
 
   return (
-    <div ref={dropdownRef} className={`relative w-full ${isOpen ? 'z-50' : 'z-20'} ${className}`}>
+    <div ref={dropdownRef} className={`relative w-full ${isOpen ? 'z-[60]' : 'z-10'} ${className}`}>
       <button
         type="button"
         disabled={disabled}

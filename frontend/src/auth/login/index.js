@@ -146,7 +146,7 @@ export default function Login() {
           setPasskeyUsername(data.username);
           setCanFallbackTo2FA(Boolean(data.requiresTwoFactor));
           toast.info(t('login.passkeyRequiredNotice', "Tu cuenta requiere verificación con Llave de Acceso (Passkey)."));
-          handleVerifyPasskeyChallenge(data.username);
+          await handleVerifyPasskeyChallenge(data.username);
         } else if (data.requiresTwoFactor) {
           setRequires2FA(true);
           setUsername2FA(data.username);

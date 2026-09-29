@@ -145,7 +145,7 @@ public class User extends BaseEntity implements OrganizationalUnit {
     public String getEmployeeBlock() {
         String fName = this.firstName != null ? this.firstName.replace(" ", "_") : "";
         String lName = this.lastName != null ? this.lastName.replace(" ", "_") : "";
-        return String.format("%s_%s_%s", this.personalCode, fName, lName);
+        return this.personalCode + "_" + fName + "_" + lName;
     }
 
     @NotNull

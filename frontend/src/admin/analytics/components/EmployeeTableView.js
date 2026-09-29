@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClock, faEye, faBuilding } from '@fortawesome/free-solid-svg-icons';
 import { formatDuration } from '../../../util/dateTimeUtil';
+import SortableHeader from '../../../components/SortableHeader';
 
 const getAttendanceColorClass = (percentage) => {
   if (percentage >= 75) return 'text-emerald-600 font-bold';
@@ -10,7 +11,7 @@ const getAttendanceColorClass = (percentage) => {
   return 'text-rose-500 font-bold';
 };
 
-export default function EmployeeTableView({ users = [], onOpenUserDetail }) {
+export default function EmployeeTableView({ users = [], onOpenUserDetail, sortConfig, onSort }) {
   const { t } = useTranslation();
 
   return (
@@ -18,13 +19,58 @@ export default function EmployeeTableView({ users = [], onOpenUserDetail }) {
       <table className="da-table align-middle w-full border-collapse" style={{ tableLayout: 'auto', minWidth: '950px', fontSize: '0.88rem' }}>
         <thead>
           <tr className="border-b border-white/40 dark:border-white/10 bg-white/50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider">
-            <th className="py-4 px-4 text-left" style={{ width: '10%' }}>{t('users.personalCode', 'Código')}</th>
-            <th className="py-4 px-4 text-left" style={{ width: '18%' }}>{t('users.name', 'Empleado')}</th>
-            <th className="py-4 px-4 text-left" style={{ width: '16%' }}>{t('users.company', 'Empresa')}</th>
-            <th className="py-4 px-3 text-center" style={{ width: '10%' }}>{t('users.role', 'Rol')}</th>
-            <th className="py-4 px-3 text-center" style={{ width: '14%' }}>{t('analytics.formationsCount', 'Formaciones')}</th>
-            <th className="py-4 px-3 text-center" style={{ width: '11%' }}>{t('analytics.attendancePercentage', '% Asistencia')}</th>
-            <th className="py-4 px-4 text-left" style={{ width: '12%' }}>{t('analytics.totalFormationTime', 'T. Formación')}</th>
+            <SortableHeader
+              label={t('users.personalCode', 'Código')}
+              sortKey="personalCode"
+              currentSort={sortConfig}
+              onSort={onSort}
+              width="10%"
+            />
+            <SortableHeader
+              label={t('users.name', 'Empleado')}
+              sortKey="name"
+              currentSort={sortConfig}
+              onSort={onSort}
+              width="18%"
+            />
+            <SortableHeader
+              label={t('users.company', 'Empresa')}
+              sortKey="company"
+              currentSort={sortConfig}
+              onSort={onSort}
+              width="16%"
+            />
+            <SortableHeader
+              label={t('users.role', 'Rol')}
+              sortKey="role"
+              currentSort={sortConfig}
+              onSort={onSort}
+              align="center"
+              width="10%"
+            />
+            <SortableHeader
+              label={t('analytics.formationsCount', 'Formaciones')}
+              sortKey="formations"
+              currentSort={sortConfig}
+              onSort={onSort}
+              align="center"
+              width="14%"
+            />
+            <SortableHeader
+              label={t('analytics.attendancePercentage', '% Asistencia')}
+              sortKey="attendancePercentage"
+              currentSort={sortConfig}
+              onSort={onSort}
+              align="center"
+              width="11%"
+            />
+            <SortableHeader
+              label={t('analytics.totalFormationTime', 'T. Formación')}
+              sortKey="formationTime"
+              currentSort={sortConfig}
+              onSort={onSort}
+              width="12%"
+            />
             <th className="py-4 px-4 text-center" style={{ width: '9%' }}>{t('analytics.actions', 'Acciones')}</th>
           </tr>
         </thead>

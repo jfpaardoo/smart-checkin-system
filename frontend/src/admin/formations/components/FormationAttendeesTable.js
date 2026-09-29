@@ -135,7 +135,7 @@ export default function FormationAttendeesTable({
       ) : (
         <div className="w-full mt-4 relative z-10">
           {/* Barra de Filtro y Búsqueda de Asistentes */}
-          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-3 items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-3 items-center relative z-20">
             <div className="sm:col-span-8">
               <GlassSearchBar
                 placeholder={t('formationDetails.searchAttendee', 'Buscar asistente por nombre, usuario o código...')}
@@ -159,7 +159,7 @@ export default function FormationAttendeesTable({
           </div>
 
           {/* 1. VISTA ESCRITORIO (md y superior) */}
-          <div className="hidden md:block overflow-x-auto rounded-3xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.06)]">
+          <div className="hidden md:block overflow-x-auto rounded-3xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.06)] relative z-10">
             <table className="w-full text-left border-collapse align-middle">
               <thead>
                 <tr className="border-b border-white/40 dark:border-white/10 bg-white/50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider">

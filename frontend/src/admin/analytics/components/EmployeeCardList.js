@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faBuilding } from '@fortawesome/free-solid-svg-icons';
 import { formatDuration } from '../../../util/dateTimeUtil';
+import MobileSortBar from '../../../components/MobileSortBar';
 
 const getAttendanceColorClass = (percentage) => {
   if (percentage >= 75) return 'text-emerald-600 font-bold';
@@ -10,11 +11,28 @@ const getAttendanceColorClass = (percentage) => {
   return 'text-rose-500 font-bold';
 };
 
-export default function EmployeeCardList({ users = [], onOpenUserDetail }) {
+export default function EmployeeCardList({ users = [], onOpenUserDetail, sortConfig, onSort }) {
   const { t } = useTranslation();
+
+  const sortOptions = [
+    { key: 'personalCode', label: t('users.personalCode', 'Código') },
+    { key: 'name', label: t('users.name', 'Empleado') },
+    { key: 'company', label: t('users.company', 'Empresa') },
+    { key: 'role', label: t('users.role', 'Rol') },
+    { key: 'formations', label: t('analytics.formationsCount', 'Formaciones') },
+    { key: 'attendancePercentage', label: t('analytics.attendancePercentage', '% Asistencia') },
+    { key: 'formationTime', label: t('analytics.totalFormationTime', 'T. Formación') }
+  ];
 
   return (
     <div className="lg:hidden flex flex-col gap-3 mt-2">
+      {users.length > 0 && (
+        <MobileSortBar
+          options={sortOptions}
+          currentSort={sortConfig}
+          onSort={onSort}
+        />
+      )}
       {users.map((user) => (
         <div key={user.userId} className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md shadow-sm rounded-[24px] p-4 sm:p-5 border border-white/50 dark:border-white/10 flex flex-col gap-3">
           <div className="flex flex-col items-start gap-1.5 w-full">

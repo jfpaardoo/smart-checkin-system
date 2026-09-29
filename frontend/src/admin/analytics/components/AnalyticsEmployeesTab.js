@@ -62,9 +62,17 @@ export default function AnalyticsEmployeesTab({ userAnalyticsList = DEFAULT_ARRA
   const [selectedPerf, setSelectedPerf] = useState('ALL');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
 
-  // Paginación
+  // Paginación y Ordenación
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [sortConfig, setSortConfig] = useState({ key: 'personalCode', direction: 'asc' });
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
 
   const filteredUsers = useMemo(() => {
     return userAnalyticsList.filter((user) => {
@@ -79,14 +87,65 @@ export default function AnalyticsEmployeesTab({ userAnalyticsList = DEFAULT_ARRA
     });
   }, [userAnalyticsList, searchQuery, selectedCompany, selectedLocator, selectedRole, selectedPerf, selectedStatus]);
 
+  const sortedUsers = useMemo(() => {
+    if (!sortConfig.key) return filteredUsers;
+    const { key, direction } = sortConfig;
+    const modifier = direction === 'asc' ? 1 : -1;
+
+    return [...filteredUsers].sort((a, b) => {
+      if (key === 'personalCode') {
+        const numA = Number.parseInt(a.personalCode, 10);
+        const numB = Number.parseInt(b.personalCode, 10);
+        if (!Number.isNaN(numA) && !Number.isNaN(numB)) {
+          return (numA - numB) * modifier;
+        }
+        return String(a.personalCode || '').localeCompare(String(b.personalCode || ''), 'es', { numeric: true }) * modifier;
+      }
+      if (key === 'name') {
+        const nameA = `${a.firstName || ''} ${a.lastName || ''}`.trim() || a.username || '';
+        const nameB = `${b.firstName || ''} ${b.lastName || ''}`.trim() || b.username || '';
+        return nameA.localeCompare(nameB, 'es', { sensitivity: 'base' }) * modifier;
+      }
+      if (key === 'company') {
+        const compA = a.companyName || '';
+        const compB = b.companyName || '';
+        return compA.localeCompare(compB, 'es', { sensitivity: 'base' }) * modifier;
+      }
+      if (key === 'role') {
+        const roleA = a.authority || '';
+        const roleB = b.authority || '';
+        return roleA.localeCompare(roleB, 'es', { sensitivity: 'base' }) * modifier;
+      }
+      if (key === 'formations') {
+        const valA = Number(a.formationsAttended) || 0;
+        const valB = Number(b.formationsAttended) || 0;
+        if (valA !== valB) return (valA - valB) * modifier;
+        const assA = Number(a.formationsAssigned) || 0;
+        const assB = Number(b.formationsAssigned) || 0;
+        return (assA - assB) * modifier;
+      }
+      if (key === 'attendancePercentage') {
+        const rateA = Number(a.attendancePercentage) || 0;
+        const rateB = Number(b.attendancePercentage) || 0;
+        return (rateA - rateB) * modifier;
+      }
+      if (key === 'formationTime') {
+        const timeA = Number(a.totalFormationMinutes) || 0;
+        const timeB = Number(b.totalFormationMinutes) || 0;
+        return (timeA - timeB) * modifier;
+      }
+      return 0;
+    });
+  }, [filteredUsers, sortConfig]);
+
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedCompany, selectedLocator, selectedRole, selectedPerf, selectedStatus, pageSize]);
+  }, [searchQuery, selectedCompany, selectedLocator, selectedRole, selectedPerf, selectedStatus, pageSize, sortConfig]);
 
   const paginatedUsers = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
-    return filteredUsers.slice(start, start + pageSize);
-  }, [filteredUsers, currentPage, pageSize]);
+    return sortedUsers.slice(start, start + pageSize);
+  }, [sortedUsers, currentPage, pageSize]);
 
   const handleClearFilters = () => {
     setSearchQuery('');
@@ -124,8 +183,18 @@ export default function AnalyticsEmployeesTab({ userAnalyticsList = DEFAULT_ARRA
         </div>
       ) : (
         <>
-          <EmployeeTableView users={paginatedUsers} onOpenUserDetail={onOpenUserDetail} />
-          <EmployeeCardList users={paginatedUsers} onOpenUserDetail={onOpenUserDetail} />
+          <EmployeeTableView 
+            users={paginatedUsers} 
+            onOpenUserDetail={onOpenUserDetail} 
+            sortConfig={sortConfig} 
+            onSort={handleSort} 
+          />
+          <EmployeeCardList 
+            users={paginatedUsers} 
+            onOpenUserDetail={onOpenUserDetail} 
+            sortConfig={sortConfig} 
+            onSort={handleSort} 
+          />
 
           <div className="relative z-10 mt-3">
             <GlassPagination

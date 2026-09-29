@@ -69,8 +69,8 @@ export const getDeferredPrompt = () => globalDeferredPrompt || (typeof window !=
 export const promptDirectInstall = async () => {
   const prompt = getDeferredPrompt();
   if (prompt) {
-    prompt.prompt();
     try {
+      await prompt.prompt();
       const { outcome } = await prompt.userChoice;
       if (outcome === 'accepted') {
         globalDeferredPrompt = null;
@@ -80,7 +80,11 @@ export const promptDirectInstall = async () => {
         return true;
       }
     } catch (err) {
-      console.debug('Error in promptDirectInstall:', err);
+      console.warn('Install prompt error or cancelled gesture:', err);
+      globalDeferredPrompt = null;
+      if (typeof window !== 'undefined') {
+        window.__DA_DEFERRED_PROMPT__ = null;
+      }
     }
   }
   return false;

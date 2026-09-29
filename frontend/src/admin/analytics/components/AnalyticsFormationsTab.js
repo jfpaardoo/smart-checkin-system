@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import GlassSearchBar from '../../../components/GlassSearchBar';
 import GlassDropdown from '../../../components/GlassDropdown';
 import GlassPagination from '../../../components/GlassPagination';
+import SortableHeader from '../../../components/SortableHeader';
+import MobileSortBar from '../../../components/MobileSortBar';
 
 import { FaGraduationCap } from 'react-icons/fa';
 
@@ -86,9 +88,25 @@ export default function AnalyticsFormationsTab({ formations = DEFAULT_ARRAY }) {
   const [dateFilter, setDateFilter] = useState('ALL');
   const [perfFilter, setPerfFilter] = useState('ALL');
 
-  // Paginación
+  // Paginación y Ordenación
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [sortConfig, setSortConfig] = useState({ key: 'formationDate', direction: 'desc' });
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  const sortOptions = [
+    { key: 'formationName', label: t('analytics.formationName', 'Nombre') },
+    { key: 'formationDate', label: t('analytics.formationDate', 'Fecha') },
+    { key: 'totalExpected', label: t('analytics.totalExpected', 'Esperados') },
+    { key: 'totalAttended', label: t('analytics.totalAttended', 'Asistentes') },
+    { key: 'attendancePercentage', label: t('analytics.attendanceRate', 'Tasa de Asistencia') }
+  ];
 
   const filteredFormations = useMemo(() => {
     return formations.filter((f) => {
@@ -113,19 +131,54 @@ export default function AnalyticsFormationsTab({ formations = DEFAULT_ARRAY }) {
     });
   }, [formations, searchQuery, dateFilter, perfFilter]);
 
+  const sortedFormations = useMemo(() => {
+    if (!sortConfig.key) return filteredFormations;
+    const { key, direction } = sortConfig;
+    const modifier = direction === 'asc' ? 1 : -1;
+
+    return [...filteredFormations].sort((a, b) => {
+      if (key === 'formationName') {
+        const nameA = a.formationName || '';
+        const nameB = b.formationName || '';
+        return nameA.localeCompare(nameB, 'es', { sensitivity: 'base' }) * modifier;
+      }
+      if (key === 'formationDate') {
+        const timeA = a.formationDate ? new Date(a.formationDate).getTime() : 0;
+        const timeB = b.formationDate ? new Date(b.formationDate).getTime() : 0;
+        return (timeA - timeB) * modifier;
+      }
+      if (key === 'totalExpected') {
+        const valA = Number(a.totalExpected) || 0;
+        const valB = Number(b.totalExpected) || 0;
+        return (valA - valB) * modifier;
+      }
+      if (key === 'totalAttended') {
+        const valA = Number(a.totalAttended) || 0;
+        const valB = Number(b.totalAttended) || 0;
+        return (valA - valB) * modifier;
+      }
+      if (key === 'attendancePercentage') {
+        const rateA = Number(a.attendancePercentage) || 0;
+        const rateB = Number(b.attendancePercentage) || 0;
+        return (rateA - rateB) * modifier;
+      }
+      return 0;
+    });
+  }, [filteredFormations, sortConfig]);
+
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, dateFilter, perfFilter, pageSize]);
+  }, [searchQuery, dateFilter, perfFilter, pageSize, sortConfig]);
 
   const paginatedFormations = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
-    return filteredFormations.slice(start, start + pageSize);
-  }, [filteredFormations, currentPage, pageSize]);
+    return sortedFormations.slice(start, start + pageSize);
+  }, [sortedFormations, currentPage, pageSize]);
 
   return (
     <div className="w-full mt-4">
       {/* Barra de Filtros y Búsqueda Liquid Glass */}
-      <div className="p-4 rounded-[28px] bg-white/30 dark:bg-slate-800/30 backdrop-blur-md border border-white/50 dark:border-white/10 shadow-xs mb-4 grid grid-cols-1 md:grid-cols-12 gap-3 items-center relative z-20">
+      <div className="p-4 rounded-[28px] bg-white/30 dark:bg-slate-800/30 backdrop-blur-md border border-white/50 dark:border-white/10 shadow-xs mb-4 grid grid-cols-1 md:grid-cols-12 gap-3 items-center relative z-40">
         <div className="md:col-span-6">
           <GlassSearchBar 
             placeholder={t('formations.searchPlaceholderShort', 'Buscar formación por nombre o título...')}
@@ -144,6 +197,7 @@ export default function AnalyticsFormationsTab({ formations = DEFAULT_ARRAY }) {
             value={dateFilter}
             onChange={(val) => setDateFilter(val)}
             placeholder={t('formations.filterDate', 'Filtrar por fecha')}
+            dropup={false}
             className="w-full"
           />
         </div>
@@ -159,6 +213,7 @@ export default function AnalyticsFormationsTab({ formations = DEFAULT_ARRAY }) {
             value={perfFilter}
             onChange={(val) => setPerfFilter(val)}
             placeholder={t('analytics.filterPerf', 'Asistencia')}
+            dropup={false}
             className="w-full"
           />
         </div>
@@ -175,11 +230,43 @@ export default function AnalyticsFormationsTab({ formations = DEFAULT_ARRAY }) {
             <table aria-label="formations analytics" className="w-full text-left border-collapse align-middle">
               <thead>
                 <tr className="border-b border-white/40 dark:border-white/10 bg-white/50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider">
-                  <th className="py-4 px-5" style={{ width: '32%' }}>{t('analytics.formationName', 'Nombre')}</th>
-                  <th className="py-4 px-5" style={{ width: '18%' }}>{t('analytics.formationDate', 'Fecha')}</th>
-                  <th className="py-4 px-5 text-center" style={{ width: '15%' }}>{t('analytics.totalExpected', 'Esperados')}</th>
-                  <th className="py-4 px-5 text-center" style={{ width: '15%' }}>{t('analytics.totalAttended', 'Asistentes')}</th>
-                  <th className="py-4 px-5" style={{ width: '20%' }}>{t('analytics.attendanceRate', 'Tasa de Asistencia')}</th>
+                  <SortableHeader
+                    label={t('analytics.formationName', 'Nombre')}
+                    sortKey="formationName"
+                    currentSort={sortConfig}
+                    onSort={handleSort}
+                    width="32%"
+                  />
+                  <SortableHeader
+                    label={t('analytics.formationDate', 'Fecha')}
+                    sortKey="formationDate"
+                    currentSort={sortConfig}
+                    onSort={handleSort}
+                    width="18%"
+                  />
+                  <SortableHeader
+                    label={t('analytics.totalExpected', 'Esperados')}
+                    sortKey="totalExpected"
+                    currentSort={sortConfig}
+                    onSort={handleSort}
+                    align="center"
+                    width="15%"
+                  />
+                  <SortableHeader
+                    label={t('analytics.totalAttended', 'Asistentes')}
+                    sortKey="totalAttended"
+                    currentSort={sortConfig}
+                    onSort={handleSort}
+                    align="center"
+                    width="15%"
+                  />
+                  <SortableHeader
+                    label={t('analytics.attendanceRate', 'Tasa de Asistencia')}
+                    sortKey="attendancePercentage"
+                    currentSort={sortConfig}
+                    onSort={handleSort}
+                    width="20%"
+                  />
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/40 dark:divide-white/10 text-sm text-slate-800 dark:text-slate-100">
@@ -192,6 +279,13 @@ export default function AnalyticsFormationsTab({ formations = DEFAULT_ARRAY }) {
 
           {/* 2. VISTA MÓVIL / TABLET */}
           <div className="lg:hidden flex flex-col gap-3 mt-2">
+            {sortedFormations.length > 0 && (
+              <MobileSortBar
+                options={sortOptions}
+                currentSort={sortConfig}
+                onSort={handleSort}
+              />
+            )}
             {paginatedFormations.map((f) => {
               const { formationName, formationDate, totalExpected, totalAttended, attendancePercentage } = f;
               const formattedDate = formationDate ? new Date(formationDate).toLocaleDateString() : '-';

@@ -111,7 +111,7 @@ export default function AuditDashboard() {
   const handleWebSocketMessage = useCallback((message) => {
     try {
       const newLog = JSON.parse(message.body);
-      mutate((prevLogs) => {
+      void mutate((prevLogs) => {
         const current = Array.isArray(prevLogs) ? prevLogs : [];
         if (current.some(l => l.id === newLog.id)) return current;
         return [newLog, ...current];
@@ -243,7 +243,7 @@ export default function AuditDashboard() {
         />
 
         {/* Barra de Filtros y Búsqueda */}
-        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-4 items-center relative z-30">
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-4 items-center relative z-40">
           <div className="sm:col-span-8">
             <GlassSearchBar
               placeholder={t('audit.searchPlaceholder', 'Buscar por acción, usuario, IP o detalles...')}
@@ -272,7 +272,7 @@ export default function AuditDashboard() {
         ) : (
           <>
             {/* 1. VISTA ESCRITORIO (lg y superior) */}
-            <div className="hidden lg:block overflow-x-auto rounded-3xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.06)]">
+            <div className="hidden lg:block overflow-x-auto rounded-3xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.06)] relative z-10">
               <table className="w-full text-left border-collapse align-middle">
                 <thead>
                   <tr className="border-b border-white/40 dark:border-white/10 bg-white/50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider">

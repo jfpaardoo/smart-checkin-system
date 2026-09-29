@@ -83,8 +83,8 @@ export default function UserListAdmin() {
   const loading = usersLoading && users.length === 0;
 
   const handleWsMessage = useCallback(() => {
-    mutateUsers();
-    mutatePending();
+    void mutateUsers();
+    void mutatePending();
   }, [mutateUsers, mutatePending]);
 
   useSubscription('/topic/users', handleWsMessage);
@@ -97,8 +97,8 @@ export default function UserListAdmin() {
     try {
       await api.put(`/users/${id}/approve`);
       toast.success(t('users.approvedSuccess', 'Empleado aprobado y activado con éxito.'));
-      mutatePending();
-      mutateUsers();
+      await mutatePending();
+      await mutateUsers();
     } catch (err) {
       const msg = err.response?.data?.message || t('users.approveError', 'Error al aprobar empleado.');
       toast.error(msg);
@@ -109,7 +109,7 @@ export default function UserListAdmin() {
     try {
       await api.delete(`/users/${id}`);
       toast.success(t('common.deletedSuccess', 'Registro eliminado correctamente'));
-      mutatePending();
+      await mutatePending();
     } catch (err) {
       toast.error(err.response?.data?.message || t('common.deleteError', 'Error al eliminar'));
     }
@@ -131,8 +131,8 @@ export default function UserListAdmin() {
       await api.delete(`/users/${userToDelete.id}`);
       toast.success(t('common.deletedSuccess', 'Usuario eliminado correctamente'));
       setUserToDelete(null);
-      mutateUsers();
-      mutatePending();
+      await mutateUsers();
+      await mutatePending();
     } catch (err) {
       toast.error(err.response?.data?.message || t('common.deleteError', 'Error al eliminar usuario'));
     } finally {
@@ -248,7 +248,7 @@ export default function UserListAdmin() {
                 className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-[#73841e] dark:text-[#d4e84a] hover:text-[#525f0e] dark:hover:text-white hover:bg-white dark:hover:bg-slate-600 hover:scale-105 active:scale-95 transition shadow-xs inline-flex items-center justify-center cursor-pointer disabled:opacity-50" 
                 onClick={() => {
                   const companyQuery = selectedCompany && selectedCompany !== 'NONE' ? `?companyId=${selectedCompany}` : '';
-                  handleDownloadExport(`users/csv${companyQuery}`, 'usuarios.csv', 'csv');
+                  void handleDownloadExport(`users/csv${companyQuery}`, 'usuarios.csv', 'csv');
                 }}
                 title={t('analytics.exportCsv', 'Exportar CSV')}
                 aria-label={t('analytics.exportCsv', 'Exportar CSV')}
@@ -263,7 +263,7 @@ export default function UserListAdmin() {
                 className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-rose-500 hover:text-rose-700 hover:bg-rose-500/20 hover:scale-105 active:scale-95 transition shadow-xs inline-flex items-center justify-center cursor-pointer disabled:opacity-50" 
                 onClick={() => {
                   const companyQuery = selectedCompany && selectedCompany !== 'NONE' ? `?companyId=${selectedCompany}` : '';
-                  handleDownloadExport(`users/pdf${companyQuery}`, 'usuarios.pdf', 'pdf');
+                  void handleDownloadExport(`users/pdf${companyQuery}`, 'usuarios.pdf', 'pdf');
                 }}
                 title={t('analytics.exportPdf', 'Exportar PDF')}
                 aria-label={t('analytics.exportPdf', 'Exportar PDF')}
@@ -278,7 +278,7 @@ export default function UserListAdmin() {
                 className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 hover:scale-105 active:scale-95 transition shadow-xs inline-flex items-center justify-center cursor-pointer disabled:opacity-50" 
                 onClick={() => {
                   const companyQuery = selectedCompany && selectedCompany !== 'NONE' ? `?companyId=${selectedCompany}` : '';
-                  handleDownloadExport(`users/excel${companyQuery}`, 'usuarios.xlsx', 'excel');
+                  void handleDownloadExport(`users/excel${companyQuery}`, 'usuarios.xlsx', 'excel');
                 }}
                 title={t('analytics.exportExcel', 'Exportar Excel')}
                 aria-label={t('analytics.exportExcel', 'Exportar Excel')}
@@ -311,7 +311,7 @@ export default function UserListAdmin() {
         </div>
 
         {/* Barra de Filtros y Búsqueda Liquid Glass */}
-        <div className="p-4 rounded-[28px] bg-white/30 dark:bg-slate-800/30 backdrop-blur-md border border-white/50 dark:border-white/10 shadow-xs mb-4 grid grid-cols-1 md:grid-cols-12 gap-3 items-center relative z-30">
+        <div className="p-4 rounded-[28px] bg-white/30 dark:bg-slate-800/30 backdrop-blur-md border border-white/50 dark:border-white/10 shadow-xs mb-4 grid grid-cols-1 md:grid-cols-12 gap-3 items-center relative z-40">
           {/* Buscador */}
           <div className="md:col-span-6">
             <GlassSearchBar 

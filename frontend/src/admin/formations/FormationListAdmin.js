@@ -141,7 +141,7 @@ export default function FormationListAdmin() {
         />
         
         {/* Barra de Búsqueda y Filtros */}
-        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-4 items-center relative z-30">
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-4 items-center relative z-40">
           <div className="sm:col-span-6">
             <GlassSearchBar 
               placeholder={t('formations.searchPlaceholderShort', 'Buscar formación por título o descripción...')}

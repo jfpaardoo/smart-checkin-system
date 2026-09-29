@@ -16,9 +16,9 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
   - **Captura Temprana Global (`index.html`)**: Incorporado listener en la cabecera HTML para interceptar `beforeinstallprompt` desde el primer milisegundo de carga, garantizando que el navegador nunca pierda el evento de instalación nativa directa.
   - **Diseño Profesional Sin Emoticonos**: Estética corporativa Liquid Glassmorphism con badges de color de acento, tipografía Outfit e internacionalización completa en los 8 idiomas soportados (`es`, `en`, `fr`, `de`, `pt`, `pl`, `bg`, `ro`).
 - **Sistema de Ordenación Bidireccional de Tablas con Indicadores Triangulares (`SortableHeader.js`, `MobileSortBar.js`)**:
-  - Implementado el componente interactivo `SortableHeader` en las tablas administrativas de Usuarios, Formaciones y Empresas, permitiendo ordenación por clic en cabeceras de columna con indicadores triangulares SVG (`▲` para ascendente y `▼` para descendente) y resalte en color de acento.
-  - Soporte de ordenación numérica (código de personal, total de asistentes e identificador de empresa) y alfabética normalizada insensible a mayúsculas y acentos (`localeCompare`).
-  - **Barra de Ordenación Táctil Móvil (`MobileSortBar.js`)**: Diseñada e integrada una barra de ordenación reactiva (`md:hidden`) encima de las tarjetas móviles, equipada con `GlassDropdown` flotante y botón de alternancia ascendente/descendente (`▲` / `▼`), garantizando plena paridad funcional en smartphones y tabletas.
+  - Implementado el componente interactivo `SortableHeader` en las tablas administrativas de Usuarios, Formaciones, Empresas y en las tablas del módulo de Analíticas (Empleados y Formaciones), permitiendo ordenación por clic en cabeceras de columna con indicadores triangulares SVG (`▲` para ascendente y `▼` para descendente) y resalte en color de acento.
+  - Soporte de ordenación numérica (código de personal, total de asistentes e identificador de empresa, asistencias, ratios y minutos) y alfabética normalizada insensible a mayúsculas y acentos (`localeCompare`).
+  - **Barra de Ordenación Táctil Móvil (`MobileSortBar.js`)**: Diseñada e integrada una barra de ordenación reactiva (`md:hidden`) encima de las tarjetas móviles (en Usuarios, Formaciones, Empresas y Analíticas), equipada con `GlassDropdown` flotante y botón de alternancia ascendente/descendente (`▲` / `▼`), garantizando plena paridad funcional en smartphones y tabletas.
 - **Fijación Superior y Prevención de Colapso Vertical en Vistas Vacías (`common.css`)**:
   - Modificada la alineación vertical de `.da-card` a `justify-content: flex-start` en `common.css`, impidiendo que las tarjetas de tablas sin registros se desplacen al centro vertical de la pantalla.
   - Mantenimiento estructural de los encabezados de tabla (`<thead>`) junto con una fila descriptiva en `<tbody>` cuando no existen datos, evitando saltos visuales.
@@ -42,8 +42,10 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 ### Corregido (Fixed)
 - **Persistencia del Identificador / Localizador en el Registro de Empleados (`Register.js`)**:
   - Subsanada la omisión del campo `locator` en el cuerpo de la petición de registro enviada a `/api/v1/auth/signup`. Los datos introducidos por el empleado en el desplegable de sede/localizador se normalizan y persisten de inmediato en base de datos (`user.setLocator`), eliminando la necesidad de que el administrador tenga que asignarlo manualmente a posteriori.
-- **Corrección de Jerarquía de Capas y Despliegue en `GlassDropdown` Móvil (`MobileSortBar.js`)**:
-  - Configurada la apertura descendente forzada (`dropup={false}`) y ajustado el `z-index` de los contenedores de tabla para evitar que el menú flotante quede oculto tras las barras de búsqueda y filtros superiores.
+- **Corrección Integral de Contextos de Apilamiento (`z-index`) en Desplegables de Tablas y Filtros**:
+  - Ajustadas las propiedades `z-index`, `position: relative` y contención de desbordamiento en `GlassDropdown.js`, barras de filtrado administrativo (`UserListAdmin.js`, `FormationListAdmin.js`, `CompanyListAdmin.js`, `AuditDashboard.js`, `EmployeeFilterPanel.js`) y tablas (`UserTable.js`, `FormationTable.js`, `FormationAttendeesTable.js`, `EmployeeTableView.js`), evitando solapamientos involuntarios en versiones de escritorio y móviles.
+- **Sincronización de Coincidencia de Cadenas en Mocks de Tests de Formaciones (`FormationRestControllerTests.java`)**:
+  - Ajustados los matchers Mockito en los tests del controlador REST de formaciones para admitir búsquedas nulas, vacías o con espacios en blanco (`findAllVisible`).
 
 ### Cambiado (Changed) & Refactorización
 - **Renovación Integral de la Documentación Principal (`README.md` y `frontend/README.md`)**:

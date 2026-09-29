@@ -64,12 +64,12 @@ export default function CompanyListAdmin() {
     try {
       await api.delete(`/companies/${companyToDelete.id}`);
       toast.success(t("companies.deletedSuccess", "Empresa eliminada correctamente."));
-      mutate((prev) => (prev ? prev.filter((c) => c.id !== companyToDelete.id) : []), false);
+      await mutate((prev) => (prev ? prev.filter((c) => c.id !== companyToDelete.id) : []), false);
       setDeleteModalOpen(false);
     } catch (err) {
       console.error("Error deleting company", err);
       toast.error(t("companies.deleteError", "No se pudo eliminar la empresa."));
-      mutate();
+      await mutate();
     } finally {
       setDeleting(false);
       setCompanyToDelete(null);
@@ -138,7 +138,7 @@ export default function CompanyListAdmin() {
     }
 
     return (
-      <div className="w-full relative z-30 mt-2">
+      <div className="w-full relative z-10 mt-2">
         {/* VISTA ESCRITORIO (md y superior) */}
         <div className="hidden md:block overflow-x-auto rounded-3xl border border-white/60 dark:border-white/10 bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.06)]">
           <table className="w-full text-left border-collapse align-middle">

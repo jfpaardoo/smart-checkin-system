@@ -106,7 +106,7 @@ class FormationRestControllerTests {
     @Test
     @WithMockUser
     void testGetAllFormations() throws Exception {
-        when(formationService.findAllVisible(anyBoolean())).thenReturn(List.of(formation));
+        when(formationService.findAllVisible(anyBoolean(), nullable(String.class))).thenReturn(List.of(formation));
 
         mockMvc.perform(get(BASE_URL)).andExpect(status().isOk());
     }
@@ -473,10 +473,8 @@ class FormationRestControllerTests {
     void getAllFormationsWithSearchThoroughly() throws Exception {
         Formation f1 = new Formation(); f1.setName("MatchName"); f1.setDescription("Desc");
         Formation f2 = new Formation(); f2.setName(null); f2.setDescription("MatchDesc");
-        Formation f3 = new Formation(); f3.setName("Other"); f3.setDescription(null);
-        Formation f4 = new Formation(); f4.setName(null); f4.setDescription(null);
 
-        when(formationService.findAllVisible(anyBoolean())).thenReturn(List.of(f1, f2, f3, f4));
+        when(formationService.findAllVisible(anyBoolean(), eq("match"))).thenReturn(List.of(f1, f2));
 
         mockMvc.perform(get(BASE_URL).param(SEARCH_PARAM, "match"))
                 .andExpect(status().isOk())
@@ -486,7 +484,7 @@ class FormationRestControllerTests {
     @Test
     @WithMockUser
     void getAllFormationsWithBlankSearch() throws Exception {
-        when(formationService.findAllVisible(anyBoolean())).thenReturn(List.of(formation));
+        when(formationService.findAllVisible(anyBoolean(), eq("   "))).thenReturn(List.of(formation));
 
         mockMvc.perform(get(BASE_URL).param(SEARCH_PARAM, "   "))
                 .andExpect(status().isOk())

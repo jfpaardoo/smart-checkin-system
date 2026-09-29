@@ -98,7 +98,7 @@ export default function ScannerCheckin() {
 
   // Solicitar GPS al montar la vista e inicializar sincronizador offline
   useEffect(() => {
-    requestGps();
+    void requestGps();
     const cleanupSync = initOfflineSync(api, toast, t);
     return () => {
       if (cleanupSync) cleanupSync();
@@ -121,7 +121,7 @@ export default function ScannerCheckin() {
     isScanningEnabled,
     (decodedText) => {
       soundAndHaptics.playScanBeep();
-      handleCheckinExecution(decodedText);
+      void handleCheckinExecution(decodedText);
     }
   );
 

@@ -65,16 +65,7 @@ export default function PwaInstallPrompt() {
     window.addEventListener('da-pwa-prompt-available', handlePromptAvailable);
 
     // 4. Escuchar evento para abrir manualmente desde la barra de navegación o perfil
-    const handleManualOpen = async () => {
-      // Si el navegador ya tiene el diálogo nativo listo, lanzarlo directamente sin abrir cartel
-      const p = getDeferredPrompt() || deferredPromptRef.current;
-      if (p) {
-        const installed = await promptDirectInstall();
-        if (installed) {
-          setIsOpen(false);
-          return;
-        }
-      }
+    const handleManualOpen = () => {
       setIsOpen(true);
       setShowManualSteps(true);
     };
@@ -112,23 +103,24 @@ export default function PwaInstallPrompt() {
     if (installed) {
       setIsOpen(false);
       setHasNativePrompt(false);
-    } else {
-      const promptEvent = deferredPromptRef.current;
-      if (promptEvent) {
-        promptEvent.prompt();
-        try {
-          const { outcome } = await promptEvent.userChoice;
-          if (outcome === 'accepted') {
-            setIsOpen(false);
-          }
-        } catch (err) {
-          console.debug('Error en prompt de instalación:', err);
+      return;
+    }
+
+    const promptEvent = deferredPromptRef.current;
+    if (promptEvent) {
+      try {
+        await promptEvent.prompt();
+        const { outcome } = await promptEvent.userChoice;
+        if (outcome === 'accepted') {
+          setIsOpen(false);
         }
-        deferredPromptRef.current = null;
-        setHasNativePrompt(false);
-      } else {
-        setShowManualSteps(true);
+      } catch (err) {
+        console.warn('Install prompt error:', err);
       }
+      deferredPromptRef.current = null;
+      setHasNativePrompt(false);
+    } else {
+      setShowManualSteps(true);
     }
   };
 
