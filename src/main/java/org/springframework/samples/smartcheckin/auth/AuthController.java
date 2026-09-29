@@ -63,11 +63,16 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.samples.smartcheckin.auth.webauthn.WebAuthnService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 @Tag(name = "Authentication", description = "The Authentication API based on JWT")
 @SuppressWarnings("null")
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
@@ -410,7 +415,33 @@ public class AuthController {
 
         userService.saveUser(user);
         messagingTemplate.convertAndSend("/topic/users", "update");
+        notifyAdminsNewRegistration(user);
         return ResponseEntity.ok(new MessageResponse("Solicitud de registro enviada con éxito. El administrador activará tu cuenta."));
+    }
+
+    private void notifyAdminsNewRegistration(User newUser) {
+        if (pushNotificationSender == null || userService == null) {
+            return;
+        }
+        try {
+            Iterable<User> admins = userService.findAllByAuthority("ADMIN");
+            if (admins == null) {
+                return;
+            }
+            String fullName = ((newUser.getFirstName() != null ? newUser.getFirstName() : "") + " " +
+                               (newUser.getLastName() != null ? newUser.getLastName() : "")).trim();
+            String displayName = fullName.isEmpty() ? newUser.getUsername() : fullName + " (" + newUser.getUsername() + ")";
+            String title = "Nueva solicitud de registro";
+            String body = displayName + " ha solicitado acceso a la plataforma.";
+
+            for (User admin : admins) {
+                if (admin.getUsername() != null && !admin.getUsername().startsWith("GDPR_DEL_")) {
+                    pushNotificationSender.send(admin.getUsername(), title, body);
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Error enviando notificaciones push de registro a administradores: {}", e.getMessage());
+        }
     }
 
     private ResponseEntity<Object> checkLockout(User user) {

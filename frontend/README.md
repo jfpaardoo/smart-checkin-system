@@ -1,70 +1,123 @@
-# Getting Started with Create React App
+# Frontend — Distribution Academy (React 18 PWA)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Cliente web progresivo (PWA) de **Distribution Academy**, desarrollado con **React 18** y diseñado para proporcionar una experiencia de usuario rápida, fluida y resiliente tanto en quioscos táctiles industriales como en dispositivos móviles personales de operarios.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## Principios de Diseño y Experiencia de Usuario (UX)
 
-### `npm start`
+1. **Arquitectura Liquid Glassmorphism:**
+   Estética visual con orbes difuminados en segundo plano acelerados por hardware (`GPU 3D transform`), modo oscuro/claro con conmutación dinámica y superficies translúcidas con efecto cristal (`backdrop-filter: blur()`).
+2. **Ergonomía Táctil y Retroalimentación Háptica:**
+   Integración de respuestas sonoras y hápticas (`soundAndHaptics.js`) al interactuar con botones de acción clave, escáneres, conmutadores de idioma y notificaciones.
+3. **Modo Linterna Óptica de Alto Brillo:**
+   En la proyección de códigos QR en pantalla completa (`QRGeneratorAdmin.js`), el sistema permite activar un fondo blanco puro (`#FFFFFF`) y sincronizar el `<meta name="theme-color">` del sistema operativo, forzando la máxima emisión lumínica en pantallas OLED/LCD para lecturas instantáneas por lectores ópticos en entornos industriales oscuros o con reflejos.
+4. **Sistema de Notificaciones 3D Apiladas (`ToastProvider.js`):**
+   Alertas emergentes con relieve en capas, deduplicación interactiva (`xN`), congelación del temporizador al pasar el cursor (*Hover Freeze*) y despliegue/plegado interactivo.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Estructura del Proyecto
 
-### `npm test`
+```text
+frontend/
+├── e2e/                     # Especificaciones de pruebas End-to-End con Playwright
+│   ├── auth.spec.js         # Flujos de login, registro, logout y 2FA
+│   ├── checkin.spec.js      # Fichaje QR con firma digital en canvas HTML5
+│   ├── formations.spec.js   # Gestión y asistencia a formaciones
+│   └── qr-generator.spec.js # Proyección y actualización en tiempo real de QR
+├── public/
+│   ├── locales/             # Traducciones i18n (es, en, pt, fr, de, pl, bg, ro)
+│   ├── manifest.json        # Manifiesto de aplicación PWA (instalabilidad)
+│   └── sw.js                # Service Worker para caché offline y Web Push
+├── scripts/
+│   └── generate-version.js  # Script prebuild para inyección de hash de versión
+└── src/
+    ├── components/          # Componentes reutilizables (Navbar, Footer, Modales, Toast)
+    ├── context/             # Contextos de React (AuthContext, ThemeContext, SoundContext)
+    ├── hooks/               # Custom hooks (useWebSocket, usePushNotifications, useHaptics)
+    ├── mocks/               # Mock Service Worker (MSW) para pruebas de integración aisladas
+    ├── services/            # Clientes HTTP Axios y adaptadores de API
+    ├── util/                # Utilidades criptográficas, formato de fechas y exportaciones
+    ├── views/               # Vistas principales de la aplicación (Admin, Operario, Login)
+    ├── App.js               # Enrutador principal (React Router v6) y límites de error
+    └── index.js             # Punto de entrada de React 18 (createRoot)
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## Tecnologías Clave
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+* **Núcleo:** [React 18.2](https://react.dev/) + [React Router 6.30](https://reactrouter.com/)
+* **Estilos y Animación:** [TailwindCSS 3.4](https://tailwindcss.com/) + [Framer Motion 13](https://www.framer.com/motion/)
+* **Internacionalización:** [i18next](https://www.i18next.com/) con 8 idiomas europeos y carga diferida (*lazy loading*).
+* **Escaneo y Códigos QR:** [html5-qrcode](https://github.com/mebjas/html5-qrcode) + [qrcode.react](https://github.com/zpao/qrcode.react)
+* **Firma Digital:** [react-signature-canvas](https://github.com/agilgur5/react-signature-canvas)
+* **Comunicación en Tiempo Real:** [@stomp/stompjs](https://stomp-js.github.io/) + [sockjs-client](https://github.com/sockjs/sockjs-client)
+* **Gestión de Datos y Caché:** [SWR 2.3](https://swr.vercel.app/)
+* **Gráficos Estadísticos:** [Recharts 3.10](https://recharts.org/)
+* **Protección Anti-Bot:** [@marsidev/react-turnstile](https://github.com/marsidev/react-turnstile) (Cloudflare Turnstile)
+* **Pruebas:** [Jest](https://jestjs.io/) + [React Testing Library](https://testing-library.com/) + [Playwright](https://playwright.dev/) + [MSW](https://mswjs.io/)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Scripts Disponibles
 
-### `npm run eject`
+En el directorio `frontend/`, puedes ejecutar los siguientes comandos:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Desarrollo Local
+```bash
+npm start
+```
+Inicia la aplicación en modo desarrollo en `http://localhost:3000` con proxy automático apuntando al backend en `http://localhost:8080`.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Compilación para Producción
+```bash
+npm run build
+```
+Compila y optimiza la aplicación para producción en la carpeta `build/`. Minimiza el código JavaScript y CSS, genera nombres con hashes para invalidación de caché y deja los archivos listos para servir desde un CDN o contenedor Nginx.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Pruebas Unitarias y de Componentes
+```bash
+# Ejecutar tests unitarios en modo interactivo
+npm test
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+# Ejecutar tests unitarios una sola vez (modo CI)
+npm test -- --watchAll=false
 
-## Learn More
+# Generar informe de cobertura de código
+npm run coverage
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Pruebas End-to-End (E2E) con Playwright
+```bash
+# Ejecutar todas las suites E2E en modo headless
+npm run test:e2e
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+# Ejecutar con interfaz gráfica interactiva (UI Mode)
+npx playwright test --ui
 
-### Code Splitting
+# Ver reporte visual de la última ejecución E2E
+npx playwright show-report
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Análisis de Rendimiento y Paquetes
+```bash
+# Analizar el tamaño del bundle generado
+npm run analyze
 
-### Analyzing the Bundle Size
+# Diagnóstico de buenas prácticas y salud del código
+npm run doctor
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+---
 
-### Making a Progressive Web App
+## Configuración de Proxy y Variables de Entorno
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+El archivo `package.json` incluye `"proxy": "http://localhost:8080"` para redirigir peticiones API locales. Adicionalmente, se pueden configurar variables en un archivo `.env.local`:
 
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+| Variable | Descripción | Valor por Defecto |
+|---|---|---|
+| `REACT_APP_BACKEND_URL` | URL base del servidor backend | `/` (usa el proxy local o mismo dominio) |
+| `REACT_APP_TURNSTILE_SITE_KEY` | Clave pública del widget Cloudflare Turnstile | Clave de test pública |
+| `REACT_APP_ENABLE_HAPTICS` | Habilitar/deshabilitar vibración háptica | `true` |

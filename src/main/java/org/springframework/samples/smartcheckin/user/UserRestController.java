@@ -37,18 +37,22 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.samples.smartcheckin.auth.session.UserSessionService;
 import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.samples.smartcheckin.audit.Auditable;
 
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/v1/users")
 @SecurityRequirement(name = "bearerAuth")
 @SuppressWarnings("java:S2638")
 class UserRestController {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserRestController.class);
 
     private final UserService userService;
     private final AuthoritiesService authService;
@@ -61,7 +65,7 @@ class UserRestController {
     private final JwtUtils jwtUtils;
     private static final String TOPIC_UPDATE_USERS = "/topic/users";
     private static final String UPDATE = "update";
-	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private final JavaMailSender javaMailSender;
 
     @Autowired
@@ -329,7 +333,29 @@ class UserRestController {
         target.setIsApproved(true);
         userService.saveUser(target);
         messagingTemplate.convertAndSend(TOPIC_UPDATE_USERS, UPDATE);
+
+        sendApprovalEmail(target);
         return ResponseEntity.ok(new MessageResponse("Usuario aprobado con éxito."));
+    }
+
+    private void sendApprovalEmail(User target) {
+        if (javaMailSender == null || target == null || target.getEmail() == null || target.getEmail().isBlank()) {
+            return;
+        }
+        try {
+            SimpleMailMessage mailMessage = new SimpleMailMessage();
+            mailMessage.setTo(target.getEmail());
+            mailMessage.setSubject("¡Tu cuenta en Smart Check-in ha sido aprobada!");
+            String name = target.getFirstName() != null ? target.getFirstName() : target.getUsername();
+            mailMessage.setText("Hola " + name + ",\n\n"
+                + "Tu cuenta en Smart Check-in ha sido aprobada por un administrador.\n"
+                + "Ya puedes iniciar sesión con tu nombre de usuario: " + target.getUsername() + "\n\n"
+                + "Saludos,\nEl equipo de Smart Check-in");
+            javaMailSender.send(mailMessage);
+            logger.info("Correo de aprobación de cuenta enviado con éxito a {}", target.getEmail());
+        } catch (Exception e) {
+            logger.warn("No se pudo enviar el correo de aprobación a {}: {}", target.getEmail(), e.getMessage());
+        }
     }
 
     @PostMapping

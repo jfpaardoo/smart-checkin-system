@@ -4,6 +4,62 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), y este proyecto sigue [Versionado Semántico (SemVer)](https://semver.org/lang/es/).
 
+## [1.2.5](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.2.5) - 2026-09-29
+
+### Añadido (Features) & Arquitectura de Software
+- **Rediseño Integral y Puntos Directos de Instalación PWA en iOS y Android (`PwaInstallPrompt.js`, `PwaTopBanner.js`, `pwaHelper.js`, `AppNavbar.js`, `Login/index.js`, `ScannerCheckin.js`)**:
+  - **Guía Visual Optimizada para iPhone / iPad (iOS Safari)**: Sustituido el banner anterior compacto por un panel interactivo con 3 pasos numerados individuales (`1`, `2`, `3`) con iconos nativos vectoriales de Safari (botón Compartir y botón Añadir a inicio), con indicador dinámico inferior señalando la barra de Safari y cierre con persistencia de sesión.
+  - **Instalación Directa en 1 Toque y Modo Asistido en Android**: Botón prioritario de instalación nativa a ancho completo al capturar el evento `beforeinstallprompt`, con alternativa asistida en 3 pasos (menú de tres puntos `⋮`, instalar aplicación y confirmar) para navegadores o sesiones que requieran instalación manual.
+  - **Barra Superior Fija Estilo App Store / Google Play (`PwaTopBanner.js`)**: Implementada una barra delgada y no invasiva en la cabecera superior de la aplicación para navegación web en dispositivos móviles y de escritorio, permitiendo la instalación con un solo toque desde cualquier pantalla.
+  - **Puntos de Instalación Contextual en Pantalla de Login y Escáner de Fichaje**: Integrados accesos directos de instalación tanto en el formulario de inicio de sesión (`Login`) como bajo el escáner QR de asistencia (`ScannerCheckin`), facilitando que los empleados instalen la aplicación en su flujo diario de trabajo.
+  - **Disparador Directo de Instalación Nativa (1 Toque)**: Los botones de instalación en Login, Escáner QR, Barra Superior y Menú invocan de inmediato el diálogo del sistema operativo (`beforeinstallprompt.prompt()`) sin abrir mensajes intermedios siempre que el navegador disponga del evento capturado.
+  - **Captura Temprana Global (`index.html`)**: Incorporado listener en la cabecera HTML para interceptar `beforeinstallprompt` desde el primer milisegundo de carga, garantizando que el navegador nunca pierda el evento de instalación nativa directa.
+  - **Diseño Profesional Sin Emoticonos**: Estética corporativa Liquid Glassmorphism con badges de color de acento, tipografía Outfit e internacionalización completa en los 8 idiomas soportados (`es`, `en`, `fr`, `de`, `pt`, `pl`, `bg`, `ro`).
+- **Sistema de Ordenación Bidireccional de Tablas con Indicadores Triangulares (`SortableHeader.js`, `MobileSortBar.js`)**:
+  - Implementado el componente interactivo `SortableHeader` en las tablas administrativas de Usuarios, Formaciones y Empresas, permitiendo ordenación por clic en cabeceras de columna con indicadores triangulares SVG (`▲` para ascendente y `▼` para descendente) y resalte en color de acento.
+  - Soporte de ordenación numérica (código de personal, total de asistentes e identificador de empresa) y alfabética normalizada insensible a mayúsculas y acentos (`localeCompare`).
+  - **Barra de Ordenación Táctil Móvil (`MobileSortBar.js`)**: Diseñada e integrada una barra de ordenación reactiva (`md:hidden`) encima de las tarjetas móviles, equipada con `GlassDropdown` flotante y botón de alternancia ascendente/descendente (`▲` / `▼`), garantizando plena paridad funcional en smartphones y tabletas.
+- **Fijación Superior y Prevención de Colapso Vertical en Vistas Vacías (`common.css`)**:
+  - Modificada la alineación vertical de `.da-card` a `justify-content: flex-start` en `common.css`, impidiendo que las tarjetas de tablas sin registros se desplacen al centro vertical de la pantalla.
+  - Mantenimiento estructural de los encabezados de tabla (`<thead>`) junto con una fila descriptiva en `<tbody>` cuando no existen datos, evitando saltos visuales.
+- **Patrón Facade en Notificaciones del Ciclo de Vida de Formaciones (`FormationCheckinFacade.java`)**:
+  - Implementada la orquestación centralizada de notificaciones en modificaciones (`dispatchUpdateNotifications`) y cancelaciones (`dispatchCancellationNotifications`) de acciones formativas publicadas, comunicando automáticamente los cambios a los participantes inscritos y personal relevante.
+- **Patrón Observer en Detección y Propagación de Anomalías de Seguridad (`AnomalyDetectionService.java`, `CheckinAnomalyObserver.java`)**:
+  - Desacoplamiento reactivo para la emisión de alertas de seguridad multicanal: ante intentos reiterados de autenticación fallida o anomalías en eventos de fichaje (`CheckinEvent`), se disparan notificaciones Web Push dirigidas a los administradores activos y al usuario afectado, combinadas con canales STOMP (`/topic/alerts`), eventos de auditoría (`AuditLog`) y métricas de Micrometer.
+- **Notificación Transaccional de Aprobación de Cuentas (`UserRestController.java`)**:
+  - Integración del envío automático de correo electrónico vía SMTP (`JavaMailSender`) informando al empleado cuando su cuenta ha sido aprobada por un administrador para su primer inicio de sesión.
+- **Respeto a las Preferencias de Usuario en Notificaciones Push (`PushNotificationService.java`)**:
+  - Incorporada comprobación del atributo `pushNotificationsEnabled` previo a la emisión de notificaciones Web Push, salvaguardando las preferencias de privacidad del usuario.
+- **Portal Maestro y Centro de Documentación Técnica (`docs/README.md`)**:
+  - Creación de un centro neurálgico de documentación estructurado según el ciclo de vida de la ingeniería del software (ISO/IEC/IEEE 12207, C4 Model e ISO/IEC 29119), indexando los 14 documentos técnicos de requisitos, arquitectura, ciberseguridad, testing y operaciones.
+- **Catálogo y Especificación Formal de APIs (`docs/API_DOCUMENTATION.md`)**:
+  - Documentación técnica exhaustiva de contratos REST, canales de comunicación en tiempo real WebSockets STOMP (`/topic/totp-update`, `/topic/alerts`), esquemas de autenticación (JWT, FIDO2/Passkeys, 2FA TOTP) y políticas de *Rate Limiting* con Bucket4j.
+- **Gobernanza y Estándares de Repositorio (`CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `.github/`)**:
+  - Publicada la guía de contribución técnica con flujo Trunk-Based, especificación Conventional Commits v1.0.0 y pautas de calidad de código (SonarQube).
+  - Adoptado el Código de Conducta *Contributor Covenant v2.1*.
+  - Añadidas plantillas estandarizadas para Pull Requests (`.github/pull_request_template.md`), reporte de defectos (`bug_report.md`) y solicitudes de funcionalidad (`feature_request.md`).
+
+### Corregido (Fixed)
+- **Persistencia del Identificador / Localizador en el Registro de Empleados (`Register.js`)**:
+  - Subsanada la omisión del campo `locator` en el cuerpo de la petición de registro enviada a `/api/v1/auth/signup`. Los datos introducidos por el empleado en el desplegable de sede/localizador se normalizan y persisten de inmediato en base de datos (`user.setLocator`), eliminando la necesidad de que el administrador tenga que asignarlo manualmente a posteriori.
+- **Corrección de Jerarquía de Capas y Despliegue en `GlassDropdown` Móvil (`MobileSortBar.js`)**:
+  - Configurada la apertura descendente forzada (`dropup={false}`) y ajustado el `z-index` de los contenedores de tabla para evitar que el menú flotante quede oculto tras las barras de búsqueda y filtros superiores.
+
+### Cambiado (Changed) & Refactorización
+- **Renovación Integral de la Documentación Principal (`README.md` y `frontend/README.md`)**:
+  - Sustituido el archivo raíz previo por una documentación de grado empresarial con arquitectura en Mermaid, guía de despliegue con Docker Compose y desarrollo local, catálogo de variables de entorno `.env` y batería de comandos de testing.
+  - Sustituida la plantilla por defecto de Create React App en el frontend por una guía técnica detallada de la Progressive Web App (React 18, Tailwind, Liquid Glassmorphism, WebSockets, Service Worker VAPID, i18n multilingüe y testing con Jest y Playwright).
+- **Consolidación Canónica de Especificación de Requisitos (`docs/Analisis_Requisitos_Sistema.md`)**:
+  - Unificada la especificación completa del sistema (más de 2.450 líneas) en un documento estandarizado sin caracteres especiales en la ruta.
+- **Normalización Formal de Estilo Editorial**:
+  - Eliminados todos los emoticonos de la suite documental (`docs/DEPLOYMENT_DOCKER_GUIDE.md`, `docs/OWASP_ASVS_v4_Matrix.md`, `docs/Threat_Modeling_STRIDE.md`, `docs/SystemDesignDocument.md`, `docs/e2e_testing_report.md`), sustituyendo símbolos gráficos por terminología técnica normalizada (`[CORRECTO]`, `[INCORRECTO]`, `Cumple`).
+
+### Eliminado (Removed)
+- **Depuración de Archivos Redundantes y Plantillas Obsoletas (`docs/`)**:
+  - Eliminadas las copias desincronizadas (`docs/Análisis de requisitos del sistema copy.md`, `docs/Análisis de requisitos del sistema copy 2.md`, `docs/Análisis de requisitos del sistema.md`, `docs/SystemDesignDocument copy.md`).
+  - Eliminado el directorio `docs/deliverables/` que contenía plantillas académicas genéricas no vinculadas al proyecto.
+  - Fusionado el contenido de `docs/nuevas_funcionalidades.md` en el documento canónico de auditoría y reportes.
+
 ## [1.2.4](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.2.4) - 2026-09-20
 
 ### Añadido (Features) & Blindaje de Seguridad

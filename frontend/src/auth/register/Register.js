@@ -99,6 +99,7 @@ export default function Register() {
           email: form.email.trim(),
           personalCode: form.personalCode.trim(),
           companyId: form.companyId ? Number.parseInt(form.companyId, 10) : null,
+          locator: form.locator?.trim() ? form.locator.trim().toUpperCase() : null,
           captchaToken: effectiveCaptchaToken
         })
       });

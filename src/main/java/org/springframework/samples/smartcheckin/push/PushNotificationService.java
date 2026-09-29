@@ -54,6 +54,9 @@ public class PushNotificationService {
     }
 
     public void sendToUser(User user, String title, String body) {
+        if (user == null || Boolean.FALSE.equals(user.getPushNotificationsEnabled())) {
+            return;
+        }
         List<PushSubscriptionEntity> subs = subscriptionRepository.findByUser(user);
         for (PushSubscriptionEntity sub : subs) {
             sendNotification(sub, title, body);

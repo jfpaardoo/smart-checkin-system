@@ -29,6 +29,21 @@
     <link rel="dns-prefetch" href="https://challenges.cloudflare.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <title>Distribution Academy</title>
+    <!-- Early PWA Install Prompt Capture -->
+    <script>
+      (function() {
+        window.__DA_DEFERRED_PROMPT__ = null;
+        window.addEventListener('beforeinstallprompt', function(e) {
+          e.preventDefault();
+          window.__DA_DEFERRED_PROMPT__ = e;
+          window.dispatchEvent(new CustomEvent('da-pwa-prompt-available', { detail: e }));
+        });
+        window.addEventListener('appinstalled', function() {
+          window.__DA_DEFERRED_PROMPT__ = null;
+          window.dispatchEvent(new CustomEvent('da-pwa-installed'));
+        });
+      })();
+    </script>
     <!-- Anti-FOUC: aplica el tema ANTES de que React cargue para evitar parpadeo -->
     <script>
       (function() {

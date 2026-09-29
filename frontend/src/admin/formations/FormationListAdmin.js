@@ -15,6 +15,19 @@ import PublishFormationModal from "./components/PublishFormationModal";
 
 const fetcher = (url) => api.get(url).then((res) => (Array.isArray(res.data) ? res.data : []));
 
+const getFormationSortValue = (f, key) => {
+  if (key === 'formationDate') {
+    return f.formationDate ? new Date(f.formationDate).getTime() : 0;
+  }
+  if (key === 'attendees') {
+    return f.attendances ? f.attendances.length : 0;
+  }
+  if (key === 'status') {
+    return (f.isClosed || f.status === 'CLOSED') ? 'CLOSED' : (f.status || '');
+  }
+  return f[key] || '';
+};
+
 export default function FormationListAdmin() {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,9 +45,21 @@ export default function FormationListAdmin() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
+  // Ordenación por columnas
+  const [sortConfig, setSortConfig] = useState({ key: 'formationDate', direction: 'desc' });
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev?.key === key) {
+        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
+
   useSubscription('/topic/formations', () => mutate());
 
-  // Ordenar y filtrar instantáneamente en memoria
+  // Filtrar instantáneamente en memoria
   const filteredFormations = useMemo(() => {
     const now = new Date();
     const q = searchQuery.toLowerCase().trim();
@@ -67,9 +92,28 @@ export default function FormationListAdmin() {
           return new Date(f.formationDate) < now;
         }
         return true;
-      })
-      .sort((a, b) => new Date(b.formationDate) - new Date(a.formationDate));
+      });
   }, [formations, searchQuery, timeFilter, statusFilter]);
+
+  // Ordenar según columna seleccionada
+  const sortedFormations = useMemo(() => {
+    const list = [...filteredFormations];
+    if (!sortConfig?.key) return list;
+
+    const { key, direction } = sortConfig;
+    const multiplier = direction === 'asc' ? 1 : -1;
+
+    list.sort((a, b) => {
+      const valA = getFormationSortValue(a, key);
+      const valB = getFormationSortValue(b, key);
+      if (typeof valA === 'number' && typeof valB === 'number') {
+        return (valA - valB) * multiplier;
+      }
+      return String(valA).localeCompare(String(valB), undefined, { sensitivity: 'base' }) * multiplier;
+    });
+
+    return list;
+  }, [filteredFormations, sortConfig]);
 
   // Reset de página al cambiar filtros
   useEffect(() => {
@@ -79,8 +123,8 @@ export default function FormationListAdmin() {
   // Paginación
   const paginatedFormations = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
-    return filteredFormations.slice(start, start + pageSize);
-  }, [filteredFormations, currentPage, pageSize]);
+    return sortedFormations.slice(start, start + pageSize);
+  }, [sortedFormations, currentPage, pageSize]);
 
   return (
     <div className="da-container">
@@ -137,6 +181,8 @@ export default function FormationListAdmin() {
           formations={paginatedFormations} 
           loading={isLoading && formations.length === 0}
           onPublish={(formation) => setFormationToPublish(formation)}
+          sortConfig={sortConfig}
+          onSort={handleSort}
         />
         
         {/* Paginación Liquid Glass */}

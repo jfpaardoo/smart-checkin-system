@@ -1,16 +1,19 @@
-# 🚀 Guía de Despliegue en Servidor con Docker
+# Guía de Despliegue en Servidor con Docker
 
-Esta guía explica cómo desplegar el proyecto **Distribution Academy (Smart Checkin System)** en cualquier servidor Linux (Ubuntu/Debian, AWS EC2, GCP Compute Engine, DigitalOcean, etc.) en menos de 1 minuto usando Docker y Docker Compose.
+Esta guía describe el procedimiento para desplegar el sistema **Distribution Academy (Smart Check-in System)** en servidores Linux (Ubuntu/Debian, AWS EC2, GCP Compute Engine, DigitalOcean, etc.) utilizando Docker y Docker Compose.
 
 ---
 
-## 📋 Requisitos Previos en el Servidor
+## Requisitos Previos del Servidor
+
 - **Docker Engine** (v20.10 o superior)
 - **Docker Compose** (v2.0 o superior)
+- Acceso con privilegios de superusuario (`sudo`)
+- Puertos abiertos en el cortafuegos (firewall): `80`, `443`, `8080` (según configuración)
 
 ---
 
-## 🛠️ Pasos de Despliegue en 1 Minuto
+## Procedimiento de Despliegue
 
 ### 1. Clonar el repositorio en el servidor
 ```bash
@@ -18,38 +21,53 @@ git clone https://github.com/jfpaardoo/smart-checkin-system.git
 cd smart-checkin-system
 ```
 
-### 2. Levantar la aplicación con Docker Compose
+### 2. Configurar variables de entorno
+```bash
+cp .env.example .env
+# Editar las credenciales de producción
+nano .env
+```
+
+### 3. Levantar la aplicación con Docker Compose
 ```bash
 docker-compose up -d --build
 ```
 
-### 3. Verificar el estado de los contenedores
+### 4. Verificar el estado de los contenedores
 ```bash
 docker-compose ps
 ```
 
 ---
 
-## 🔍 Comandos de Gestión Útiles
+## Comandos de Operación y Mantenimiento
 
-- **Ver logs en tiempo real**:
+- **Inspección de registros (logs) en tiempo real:**
   ```bash
   docker-compose logs -f app
   ```
 
-- **Detener el servidor**:
+- **Detención de los servicios:**
   ```bash
   docker-compose down
   ```
 
-- **Reiniciar el servidor**:
+- **Reinicio del servicio backend:**
   ```bash
   docker-compose restart app
   ```
 
+- **Actualización a la última versión del código:**
+  ```bash
+  git pull origin main
+  docker-compose up -d --build
+  ```
+
 ---
 
-## 🌐 Acceso
-Una vez iniciado, la aplicación estará disponible en:
-- **Web principal**: `http://tu-ip-servidor:8080`
-- **Swagger API Docs**: `http://tu-ip-servidor:8080/docs`
+## Acceso y Verificación
+
+Una vez inicializados los contenedores, los servicios estarán disponibles en:
+- **Interfaz Web Principal:** `http://<ip-o-dominio-servidor>:8080`
+- **Consola Swagger UI (Rol ADMIN):** `http://<ip-o-dominio-servidor>:8080/swagger-ui/index.html`
+- **Comprobación de Salud (Actuator Health):** `http://<ip-o-dominio-servidor>:8080/actuator/health`

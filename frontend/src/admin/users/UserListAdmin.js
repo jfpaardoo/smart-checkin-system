@@ -152,6 +152,16 @@ export default function UserListAdmin() {
     return users;
   }, [activeTab, users, pendingUsers]);
 
+  // Estado de ordenación de columnas
+  const [sortConfig, setSortConfig] = useState({ key: 'personalCode', direction: 'asc' });
+
+  const handleSort = useCallback((key) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  }, []);
+
   // Filtrado compuesto
   const filteredUsers = useMemo(() => {
     const isPending = activeTab === 'pending';
@@ -162,16 +172,53 @@ export default function UserListAdmin() {
     );
   }, [baseList, searchQuery, selectedCompany, selectedStatus, activeTab]);
 
+  // Ordenación por columnas (número, alfabético o estado)
+  const sortedUsers = useMemo(() => {
+    if (!sortConfig.key) return filteredUsers;
+    const { key, direction } = sortConfig;
+    const modifier = direction === 'asc' ? 1 : -1;
+
+    return [...filteredUsers].sort((a, b) => {
+      if (key === 'personalCode') {
+        const numA = Number.parseInt(a.personalCode, 10);
+        const numB = Number.parseInt(b.personalCode, 10);
+        if (!Number.isNaN(numA) && !Number.isNaN(numB)) {
+          return (numA - numB) * modifier;
+        }
+        return String(a.personalCode || '').localeCompare(String(b.personalCode || ''), 'es', { numeric: true }) * modifier;
+      }
+      if (key === 'name') {
+        const nameA = `${a.firstName || ''} ${a.lastName || ''}`.trim() || a.username || '';
+        const nameB = `${b.firstName || ''} ${b.lastName || ''}`.trim() || b.username || '';
+        return nameA.localeCompare(nameB, 'es', { sensitivity: 'base', numeric: true }) * modifier;
+      }
+      if (key === 'company') {
+        const compA = a.company?.name || '';
+        const compB = b.company?.name || '';
+        return compA.localeCompare(compB, 'es', { sensitivity: 'base' }) * modifier;
+      }
+      if (key === 'status') {
+        if (activeTab === 'pending') {
+          return String(a.status || '').localeCompare(String(b.status || ''), 'es') * modifier;
+        }
+        const valA = a.isWorking ? 1 : 0;
+        const valB = b.isWorking ? 1 : 0;
+        return (valA - valB) * modifier;
+      }
+      return 0;
+    });
+  }, [filteredUsers, sortConfig, activeTab]);
+
   // Reset de página al cambiar filtros
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeTab, searchQuery, selectedCompany, selectedStatus, pageSize]);
+  }, [activeTab, searchQuery, selectedCompany, selectedStatus, pageSize, sortConfig]);
 
   // Paginación de resultados
   const paginatedUsers = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
-    return filteredUsers.slice(startIndex, startIndex + pageSize);
-  }, [filteredUsers, currentPage, pageSize]);
+    return sortedUsers.slice(startIndex, startIndex + pageSize);
+  }, [sortedUsers, currentPage, pageSize]);
 
   const handleDownloadExport = async (endpoint, defaultFilename, type) => {
     if (exportingType) return;
@@ -319,6 +366,8 @@ export default function UserListAdmin() {
             users={paginatedUsers} 
             loading={loading} 
             activeTab={activeTab} 
+            sortConfig={sortConfig}
+            onSort={handleSort}
             onApprove={handleApprove} 
             onReject={handleReject} 
             onDelete={handleRequestDelete}

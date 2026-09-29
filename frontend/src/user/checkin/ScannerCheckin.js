@@ -14,6 +14,8 @@ import { useQrScanner } from '../../hooks/useQrScanner';
 import { formatDate } from '../../utils/dateUtils';
 import { saveOfflineCheckin, initOfflineSync } from '../../util/offlineQueue';
 import soundAndHaptics from '../../util/soundAndHaptics';
+import { isAppStandalone, executeOrOpenInstall } from '../../util/pwaHelper';
+import { FaMobileAlt } from 'react-icons/fa';
 
 const parseRawInput = (rawInput) => {
   try {
@@ -348,6 +350,18 @@ export default function ScannerCheckin() {
                 <FontAwesomeIcon icon={faKeyboard} className="me-2" />
                 {t('checkin.cantScan', '¿No puedes escanear? Ingresar código manualmente')}
               </button>
+
+              {!isAppStandalone() && (
+                <button
+                  type="button"
+                  onClick={executeOrOpenInstall}
+                  className="py-2.5 px-4 w-full rounded-2xl bg-white/60 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer shadow-xs"
+                  style={{ maxWidth: '360px' }}
+                >
+                  <FaMobileAlt className="text-[#7a8a18] dark:text-[#d4e157]" size={14} />
+                  <span>{t('pwa.scannerPrompt', 'Instalar App en el móvil para fichar más rápido')}</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
