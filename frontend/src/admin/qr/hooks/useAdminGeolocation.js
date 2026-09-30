@@ -36,7 +36,7 @@ export const useAdminGeolocation = () => {
             }
         };
 
-        locate();
+        void locate();
     }, []);
 
     return adminCoords;

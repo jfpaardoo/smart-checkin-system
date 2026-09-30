@@ -2,14 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faDownload, faFileExcel, faFilePdf,
-  faFileCsv, faSpinner, faFilter,
-  faGraduationCap, faUsers, faClock,
+  faDownload, faSpinner, faFilter,
+  faGraduationCap, faClock,
   faTimes, faRotateLeft, faBuilding,
   faMapMarkerAlt, faUserTag, faChartPie,
   faCalendarAlt, faUserCheck, faBookOpen
 } from '@fortawesome/free-solid-svg-icons';
-import dayjs from 'dayjs';
 import { useToast } from '../../../components/ToastProvider';
 import downloadExportFile from '../../../util/downloadExportFile';
 import GlassDropdown from '../../../components/GlassDropdown';

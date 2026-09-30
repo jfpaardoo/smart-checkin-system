@@ -15,11 +15,11 @@ export const useScreenWakeLock = () => {
     }, []);
 
     useEffect(() => {
-        requestWakeLock();
+        void requestWakeLock();
 
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
-                requestWakeLock();
+                void requestWakeLock();
             }
         };
 

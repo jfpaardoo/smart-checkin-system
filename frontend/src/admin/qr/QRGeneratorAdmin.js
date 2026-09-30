@@ -85,7 +85,7 @@ export default function QRGeneratorAdmin() {
     }, [selectedFormationId, adminCoords, isFormationClosed]);
 
     useEffect(() => {
-        fetchCurrentToken();
+        void fetchCurrentToken();
     }, [fetchCurrentToken, wsTick]);
 
     const lastBucketRef = useRef(Math.floor(Date.now() / 20000));
@@ -101,7 +101,7 @@ export default function QRGeneratorAdmin() {
 
             if (currentBucket !== lastBucketRef.current) {
                 lastBucketRef.current = currentBucket;
-                fetchCurrentToken();
+                void fetchCurrentToken();
             }
         };
         
@@ -129,7 +129,7 @@ export default function QRGeneratorAdmin() {
         setIsMaxBrightnessFullscreen(prev => {
             const nextState = !prev;
             if (nextState) {
-                requestWakeLock();
+                void requestWakeLock();
                 if (typeof document !== 'undefined' && document.documentElement.requestFullscreen) {
                     document.documentElement.requestFullscreen().catch(() => {});
                 }

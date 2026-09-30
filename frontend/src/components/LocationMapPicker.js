@@ -3,14 +3,11 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {
   FaSearch,
-  FaMapMarkerAlt,
   FaCrosshairs,
   FaSpinner,
   FaCheckCircle,
   FaLayerGroup,
   FaTimes,
-  FaBuilding,
-  FaCity,
   FaCompass,
 } from "react-icons/fa";
 
@@ -108,7 +105,7 @@ export default function LocationMapPicker({
         marker.on("dragend", (e) => {
           const position = e.target.getLatLng();
           syncMarkerAndCircle(position.lat, position.lng, radius);
-          updateLocation(position.lat, position.lng);
+          void updateLocation(position.lat, position.lng);
         });
 
         markerRef.current = marker;
@@ -167,7 +164,7 @@ export default function LocationMapPicker({
 
     if (value.trim().length >= 2) {
       debounceTimerRef.current = setTimeout(() => {
-        fetchGeocodingResults(value);
+        void fetchGeocodingResults(value);
       }, 350);
     } else {
       setSearchResults([]);
@@ -178,7 +175,7 @@ export default function LocationMapPicker({
   const handleSearchSubmit = (e) => {
     if (e) e.preventDefault();
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
-    fetchGeocodingResults(searchQuery);
+    void fetchGeocodingResults(searchQuery);
   };
 
   // Select a search result from dropdown
@@ -199,7 +196,7 @@ export default function LocationMapPicker({
       syncMarkerAndCircle(lat, lng, radiusMeters);
     }
 
-    updateLocation(lat, lng, displayName);
+    void updateLocation(lat, lng, displayName);
   };
 
   // Initialize Leaflet Map
@@ -229,7 +226,7 @@ export default function LocationMapPicker({
         const { lat, lng } = e.latlng;
         setIsDropdownOpen(false);
         syncMarkerAndCircle(lat, lng, radiusMeters);
-        updateLocation(lat, lng);
+        void updateLocation(lat, lng);
       });
 
       // Initial placement
@@ -284,7 +281,7 @@ export default function LocationMapPicker({
           syncMarkerAndCircle(lat, lng, radiusMeters);
         }
 
-        updateLocation(lat, lng);
+        void updateLocation(lat, lng);
       },
       (err) => {
         setLocating(false);
