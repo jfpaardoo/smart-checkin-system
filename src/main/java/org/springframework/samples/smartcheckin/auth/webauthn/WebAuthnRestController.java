@@ -1,5 +1,8 @@
 package org.springframework.samples.smartcheckin.auth.webauthn;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -82,7 +85,7 @@ public class WebAuthnRestController {
             User user = webAuthnService.verifyLogin(request);
 
             if (user.getAccountLockedUntil() != null) {
-                if (user.getAccountLockedUntil().isAfter(java.time.LocalDateTime.now(java.time.ZoneId.systemDefault()))) {
+                if (user.getAccountLockedUntil().isAfter(LocalDateTime.now(ZoneId.systemDefault()))) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN)
                             .body(new MessageResponse("Account is locked due to too many failed attempts. Try again later."));
                 } else {

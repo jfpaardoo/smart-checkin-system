@@ -1,7 +1,6 @@
 package org.springframework.samples.smartcheckin.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -131,7 +130,7 @@ class SecurityRegressionTests {
 
         Formation formation = new Formation();
         formation.setId(10);
-        when(formationService.registerAttendance(eq(10), eq("1234"), eq(true))).thenReturn(formation);
+        when(formationService.registerAttendance(10, "1234", true)).thenReturn(formation);
 
         // Attempting to pass someone else's personalCode "9999" - facade overrides with "1234"
         Formation result = facade.registerAttendance(10, "9999");

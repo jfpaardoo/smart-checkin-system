@@ -86,9 +86,18 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 - **Unificación y Consolidación del Subsistema de Notificaciones (`org.springframework.samples.smartcheckin.notification`)**:
   - Erradicado por completo el paquete duplicado `org.springframework.samples.smartcheckin.notifications` y consolidada toda la mensajería sobre el paquete central `org.springframework.samples.smartcheckin.notification` (Strategy + Context y Bridge Pattern).
   - Unificados `PushNotificationSender`, `EmailNotificationSender`, `NotificationSender` y las clases de notificación (`AlertNotification`, `AuthNotification`, `SystemUpdateNotification`, `TwoFactorNotification`, `Notification`), actualizando todos los clientes y tests del proyecto.
-- **Modularización y Descomposición de Generadores de Documentos (`OfficialFormationSheetService.java`, `OfficialFormationSheetEvents.java`)**:
-  - Extraídas las clases de eventos de maquetación y sellado PDF (`BaLogoCellEvent`, `FixedDottedLinesCellEvent`, `DottedUnderlineCellEvent`, `TrainerSignatureAndUnderlineCellEvent`) al nuevo componente desacoplado `OfficialFormationSheetEvents.java`.
-  - Reducida la complejidad de `OfficialFormationSheetService` en más de 150 líneas, eliminando todas las referencias a nombres completos de clases (FQCNs) y estandarizando imports limpios de OpenPDF y Apache POI.
+- **Descomposición de Clases Gigantes y Modularización de Generadores (`OfficialFormationSheetService.java`, `OfficialFormationSheetPdfRenderer.java`, `OfficialFormationSheetExcelRenderer.java`, `SignatureImageHelper.java`, `OfficialFormationSheetEvents.java`)**:
+  - **Reducción Drástica de Complejidad (de 946 a 35 líneas)**: Refactorizada la clase monolítica `OfficialFormationSheetService` mediante el patrón Facade, delegando la responsabilidad en componentes altamente especializados con alta cohesión y bajo acoplamiento:
+    - `OfficialFormationSheetPdfRenderer.java`: Renderizado íntegro de la maqueta PDF del acta oficial FOR 99 (cabeceras, sellos de empresa, tabla de asistentes, sumario y pie).
+    - `OfficialFormationSheetExcelRenderer.java`: Generación y maquetado de hojas Excel en formato binario HSSF (Apache POI), cálculo de estilos, anchos y cajas de verificación.
+    - `SignatureImageHelper.java`: Descodificación Base64 de firmas, carga desde almacenamiento y recorte automático de márgenes mediante bounding-box transparente.
+    - `OfficialFormationSheetEvents.java`: Eventos de celda y dibujo vectorial de líneas de firma y sellos corporativos.
+  - **Centralización de Estilos y Diseño PDF (`PdfReportStyler.java`, `PdfReportGenerator.java`)**:
+    - Creado componente centralizado `PdfReportStyler.java` que define la paleta corporativa oficial, jerarquía tipográfica Helvetica, pie de página confidencial numerado (`HeaderFooterPageEvent`) y helpers de maquetación compartidos (`addHeaderBanner`, `addKpiCard`, `addTableHeader`, `addTableCell`, `addInfoRow`).
+    - Adelgazado `PdfReportGenerator.java` en más de 125 líneas, eliminando código duplicado en la generación de informes PDF para usuarios, fichajes, formaciones, auditoría y expedientes individuales.
+  - **Consolidación del Principio DRY en Exportaciones (`ExportUtils.java`, `ExcelExportStrategy.java`, `CsvExportStrategy.java`, `UserSessionService.java`)**:
+    - Centralizadas en `ExportUtils.java` las rutinas comunes de formateo de nombres completos, sanitización segura de nulos, cálculo de duraciones en minutos/horas, generación de hashes de integridad para registros de asistencia, sellos de auditoría y expedientes formativos.
+    - Eliminada la duplicación de rutinas SHA-256 en `UserSessionService`, `CsvExportStrategy` y `ExcelExportStrategy`, unificando el cifrado en `HashUtils.generateHash`.
 - **Suite de Pruebas de Regresión de Seguridad y Abuso (Fase 3: P3) (`SecurityRegressionTests.java`)**:
   - Incorporada suite automatizada de pruebas de seguridad negativa y abuso en `SecurityRegressionTests.java` cubriendo:
     - Intento de verificación 2FA omitiendo el token de desafío (`mfaToken = null`) denegado con `401 Unauthorized`.
@@ -96,8 +105,9 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
     - Intento de autenticación con token de Captcha inválido rechazado de inmediato con `400 Bad Request`.
     - Mitigación de "Buddy Punching": intento de registrar asistencia a formación usurpando el código de otro empleado neutralizado y forzado al código legítimo del usuario autenticado.
     - Mitigación de Ataques de Repetición: validación de la caché de consumo único de tokens TOTP con bloqueo automático de tokens reutilizados dentro de su ventana de tolerancia.
-- **Eliminación de Nombres Completos de Clases Hardcodeados (FQCN) e Higiene de Imports**:
-  - Sustituidas todas las rutas de clase completas inline (`java.security.SecureRandom`, `java.time.LocalDateTime`, etc.) por declaraciones formales de `import` en cabecera en clases del dominio, servicios, controladores y tests (`CheckinService`, `CheckinRestController`, `AuditService`, `AuditLogRepository`, `User`, `UserRestController`, `FormationService`, `CertificateGeneratorService`, `CloudSettingsRestController`, `SecurityConfigurationTests`, `ExportRestControllerTests`, `OfficialFormationSheetServiceTest`).
+  - Eliminados los matchers redundantes `eq(...)` de Mockito en pruebas para cumplir con la regla Sonar.
+- **Eliminación Total de Nombres de Clase Calificados (FQCN) e Higiene Estricta de Imports**:
+  - Suprimidas el 100% de las referencias directas en código (rutas como `java.time.*`, `java.util.*`, `org.apache.poi.*`, `org.slf4j.*`) en favor de declaraciones formales y limpias de `import` en cabecera en toda la base de código (`AnalyticsService`, `AnomalyDetectionService`, `AuditAspect`, `AuthController`, `UserSessionService`, `WebAuthnRestController`, `FormationRestController`, `WebhookIntegrationService`, `ExportRestController`, `ExcelExportStrategy`, `CsvExportStrategy`, `PdfReportGenerator`, etc.).
 - **Refactorización de Bucles Imperativos a Java Streams Funcionales (`AnalyticsService.java`)**:
   - Modernizados bucles tradicionales de agregación de estadísticas de recursos humanos a Streams funcionales para mayor legibilidad y cumplimiento de las directrices Sonar.
 - **Corrección de Contexto Transaccional en Tareas Programadas (`AutoCheckoutScheduledService.java`)**:

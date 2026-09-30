@@ -1,5 +1,9 @@
 package org.springframework.samples.smartcheckin.formation;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -230,10 +234,10 @@ public class FormationRestController {
             return ResponseEntity.notFound().build();
         }
 
-        java.time.format.DateTimeFormatter iCalFormat = java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'").withZone(java.time.ZoneOffset.UTC);
-        String dtStart = f.getFormationDate() != null ? f.getFormationDate().atZone(java.time.ZoneId.systemDefault()).format(iCalFormat) : "";
-        String dtEnd = f.getFormationDate() != null ? f.getFormationDate().plusHours(2).atZone(java.time.ZoneId.systemDefault()).format(iCalFormat) : dtStart;
-        String now = java.time.LocalDateTime.now(java.time.ZoneId.systemDefault()).atZone(java.time.ZoneId.systemDefault()).format(iCalFormat);
+        DateTimeFormatter iCalFormat = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'").withZone(ZoneOffset.UTC);
+        String dtStart = f.getFormationDate() != null ? f.getFormationDate().atZone(ZoneId.systemDefault()).format(iCalFormat) : "";
+        String dtEnd = f.getFormationDate() != null ? f.getFormationDate().plusHours(2).atZone(ZoneId.systemDefault()).format(iCalFormat) : dtStart;
+        String now = LocalDateTime.now(ZoneId.systemDefault()).atZone(ZoneId.systemDefault()).format(iCalFormat);
         String uid = "formation-" + f.getId() + "@smartcheckin.system";
 
         StringBuilder ics = new StringBuilder();

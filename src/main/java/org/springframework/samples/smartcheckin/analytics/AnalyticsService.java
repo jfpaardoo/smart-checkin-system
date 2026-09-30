@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -214,7 +215,7 @@ public class AnalyticsService {
         List<FormationAttendance> allAttendances = attendanceRepository.findByUserIdIn(userIds);
         Map<Integer, List<FormationAttendance>> attendancesByUser = allAttendances.stream()
                 .filter(a -> a.getUser() != null && a.getUser().getId() != null)
-                .collect(java.util.stream.Collectors.groupingBy(a -> a.getUser().getId()));
+                .collect(Collectors.groupingBy(a -> a.getUser().getId()));
 
         List<UserFormationExportDTO> exportList = new ArrayList<>();
 
@@ -338,7 +339,7 @@ public class AnalyticsService {
         long hours = minutes / 60;
         long remainingMins = minutes % 60;
         double decimalHours = Math.round((minutes / 60.0) * 10.0) / 10.0;
-        return String.format(java.util.Locale.US, "%dh %dm (%.1fh)", hours, remainingMins, decimalHours);
+        return String.format(Locale.US, "%dh %dm (%.1fh)", hours, remainingMins, decimalHours);
     }
 
     @Transactional(readOnly = true)

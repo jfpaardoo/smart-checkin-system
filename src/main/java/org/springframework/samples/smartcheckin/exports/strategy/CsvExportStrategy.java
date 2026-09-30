@@ -7,7 +7,6 @@ import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.checkin.Checkin;
 import org.springframework.samples.smartcheckin.formation.Formation;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
-import org.springframework.samples.smartcheckin.util.HashUtils;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
@@ -15,9 +14,9 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 @Component
 public class CsvExportStrategy implements DataExportStrategy {
@@ -77,7 +76,7 @@ public class CsvExportStrategy implements DataExportStrategy {
                 String.valueOf(u.getFormationsAssigned() != null ? u.getFormationsAssigned() : 0),
                 String.valueOf(u.getFormationsAttended() != null ? u.getFormationsAttended() : 0),
                 String.valueOf(u.getFormationsCompleted() != null ? u.getFormationsCompleted() : 0),
-                String.format(java.util.Locale.US, "%.1f", rate),
+                String.format(Locale.US, "%.1f", rate),
                 String.valueOf(u.getTotalFormationMinutes() != null ? u.getTotalFormationMinutes() : 0)
         );
     }
@@ -104,7 +103,7 @@ public class CsvExportStrategy implements DataExportStrategy {
         String username = c.getUser() != null ? sanitize(c.getUser().getUsername()) : NOT_AVAILABLE;
         String personalCode = c.getUser() != null ? sanitize(c.getUser().getPersonalCode()) : NOT_AVAILABLE;
         String fullName = c.getUser() != null
-                ? sanitize((safe(c.getUser().getFirstName()) + " " + safe(c.getUser().getLastName())).trim())
+                ? sanitize(ExportUtils.formatFullName(c.getUser().getFirstName(), c.getUser().getLastName()))
                 : NOT_AVAILABLE;
         String company = (c.getUser() != null && c.getUser().getCompany() != null)
                 ? sanitize(c.getUser().getCompany().getName())
@@ -176,12 +175,7 @@ public class CsvExportStrategy implements DataExportStrategy {
     }
 
     private long calculateAttendanceDuration(FormationAttendance att) {
-        if (att.getCheckInDate() == null || att.getCheckOutDate() == null) {
-            return 0;
-        }
-        return ChronoUnit.MINUTES.between(
-                att.getCheckInDate().atZone(java.time.ZoneId.systemDefault()),
-                att.getCheckOutDate().atZone(java.time.ZoneId.systemDefault()));
+        return ExportUtils.calculateDurationMinutes(att.getCheckInDate(), att.getCheckOutDate());
     }
 
     @Override
@@ -208,8 +202,7 @@ public class CsvExportStrategy implements DataExportStrategy {
         String username = sanitize(log.getUsername());
         String details = sanitize(log.getDetails());
         String ip = sanitize(log.getIpAddress());
-        String rawData = ts + action + username + ip;
-        String hash = HashUtils.generateHash(rawData);
+        String hash = ExportUtils.generateAuditLogHash(ts, action, username, ip);
 
         return String.join(CSV_DELIMITER, idStr, ts, action, username, details, ip, hash);
     }
@@ -326,11 +319,7 @@ public class CsvExportStrategy implements DataExportStrategy {
         String dOut = d.getCheckOutDate() != null ? d.getCheckOutDate().format(DATE_FORMATTER) : NOT_AVAILABLE;
         String dDur = String.valueOf(d.getDurationMinutes() != null ? d.getDurationMinutes() : 0);
         boolean dSig = Boolean.TRUE.equals(d.getHasSignature());
-        String dHash = NOT_AVAILABLE;
-        if (dSig && d.getSignature() != null) {
-            dHash = HashUtils.generateHash(
-                    String.valueOf(d.getFormationId()) + safe(d.getFormationName()) + d.getSignature());
-        }
+        String dHash = ExportUtils.generateDetailHash(d.getFormationId(), d.getFormationName(), dSig ? d.getSignature() : null);
         return String.join(CSV_DELIMITER, dFId, dFName, dDate, dStatus, dIn, dOut, dDur, dSig ? YES : NO, sanitize(dHash));
     }
 

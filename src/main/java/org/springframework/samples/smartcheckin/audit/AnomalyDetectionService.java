@@ -1,5 +1,8 @@
 package org.springframework.samples.smartcheckin.audit;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -43,7 +46,7 @@ public class AnomalyDetectionService {
                 .username(username)
                 .details(details)
                 .ipAddress(ipAddress)
-                .timestamp(java.time.LocalDateTime.now(java.time.ZoneId.systemDefault()))
+                .timestamp(LocalDateTime.now(ZoneId.systemDefault()))
                 .build();
         auditService.recordAuditLog(log);
     }
@@ -59,7 +62,7 @@ public class AnomalyDetectionService {
                 .username(username)
                 .details(details)
                 .ipAddress(ipAddress)
-                .timestamp(java.time.LocalDateTime.now(java.time.ZoneId.systemDefault()))
+                .timestamp(LocalDateTime.now(ZoneId.systemDefault()))
                 .build();
         auditService.recordAuditLog(log);
     }
@@ -71,7 +74,7 @@ public class AnomalyDetectionService {
                 .username(username)
                 .details("Failed login attempt for user: " + username)
                 .ipAddress(ipAddress)
-                .timestamp(java.time.LocalDateTime.now(java.time.ZoneId.systemDefault()))
+                .timestamp(LocalDateTime.now(ZoneId.systemDefault()))
                 .build();
         auditService.recordAuditLog(log);
 
@@ -87,7 +90,7 @@ public class AnomalyDetectionService {
                 .username(username)
                 .details(reason)
                 .ipAddress(ipAddress)
-                .timestamp(java.time.LocalDateTime.now(java.time.ZoneId.systemDefault()))
+                .timestamp(LocalDateTime.now(ZoneId.systemDefault()))
                 .build();
         auditService.recordAuditLog(anomalyLog);
         

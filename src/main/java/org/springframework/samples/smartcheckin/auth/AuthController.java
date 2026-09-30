@@ -3,6 +3,7 @@ package org.springframework.samples.smartcheckin.auth;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.validation.Valid;
 
@@ -471,7 +472,7 @@ public class AuthController {
 
     private ResponseEntity<Object> checkLockout(User user) {
         if (user != null && user.getAccountLockedUntil() != null) {
-            if (user.getAccountLockedUntil().isAfter(LocalDateTime.now(java.time.ZoneId.systemDefault()))) {
+            if (user.getAccountLockedUntil().isAfter(LocalDateTime.now(ZoneId.systemDefault()))) {
                 return ResponseEntity.status(403).body(new MessageResponse("Account is locked due to too many failed attempts. Try again later."));
             } else {
                 user.setAccountLockedUntil(null);
@@ -514,8 +515,8 @@ public class AuthController {
     }
 
     @GetMapping("/captcha-config")
-    public ResponseEntity<java.util.Map<String, String>> getCaptchaConfig() {
-        return ResponseEntity.ok(java.util.Map.of("siteKey", captchaSiteKey));
+    public ResponseEntity<Map<String, String>> getCaptchaConfig() {
+        return ResponseEntity.ok(Map.of("siteKey", captchaSiteKey));
     }
 
     @GetMapping("/validate")

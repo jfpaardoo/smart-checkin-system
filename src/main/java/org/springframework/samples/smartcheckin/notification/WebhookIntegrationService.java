@@ -1,5 +1,6 @@
 package org.springframework.samples.smartcheckin.notification;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -84,7 +85,7 @@ public class WebhookIntegrationService {
             payload.put("event", event);
             payload.put("title", title);
             payload.put("message", text);
-            payload.put("timestamp", java.time.Instant.now().toString());
+            payload.put("timestamp", Instant.now().toString());
             payload.put("data", metadata);
 
             HttpHeaders headers = new HttpHeaders();

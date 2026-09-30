@@ -47,11 +47,15 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @SuppressWarnings("null")
 @RequestMapping("/api/v1/exports")
 public class ExportRestController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ExportRestController.class);
 
     private final CheckinRepository checkinRepository;
     private final FormationAttendanceRepository attendanceRepository;
@@ -150,8 +154,7 @@ public class ExportRestController {
                 formationRepository.save(formation);
             }
         } catch (Exception e) {
-            org.slf4j.LoggerFactory.getLogger(ExportRestController.class)
-                    .warn("No se pudo sincronizar automáticamente la hoja oficial FOR 99 en OneDrive: {}", e.getMessage());
+            logger.warn("No se pudo sincronizar automáticamente la hoja oficial FOR 99 en OneDrive: {}", e.getMessage());
         }
     }
 

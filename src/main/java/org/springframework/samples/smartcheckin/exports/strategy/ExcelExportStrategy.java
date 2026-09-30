@@ -11,6 +11,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.samples.smartcheckin.analytics.UserAnalyticsDTO;
@@ -20,14 +21,14 @@ import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.checkin.Checkin;
 import org.springframework.samples.smartcheckin.formation.Formation;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
-import org.springframework.samples.smartcheckin.util.HashUtils;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Locale;
 
 @Component
 public class ExcelExportStrategy implements DataExportStrategy {
@@ -77,7 +78,7 @@ public class ExcelExportStrategy implements DataExportStrategy {
             style.setFont(font);
 
             byte[] navyRgb = new byte[]{(byte) 30, (byte) 58, (byte) 138};
-            ((org.apache.poi.xssf.usermodel.XSSFCellStyle) style)
+            ((XSSFCellStyle) style)
                     .setFillForegroundColor(new XSSFColor(navyRgb, null));
             style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
             style.setAlignment(HorizontalAlignment.CENTER);
@@ -96,7 +97,7 @@ public class ExcelExportStrategy implements DataExportStrategy {
 
             if (zebra) {
                 byte[] zebraRgb = new byte[]{(byte) 248, (byte) 250, (byte) 252};
-                ((org.apache.poi.xssf.usermodel.XSSFCellStyle) style)
+                ((XSSFCellStyle) style)
                         .setFillForegroundColor(new XSSFColor(zebraRgb, null));
                 style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
             }
@@ -235,7 +236,7 @@ public class ExcelExportStrategy implements DataExportStrategy {
         setStringCell(row.createCell(2), personalCode, cntrStyle);
 
         String fullName = c.getUser() != null
-                ? (safe(c.getUser().getFirstName()) + " " + safe(c.getUser().getLastName())).trim()
+                ? ExportUtils.formatFullName(c.getUser().getFirstName(), c.getUser().getLastName())
                 : NOT_AVAILABLE;
         setStringCell(row.createCell(3), fullName, txtStyle);
 
@@ -361,12 +362,7 @@ public class ExcelExportStrategy implements DataExportStrategy {
     }
 
     private long calculateAttendanceDuration(FormationAttendance att) {
-        if (att.getCheckInDate() == null || att.getCheckOutDate() == null) {
-            return 0;
-        }
-        return ChronoUnit.MINUTES.between(
-                att.getCheckInDate().atZone(java.time.ZoneId.systemDefault()),
-                att.getCheckOutDate().atZone(java.time.ZoneId.systemDefault()));
+        return ExportUtils.calculateDurationMinutes(att.getCheckInDate(), att.getCheckOutDate());
     }
 
     // ─── 4. Export Audit Logs ─────────────────────────────────────────────────
@@ -408,8 +404,7 @@ public class ExcelExportStrategy implements DataExportStrategy {
         setStringCell(row.createCell(4), log.getDetails(), txtStyle);
         setStringCell(row.createCell(5), log.getIpAddress(), cntrStyle);
 
-        String rawData = ts + safe(log.getAction()) + safe(log.getUsername()) + safe(log.getIpAddress());
-        setStringCell(row.createCell(6), HashUtils.generateHash(rawData), cntrStyle);
+        setStringCell(row.createCell(6), ExportUtils.generateAuditLogHash(ts, log.getAction(), log.getUsername(), log.getIpAddress()), cntrStyle);
     }
 
     // ─── 5. Export User Formations Detailed ────────────────────────────────────
@@ -522,9 +517,9 @@ public class ExcelExportStrategy implements DataExportStrategy {
         addDossierField(summarySheet.createRow(sRow++), "Formations Assigned", String.valueOf(assigned), styles);
         addDossierField(summarySheet.createRow(sRow++), "Formations Attended", String.valueOf(attended), styles);
         addDossierField(summarySheet.createRow(sRow++), "Formations Completed", String.valueOf(completed), styles);
-        addDossierField(summarySheet.createRow(sRow++), "Attendance Rate (%)", String.format(java.util.Locale.US, "%.1f%%", rate), styles);
+        addDossierField(summarySheet.createRow(sRow++), "Attendance Rate (%)", String.format(Locale.US, "%.1f%%", rate), styles);
         addDossierField(summarySheet.createRow(sRow++), "Total Formation Minutes", String.valueOf(fMins), styles);
-        addDossierField(summarySheet.createRow(sRow), "Total Formation Hours", String.format(java.util.Locale.US, "%dh %dm (%.1fh)", fMins / 60, fMins % 60, fMins / 60.0), styles);
+        addDossierField(summarySheet.createRow(sRow), "Total Formation Hours", ExportUtils.formatDurationHoursMinutes(fMins), styles);
 
         autoSizeColumns(summarySheet, summaryHeaders.length);
     }
@@ -576,18 +571,12 @@ public class ExcelExportStrategy implements DataExportStrategy {
 
         long mins = d.getDurationMinutes() != null ? d.getDurationMinutes() : 0;
         setNumericCell(row.createCell(6), mins, numStyle);
-        long hours = mins / 60;
-        long remainingMins = mins % 60;
-        setStringCell(row.createCell(7), String.format(java.util.Locale.US, "%dh %dm (%.1fh)", hours, remainingMins, mins / 60.0), cntrStyle);
+        setStringCell(row.createCell(7), ExportUtils.formatDurationHoursMinutes(mins), cntrStyle);
 
         boolean hasSig = Boolean.TRUE.equals(d.getHasSignature());
         setStringCell(row.createCell(8), hasSig ? YES : NO, cntrStyle);
 
-        String hash = NOT_AVAILABLE;
-        if (hasSig && d.getSignature() != null) {
-            hash = HashUtils.generateHash(
-                    String.valueOf(d.getFormationId()) + safe(d.getFormationName()) + d.getSignature());
-        }
+        String hash = ExportUtils.generateDetailHash(d.getFormationId(), d.getFormationName(), hasSig ? d.getSignature() : null);
         setStringCell(row.createCell(9), hash, cntrStyle);
     }
 
