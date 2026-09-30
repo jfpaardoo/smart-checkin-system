@@ -13,14 +13,9 @@ import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.statistics.events.CheckinEvent;
 import org.springframework.samples.smartcheckin.audit.Auditable;
 
-import org.jpatterns.gof.SingletonPattern;
-import org.jpatterns.gof.ObserverPattern;
-
 import org.springframework.transaction.annotation.Isolation;
 
 @Service
-@SingletonPattern.Singleton
-@ObserverPattern.Subject
 @SuppressWarnings("null")
 public class CheckinService {
 

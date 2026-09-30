@@ -80,6 +80,22 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
   - Eliminados los selectores y comentarios residuales de Bootstrap en `common.css` y `navbar.css`, consolidando el sistema de diseño sobre Tailwind CSS y clases maestras de la aplicación.
 
 ### Calidad de Código & Cumplimiento Sonar
+- **Erradicación de Dependencias Zombie y Limpieza de Anotaciones Decorativas (`pom.xml`, 15 clases de dominio/servicios)**:
+  - Eliminada la dependencia externa `org.jpatterns:jpatterns:0.0.1` del archivo `pom.xml`.
+  - Suprimidas todas las anotaciones decorativas de patrones (`@SingletonPattern.Singleton`, `@BuilderPattern.Builder`, `@ObserverPattern.Subject`, `@ObserverPattern.Observer`, `@FacadePattern.Facade`, `@AdapterPattern.Adapter`, `@ChainOfResponsibilityPattern.Handler`, `@DecoratorPattern.Decorator`), confiando en el contenedor nativo de Spring y eliminando deuda técnica obsoleta.
+- **Unificación y Consolidación del Subsistema de Notificaciones (`org.springframework.samples.smartcheckin.notification`)**:
+  - Erradicado por completo el paquete duplicado `org.springframework.samples.smartcheckin.notifications` y consolidada toda la mensajería sobre el paquete central `org.springframework.samples.smartcheckin.notification` (Strategy + Context y Bridge Pattern).
+  - Unificados `PushNotificationSender`, `EmailNotificationSender`, `NotificationSender` y las clases de notificación (`AlertNotification`, `AuthNotification`, `SystemUpdateNotification`, `TwoFactorNotification`, `Notification`), actualizando todos los clientes y tests del proyecto.
+- **Modularización y Descomposición de Generadores de Documentos (`OfficialFormationSheetService.java`, `OfficialFormationSheetEvents.java`)**:
+  - Extraídas las clases de eventos de maquetación y sellado PDF (`BaLogoCellEvent`, `FixedDottedLinesCellEvent`, `DottedUnderlineCellEvent`, `TrainerSignatureAndUnderlineCellEvent`) al nuevo componente desacoplado `OfficialFormationSheetEvents.java`.
+  - Reducida la complejidad de `OfficialFormationSheetService` en más de 150 líneas, eliminando todas las referencias a nombres completos de clases (FQCNs) y estandarizando imports limpios de OpenPDF y Apache POI.
+- **Suite de Pruebas de Regresión de Seguridad y Abuso (Fase 3: P3) (`SecurityRegressionTests.java`)**:
+  - Incorporada suite automatizada de pruebas de seguridad negativa y abuso en `SecurityRegressionTests.java` cubriendo:
+    - Intento de verificación 2FA omitiendo el token de desafío (`mfaToken = null`) denegado con `401 Unauthorized`.
+    - Intento de verificación 2FA con token de desafío manipulado o expirado denegado con `401 Unauthorized`.
+    - Intento de autenticación con token de Captcha inválido rechazado de inmediato con `400 Bad Request`.
+    - Mitigación de "Buddy Punching": intento de registrar asistencia a formación usurpando el código de otro empleado neutralizado y forzado al código legítimo del usuario autenticado.
+    - Mitigación de Ataques de Repetición: validación de la caché de consumo único de tokens TOTP con bloqueo automático de tokens reutilizados dentro de su ventana de tolerancia.
 - **Eliminación de Nombres Completos de Clases Hardcodeados (FQCN) e Higiene de Imports**:
   - Sustituidas todas las rutas de clase completas inline (`java.security.SecureRandom`, `java.time.LocalDateTime`, etc.) por declaraciones formales de `import` en cabecera en clases del dominio, servicios, controladores y tests (`CheckinService`, `CheckinRestController`, `AuditService`, `AuditLogRepository`, `User`, `UserRestController`, `FormationService`, `CertificateGeneratorService`, `CloudSettingsRestController`, `SecurityConfigurationTests`, `ExportRestControllerTests`, `OfficialFormationSheetServiceTest`).
 - **Refactorización de Bucles Imperativos a Java Streams Funcionales (`AnalyticsService.java`)**:

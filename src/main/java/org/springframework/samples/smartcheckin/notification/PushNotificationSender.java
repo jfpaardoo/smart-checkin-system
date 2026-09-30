@@ -1,4 +1,6 @@
-package org.springframework.samples.smartcheckin.notifications;
+package org.springframework.samples.smartcheckin.notification;
+
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,8 +10,6 @@ import org.springframework.samples.smartcheckin.push.PushNotificationService;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserRepository;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @SuppressWarnings("null")
 @Component

@@ -8,7 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.samples.smartcheckin.checkin.CheckinRepository;
 import org.springframework.samples.smartcheckin.checkin.CheckinService;
-import org.springframework.samples.smartcheckin.notifications.EmailNotificationSender;
+import org.springframework.samples.smartcheckin.notification.EmailNotificationSender;
 import org.springframework.samples.smartcheckin.statistics.events.CheckinEvent;
 
 import static org.mockito.ArgumentMatchers.any;

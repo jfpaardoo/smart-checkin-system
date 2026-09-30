@@ -7,7 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.samples.smartcheckin.notifications.PushNotificationSender;
+import org.springframework.samples.smartcheckin.notification.PushNotificationSender;
 import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter;
 import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.samples.smartcheckin.user.User;

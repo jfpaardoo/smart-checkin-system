@@ -20,10 +20,7 @@ import java.io.IOException;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.jpatterns.gof.AdapterPattern;
-
 @Service
-@AdapterPattern.Adapter
 @Slf4j
 @SuppressWarnings("null")
 public class OneDriveAdapterImpl implements CloudStorageAdapter {

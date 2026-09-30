@@ -16,10 +16,7 @@ import org.springframework.samples.smartcheckin.storage.SignatureStorageService;
 import java.util.UUID;
 import java.util.List;
 
-import org.jpatterns.gof.SingletonPattern;
-
 @Service
-@SingletonPattern.Singleton
 @SuppressWarnings("null")
 public class UserService {
     

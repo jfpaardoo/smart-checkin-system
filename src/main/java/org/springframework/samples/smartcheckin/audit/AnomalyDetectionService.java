@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.samples.smartcheckin.notifications.PushNotificationSender;
+import org.springframework.samples.smartcheckin.notification.PushNotificationSender;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
 

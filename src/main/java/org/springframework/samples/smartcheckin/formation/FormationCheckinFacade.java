@@ -1,11 +1,10 @@
 package org.springframework.samples.smartcheckin.formation;
 
-import org.jpatterns.gof.FacadePattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter;
-import org.springframework.samples.smartcheckin.notifications.PushNotificationSender;
-import org.springframework.samples.smartcheckin.notifications.SystemUpdateNotification;
-import org.springframework.samples.smartcheckin.notifications.Notification;
+import org.springframework.samples.smartcheckin.notification.PushNotificationSender;
+import org.springframework.samples.smartcheckin.notification.SystemUpdateNotification;
+import org.springframework.samples.smartcheckin.notification.Notification;
 import org.springframework.samples.smartcheckin.notification.NotificationContext;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
@@ -18,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@FacadePattern
 @Slf4j
 public class FormationCheckinFacade {
 

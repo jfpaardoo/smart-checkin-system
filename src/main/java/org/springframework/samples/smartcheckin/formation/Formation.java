@@ -29,11 +29,9 @@ import jakarta.persistence.EnumType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
-import org.jpatterns.gof.BuilderPattern;
 
 @Getter
 @Setter
-@BuilderPattern.Builder
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

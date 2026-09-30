@@ -1,4 +1,4 @@
-package org.springframework.samples.smartcheckin.notifications;
+package org.springframework.samples.smartcheckin.notification;
 
 public class AuthNotification extends Notification {
     

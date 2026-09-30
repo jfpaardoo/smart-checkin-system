@@ -31,10 +31,7 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 
-import org.jpatterns.gof.SingletonPattern;
-
 @Component
-@SingletonPattern.Singleton
 @SuppressWarnings({ "java:S6466", "java:S2143", "null" })
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);

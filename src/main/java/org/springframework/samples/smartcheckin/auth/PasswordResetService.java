@@ -11,11 +11,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Base64;
 
-import org.jpatterns.gof.SingletonPattern;
-
 @Service
 @SuppressWarnings("null")
-@SingletonPattern.Singleton
 public class PasswordResetService {
 
     private static final int EXPIRATION_MINUTES = 15;

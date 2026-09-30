@@ -1,6 +1,5 @@
 package org.springframework.samples.smartcheckin.audit;
 
-import org.jpatterns.gof.ObserverPattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,17 +9,16 @@ import org.springframework.samples.smartcheckin.statistics.events.CheckinEvent;
 import org.springframework.samples.smartcheckin.checkin.CheckinService;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.samples.smartcheckin.notifications.EmailNotificationSender;
-import org.springframework.samples.smartcheckin.notifications.PushNotificationSender;
-import org.springframework.samples.smartcheckin.notifications.AlertNotification;
-import org.springframework.samples.smartcheckin.notifications.Notification;
+import org.springframework.samples.smartcheckin.notification.EmailNotificationSender;
+import org.springframework.samples.smartcheckin.notification.PushNotificationSender;
+import org.springframework.samples.smartcheckin.notification.AlertNotification;
+import org.springframework.samples.smartcheckin.notification.Notification;
 import org.springframework.samples.smartcheckin.metrics.AppMetricsService;
 import org.springframework.samples.smartcheckin.notification.WebhookIntegrationService;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
 
 @Component
-@ObserverPattern.Observer
 public class CheckinAnomalyObserver {
 
     private static final Logger logger = LoggerFactory.getLogger(CheckinAnomalyObserver.class);

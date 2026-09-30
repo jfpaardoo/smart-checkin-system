@@ -40,8 +40,8 @@ import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsServiceImpl;
 import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
-import org.springframework.samples.smartcheckin.notifications.EmailNotificationSender;
-import org.springframework.samples.smartcheckin.notifications.PushNotificationSender;
+import org.springframework.samples.smartcheckin.notification.EmailNotificationSender;
+import org.springframework.samples.smartcheckin.notification.PushNotificationSender;
 import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.samples.smartcheckin.user.AuthoritiesService;
@@ -908,7 +908,8 @@ class AuthControllerTests {
 
         verify(javaMailSender).send(any(org.springframework.mail.SimpleMailMessage.class));
     }
-    @Test
+
+    @Test
     void testForgotPasswordUserNotFoundSilentlySucceeds() throws Exception {
         when(userService.findUser("unknown@example.com")).thenThrow(new ResourceNotFoundException("User not found"));
 

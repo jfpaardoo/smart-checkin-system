@@ -20,10 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import org.jpatterns.gof.SingletonPattern;
 
 @Service
-@SingletonPattern.Singleton
 public class TotpService {
 
     private static final Logger logger = LoggerFactory.getLogger(TotpService.class);

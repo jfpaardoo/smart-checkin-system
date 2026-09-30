@@ -15,8 +15,6 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.EqualsAndHashCode;
-
-import org.jpatterns.gof.BuilderPattern;
 import lombok.Builder;
 import lombok.AllArgsConstructor;
 
@@ -24,7 +22,6 @@ import java.time.temporal.ChronoUnit;
 
 @Getter
 @Setter
-@BuilderPattern.Builder
 @Builder
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)

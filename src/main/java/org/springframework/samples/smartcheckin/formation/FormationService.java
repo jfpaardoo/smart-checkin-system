@@ -24,9 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.samples.smartcheckin.notification.WebhookIntegrationService;
 import org.springframework.samples.smartcheckin.totp.TotpService;
-import org.jpatterns.gof.SingletonPattern;
+
 @Service
-@SingletonPattern.Singleton
 @SuppressWarnings("null")
 public class FormationService {
 
