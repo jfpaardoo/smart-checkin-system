@@ -173,7 +173,7 @@ public class UserSessionService {
     public static String parseDeviceInfo(String userAgent) {
         if (userAgent == null || userAgent.isBlank()) return "Dispositivo Desconocido";
         String ua = userAgent.toLowerCase();
-        return String.format("%s en %s", detectBrowser(ua), detectOs(ua));
+        return detectBrowser(ua) + " en " + detectOs(ua);
     }
 
     private static String detectBrowser(String ua) {

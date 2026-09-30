@@ -1,6 +1,7 @@
 package org.springframework.samples.smartcheckin.exports.strategy;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 
@@ -28,7 +29,7 @@ public final class ExportUtils {
         if (start == null || end == null || start.isAfter(end)) {
             return 0L;
         }
-        return ChronoUnit.MINUTES.between(start, end);
+        return ChronoUnit.MINUTES.between(start.atZone(ZoneId.systemDefault()), end.atZone(ZoneId.systemDefault()));
     }
 
     public static String formatDurationHoursMinutes(long minutes) {

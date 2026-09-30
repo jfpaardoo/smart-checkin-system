@@ -39,7 +39,7 @@ public class WebhookIntegrationService {
     public void sendFormationClosedNotification(Formation formation, int attendeeCount) {
         String title = "🎓 Formación Finalizada y Cerrada: " + formation.getName();
         String message = String.format(
-            "La formación '%s' ha sido completada y certificada oficialmente.\n- Formador: %s\n- Ubicación: %s\n- Total Asistentes: %d\n- Fecha: %s",
+            "La formación '%s' ha sido completada y certificada oficialmente.%n- Formador: %s%n- Ubicación: %s%n- Total Asistentes: %d%n- Fecha: %s",
             formation.getName(),
             formation.getTrainer() != null ? formation.getTrainer() : "No especificado",
             formation.getLocation() != null ? formation.getLocation() : "No especificado",
@@ -57,7 +57,7 @@ public class WebhookIntegrationService {
     @Async
     public void sendSecurityAnomalyNotification(String eventType, String details, String ip) {
         String title = "Alerta de Seguridad / Anomalía de Fichaje (" + eventType + ")";
-        String message = String.format("Se ha registrado una anomalía de seguridad.\n- Evento: %s\n- IP Origen: %s\n- Detalles: %s",
+        String message = String.format("Se ha registrado una anomalía de seguridad.%n- Evento: %s%n- IP Origen: %s%n- Detalles: %s",
             eventType, ip != null ? ip : "Desconocida", details);
 
         dispatchToConfiguredWebhooks("SECURITY_ANOMALY", title, message, Map.of(

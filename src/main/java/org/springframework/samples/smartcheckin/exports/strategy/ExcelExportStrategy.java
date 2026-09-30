@@ -26,7 +26,6 @@ import org.springframework.stereotype.Component;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
 
@@ -589,6 +588,11 @@ public class ExcelExportStrategy implements DataExportStrategy {
 
     private void setNumericCell(Cell cell, double value, CellStyle style) {
         cell.setCellValue(value);
+        cell.setCellStyle(style);
+    }
+
+    private void setNumericCell(Cell cell, long value, CellStyle style) {
+        cell.setCellValue((double) value);
         cell.setCellStyle(style);
     }
 
