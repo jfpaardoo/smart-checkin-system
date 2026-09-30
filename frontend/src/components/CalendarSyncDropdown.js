@@ -72,7 +72,7 @@ export default function CalendarSyncDropdown({
   const handleMainButtonClick = () => {
     if (isMobileDevice()) {
       // En móvil (iPhone/Android), añade automáticamente a la app nativa instalada por defecto
-      handleSync(recommendedId);
+      void handleSync(recommendedId);
     } else {
       // En ordenador, abre el selector de plataformas web (Outlook, Google, 365, etc.)
       setIsOpen(true);

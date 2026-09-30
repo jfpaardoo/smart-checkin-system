@@ -23,7 +23,7 @@ export default function CheckinsTab({ t }) {
         },
       });
 
-      if (res.data && res.data.content && Array.isArray(res.data.content)) {
+      if (Array.isArray(res.data?.content)) {
         setCheckins(res.data.content);
         setTotalElements(res.data.totalElements || 0);
       } else if (Array.isArray(res.data)) {
@@ -42,7 +42,7 @@ export default function CheckinsTab({ t }) {
   }, [currentPage, pageSize]);
 
   useEffect(() => {
-    fetchCheckins();
+    void fetchCheckins();
   }, [fetchCheckins]);
 
   if (loading && checkins.length === 0) {

@@ -36,7 +36,7 @@ export default function ActiveSessionsTab({ t, toast }) {
   }, [t, toast]);
 
   useEffect(() => {
-    fetchSessions();
+    void fetchSessions();
   }, [fetchSessions]);
 
   const handleRevokeSession = async (sessionId) => {
