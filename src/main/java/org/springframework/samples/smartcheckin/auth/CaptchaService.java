@@ -22,10 +22,28 @@ public class CaptchaService {
     @Value("${app.captcha.secret:1x0000000000000000000000000000000AA}")
     private String captchaSecret;
 
+    @Value("${app.captcha.bypass-enabled:false}")
+    private boolean bypassEnabled;
+
+    @Value("${spring.profiles.active:default}")
+    private String activeProfile;
+
     private final RestTemplate restTemplate;
 
     public CaptchaService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
+    }
+
+    @jakarta.annotation.PostConstruct
+    public void validateConfiguration() {
+        if ("prod".equalsIgnoreCase(activeProfile) || "production".equalsIgnoreCase(activeProfile)) {
+            if (bypassEnabled) {
+                throw new IllegalStateException("CRÍTICO: app.captcha.bypass-enabled no puede estar activo en el perfil de producción.");
+            }
+            if (captchaSecret == null || captchaSecret.isBlank() || DEFAULT_TEST_SECRET.equals(captchaSecret)) {
+                throw new IllegalStateException("CRÍTICO: app.captcha.secret no está configurado o utiliza el secreto de prueba en producción.");
+            }
+        }
     }
 
     public boolean validateCaptcha(String captchaResponse) {
@@ -33,14 +51,14 @@ public class CaptchaService {
             return false;
         }
 
-        // Si se usa el token de pruebas estándar de Cloudflare o mock de pruebas E2E
-        if (TEST_TOKEN.equals(captchaResponse) || MOCKED_TOKEN.equals(captchaResponse)) {
-            return true;
-        }
-
-        // Si el secret configurado es el de pruebas por defecto, aceptar para desarrollo local
-        if (DEFAULT_TEST_SECRET.equals(captchaSecret)) {
-            return true;
+        // Permitir tokens de prueba únicamente si el bypass está explícitamente activado (ej. suite de tests)
+        if (bypassEnabled) {
+            if (TEST_TOKEN.equals(captchaResponse) || MOCKED_TOKEN.equals(captchaResponse)) {
+                return true;
+            }
+            if (DEFAULT_TEST_SECRET.equals(captchaSecret)) {
+                return true;
+            }
         }
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();

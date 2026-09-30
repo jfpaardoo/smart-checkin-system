@@ -24,4 +24,7 @@ public interface FormationRepository extends CrudRepository<Formation, Integer> 
 
     Long countByFormationDateAfter(LocalDateTime date);
     Long countByFormationDateBefore(LocalDateTime date);
+
+    @Query("SELECT f FROM Formation f WHERE f.status = :status AND f.isClosed = false AND f.formationDate BETWEEN :startDate AND :endDate")
+    List<Formation> findActiveFormationsForDateRange(@Param("status") FormationStatus status, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

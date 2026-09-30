@@ -1,13 +1,16 @@
 package org.springframework.samples.smartcheckin.exports;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.lowagie.text.pdf.PdfReader;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,12 +25,11 @@ import static org.mockito.Mockito.mock;
 class OfficialFormationSheetServiceTest {
 
     private OfficialFormationSheetService sheetService;
-    private SignatureStorageService signatureStorageService;
     private Formation sampleFormation;
 
     @BeforeEach
     void setUp() {
-        signatureStorageService = mock(SignatureStorageService.class);
+        SignatureStorageService signatureStorageService = mock(SignatureStorageService.class);
         sheetService = new OfficialFormationSheetService(signatureStorageService);
 
         Company company = new Company();
@@ -52,7 +54,7 @@ class OfficialFormationSheetServiceTest {
         user2.setIsWorking(false);
         user2.setCompany(company);
 
-        java.time.ZoneId zone = java.time.ZoneId.systemDefault();
+        ZoneId zone = ZoneId.systemDefault();
         FormationAttendance att1 = new FormationAttendance();
         att1.setId(1);
         att1.setUser(user1);
@@ -132,7 +134,7 @@ class OfficialFormationSheetServiceTest {
     void shouldGenerateMultiplePagesWhenMoreThan21Attendees() throws Exception {
         // Crear 45 asistentes (deben generar 3 páginas: 21 + 21 + 3)
         List<FormationAttendance> attendances = new ArrayList<>();
-        java.time.ZoneId zone = java.time.ZoneId.systemDefault();
+        ZoneId zone = ZoneId.systemDefault();
 
         for (int i = 1; i <= 45; i++) {
             User user = new User();
@@ -168,7 +170,7 @@ class OfficialFormationSheetServiceTest {
 
         try (HSSFWorkbook wb = new HSSFWorkbook(new ByteArrayInputStream(xlsBytes))) {
             // Verificar que se crearon 3 páginas/hojas
-            org.junit.jupiter.api.Assertions.assertEquals(3, wb.getNumberOfSheets());
+            assertEquals(3, wb.getNumberOfSheets());
 
             // Hoja 1: Contiene asistentes 1 al 21
             HSSFSheet page1 = wb.getSheetAt(0);
@@ -199,18 +201,18 @@ class OfficialFormationSheetServiceTest {
         // Validar cabecera mágica de archivo PDF (%PDF)
         assertTrue(pdfBytes.length > 4);
         String header = new String(pdfBytes, 0, 4);
-        org.junit.jupiter.api.Assertions.assertEquals("%PDF", header);
+        assertEquals("%PDF", header);
 
         // Verificar que con 2 asistentes se genera exactamente 1 página
-        com.lowagie.text.pdf.PdfReader reader = new com.lowagie.text.pdf.PdfReader(pdfBytes);
-        org.junit.jupiter.api.Assertions.assertEquals(1, reader.getNumberOfPages());
+        PdfReader reader = new PdfReader(pdfBytes);
+        assertEquals(1, reader.getNumberOfPages());
         reader.close();
     }
 
     @Test
     void shouldGenerateMultiplePagesPdfWhenMoreThan21Attendees() throws Exception {
         List<FormationAttendance> attendances = new ArrayList<>();
-        java.time.ZoneId zone = java.time.ZoneId.systemDefault();
+        ZoneId zone = ZoneId.systemDefault();
 
         for (int i = 1; i <= 45; i++) {
             User user = new User();
@@ -245,8 +247,8 @@ class OfficialFormationSheetServiceTest {
         assertTrue(pdfBytes.length > 0);
 
         // Verificar que con 45 asistentes se generan exactamente 3 páginas (21 + 21 + 3)
-        com.lowagie.text.pdf.PdfReader reader = new com.lowagie.text.pdf.PdfReader(pdfBytes);
-        org.junit.jupiter.api.Assertions.assertEquals(3, reader.getNumberOfPages());
+        PdfReader reader = new PdfReader(pdfBytes);
+        assertEquals(3, reader.getNumberOfPages());
         reader.close();
     }
 
@@ -262,6 +264,6 @@ class OfficialFormationSheetServiceTest {
         assertNotNull(pdfBytes);
         assertTrue(pdfBytes.length > 0);
         String header = new String(pdfBytes, 0, 4);
-        org.junit.jupiter.api.Assertions.assertEquals("%PDF", header);
+        assertEquals("%PDF", header);
     }
 }

@@ -6,10 +6,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -408,9 +413,9 @@ class ExportRestControllerTests {
 
         when(attendanceRepository.findAll()).thenReturn(List.of(att));
 
-        try (org.mockito.MockedStatic<java.security.MessageDigest> mockedDigest = org.mockito.Mockito.mockStatic(java.security.MessageDigest.class, org.mockito.Mockito.CALLS_REAL_METHODS)) {
-            mockedDigest.when(() -> java.security.MessageDigest.getInstance("SHA-256"))
-                    .thenThrow(new java.security.NoSuchAlgorithmException("No SHA-256"));
+        try (MockedStatic<MessageDigest> mockedDigest = Mockito.mockStatic(MessageDigest.class, Mockito.CALLS_REAL_METHODS)) {
+            mockedDigest.when(() -> MessageDigest.getInstance("SHA-256"))
+                    .thenThrow(new NoSuchAlgorithmException("No SHA-256"));
 
             mockMvc.perform(get(BASE_URL + FORMATIONS_CSV))
                     .andExpect(status().isOk());
@@ -460,7 +465,7 @@ class ExportRestControllerTests {
         comp.setId(5);
         user.setCompany(comp);
         attendance.setUser(user);
-        formation.setAttendances(new java.util.ArrayList<>(List.of(attendance)));
+        formation.setAttendances(new ArrayList<>(List.of(attendance)));
 
         when(formationRepository.findAll()).thenReturn(List.of(formation));
 

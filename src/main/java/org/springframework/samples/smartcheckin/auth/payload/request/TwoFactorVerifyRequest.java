@@ -17,4 +17,6 @@ public class TwoFactorVerifyRequest {
     
     private String type;
 
+    private String mfaToken;
+
 }

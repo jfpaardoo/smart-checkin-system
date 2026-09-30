@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.samples.smartcheckin.notifications.PushNotificationSender;
 import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter;
+import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
 import org.springframework.web.multipart.MultipartFile;
@@ -182,5 +183,39 @@ class FormationCheckinFacadeTests {
 
         facade.deleteFormation(1);
         verify(formationService).deleteFormation(1);
+    }
+
+    @Test
+    void testRegisterAttendanceNonAdminCannotBuddyPunch() {
+        Authorities userAuth = new Authorities();
+        userAuth.setAuthority("USER");
+        sampleUser.setAuthority(userAuth);
+        when(userService.findCurrentUser()).thenReturn(sampleUser);
+
+        Formation formation = new Formation();
+        formation.setId(5);
+        when(formationService.registerAttendance(5, EMP_001, true)).thenReturn(formation);
+
+        // Even though "COWORKER_123" is passed, it should enforce EMP_001
+        Formation result = facade.registerAttendance(5, "COWORKER_123", true);
+        assertNotNull(result);
+        verify(formationService).registerAttendance(5, EMP_001, true);
+        verify(formationService, never()).registerAttendance(5, "COWORKER_123", true);
+    }
+
+    @Test
+    void testRegisterAttendanceAdminCanRegisterOtherUser() {
+        Authorities adminAuth = new Authorities();
+        adminAuth.setAuthority("ADMIN");
+        sampleUser.setAuthority(adminAuth);
+        when(userService.findCurrentUser()).thenReturn(sampleUser);
+
+        Formation formation = new Formation();
+        formation.setId(5);
+        when(formationService.registerAttendance(5, "COWORKER_123", true)).thenReturn(formation);
+
+        Formation result = facade.registerAttendance(5, "COWORKER_123", true);
+        assertNotNull(result);
+        verify(formationService).registerAttendance(5, "COWORKER_123", true);
     }
 }

@@ -26,13 +26,17 @@ import lombok.EqualsAndHashCode;
 import jakarta.persistence.Index;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import org.jpatterns.gof.BuilderPattern;
 
 @Getter
 @Setter
-@org.jpatterns.gof.BuilderPattern.Builder
-@lombok.Builder
-@lombok.AllArgsConstructor
-@lombok.NoArgsConstructor
+@BuilderPattern.Builder
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = false, exclude = {"attendances"})
 @Entity
 @Table(name = "formations", indexes = {

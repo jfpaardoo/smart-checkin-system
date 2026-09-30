@@ -269,9 +269,15 @@ public class FormationCheckinFacade {
 
     @Auditable(action = "CHECKIN_FORMATION", details = "User checked into formation")
     public Formation registerAttendance(Integer id, String personalCode, Boolean withinWorkingHours) {
-        String code = personalCode;
-        if (code == null || code.isBlank()) {
-            code = userService.findCurrentUser().getPersonalCode();
+        User currentUser = userService.findCurrentUser();
+        boolean isAdmin = currentUser != null && currentUser.hasAuthority("ADMIN");
+        String code;
+        if (isAdmin && personalCode != null && !personalCode.isBlank()) {
+            code = personalCode;
+        } else {
+            code = (currentUser != null && currentUser.getPersonalCode() != null)
+                    ? currentUser.getPersonalCode()
+                    : personalCode;
         }
         Formation formation = formationService.registerAttendance(id, code, withinWorkingHours);
         notifyFormationsUpdate(id);

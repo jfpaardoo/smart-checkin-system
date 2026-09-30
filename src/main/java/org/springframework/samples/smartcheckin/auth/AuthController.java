@@ -236,11 +236,14 @@ public class AuthController {
             sendTwoFactorEmailIfConfigured(user);
         }
         String username = resolveUsername(null, user, authentication);
+        String mfaToken = jwtUtils.generateMfaChallengeToken(username);
+
         JwtResponse challengeResponse = new JwtResponse();
         challengeResponse.setUsername(username);
         challengeResponse.setRequiresTwoFactor(has2FA);
         challengeResponse.setRequiresPasskey(hasPasskeys);
         challengeResponse.setHasPasskeys(hasPasskeys);
+        challengeResponse.setMfaToken(mfaToken);
         return ResponseEntity.ok().body(challengeResponse);
     }
 
@@ -302,21 +305,43 @@ public class AuthController {
 
     @PostMapping("/verify-2fa")
     public ResponseEntity<Object> verifyTwoFactor(@Valid @RequestBody TwoFactorVerifyRequest request) {
-        User user = null;
-        try {
-            user = userService.findUser(request.getUsername());
-        } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Error: User not found"));
+        if (request.getMfaToken() == null || !jwtUtils.validateMfaChallengeToken(request.getMfaToken())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new MessageResponse("Error: Sesión de verificación 2FA no válida o expirada."));
         }
 
-        boolean isTotpValid = user.getTwoFactorSecret() != null && totpService.validateCode(user.getTwoFactorSecret(), request.getCode());
+        String tokenUsername = jwtUtils.getUserNameFromMfaToken(request.getMfaToken());
+        if (request.getUsername() != null && !request.getUsername().isBlank()
+                && !request.getUsername().equalsIgnoreCase(tokenUsername)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new MessageResponse("Error: Sesión de verificación 2FA no válida."));
+        }
+
+        User user = null;
+        try {
+            user = userService.findUser(tokenUsername);
+        } catch (ResourceNotFoundException e) {
+            // C1 Anti-enumeración de usuarios: devolver 401 genérico en lugar de 404
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new MessageResponse("Error: Credenciales de autenticación no válidas."));
+        }
+
+        ResponseEntity<Object> lockoutResponse = checkLockout(user);
+        if (lockoutResponse != null) {
+            return lockoutResponse;
+        }
+
+        boolean isTotpValid = user.getTwoFactorSecret() != null && totpService.validateCode(user.getTwoFactorSecret(), request.getCode(), user.getUsername());
         boolean isBackupCodeValid = false;
         if (!isTotpValid) {
             isBackupCodeValid = backupCodeService.verifyAndConsumeBackupCode(user, request.getCode());
         }
 
         if (!isTotpValid && !isBackupCodeValid) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Código 2FA inválido o expirado."));
+            String clientIp = extractClientIp(this.request);
+            handleFailedLogin(user, user.getUsername(), clientIp);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new MessageResponse("Error: Código 2FA inválido o expirado."));
         }
 
         // Cargar UserDetailsImpl correctamente para evitar el ClassCastException en JwtUtils

@@ -250,7 +250,7 @@ html.dark .da-glass-dropdown-trigger:hover {
   background: rgba(30,41,59,0.90) !important;
 }
 
-/* Light dropdowns de Bootstrap en dark */
+/* Dropdowns de navegación en modo oscuro */
 html.dark .da-select-toggle+.dropdown-menu.da-dropdown-menu,
 html.dark .dropdown-menu.da-dropdown-menu.da-light-dropdown {
   background: rgba(15,23,42,0.95) !important;

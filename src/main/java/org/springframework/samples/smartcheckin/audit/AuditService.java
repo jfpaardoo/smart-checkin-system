@@ -1,5 +1,8 @@
 package org.springframework.samples.smartcheckin.audit;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,9 +74,9 @@ public class AuditService {
                 ? lastLog.getLogHash()
                 : GENESIS_PREVIOUS_HASH;
 
-        java.time.LocalDateTime ts = (log.getTimestamp() != null)
-                ? log.getTimestamp().truncatedTo(java.time.temporal.ChronoUnit.SECONDS)
-                : java.time.LocalDateTime.now(java.time.ZoneId.systemDefault()).truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
+        LocalDateTime ts = (log.getTimestamp() != null)
+                ? log.getTimestamp().truncatedTo(ChronoUnit.SECONDS)
+                : LocalDateTime.now(ZoneId.systemDefault()).truncatedTo(ChronoUnit.SECONDS);
         log.setTimestamp(ts);
         log.setPreviousHash(prevHash);
 

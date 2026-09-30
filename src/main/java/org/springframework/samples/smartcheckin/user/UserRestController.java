@@ -2,6 +2,7 @@ package org.springframework.samples.smartcheckin.user;
 
 import java.security.Principal;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,7 +178,7 @@ class UserRestController {
                 safeFormation.setLocation(orig.getLocation());
                 safeFormation.setStatus(orig.getStatus());
                 safeFormation.setIsClosed(orig.getIsClosed());
-                safeFormation.setDocumentUrls(new java.util.ArrayList<>());
+                safeFormation.setDocumentUrls(new ArrayList<>());
 
                 FormationAttendance copy = new FormationAttendance();
                 copy.setId(att.getId());

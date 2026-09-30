@@ -6,7 +6,10 @@ import dev.samstevens.totp.code.DefaultCodeGenerator;
 import dev.samstevens.totp.code.DefaultCodeVerifier;
 import dev.samstevens.totp.time.SystemTimeProvider;
 import dev.samstevens.totp.time.TimeProvider;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.codec.binary.Base32;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -14,14 +17,31 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.jpatterns.gof.SingletonPattern;
 
 @Service
 @SingletonPattern.Singleton
 public class TotpService {
 
+    private static final Logger logger = LoggerFactory.getLogger(TotpService.class);
+
     @Value("${smartcheckin.app.totpSecret:DEFAULT_SECRET}")
     private String secret;
+
+    @PostConstruct
+    public void validateSecretInProduction() {
+        String activeProfile = System.getProperty("spring.profiles.active", "");
+        if ("prod".equalsIgnoreCase(activeProfile) || "production".equalsIgnoreCase(activeProfile)) {
+            if (secret == null || "DEFAULT_SECRET".equals(secret) || secret.isBlank()) {
+                throw new IllegalStateException("CRÍTICO: smartcheckin.app.totpSecret no puede tener el valor por defecto en producción.");
+            }
+        } else if ("DEFAULT_SECRET".equals(secret)) {
+            logger.warn("ALERTA DE SEGURIDAD: Usando clave TOTP por defecto ('DEFAULT_SECRET'). Configurar smartcheckin.app.totpSecret para entornos seguros.");
+        }
+    }
 
     private final TimeProvider timeProvider = new SystemTimeProvider();
     private final CodeGenerator codeGenerator = new DefaultCodeGenerator();
@@ -30,6 +50,12 @@ public class TotpService {
     
     // Key: formationId (or "GLOBAL"), Value: [lat, lng]
     private final ConcurrentHashMap<String, double[]> adminLocationCache = new ConcurrentHashMap<>();
+
+    // Anti-replay single-use token cache (RFC 6238 §5.2): TTL de 60 segundos por usuario
+    private final Cache<String, Boolean> consumedTokensCache = Caffeine.newBuilder()
+            .expireAfterWrite(60, TimeUnit.SECONDS)
+            .maximumSize(50_000)
+            .build();
 
     public TotpService() {
         // QR Dinámico para formaciones y fichajes: Período de 20 segundos
@@ -113,11 +139,38 @@ public class TotpService {
         }
     }
 
+    public boolean isTokenConsumedForUser(String token, Object userIdentifier) {
+        if (token == null || userIdentifier == null) {
+            return false;
+        }
+        String key = String.valueOf(userIdentifier).trim() + ":" + token.trim();
+        return consumedTokensCache.getIfPresent(key) != null;
+    }
+
+    public void markTokenConsumedForUser(String token, Object userIdentifier) {
+        if (token == null || userIdentifier == null) {
+            return;
+        }
+        String key = String.valueOf(userIdentifier).trim() + ":" + token.trim();
+        consumedTokensCache.put(key, Boolean.TRUE);
+    }
+
     public boolean validateCode(String twoFactorSecret, String code) {
+        return validateCode(twoFactorSecret, code, null);
+    }
+
+    public boolean validateCode(String twoFactorSecret, String code, String username) {
         if (twoFactorSecret == null || twoFactorSecret.trim().isEmpty() || code == null || code.trim().isEmpty()) {
             return false;
         }
-        return twoFactorVerifier.isValidCode(twoFactorSecret, code);
+        if (username != null && isTokenConsumedForUser(code, username)) {
+            return false;
+        }
+        boolean isValid = twoFactorVerifier.isValidCode(twoFactorSecret, code);
+        if (isValid && username != null) {
+            markTokenConsumedForUser(code, username);
+        }
+        return isValid;
     }
 
     public String generateCode(String twoFactorSecret) {

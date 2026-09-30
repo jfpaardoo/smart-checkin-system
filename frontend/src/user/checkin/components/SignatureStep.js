@@ -3,6 +3,48 @@ import SignatureCanvas from 'react-signature-canvas';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../../components/ToastProvider';
 
+export const getOptimizedSignatureBase64 = (canvasRef) => {
+  if (!canvasRef?.current || canvasRef.current.isEmpty()) {
+    return null;
+  }
+  try {
+    // 1. Recorte Bounding Box automático (elimina márgenes transparentes/blancos sobrantes)
+    const trimmedCanvas = canvasRef.current.getTrimmedCanvas();
+    if (!trimmedCanvas) {
+      return canvasRef.current.getCanvas().toDataURL('image/png');
+    }
+
+    // 2. Normalización de dimensiones máximas para reducir el tamaño medio a <8 KB
+    const maxWidth = 340;
+    const maxHeight = 140;
+    let targetWidth = trimmedCanvas.width;
+    let targetHeight = trimmedCanvas.height;
+
+    if (targetWidth > maxWidth || targetHeight > maxHeight) {
+      const scale = Math.min(maxWidth / targetWidth, maxHeight / targetHeight);
+      targetWidth = Math.max(1, Math.round(targetWidth * scale));
+      targetHeight = Math.max(1, Math.round(targetHeight * scale));
+    }
+
+    const compressedCanvas = document.createElement('canvas');
+    compressedCanvas.width = targetWidth;
+    compressedCanvas.height = targetHeight;
+    const ctx = compressedCanvas.getContext('2d');
+    
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(trimmedCanvas, 0, 0, targetWidth, targetHeight);
+
+    return compressedCanvas.toDataURL('image/png');
+  } catch (error) {
+    // Fallback al canvas completo sin recortar en caso de fallo inesperado de renderizado
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn('Error optimizando firma digital canvas:', error);
+    }
+    return canvasRef.current?.getCanvas ? canvasRef.current.getCanvas().toDataURL('image/png') : null;
+  }
+};
+
 const SignatureStep = forwardRef(({ onSubmit, onCancel, submitLabel }, ref) => {
   const { t } = useTranslation();
   const toast = useToast();
@@ -12,7 +54,7 @@ const SignatureStep = forwardRef(({ onSubmit, onCancel, submitLabel }, ref) => {
   useImperativeHandle(ref, () => ({
     clear: () => sigCanvas.current?.clear(),
     isEmpty: () => sigCanvas.current?.isEmpty(),
-    getSignatureBase64: () => sigCanvas.current?.getCanvas().toDataURL('image/png')
+    getSignatureBase64: () => getOptimizedSignatureBase64(sigCanvas)
   }));
 
   useEffect(() => {
@@ -40,7 +82,7 @@ const SignatureStep = forwardRef(({ onSubmit, onCancel, submitLabel }, ref) => {
       toast.error(t('checkin.provideSignature', 'Por favor proporcione su firma.'));
       return;
     }
-    const signatureBase64 = sigCanvas.current.getCanvas().toDataURL('image/png');
+    const signatureBase64 = getOptimizedSignatureBase64(sigCanvas);
     onSubmit(signatureBase64);
   };
 

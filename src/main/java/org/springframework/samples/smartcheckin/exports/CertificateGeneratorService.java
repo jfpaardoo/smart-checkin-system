@@ -3,6 +3,7 @@ package org.springframework.samples.smartcheckin.exports;
 import java.io.ByteArrayOutputStream;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.Locale;
 import java.awt.Color;
 
 import org.slf4j.Logger;
@@ -136,7 +137,7 @@ public class CertificateGeneratorService {
             pCourse.setSpacingAfter(12);
             document.add(pCourse);
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd 'de' MMMM 'de' yyyy, HH:mm", java.util.Locale.of("es", "ES"));
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd 'de' MMMM 'de' yyyy, HH:mm", Locale.of("es", "ES"));
             String dateString = attendance.getCheckInDate() != null ? attendance.getCheckInDate().format(formatter) : "Fecha no especificada";
 
             Paragraph pDate = new Paragraph("Registrado en la plataforma Smart Check-in el " + dateString + ".", FONT_BODY);

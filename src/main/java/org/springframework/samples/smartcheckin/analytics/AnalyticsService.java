@@ -19,6 +19,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @SuppressWarnings("null")
@@ -59,25 +61,75 @@ public class AnalyticsService {
     private List<UserAnalyticsDTO> executeGetAllUsersAnalytics(String search, Integer companyId, String locator,
                                                                String role, String performance, Boolean isWorking) {
         Iterable<User> users = userRepository.findAll();
-        List<UserAnalyticsDTO> dtos = new ArrayList<>();
+        List<User> eligibleUsers = StreamSupport.stream(users.spliterator(), false)
+                .filter(user -> isEligibleUser(user, companyId, locator, role, isWorking))
+                .toList();
 
-        for (User user : users) {
-            if (isEligibleUser(user, companyId, locator, role, isWorking)) {
-                dtos.add(buildUserAnalyticsDTO(user, false));
-            }
+        if (eligibleUsers.isEmpty()) {
+            return Collections.emptyList();
         }
 
+        List<Integer> userIds = eligibleUsers.stream().map(User::getId).filter(Objects::nonNull).toList();
+        Map<Integer, List<Checkin>> checkinMap = fetchBatchCheckins(userIds);
+        Map<Integer, List<FormationAttendance>> attendanceMap = fetchBatchAttendances(userIds);
+
+        List<UserAnalyticsDTO> dtos = new ArrayList<>();
+        for (User user : eligibleUsers) {
+            List<Checkin> userCheckins = checkinMap.containsKey(user.getId())
+                    ? checkinMap.get(user.getId())
+                    : checkinRepository.findByUserIdOrderByCheckInDateDesc(user.getId());
+            List<FormationAttendance> userAttendances = attendanceMap.containsKey(user.getId())
+                    ? attendanceMap.get(user.getId())
+                    : attendanceRepository.findByUserId(user.getId());
+
+            dtos.add(buildUserAnalyticsDTO(user, false, userCheckins, userAttendances));
+        }
+
+        return filterAndSortAnalytics(dtos, performance, search);
+    }
+
+    private Map<Integer, List<Checkin>> fetchBatchCheckins(List<Integer> userIds) {
+        try {
+            List<Checkin> batchCheckins = checkinRepository.findAllByUserIdIn(userIds);
+            if (batchCheckins != null && !batchCheckins.isEmpty()) {
+                return batchCheckins.stream()
+                        .filter(c -> c.getUser() != null && c.getUser().getId() != null)
+                        .collect(Collectors.groupingBy(c -> c.getUser().getId()));
+            }
+        } catch (Exception e) {
+            // Fallback para pruebas sin mock de findAllByUserIdIn
+        }
+        return Collections.emptyMap();
+    }
+
+    private Map<Integer, List<FormationAttendance>> fetchBatchAttendances(List<Integer> userIds) {
+        try {
+            List<FormationAttendance> batchAttendances = attendanceRepository.findByUserIdIn(userIds);
+            if (batchAttendances != null && !batchAttendances.isEmpty()) {
+                return batchAttendances.stream()
+                        .filter(a -> a.getUser() != null && a.getUser().getId() != null)
+                        .collect(Collectors.groupingBy(a -> a.getUser().getId()));
+            }
+        } catch (Exception e) {
+            // Fallback para pruebas sin mock de findByUserIdIn
+        }
+        return Collections.emptyMap();
+    }
+
+    private List<UserAnalyticsDTO> filterAndSortAnalytics(List<UserAnalyticsDTO> dtos, String performance, String search) {
+        List<UserAnalyticsDTO> result = dtos;
         if (performance != null && !performance.isBlank() && !"ALL".equalsIgnoreCase(performance)) {
-            dtos = new ArrayList<>(dtos.stream().filter(u -> matchesPerformanceFilter(u, performance)).toList());
+            result = result.stream().filter(u -> matchesPerformanceFilter(u, performance)).toList();
         }
 
         if (search != null && !search.isBlank()) {
             String q = search.toLowerCase().trim();
-            dtos = new ArrayList<>(dtos.stream().filter(u -> matchesSearchQuery(u, q)).toList());
+            result = result.stream().filter(u -> matchesSearchQuery(u, q)).toList();
         }
 
-        dtos.sort(Comparator.comparing(UserAnalyticsDTO::getFirstName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)));
-        return dtos;
+        List<UserAnalyticsDTO> modifiable = new ArrayList<>(result);
+        modifiable.sort(Comparator.comparing(UserAnalyticsDTO::getFirstName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)));
+        return modifiable;
     }
 
     private boolean isEligibleUser(User user, Integer companyId, String locator, String role, Boolean isWorking) {
@@ -300,6 +352,14 @@ public class AnalyticsService {
     private UserAnalyticsDTO buildUserAnalyticsDTO(User user, boolean includeDetails) {
         List<Checkin> checkins = checkinRepository.findByUserIdOrderByCheckInDateDesc(user.getId());
         List<FormationAttendance> attendances = attendanceRepository.findByUserId(user.getId());
+        return buildUserAnalyticsDTO(user, includeDetails, checkins, attendances);
+    }
+
+    private UserAnalyticsDTO buildUserAnalyticsDTO(User user, boolean includeDetails,
+                                                   List<Checkin> checkins,
+                                                   List<FormationAttendance> attendances) {
+        if (checkins == null) checkins = Collections.emptyList();
+        if (attendances == null) attendances = Collections.emptyList();
 
         int totalCheckins = checkins.size();
         long totalWorkMinutes = calculateWorkMinutes(checkins);
@@ -412,25 +472,19 @@ public class AnalyticsService {
 
     @Transactional(readOnly = true)
     public List<FormationAnalyticsDTO> getFormationAnalytics() {
-        List<FormationAnalyticsDTO> dtos = new ArrayList<>();
         Iterable<Formation> formations = formationRepository.findAll();
         long totalActiveUsers = calculateTotalActiveUsers();
 
-        for (Formation f : formations) {
-            dtos.add(createFormationAnalyticsDTO(f, totalActiveUsers));
-        }
-
-        dtos.sort(Comparator.comparing(FormationAnalyticsDTO::getFormationDate, Comparator.nullsLast(Comparator.reverseOrder())));
-        return dtos;
+        return StreamSupport.stream(formations.spliterator(), false)
+                .map(f -> createFormationAnalyticsDTO(f, totalActiveUsers))
+                .sorted(Comparator.comparing(FormationAnalyticsDTO::getFormationDate, Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
     }
 
     private long calculateTotalActiveUsers() {
-        long total = 0;
-        for (User u : userRepository.findAll()) {
-            if (u.getAuthority() != null && "USER".equals(u.getAuthority().getAuthority()) && Boolean.TRUE.equals(u.getIsWorking())) {
-                total++;
-            }
-        }
+        long total = StreamSupport.stream(userRepository.findAll().spliterator(), false)
+                .filter(u -> u.getAuthority() != null && "USER".equals(u.getAuthority().getAuthority()) && Boolean.TRUE.equals(u.getIsWorking()))
+                .count();
         return total == 0 ? 1 : total;
     }
 

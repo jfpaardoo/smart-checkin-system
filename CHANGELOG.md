@@ -4,6 +4,91 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), y este proyecto sigue [Versionado Semántico (SemVer)](https://semver.org/lang/es/).
 
+## [1.3.0](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.3.0) - 2026-09-30
+
+### Añadido (Features) & Arquitectura de Software
+- **Ciclo de Vida de Fichajes Olvidados (Auto Check-out & Rectificación Transaccional) (`AutoCheckoutScheduledService.java`, `Checkin.java`, `CheckinRepository.java`, `CheckinRestController.java`, `RectifyCheckinRequest.java`)**:
+  - **Tarea Programada (`AutoCheckoutScheduledService.java`)**: Ejecución periódica mediante `@Scheduled(cron = "${smartcheckin.autocheckout.cron:0 0 * * * *}")` que identifica fichajes abiertos de entrada (`ENTRADA`) con más de 12 horas de antigüedad cuyo usuario continúa en estado `isWorking = true`.
+  - **Salida Provisional Automática (Stale Checkout)**: Registra automáticamente un fichaje de `SALIDA` con hora estimada al límite de jornada estándar (8 horas tras la entrada), marca el registro con `isAutoCheckout = true`, `isRectified = false`, actualiza el estado del trabajador a `user.setIsWorking(false)` y despacha una notificación transaccional multicanal informando de la jornada cerrada provisionalmente.
+  - **Listado de Rectificaciones Pendientes (`GET /api/v1/checkins/pending-rectifications`)**: Endpoint securizado para que el trabajador autenticado consulte sus salidas provisionales pendientes de confirmación.
+  - **Confirmación y Rectificación con Firma Digital (`POST /api/v1/checkins/{id}/rectify`)**: Endpoint para que el empleado rectifique sus horas reales de salida, adjuntando rúbrica digital y notas justificativas. La operación persiste la firma en el servicio de almacenamiento de rúbricas (`SignatureStorageService`), actualiza `rectifiedCheckOutDate`, marca `isRectified = true` y remite confirmación de auditoría.
+- **Auditoría, Consolidación y Migración de Base de Datos Flyway (`V1__init_schema.sql`, `V10__add_autocheckout_and_rectification_to_checkins.sql`)**:
+  - **Sincronización de Esquema Inicial (`V1__init_schema.sql`)**: Corregida la definición de la tabla `checkins` con las columnas formales `check_in_date` y `check_in_type`, previniendo errores de columna inexistente al ejecutar migraciones posteriores de índices (`V2`, `V8`) sobre bases de datos limpias.
+  - **Migración Flyway V10 (`V10__add_autocheckout_and_rectification_to_checkins.sql`)**:
+    - Bloque condicional PL/pgSQL para normalización y renombrado automático de columnas legacy (`timestamp` / `type` a `check_in_date` / `check_in_type`).
+    - Nuevas columnas de ciclo de vida de fichajes en `checkins`: `is_auto_checkout`, `is_rectified`, `rectified_checkout_date` y `rectification_notes`.
+    - Índices compuestos de aceleración: `idx_checkins_auto_checkout_pending` y `idx_checkins_type_date`.
+    - Consolidación idempotente (`IF NOT EXISTS`) de tablas auxiliares (`departments`, `user_sessions`, `formation_documents`, `user_2fa_backup_codes`) y columnas de seguridad en `appusers`, `audit_logs`, `jwt_blacklisted_tokens`, `user_passkeys`, `cloud_settings` y `platform_statistics`.
+
+- **Consistencia Transaccional, Modo Offline y Desacoplamiento (Fase 2: P2)**:
+  - **Transacción Atómica y Estado Derivado del Empleado (`CheckinService.java`, `CheckinRepository.java`, `CheckinRestController.java`)**:
+    - Consolidado el proceso de registro de fichajes en una transacción atómica con nivel de aislamiento `READ_COMMITTED` (`executeTransactionalCheckin`).
+    - El estado laboral del empleado y la alternancia de tipo de fichaje (`ENTRADA` / `SALIDA`) se deducen a partir del último registro persistido en base de datos (`findFirstByUserIdOrderByCheckInDateDesc`), eliminando condiciones de carrera y discrepancias de estado por dobles clics.
+  - **Rediseño del Modo Offline con Sellado Criptográfico (`OfflineCheckinRequest.java`, `Checkin.java`, `CheckinRestController.java`, `V11__add_offline_checkin_fields.sql`)**:
+    - Implementado endpoint `POST /api/v1/checkins/offline-batch` para la sincronización segura de fichajes registrados sin conectividad.
+    - Preservación y sellado de la marca temporal de captura original (`offlineTimestamp`), coordenadas de geoposicionamiento, firma digital y hash del código QR (`offlineQrHash`), con persistencia del flag de auditoría `isOffline = true`.
+    - Migración Flyway `V11__add_offline_checkin_fields.sql` con índices optimizados para consulta y conciliación de fichajes diferidos.
+  - **Desacoplamiento de Entidades y Capa DTO de Salida (`UserResponseDTO.java`, `CheckinResponseDTO.java`, `FormationSummaryDTO.java`, `User.java`)**:
+    - Diseñados DTOs de salida para desacoplar las entidades JPA de la capa REST, suprimiendo la revelación de contadores de seguridad internos (`failedLoginAttempts`, `accountLockedUntil`) y optimizando el tamaño de payload al no serializar firmas Base64 de 80 KB en resúmenes de formación.
+    - Anotados campos de fuerza bruta en `User.java` con `@JsonIgnore` para garantizar la privacidad y robustez del modelo de usuario.
+  - **Normalización Temporal con Zona Horaria Explícita (`FormationService.java`, `CheckinService.java`)**:
+    - Normalizadas las resoluciones temporales en los dominios de formación y fichaje para utilizar explícitamente `ZoneId.systemDefault()`, eliminando ambigüedades de zona horaria del entorno.
+
+### Seguridad & Blindaje Criptográfico
+- **Remediación de Vulnerabilidades Críticas de Seguridad y Anti-Fraude (Fase 0: C1 a C5)**:
+  - **C1: Verificación Forzada del Primer Factor y Blindaje contra Enumeración en 2FA (`AuthController.java`, `JwtUtils.java`, `TwoFactorVerifyRequest.java`, `JwtResponse.java`, `login/index.js`)**:
+    - Requerimiento obligatorio del token de desafío temporal firmado (`mfaToken`) emitido tras superar el primer factor (usuario/contraseña). Endpoints como `POST /api/v1/auth/verify-2fa` rechazan peticiones sin `mfaToken` o con token manipulado (`401 Unauthorized`).
+    - Prevención de enumeración de usuarios: la comprobación de 2FA responde con error uniforme `401 Unauthorized` si el usuario no existe, suprimiendo la revelación de estado con `404 Not Found`. Registro de intentos fallidos con bloqueo progresivo de cuenta por fuerza bruta mediante `loginAttemptService`.
+  - **C2: Bloqueo Estricto de Bypass de Captcha en Producción (`CaptchaService.java`)**:
+    - Supresión de la aceptación incondicional de tokens mágicos (`bypass-token`, `dummy-captcha-token`) en entornos productivos. Activación condicionada exclusivamente mediante la propiedad de entorno `app.captcha.bypass-enabled=true`.
+  - **C3: Blindaje de Inyección de Fichajes y Restricción de Creación Directa (`CheckinRestController.java`)**:
+    - Protegido el endpoint directo `POST /api/v1/checkins` con `@PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")` y comprobación programática en tiempo de ejecución. Los empleados regulares tienen vetado el endpoint directo (`403 Forbidden`) y están obligados a utilizar el flujo seguro con validación de terminal TOTP y biometría.
+  - **C4: Prevención de "Buddy Punching" y Suplantación en Asistencia a Formaciones (`FormationCheckinFacade.java`)**:
+    - Eliminada la posibilidad de enviar códigos de personal arbitrarios (`personalCode`) en la asistencia a formaciones (`POST /api/v1/formations/{id}/attend`). El sistema ahora extrae y aplica con autoridad el código personal de la sesión del usuario autenticado (`currentUser.getPersonalCode()`), salvo autorización administrativa explícita.
+  - **C5: Neutralización de Coordenadas de Geofencing del Lado Cliente (`CheckinRestController.java`)**:
+    - Se ignoran las coordenadas de latitud/longitud enviadas por el navegador para el centro de la geocerca (`adminLat` / `adminLng`). La referencia geográfica se consulta directamente del servidor (coordenadas seguras del terminal TOTP activo o sede corporativa persistida en base de datos).
+- **Fortalecimiento de Seguridad y Blindaje Estructural (Fase 1: P1)**:
+  - **A1: Validación de Proxies de Confianza y Estrategia de Cabeceras Reenviadas (`application.properties`)**:
+    - Incorporada la estrategia `server.forward-headers-strategy=framework` para resolver correctamente las direcciones IP reales y el protocolo TLS tras balanceadores de carga y proxies inversos (Render / Cloudflare), evitando la falsificación de cabeceras cliente.
+  - **A2: Blindaje contra Fuerza Bruta en QR Dinámico y Acotación de Búsqueda (`CheckinRestController.java`, `FormationService.java`, `FormationRepository.java`)**:
+    - Suprimido el escaneo exhaustivo en memoria de todas las formaciones históricas (`findAll()`) durante la resolución de fichajes QR.
+    - Implementada consulta optimizada en base de datos (`findActiveFormationsForDateRange`) acotada a la fecha en curso (`LocalDate.now()`), estado `PUBLISHED` y formaciones abiertas (`isClosed = false`), con resolución directa por clave primaria (`findById`) cuando se suministra el identificador de formación.
+  - **A3: Fail-Fast en Arranque para Secretos Criptográficos (`TotpService.java`, `JwtUtils.java`)**:
+    - Integrada validación de inicialización `@PostConstruct` en `TotpService`: en perfiles productivos (`prod` / `production`), el arranque del sistema se interrumpe de forma controlada (`IllegalStateException`) si `smartcheckin.app.totpSecret` no está configurado o conserva el valor por defecto. Emisión de advertencia en logs de auditoría en entornos locales.
+  - **A4: Protección y Aislamiento de Endpoints de Monitoreo Actuator (`SecurityConfiguration.java`)**:
+    - Restringidos los endpoints de métricas, prometheus e información del sistema (`/actuator/**`) con autorización exclusiva para administradores (`hasAuthority('ADMIN')`), manteniendo únicamente expuestos de forma pública los sondeos de comprobación de salud (`/actuator/health`) para balanceadores de carga y sondas de orquestación.
+  - **A5: Blindaje de Integridad Criptográfica y Eliminación de Fallback Silencioso (`StringCryptoConverter.java`, `StringCryptoConverterTests.java`)**:
+    - El conversor JPA lanza una excepción de seguridad auditada (`SecurityException`) si un atributo versionado (`v1`) no puede ser descifrado por corrupción de datos o intento de manipulación maliciosa de los bloques GCM, suprimiendo la revelación silenciosa del texto cifrado crudo.
+- **Protección contra Ataques de Repetición (Replay Attacks) en TOTP y Conformidad RFC 6238 §5.2 (`TotpService.java`, `CheckinRestController.java`, `AuthController.java`)**:
+  - Incorporada una caché en memoria de alta concurrencia mediante Caffeine (`consumedTokensCache`) con TTL de 60 segundos por usuario (`userId:token` o `username:code`).
+  - **Garantía de Token de Uso Único (Single-Use Token Guarantee)**: Cualquier intento de reutilizar un token TOTP dentro de su ventana temporal de tolerancia para fichajes generales, formaciones o autenticación de dos factores (2FA) es denegado de forma inmediata con código 400 Bad Request, neutralizando intercepciones o repeticiones maliciosas en la red.
+- **Versionado de Claves Criptográficas en Reposo y Migración Transparente a AES-256 (`StringCryptoConverter.java`, `StringCryptoConverterTests.java`)**:
+  - Implementado el formato de vector versionado `v1:{iv}:{ciphertext}` para secretos TOTP y configuraciones de nube en base de datos.
+  - Derivación criptográfica formal de 32 bytes (256 bits) mediante SHA-256 a partir de la clave de cifrado corporativa (`EncryptionConfig.getSecret()`), sustituyendo el truncamiento legacy de 16 bytes.
+  - **Compatibilidad Hacia Atrás y Migración Perezosa (Lazy Re-encryption)**: El conversor JPA descifra de forma transparente tanto registros versionados modernos (`v1`) como registros legacy `v0` de dos bloques (`{iv}:{ciphertext}`) sin interrumpir la operación del sistema, re-cifrando automáticamente a `v1` ante cualquier actualización de entidad.
+
+### Rendimiento & Optimización
+- **Eliminación del Cuello de Botella N+1 en Analíticas de Recursos Humanos (`AnalyticsService.java`, `CheckinRepository.java`, `FormationAttendanceRepository.java`)**:
+  - Sustituido el bucle iterativo de consultas individuales por carga en lote (*batch fetching*) mediante `findAllByUserIdIn` y `findByUserIdIn`, agrupando en memoria mediante mapas concurrentes (`Collectors.groupingBy`).
+  - Reducción del volumen de consultas de $2N + 1$ (cientos de round-trips por petición) a solo 2 consultas agrupadas, rebajando el tiempo de respuesta del panel analítico a <15 ms.
+  - Documentación de arquitectura empresarial y script DDL para Vistas Materializadas con refresco concurrente en PostgreSQL (`docs/database/POSTGRES_MATERIALIZED_VIEWS.md`).
+- **Compresión y Recorte de Rúbricas por Bounding Box (`SignatureStep.js`)**:
+  - Integrado algoritmo de recorte automático de márgenes transparentes y en blanco mediante `sigCanvas.current.getTrimmedCanvas()`.
+  - Reescalado de alta densidad limitado a dimensiones máximas de 340x140 px con suavizado de curvas.
+  - Reducción del tamaño medio de firma de ~85 KB a <8 KB por asistente, conservando el formato PNG 100% compatible con OpenPDF / iText y acelerando drásticamente la generación y descarga del acta oficial FOR 99.
+- **Depuración y Consolidación de Estilos CSS (`common.css`, `navbar.css`)**:
+  - Eliminados los selectores y comentarios residuales de Bootstrap en `common.css` y `navbar.css`, consolidando el sistema de diseño sobre Tailwind CSS y clases maestras de la aplicación.
+
+### Calidad de Código & Cumplimiento Sonar
+- **Eliminación de Nombres Completos de Clases Hardcodeados (FQCN) e Higiene de Imports**:
+  - Sustituidas todas las rutas de clase completas inline (`java.security.SecureRandom`, `java.time.LocalDateTime`, etc.) por declaraciones formales de `import` en cabecera en clases del dominio, servicios, controladores y tests (`CheckinService`, `CheckinRestController`, `AuditService`, `AuditLogRepository`, `User`, `UserRestController`, `FormationService`, `CertificateGeneratorService`, `CloudSettingsRestController`, `SecurityConfigurationTests`, `ExportRestControllerTests`, `OfficialFormationSheetServiceTest`).
+- **Refactorización de Bucles Imperativos a Java Streams Funcionales (`AnalyticsService.java`)**:
+  - Modernizados bucles tradicionales de agregación de estadísticas de recursos humanos a Streams funcionales para mayor legibilidad y cumplimiento de las directrices Sonar.
+- **Corrección de Contexto Transaccional en Tareas Programadas (`AutoCheckoutScheduledService.java`)**:
+  - Trasladada la anotación `@Transactional` a nivel de clase para satisfacer la regla Sonar S6809.
+- **Robustez en Validación de Autorizaciones (`User.java`)**:
+  - Incorporada protección contra punteros nulos (`NullPointerException`) en los métodos `hasAuthority` y `hasAnyAuthority` ante instancias con atributos no inicializados.
+
 ## [1.2.5](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.2.5) - 2026-09-29
 
 ### Añadido (Features) & Arquitectura de Software

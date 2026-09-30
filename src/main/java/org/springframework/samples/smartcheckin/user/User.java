@@ -36,16 +36,20 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Email;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.jpatterns.gof.BuilderPattern;
 
 @Getter
 @Setter
-@org.jpatterns.gof.BuilderPattern.Builder
-@lombok.Builder
-@lombok.AllArgsConstructor
-@lombok.NoArgsConstructor
+@BuilderPattern.Builder
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = false, exclude = {"formationAttendances", "checkins", "pushSubscriptions"})
 @Entity
 @Table(name = "appusers", indexes = {
@@ -98,10 +102,12 @@ public class User extends BaseEntity implements OrganizationalUnit {
     private Boolean isApproved = true;
 
     @Column(name = "failed_login_attempts")
-    @lombok.Builder.Default
+    @Builder.Default
+    @JsonIgnore
     private Integer failedLoginAttempts = 0;
 
     @Column(name = "account_locked_until")
+    @JsonIgnore
     private LocalDateTime accountLockedUntil;
 
     @Column(name = "two_factor_enabled")
@@ -154,16 +160,19 @@ public class User extends BaseEntity implements OrganizationalUnit {
     Authorities authority;
 
     public Boolean hasAuthority(String auth) {
-        return authority.getAuthority().equals(auth);
+        return authority != null && authority.getAuthority() != null && authority.getAuthority().equals(auth);
     }
 
     public Boolean hasAnyAuthority(String... authorities) {
-        Boolean cond = false;
-        for (String auth : authorities) {
-            if (auth.equals(authority.getAuthority()))
-                cond = true;
+        if (authority == null || authority.getAuthority() == null) {
+            return false;
         }
-        return cond;
+        for (String auth : authorities) {
+            if (auth.equals(authority.getAuthority())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

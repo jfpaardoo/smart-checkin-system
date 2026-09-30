@@ -36,6 +36,7 @@
 		<npm.version>10.8.2</npm.version>
 		<frontend-src-dir>${project.basedir}/frontend</frontend-src-dir>
 		<sonar.exclusions>**/.github/**,**/node_modules/**,**/build/**,**/dist/**</sonar.exclusions>
+		<frontend.skip>false</frontend.skip>
 
 	</properties>
 
@@ -343,6 +344,7 @@
 					<npmVersion>${npm.version}</npmVersion>
 					<workingDirectory>${frontend-src-dir}</workingDirectory>
 					<installDirectory>${project.build.directory}</installDirectory>
+					<skip>${frontend.skip}</skip>
 				</configuration>
 
 				<executions>
