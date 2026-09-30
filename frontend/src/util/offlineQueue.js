@@ -127,6 +127,46 @@ function notifySyncResult(syncedCount, toast, t) {
   }
 }
 
+async function syncBatchCheckins(api, pending, toast, t) {
+  const batchRequests = pending.map(item => {
+    let offlineTimestamp = null;
+    if (item.queuedAt) {
+      // Remove timezone suffix if present for Java LocalDateTime parsing compatibility
+      offlineTimestamp = item.queuedAt.split('.')[0];
+    } else {
+      offlineTimestamp = new Date().toISOString().split('.')[0];
+    }
+
+    return {
+      userLat: item.userLat != null ? item.userLat : 0.0,
+      userLng: item.userLng != null ? item.userLng : 0.0,
+      signature: item.signature || null,
+      offlineTimestamp,
+      qrHash: item.token || item.qrHash || '',
+      checkInType: item.checkInType || null
+    };
+  });
+
+  try {
+    const res = await api.post('/checkins/offline-batch', batchRequests);
+    if (res.status === 200 || res.status === 201) {
+      for (const item of pending) {
+        await removePendingCheckin(item.id);
+      }
+      return pending.length;
+    }
+  } catch (batchErr) {
+    const status = batchErr?.response?.status;
+    if (status === 400 || status === 409) {
+      // Validation rejected: fall back to single item sync to isolate invalid items
+      handleSyncError(batchErr, toast, t);
+    } else {
+      console.warn('[OfflineQueue] Batch sync failed, falling back to sequential sync:', batchErr);
+    }
+  }
+  return null;
+}
+
 export async function syncOfflineCheckins(api, toast, t) {
   if (isSyncing || typeof navigator === 'undefined' || !navigator.onLine) {
     return;
@@ -137,8 +177,17 @@ export async function syncOfflineCheckins(api, toast, t) {
     const pending = await getPendingCheckins();
     if (!pending || pending.length === 0) return;
 
+    // Attempt atomic batch sync first
+    const batchSynced = await syncBatchCheckins(api, pending, toast, t);
+    if (batchSynced !== null) {
+      notifySyncResult(batchSynced, toast, t);
+      return;
+    }
+
+    // Fallback: sequential sync for remaining/individual items
     let syncedCount = 0;
-    for (const item of pending) {
+    const remainingPending = await getPendingCheckins();
+    for (const item of remainingPending) {
       const isSuccess = await syncSingleCheckin(api, item, toast, t);
       if (isSuccess) syncedCount++;
     }

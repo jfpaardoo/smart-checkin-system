@@ -33,6 +33,21 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
     - Anotados campos de fuerza bruta en `User.java` con `@JsonIgnore` para garantizar la privacidad y robustez del modelo de usuario.
   - **Normalización Temporal con Zona Horaria Explícita (`FormationService.java`, `CheckinService.java`)**:
     - Normalizadas las resoluciones temporales en los dominios de formación y fichaje para utilizar explícitamente `ZoneId.systemDefault()`, eliminando ambigüedades de zona horaria del entorno.
+- **Refactorización Integral, Modularización y Sincronización del Frontend (`frontend/src/`)**:
+  - **Unificación y Consolidación de Utilidades (`src/util/` vs `src/utils/`)**:
+    - Eliminada la carpeta duplicada `src/utils/` consolidando toda la lógica de soporte en una estructura única bajo `src/util/`.
+    - Fusionadas las utilidades dispersas `dateTimeUtil.js` y `dateUtils.js` en un módulo unificado `src/util/dateUtils.js` que centraliza `calculateDuration`, `formatDate` y `formatDuration`.
+    - Migrado `fileUtils.js` a `src/util/fileUtils.js` y actualizadas todas las rutas de importación en los componentes de usuario, analíticas y administración.
+  - **Sincronización Offline Atómica por Lotes (`src/util/offlineQueue.js`)**:
+    - Integrado el nuevo endpoint transaccional `POST /api/v1/checkins/offline-batch` en la cola de sincronización de IndexedDB (`syncOfflineCheckins`).
+    - Los registros pendientes almacenados sin red se envían en un único lote atómico al recuperar la conectividad, reduciendo la latencia de red y preservando un fallback secuencial para aislar fichajes individuales rechazados.
+  - **Descomposición de Componentes Gigantes del Frontend**:
+    - **Panel Generador de Códigos QR (`QRGeneratorAdmin.js`)**: Descompuesto de 888 líneas a 216 líneas, delegando responsabilidades a módulos cohesivos y reutilizables:
+      - Hooks dedicados: `useScreenWakeLock.js` (bloqueo de suspensión de pantalla), `useAdminGeolocation.js` (triangulación escalonada de GPS del administrador) y `usePresenterShortcuts.js` (atajos de teclado para modo proyector/pantalla completa).
+      - Componentes visuales especializados: `QRDisplayArea.js` (renderizado QR con láser SafeTix y marcas forenses), `PINDisplaySection.js` (contador regresivo y copia con portapapeles y respuesta háptica), `AdminControlsBadges.js` (indicadores de estado y GPS) y `FullscreenModal.js` (proyección a pantalla completa con modo linterna/cine).
+      - Utilitarios de dominio: `qrUtils.js` (construcción de payloads dinámicos y formateo de etiquetas).
+    - **Modal de Exportación Avanzada (`AdvancedExportModal.js`)**: Aligerado de 637 líneas aislando las constantes de configuración, mapeos de tipo de informe/formatos y generadores de query params en `exportModalConfig.js`.
+    - **Selector Geográfico de Ubicaciones (`LocationMapPicker.js`)**: Aligerado de 581 líneas desacoplando las consultas a las APIs de geocodificación de Nominatim y Photon, el reverse geocoding y el diseño del marcador SVG en `locationPickerUtils.js`.
 
 ### Seguridad & Blindaje Criptográfico
 - **Remediación de Vulnerabilidades Críticas de Seguridad y Anti-Fraude (Fase 0: C1 a C5)**:

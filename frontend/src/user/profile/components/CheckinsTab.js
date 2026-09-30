@@ -4,7 +4,7 @@ import { TableGhostLoader } from "../../../components/GhostLoader";
 import GlassPagination from "../../../components/GlassPagination";
 import GlassEmptyState from "../../../components/GlassEmptyState";
 import api from "../../../services/api";
-import { formatDate } from "../../../utils/dateUtils";
+import { formatDate } from "../../../util/dateUtils";
 
 export default function CheckinsTab({ t }) {
   const [checkins, setCheckins] = useState([]);

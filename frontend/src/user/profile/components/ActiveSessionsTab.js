@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { FaDesktop, FaMobileAlt, FaLaptop, FaSignOutAlt, FaShieldAlt, FaSyncAlt } from "react-icons/fa";
 import api from "../../../services/api";
-import { formatDate } from "../../../utils/dateUtils";
+import { formatDate } from "../../../util/dateUtils";
 
 const getDeviceIcon = (deviceInfo, userAgent) => {
   const info = (deviceInfo || userAgent || "").toLowerCase();

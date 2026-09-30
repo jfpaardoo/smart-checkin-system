@@ -4,8 +4,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { useToast } from "../../../components/ToastProvider";
-import { getFileIconAndType, getEmbedUrl } from "../../../utils/fileUtils";
-import { formatDate } from "../../../utils/dateUtils";
+import { getFileIconAndType, getEmbedUrl } from "../../../util/fileUtils";
+import { formatDate } from "../../../util/dateUtils";
 import SecureImage from "../../../components/SecureImage";
 import GlassModal from "../../../components/GlassModal";
 

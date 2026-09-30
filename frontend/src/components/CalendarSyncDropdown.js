@@ -6,7 +6,7 @@ import { calendarSyncManager, isMobileDevice } from "../services/calendar/Calend
 import { useToast } from "./ToastProvider";
 import GlassModal from "./GlassModal";
 import GlassButton from "./GlassButton";
-import { formatDate } from "../utils/dateUtils";
+import { formatDate } from "../util/dateUtils";
 
 function StrategyOptionButton({ strat, isRecommended, isLoading, onSync }) {
   const IconComponent = strat.icon;
