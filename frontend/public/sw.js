@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-const CURRENT_CACHE_NAME = 'da-cache-v1.2.3';
+const CURRENT_CACHE_NAME = 'da-cache-v1.3.0';
 
 self.addEventListener('message', function(event) {
   if (event.origin && event.origin !== self.location.origin) {
@@ -9,9 +9,9 @@ self.addEventListener('message', function(event) {
     self.skipWaiting();
   }
   if (event.data?.type === 'CLEAR_CACHES') {
-    caches.keys().then(function(names) {
+    void caches.keys().then(function(names) {
       return Promise.all(names.map(function(name) { return caches.delete(name); }));
-    });
+    }).catch(function() {});
   }
 });
 

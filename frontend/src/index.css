@@ -138,3 +138,19 @@ html.dark body::before {
 html.dark body::after {
   background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0) 75%);
 }
+
+/* ==========================================
+   SAFE AREA INSETS — IPHONE NOTCH & DYNAMIC ISLAND
+   ========================================== */
+.da-navbar-sticky {
+  top: calc(0.75rem + env(safe-area-inset-top, 0px)) !important;
+  margin-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+}
+
+body.has-pwa-top-banner .da-navbar-sticky {
+  margin-top: 0.5rem;
+}
+
+.da-pwa-top-banner-safe {
+  padding-top: calc(0.5rem + env(safe-area-inset-top, 0px));
+}
