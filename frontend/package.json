@@ -40,7 +40,7 @@
     "sockjs-client": "^1.6.1",
     "swagger-ui-react": "5.19.0",
     "swr": "^2.3.2",
-    "web-vitals": "^3.1.1"
+    "web-vitals": "^6.1.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",
