@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
@@ -18,6 +19,8 @@ import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.samples.smartcheckin.formation.FormationAttendanceRepository;
 import org.springframework.samples.smartcheckin.audit.AuditLog;
 import org.springframework.samples.smartcheckin.audit.AuditLogRepository;
+import org.springframework.samples.smartcheckin.checkin.Checkin;
+import org.springframework.samples.smartcheckin.checkin.CheckinRepository;
 import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter;
 
 import java.io.ByteArrayInputStream;
@@ -28,6 +31,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -36,7 +40,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-@SuppressWarnings("null")
 public class DatabaseBackupService {
 
     private static final String KEY_COMPANIES = "companies";
@@ -44,6 +47,7 @@ public class DatabaseBackupService {
     private static final String KEY_FORMATIONS = "formations";
     private static final String KEY_ATTENDANCES = "attendances";
     private static final String KEY_AUDIT_LOGS = "auditLogs";
+    private static final String KEY_CHECKINS = "checkins";
 
     private final CompanyRepository companyRepository;
     private final UserRepository userRepository;
@@ -52,6 +56,19 @@ public class DatabaseBackupService {
     private final AuditLogRepository auditLogRepository;
     private final CloudStorageAdapter cloudStorageAdapter;
     private final ObjectMapper objectMapper;
+    private final CheckinRepository checkinRepository;
+
+    public DatabaseBackupService(
+            CompanyRepository companyRepository,
+            UserRepository userRepository,
+            FormationRepository formationRepository,
+            FormationAttendanceRepository formationAttendanceRepository,
+            AuditLogRepository auditLogRepository,
+            CloudStorageAdapter cloudStorageAdapter,
+            ObjectMapper objectMapper) {
+        this(companyRepository, userRepository, formationRepository, formationAttendanceRepository,
+                auditLogRepository, cloudStorageAdapter, objectMapper, null);
+    }
 
     @Autowired
     public DatabaseBackupService(
@@ -61,15 +78,17 @@ public class DatabaseBackupService {
             FormationAttendanceRepository formationAttendanceRepository,
             AuditLogRepository auditLogRepository,
             CloudStorageAdapter cloudStorageAdapter,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            CheckinRepository checkinRepository) {
         this.companyRepository = companyRepository;
         this.userRepository = userRepository;
         this.formationRepository = formationRepository;
         this.formationAttendanceRepository = formationAttendanceRepository;
         this.auditLogRepository = auditLogRepository;
         this.cloudStorageAdapter = cloudStorageAdapter;
+        this.checkinRepository = checkinRepository;
         this.objectMapper = objectMapper.copy()
-            .configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     /**
@@ -84,6 +103,9 @@ public class DatabaseBackupService {
         exportData.put(KEY_FORMATIONS, formationRepository.findAll());
         exportData.put(KEY_ATTENDANCES, formationAttendanceRepository.findAll());
         exportData.put(KEY_AUDIT_LOGS, auditLogRepository.findAll());
+        if (checkinRepository != null) {
+            exportData.put(KEY_CHECKINS, checkinRepository.findAll());
+        }
 
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(exportData);
 
@@ -132,60 +154,30 @@ public class DatabaseBackupService {
         Map<String, Integer> restoredStats = new HashMap<>();
         JsonNode rootNode = objectMapper.readTree(json);
 
-        // 1. Restore Companies
-        if (rootNode.has(KEY_COMPANIES)) {
-            CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(List.class, Company.class);
-            List<Company> companies = objectMapper.readerFor(listType).readValue(rootNode.get(KEY_COMPANIES));
-            for (Company c : companies) {
-                companyRepository.save(c);
-            }
-            restoredStats.put(KEY_COMPANIES, companies.size());
-        }
-
-        // 2. Restore Users
-        if (rootNode.has(KEY_USERS)) {
-            CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(List.class, User.class);
-            List<User> users = objectMapper.readerFor(listType).readValue(rootNode.get(KEY_USERS));
-            for (User u : users) {
-                userRepository.save(u);
-            }
-            restoredStats.put(KEY_USERS, users.size());
-        }
-
-        // 3. Restore Formations
-        if (rootNode.has(KEY_FORMATIONS)) {
-            CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(List.class,
-                    Formation.class);
-            List<Formation> formations = objectMapper.readerFor(listType).readValue(rootNode.get(KEY_FORMATIONS));
-            for (Formation f : formations) {
-                formationRepository.save(f);
-            }
-            restoredStats.put(KEY_FORMATIONS, formations.size());
-        }
-
-        // 4. Restore Attendances
-        if (rootNode.has(KEY_ATTENDANCES)) {
-            CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(List.class,
-                    FormationAttendance.class);
-            List<FormationAttendance> attendances = objectMapper.readerFor(listType).readValue(rootNode.get(KEY_ATTENDANCES));
-            for (FormationAttendance a : attendances) {
-                formationAttendanceRepository.save(a);
-            }
-            restoredStats.put(KEY_ATTENDANCES, attendances.size());
-        }
-
-        // 5. Restore Audit Logs
-        if (rootNode.has(KEY_AUDIT_LOGS)) {
-            CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(List.class, AuditLog.class);
-            List<AuditLog> auditLogs = objectMapper.readerFor(listType).readValue(rootNode.get(KEY_AUDIT_LOGS));
-            for (AuditLog logItem : auditLogs) {
-                auditLogRepository.save(logItem);
-            }
-            restoredStats.put(KEY_AUDIT_LOGS, auditLogs.size());
+        restoreEntityList(rootNode, KEY_COMPANIES, Company.class, companyRepository::save, restoredStats);
+        restoreEntityList(rootNode, KEY_USERS, User.class, userRepository::save, restoredStats);
+        restoreEntityList(rootNode, KEY_FORMATIONS, Formation.class, formationRepository::save, restoredStats);
+        restoreEntityList(rootNode, KEY_ATTENDANCES, FormationAttendance.class, formationAttendanceRepository::save, restoredStats);
+        restoreEntityList(rootNode, KEY_AUDIT_LOGS, AuditLog.class, auditLogRepository::save, restoredStats);
+        if (checkinRepository != null) {
+            restoreEntityList(rootNode, KEY_CHECKINS, Checkin.class, checkinRepository::save, restoredStats);
         }
 
         log.info("Disaster recovery restore completed successfully with stats: {}", restoredStats);
         return restoredStats;
+    }
+
+    private <T> void restoreEntityList(JsonNode rootNode, String key, Class<T> clazz, Consumer<T> persister,
+            Map<String, Integer> stats) throws IOException {
+        if (!rootNode.has(key)) {
+            return;
+        }
+        CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(List.class, clazz);
+        List<T> list = objectMapper.readerFor(listType).readValue(rootNode.get(key));
+        for (T item : list) {
+            persister.accept(item);
+        }
+        stats.put(key, list.size());
     }
 
     private String extractJsonFromZip(byte[] zipBytes) throws IOException {

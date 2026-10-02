@@ -34,4 +34,8 @@ public interface CheckinRepository extends CrudRepository<Checkin, Integer> {
     List<Checkin> findAllByUserIdIn(List<Integer> userIds);
 
     List<Checkin> findByIsOfflineTrueOrderByOfflineTimestampDesc();
+
+    boolean existsByOfflineEventId(String offlineEventId);
+
+    boolean existsByOfflineQrHashAndUserId(String offlineQrHash, Integer userId);
 }

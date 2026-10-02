@@ -273,9 +273,10 @@ public class FormationCheckinFacade {
         if (isAdmin && personalCode != null && !personalCode.isBlank()) {
             code = personalCode;
         } else {
-            code = (currentUser != null && currentUser.getPersonalCode() != null)
-                    ? currentUser.getPersonalCode()
-                    : personalCode;
+            if (currentUser == null || currentUser.getPersonalCode() == null || currentUser.getPersonalCode().isBlank()) {
+                throw new IllegalStateException("El usuario no tiene un código de empleado válido asignado.");
+            }
+            code = currentUser.getPersonalCode();
         }
         Formation formation = formationService.registerAttendance(id, code, withinWorkingHours);
         notifyFormationsUpdate(id);

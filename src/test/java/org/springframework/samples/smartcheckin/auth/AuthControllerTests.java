@@ -145,7 +145,7 @@ class AuthControllerTests {
 	@SuppressWarnings("java:S6813")
 	private MockMvc mockMvc;
 
-	private static final String PASSWORD = "password";
+	private static final String PASSWORD = "Password@1234";
 	private static final String USER1 = "user1";
 	private static final String SECRET = "SECRET";
 	private static final String SIGNIN_URL = BASE_URL + "/signin";
@@ -731,7 +731,7 @@ class AuthControllerTests {
 
         SignupRequest req = new SignupRequest();
         req.setUsername("newuser");
-        req.setPassword("password");
+        req.setPassword("Password@1234");
         req.setEmail("new@example.com");
         req.setPersonalCode("1234");
         req.setFirstName("First");
@@ -751,7 +751,7 @@ class AuthControllerTests {
 
         SignupRequest req = new SignupRequest();
         req.setUsername("existingUser");
-        req.setPassword("password");
+        req.setPassword("Password@1234");
         req.setEmail("exist@example.com");
         req.setPersonalCode("1234");
         req.setFirstName("First");
@@ -779,7 +779,7 @@ class AuthControllerTests {
 
         SignupRequest req = new SignupRequest();
         req.setUsername("companyUser");
-        req.setPassword("password");
+        req.setPassword("Password@1234");
         req.setEmail("comp@example.com");
         req.setPersonalCode("1234");
         req.setFirstName("First");
@@ -809,7 +809,7 @@ class AuthControllerTests {
 
         SignupRequest req = new SignupRequest();
         req.setUsername("companyUser2");
-        req.setPassword("password");
+        req.setPassword("Password@1234");
         req.setEmail("comp2@example.com");
         req.setPersonalCode("1234");
         req.setFirstName("First");
@@ -904,9 +904,33 @@ class AuthControllerTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Si el correo está registrado en el sistema, recibirás un enlace de recuperación."));
+                .andExpect(jsonPath("$.message").value("Si el usuario o correo está registrado en el sistema, recibirás un enlace de recuperación."));
 
         verify(javaMailSender).send(any(org.springframework.mail.SimpleMailMessage.class));
+    }
+
+    @Test
+    void testForgotPasswordWithUsernameSucceeds() throws Exception {
+        User user = new User();
+        user.setUsername("john");
+        user.setEmail("john@example.com");
+        user.setFirstName("John");
+        user.setIsApproved(true);
+
+        when(userService.findUser("john")).thenReturn(user);
+        when(passwordResetService.createOrUpdatePasswordResetToken(user)).thenReturn("resetToken123");
+
+        ForgotPasswordRequest req = new ForgotPasswordRequest();
+        req.setEmail("john");
+        req.setCaptchaToken("valid-token");
+
+        mockMvc.perform(post(BASE_URL + "/forgot-password").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Si el usuario o correo está registrado en el sistema, recibirás un enlace de recuperación."));
+
+        verify(javaMailSender, atLeastOnce()).send(any(org.springframework.mail.SimpleMailMessage.class));
     }
 
     @Test
@@ -921,7 +945,7 @@ class AuthControllerTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Si el correo está registrado en el sistema, recibirás un enlace de recuperación."));
+                .andExpect(jsonPath("$.message").value("Si el usuario o correo está registrado en el sistema, recibirás un enlace de recuperación."));
 
         verifyNoInteractions(javaMailSender);
     }

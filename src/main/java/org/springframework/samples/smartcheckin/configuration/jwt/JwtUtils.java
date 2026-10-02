@@ -31,6 +31,11 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+
 @Component
 @SuppressWarnings({ "java:S6466", "java:S2143", "null" })
 public class JwtUtils {
@@ -38,6 +43,11 @@ public class JwtUtils {
 
     private static final String CLAIM_PURPOSE = "purpose";
     private static final String PURPOSE_MFA_PENDING = "mfa_pending";
+
+    private final Cache<String, Boolean> consumedMfaTokensCache = Caffeine.newBuilder()
+            .expireAfterWrite(5, TimeUnit.MINUTES)
+            .maximumSize(50_000)
+            .build();
 
     @Value("${badistributionacademy.app.jwtExpirationMs:${smartcheckin.app.jwtExpirationMs:86400000}}")
     private int jwtExpirationMs;
@@ -138,6 +148,7 @@ public class JwtUtils {
     public String generateMfaChallengeToken(String username) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(CLAIM_PURPOSE, PURPOSE_MFA_PENDING);
+        claims.put("jti", UUID.randomUUID().toString());
         Instant now = Instant.now();
         // Expiración estricta de 5 minutos para el desafío 2FA
         return Jwts.builder()
@@ -156,9 +167,35 @@ public class JwtUtils {
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
-            return PURPOSE_MFA_PENDING.equals(payload.get(CLAIM_PURPOSE));
+            if (!PURPOSE_MFA_PENDING.equals(payload.get(CLAIM_PURPOSE))) {
+                return false;
+            }
+            String jti = (String) payload.get("jti");
+            if (jti != null && consumedMfaTokensCache.getIfPresent(jti) != null) {
+                logger.warn("Replay attempt detected for consumed MFA token jti: {}", jti);
+                return false;
+            }
+            return true;
         } catch (Exception e) {
             logger.warn("Invalid or expired MFA challenge token: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean consumeMfaChallengeToken(String token) {
+        if (token == null || !validateMfaChallengeToken(token)) {
+            return false;
+        }
+        try {
+            var payload = Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            String jti = (String) payload.get("jti");
+            String key = (jti != null) ? jti : token;
+            return consumedMfaTokensCache.asMap().putIfAbsent(key, Boolean.TRUE) == null;
+        } catch (Exception e) {
             return false;
         }
     }

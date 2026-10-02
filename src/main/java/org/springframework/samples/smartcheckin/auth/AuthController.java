@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -64,9 +66,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.samples.smartcheckin.auth.webauthn.WebAuthnService;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @RestController
 @RequestMapping("/api/v1/auth")
 @Tag(name = "Authentication", description = "The Authentication API based on JWT")
@@ -104,6 +103,9 @@ public class AuthController {
 
     @Value("${app.captcha.site-key:1x00000000000000000000AA}")
     private String captchaSiteKey;
+
+    @Value("${app.mail.from:noreply@ejemplo.com}")
+    private String mailFrom;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager, UserService userService, 
@@ -345,6 +347,9 @@ public class AuthController {
                     .body(new MessageResponse("Error: Código 2FA inválido o expirado."));
         }
 
+        // P0 MFA Anti-replay: Invalidar y consumir el token de desafío de un solo uso
+        jwtUtils.consumeMfaChallengeToken(request.getMfaToken());
+
         // Cargar UserDetailsImpl correctamente para evitar el ClassCastException en JwtUtils
         UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsServiceImpl.loadUserByUsername(user.getUsername());
 
@@ -540,6 +545,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(new MessageResponse(CAPTCHA_SUCCESS_MESSAGE));
         }
 
+        logger.info("Solicitud de recuperación de contraseña recibida para: {}", request.getEmail());
         try {
             User user = userService.findUser(request.getEmail());
             
@@ -549,23 +555,41 @@ public class AuthController {
                 
                 // Limpiamos la barra final de la URL del frontend por si acaso viene con ella (ej: https://...com/)
                 String baseUrl = frontendUrl.endsWith("/") ? frontendUrl.substring(0, frontendUrl.length() - 1) : frontendUrl;
+                String resetLink = baseUrl + "/reset-password?token=" + token;
+
+                logger.info("Generado enlace de recuperación para '{}' (email: {}): {}", 
+                        user.getUsername(), user.getEmail(), resetLink);
                 
-                // Enviar email con el enlace dinámico
-                SimpleMailMessage mailMessage = new SimpleMailMessage();
-                mailMessage.setTo(user.getEmail());
-                mailMessage.setSubject("Recuperación de Contraseña - Smart Checkin");
-                mailMessage.setText("Hola " + user.getFirstName() + ",\n\n"
-                        + "Has solicitado restablecer tu contraseña. Haz clic en el siguiente enlace (válido por 15 minutos):\n\n"
-                        + baseUrl + "/reset-password?token=" + token + "\n\n"
-                        + "Si no has sido tú, ignora este correo.");
-                javaMailSender.send(mailMessage);
+                sendPasswordResetEmail(user, resetLink);
+            } else {
+                logger.warn("Solicitud de recuperación para '{}' ignorada: usuario inexistente, no aprobado o anonimizado", request.getEmail());
             }
         } catch (ResourceNotFoundException e) {
+            logger.info("Solicitud de recuperación para usuario/email no registrado: {}", request.getEmail());
             // Se captura en silencio. Prevención de ataque de "Enumeración de Usuarios"
         }
         
-        // Siempre devolvemos 200 OK para no darle pistas a los atacantes sobre qué emails existen en la BBDD
-        return ResponseEntity.ok(new MessageResponse("Si el correo está registrado en el sistema, recibirás un enlace de recuperación."));
+        // Siempre devolvemos 200 OK para no darle pistas a los atacantes sobre qué cuentas existen en la BBDD
+        return ResponseEntity.ok(new MessageResponse("Si el usuario o correo está registrado en el sistema, recibirás un enlace de recuperación."));
+    }
+
+    private void sendPasswordResetEmail(User user, String resetLink) {
+        try {
+            SimpleMailMessage mailMessage = new SimpleMailMessage();
+            if (mailFrom != null && !mailFrom.isBlank()) {
+                mailMessage.setFrom(mailFrom);
+            }
+            mailMessage.setTo(user.getEmail());
+            mailMessage.setSubject("Recuperación de Contraseña - Smart Checkin");
+            mailMessage.setText("Hola " + user.getFirstName() + ",\n\n"
+                    + "Has solicitado restablecer tu contraseña. Haz clic en el siguiente enlace (válido por 15 minutos):\n\n"
+                    + resetLink + "\n\n"
+                    + "Si no has sido tú, ignora este correo.");
+            javaMailSender.send(mailMessage);
+            logger.info("Correo de recuperación de contraseña enviado exitosamente a {}", user.getEmail());
+        } catch (Exception e) {
+            logger.error("Error al enviar correo de recuperación a {}: {}", user.getEmail(), e.getMessage());
+        }
     }
 
     @PostMapping("/reset-password")

@@ -11,6 +11,7 @@ import org.springframework.samples.smartcheckin.user.UserRepository;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 
@@ -60,7 +61,7 @@ class AutoCheckoutScheduledServiceTests {
         user.setIsWorking(true);
 
         Checkin entryCheckin = Checkin.builder()
-                .checkInDate(LocalDateTime.now().minusHours(14))
+                .checkInDate(LocalDateTime.now(ZoneId.systemDefault()).minusHours(14))
                 .checkInType(CheckinType.ENTRADA)
                 .user(user)
                 .build();
@@ -88,7 +89,7 @@ class AutoCheckoutScheduledServiceTests {
         user.setIsWorking(false);
 
         Checkin entryCheckin = Checkin.builder()
-                .checkInDate(LocalDateTime.now().minusHours(15))
+                .checkInDate(LocalDateTime.now(ZoneId.systemDefault()).minusHours(15))
                 .checkInType(CheckinType.ENTRADA)
                 .user(user)
                 .build();

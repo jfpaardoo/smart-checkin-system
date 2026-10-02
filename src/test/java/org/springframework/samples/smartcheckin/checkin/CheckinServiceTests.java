@@ -17,7 +17,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.samples.smartcheckin.storage.SignatureStorageService;
 import org.springframework.samples.smartcheckin.user.User;
+import org.springframework.samples.smartcheckin.user.UserRepository;
 
 @SuppressWarnings("null")
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +33,12 @@ class CheckinServiceTests {
 
     @Mock
     private ApplicationEventPublisher eventPublisher;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private SignatureStorageService signatureStorageService;
 
     @InjectMocks
     private CheckinService checkinService;
@@ -150,7 +158,7 @@ class CheckinServiceTests {
                 .userLng(-3.7038)
                 .signature("offline_signature")
                 .offlineTimestamp(offlineTime)
-                .qrHash("abc123hash")
+                .qrHash("abc123hash123456")
                 .checkInType(CheckinType.ENTRADA)
                 .build();
 
@@ -161,7 +169,7 @@ class CheckinServiceTests {
         assertThat(result).isNotNull();
         assertThat(result.getIsOffline()).isTrue();
         assertThat(result.getOfflineTimestamp()).isEqualTo(offlineTime);
-        assertThat(result.getOfflineQrHash()).isEqualTo("abc123hash");
+        assertThat(result.getOfflineQrHash()).isEqualTo("abc123hash123456");
         assertThat(result.getCheckInType()).isEqualTo(CheckinType.ENTRADA);
         assertThat(user.getIsWorking()).isTrue();
     }

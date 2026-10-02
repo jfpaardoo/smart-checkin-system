@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 
 import org.apache.commons.codec.binary.Base32;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -68,6 +69,12 @@ class UserRestController {
     private static final String UPDATE = "update";
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private final JavaMailSender javaMailSender;
+
+    @Value("${app.mail.from:noreply@ejemplo.com}")
+    private String mailFrom;
+
+    @Value("${app.frontend.url:http://localhost:3000}")
+    private String frontendUrl;
 
     @Autowired
     public UserRestController(UserService userService, AuthoritiesService authService, 
@@ -254,12 +261,16 @@ class UserRestController {
             if (code != null) {
                 try {
                     SimpleMailMessage mailMessage = new SimpleMailMessage();
+                    if (mailFrom != null && !mailFrom.isBlank()) {
+                        mailMessage.setFrom(mailFrom);
+                    }
                     mailMessage.setTo(user.getEmail());
                     mailMessage.setSubject("Código de Verificación 2FA");
                     mailMessage.setText("Tu código de configuración de 2 factores es: " + code);
                     javaMailSender.send(mailMessage);
+                    logger.info("Código de verificación 2FA enviado exitosamente por correo a {}", user.getEmail());
                 } catch (Exception e) {
-                    // Ignore
+                    logger.error("Error al enviar código de verificación 2FA a {}: {}", user.getEmail(), e.getMessage());
                 }
             }
         } else {
@@ -344,18 +355,33 @@ class UserRestController {
             return;
         }
         try {
+            String baseUrl = "http://localhost:3000";
+            if (frontendUrl != null && !frontendUrl.isBlank()) {
+                baseUrl = frontendUrl.endsWith("/") 
+                        ? frontendUrl.substring(0, frontendUrl.length() - 1) 
+                        : frontendUrl;
+            }
+            String loginUrl = baseUrl + "/login";
+
             SimpleMailMessage mailMessage = new SimpleMailMessage();
+            if (mailFrom != null && !mailFrom.isBlank()) {
+                mailMessage.setFrom(mailFrom);
+            }
             mailMessage.setTo(target.getEmail());
             mailMessage.setSubject("¡Tu cuenta en Smart Check-in ha sido aprobada!");
             String name = target.getFirstName() != null ? target.getFirstName() : target.getUsername();
             mailMessage.setText("Hola " + name + ",\n\n"
-                + "Tu cuenta en Smart Check-in ha sido aprobada por un administrador.\n"
-                + "Ya puedes iniciar sesión con tu nombre de usuario: " + target.getUsername() + "\n\n"
-                + "Saludos,\nEl equipo de Smart Check-in");
+                + "¡Buenas noticias! Tu cuenta en Smart Check-in ha sido aprobada y activada por un administrador.\n\n"
+                + "Detalles de acceso:\n"
+                + "• Usuario: " + target.getUsername() + "\n"
+                + "• Enlace de acceso: " + loginUrl + "\n\n"
+                + "Ya puedes iniciar sesión en la plataforma y comenzar a registrar tus jornadas.\n\n"
+                + "Saludos cordiales,\nEl equipo de Smart Check-in");
+            logger.info("Enviando correo de aprobación de cuenta a {} (usuario: {})...", target.getEmail(), target.getUsername());
             javaMailSender.send(mailMessage);
             logger.info("Correo de aprobación de cuenta enviado con éxito a {}", target.getEmail());
         } catch (Exception e) {
-            logger.warn("No se pudo enviar el correo de aprobación a {}: {}", target.getEmail(), e.getMessage());
+            logger.error("No se pudo enviar el correo de aprobación a {}: {}", target.getEmail(), e.getMessage());
         }
     }
 
@@ -378,11 +404,17 @@ class UserRestController {
     @SuppressWarnings("squid:S4684")
     @Auditable(action = "USER_UPDATE", details = "Admin updated user")
     public ResponseEntity<User> update(@PathVariable("userId") Integer id, @RequestBody @Valid User user) {
-        RestPreconditions.checkNotNull(userService.findUser(id), "User", "ID", id);
+        User existing = userService.findUser(id);
+        RestPreconditions.checkNotNull(existing, "User", "ID", id);
+        boolean wasNotApproved = Boolean.FALSE.equals(existing.getIsApproved());
+
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
         User updated = this.userService.updateUser(user, id);
+        if (wasNotApproved && Boolean.TRUE.equals(updated.getIsApproved())) {
+            sendApprovalEmail(updated);
+        }
         messagingTemplate.convertAndSend(TOPIC_UPDATE_USERS, UPDATE);
         return new ResponseEntity<>(updated, HttpStatus.OK);
     }

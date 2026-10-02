@@ -656,15 +656,16 @@ class CheckinRestControllerTests {
 		offlineCheckin.setIsOffline(true);
 		offlineCheckin.setCheckInType(CheckinType.ENTRADA);
 
-		when(checkInService.recordOfflineCheckin(eq(user), any(OfflineCheckinRequest.class)))
-				.thenReturn(offlineCheckin);
+		CheckinResponseDTO dto = CheckinResponseDTO.fromEntity(offlineCheckin);
+		when(checkInService.processOfflineBatch(eq(user), anyList()))
+				.thenReturn(List.of(dto));
 
 		OfflineCheckinRequest item = OfflineCheckinRequest.builder()
 				.userLat(40.4168)
 				.userLng(-3.7038)
 				.signature("data:image/png;base64,dummy")
 				.offlineTimestamp(LocalDateTime.now())
-				.qrHash("hash_val")
+				.qrHash("hash_val_12345678")
 				.checkInType(CheckinType.ENTRADA)
 				.build();
 

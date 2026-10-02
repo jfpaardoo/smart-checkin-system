@@ -21,25 +21,19 @@ import java.util.concurrent.TimeUnit;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
+
 @Service
 public class TotpService {
 
     private static final Logger logger = LoggerFactory.getLogger(TotpService.class);
 
-    @Value("${smartcheckin.app.totpSecret:DEFAULT_SECRET}")
-    private String secret;
+    private final Environment environment;
 
-    @PostConstruct
-    public void validateSecretInProduction() {
-        String activeProfile = System.getProperty("spring.profiles.active", "");
-        if ("prod".equalsIgnoreCase(activeProfile) || "production".equalsIgnoreCase(activeProfile)) {
-            if (secret == null || "DEFAULT_SECRET".equals(secret) || secret.isBlank()) {
-                throw new IllegalStateException("CRÍTICO: smartcheckin.app.totpSecret no puede tener el valor por defecto en producción.");
-            }
-        } else if ("DEFAULT_SECRET".equals(secret)) {
-            logger.warn("ALERTA DE SEGURIDAD: Usando clave TOTP por defecto ('DEFAULT_SECRET'). Configurar smartcheckin.app.totpSecret para entornos seguros.");
-        }
-    }
+    @Value("${smartcheckin.app.totpSecret:${TOTP_SECRET:DEFAULT_SECRET}}")
+    private String secret;
 
     private final TimeProvider timeProvider = new SystemTimeProvider();
     private final CodeGenerator codeGenerator = new DefaultCodeGenerator();
@@ -56,6 +50,13 @@ public class TotpService {
             .build();
 
     public TotpService() {
+        this(null);
+    }
+
+    @Autowired
+    public TotpService(Environment environment) {
+        this.environment = environment;
+
         // QR Dinámico para formaciones y fichajes: Período de 20 segundos
         DefaultCodeVerifier qrV = new DefaultCodeVerifier(codeGenerator, timeProvider);
         qrV.setTimePeriod(20);
@@ -67,6 +68,17 @@ public class TotpService {
         twoFactV.setTimePeriod(30);
         twoFactV.setAllowedTimePeriodDiscrepancy(1);
         this.twoFactorVerifier = twoFactV;
+    }
+
+    @PostConstruct
+    public void validateSecretInProduction() {
+        if (environment != null && environment.acceptsProfiles(Profiles.of("prod", "production"))) {
+            if (secret == null || "DEFAULT_SECRET".equals(secret) || "secretoFalsoTotp".equals(secret) || secret.isBlank()) {
+                throw new IllegalStateException("CRÍTICO: smartcheckin.app.totpSecret no puede tener el valor por defecto en producción.");
+            }
+        } else if ("DEFAULT_SECRET".equals(secret) || "secretoFalsoTotp".equals(secret)) {
+            logger.warn("ALERTA DE SEGURIDAD: Usando clave TOTP por defecto ('DEFAULT_SECRET'). Configurar smartcheckin.app.totpSecret para entornos seguros.");
+        }
     }
 
     private static final String GLOBAL_KEY = "GLOBAL";
@@ -145,6 +157,22 @@ public class TotpService {
         return consumedTokensCache.getIfPresent(key) != null;
     }
 
+    public boolean consumeTokenIfAvailable(String token, Object userIdentifier) {
+        if (token == null || userIdentifier == null) {
+            return false;
+        }
+        String key = String.valueOf(userIdentifier).trim() + ":" + token.trim();
+        return consumedTokensCache.asMap().putIfAbsent(key, Boolean.TRUE) == null;
+    }
+
+    public void releaseTokenForUser(String token, Object userIdentifier) {
+        if (token == null || userIdentifier == null) {
+            return;
+        }
+        String key = String.valueOf(userIdentifier).trim() + ":" + token.trim();
+        consumedTokensCache.invalidate(key);
+    }
+
     public void markTokenConsumedForUser(String token, Object userIdentifier) {
         if (token == null || userIdentifier == null) {
             return;
@@ -161,12 +189,12 @@ public class TotpService {
         if (twoFactorSecret == null || twoFactorSecret.trim().isEmpty() || code == null || code.trim().isEmpty()) {
             return false;
         }
-        if (username != null && isTokenConsumedForUser(code, username)) {
+        if (username != null && !consumeTokenIfAvailable(code, username)) {
             return false;
         }
         boolean isValid = twoFactorVerifier.isValidCode(twoFactorSecret, code);
-        if (isValid && username != null) {
-            markTokenConsumedForUser(code, username);
+        if (!isValid && username != null) {
+            releaseTokenForUser(code, username);
         }
         return isValid;
     }

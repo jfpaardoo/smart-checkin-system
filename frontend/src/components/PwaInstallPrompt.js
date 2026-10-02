@@ -146,17 +146,17 @@ export default function PwaInstallPrompt() {
       <aside
         role="alert"
         aria-label={t('pwa.updateTitle', 'Nueva versión disponible')}
-        className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md z-[9999] bg-slate-900/95 text-white backdrop-blur-xl border border-white/20 p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-3 animate-bounce"
+        className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md z-[9999] bg-white/95 dark:bg-slate-900/95 text-slate-900 dark:text-white backdrop-blur-xl border border-slate-200/80 dark:border-white/20 p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-3 animate-bounce"
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#b3c34c]/30 text-[#b3c34c] flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-full bg-[#b3c34c]/30 text-[#7a8a18] dark:text-[#b3c34c] flex items-center justify-center shrink-0">
             <FaSyncAlt className="animate-spin" size={18} />
           </div>
           <div>
-            <h4 className="text-sm font-bold m-0 text-white">
+            <h4 className="text-sm font-bold m-0 text-slate-900 dark:text-white">
               {t('pwa.updateTitle', 'Nueva versión disponible')}
             </h4>
-            <p className="text-xs text-white/70 m-0">
+            <p className="text-xs text-slate-600 dark:text-white/70 m-0">
               {t('pwa.updateDesc', 'Hay mejoras listas. Actualiza para aplicarlas.')}
             </p>
           </div>

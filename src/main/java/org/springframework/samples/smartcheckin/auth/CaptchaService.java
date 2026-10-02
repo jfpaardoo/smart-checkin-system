@@ -1,8 +1,12 @@
 package org.springframework.samples.smartcheckin.auth;
 
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -25,18 +29,17 @@ public class CaptchaService {
     @Value("${app.captcha.bypass-enabled:false}")
     private boolean bypassEnabled;
 
-    @Value("${spring.profiles.active:default}")
-    private String activeProfile;
-
+    private final Environment environment;
     private final RestTemplate restTemplate;
 
-    public CaptchaService(RestTemplate restTemplate) {
+    public CaptchaService(RestTemplate restTemplate, @Autowired(required = false) Environment environment) {
         this.restTemplate = restTemplate;
+        this.environment = environment;
     }
 
-    @jakarta.annotation.PostConstruct
+    @PostConstruct
     public void validateConfiguration() {
-        if ("prod".equalsIgnoreCase(activeProfile) || "production".equalsIgnoreCase(activeProfile)) {
+        if (environment != null && environment.acceptsProfiles(Profiles.of("prod", "production"))) {
             if (bypassEnabled) {
                 throw new IllegalStateException("CRÍTICO: app.captcha.bypass-enabled no puede estar activo en el perfil de producción.");
             }

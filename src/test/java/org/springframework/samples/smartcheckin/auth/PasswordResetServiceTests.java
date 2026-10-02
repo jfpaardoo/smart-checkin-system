@@ -47,7 +47,7 @@ class PasswordResetServiceTests {
     }
 
     @Test
-    void testValidatePasswordResetToken_valid() {
+    void testValidatePasswordResetTokenValid() {
         PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setToken("validToken123");
         resetToken.setUser(user);
@@ -61,7 +61,7 @@ class PasswordResetServiceTests {
     }
 
     @Test
-    void testValidatePasswordResetToken_expired() {
+    void testValidatePasswordResetTokenExpired() {
         PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setToken("expiredToken123");
         resetToken.setUser(user);
@@ -74,7 +74,7 @@ class PasswordResetServiceTests {
     }
 
     @Test
-    void testValidatePasswordResetToken_notFound() {
+    void testValidatePasswordResetTokenNotFound() {
         when(tokenRepository.findByToken("unknownToken")).thenReturn(Optional.empty());
 
         PasswordResetToken result = passwordResetService.validatePasswordResetToken("unknownToken");
@@ -88,5 +88,11 @@ class PasswordResetServiceTests {
 
         passwordResetService.deleteToken(resetToken);
         verify(tokenRepository).delete(resetToken);
+    }
+
+    @Test
+    void testCleanupExpiredTokens() {
+        passwordResetService.cleanupExpiredTokens();
+        verify(tokenRepository).deleteByExpiryDateBefore(any(LocalDateTime.class));
     }
 }

@@ -8,6 +8,9 @@ import org.springframework.samples.smartcheckin.model.BaseEntity;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.nio.charset.StandardCharsets;
+import java.time.temporal.ChronoUnit;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
@@ -17,8 +20,6 @@ import lombok.Setter;
 import lombok.EqualsAndHashCode;
 import lombok.Builder;
 import lombok.AllArgsConstructor;
-
-import java.time.temporal.ChronoUnit;
 
 @Getter
 @Setter
@@ -82,8 +83,8 @@ public class AuditLog extends BaseEntity {
             if (logHash == null || secretKey == null || secretKey.isBlank()) {
                 return null;
             }
-            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
-            javax.crypto.spec.SecretKeySpec secretKeySpec = new javax.crypto.spec.SecretKeySpec(
+            Mac mac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(
                     secretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
             mac.init(secretKeySpec);
             byte[] hmacBytes = mac.doFinal(logHash.getBytes(StandardCharsets.UTF_8));

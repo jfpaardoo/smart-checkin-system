@@ -27,5 +27,7 @@ public class OfflineCheckinRequest {
 
     private String qrHash;
 
+    private String offlineEventId;
+
     private CheckinType checkInType;
 }

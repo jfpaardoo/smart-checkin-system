@@ -2,7 +2,6 @@ package org.springframework.samples.smartcheckin.checkin;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,7 +103,7 @@ public class CheckinRestController {
         }
 
         if (request.getFormationId() != null) {
-            return handleFormationTokenError(request);
+            return handleFormationTokenError();
         }
 
         return processGeneralCheckin(user, request);
@@ -121,23 +120,16 @@ public class CheckinRestController {
             return ResponseEntity.badRequest().body(Map.of(MESSAGE_KEY, "La lista de fichajes offline no puede estar vacía."));
         }
 
-        List<Checkin> processed = new ArrayList<>();
-        for (OfflineCheckinRequest req : requests) {
-            if (req.getSignature() != null && !req.getSignature().isEmpty()) {
-                String fileName = signatureStorageService.saveSignature(req.getSignature(), "checkins");
-                req.setSignature(fileName);
-            }
-            Checkin saved = checkInService.recordOfflineCheckin(user, req);
-            processed.add(saved);
+        try {
+            List<CheckinResponseDTO> processed = checkInService.processOfflineBatch(user, requests);
+            return new ResponseEntity<>(Map.of(
+                    MESSAGE_KEY, "Fichajes offline registrados con éxito. Pendientes de validación.",
+                    "count", processed.size(),
+                    "checkins", processed
+            ), HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of(MESSAGE_KEY, e.getMessage()));
         }
-
-        userService.saveUser(user);
-
-        return new ResponseEntity<>(Map.of(
-                "message", "Fichajes offline registrados con éxito. Pendientes de validación.",
-                "count", processed.size(),
-                "checkins", processed
-        ), HttpStatus.CREATED);
     }
 
     private ResponseEntity<Object> processFormationCheckin(Formation targetFormation, User user, QrCheckinRequest request) {
@@ -182,13 +174,7 @@ public class CheckinRestController {
         }
     }
 
-    private ResponseEntity<Object> handleFormationTokenError(QrCheckinRequest request) {
-        List<Formation> all = formationService.findAll();
-        boolean isOtherFormation = all.stream().anyMatch(f -> totpService.verifyToken(request.getToken(), f.getId()));
-        if (isOtherFormation) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of(MESSAGE_KEY, "El código o QR escaneado pertenece a otra formación diferente."));
-        }
+    private ResponseEntity<Object> handleFormationTokenError() {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of(MESSAGE_KEY, "El código o QR de formación ha expirado o no es válido."));
     }
@@ -200,12 +186,6 @@ public class CheckinRestController {
         }
 
         if (!totpService.verifyToken(request.getToken())) {
-            List<Formation> all = formationService.findAll();
-            boolean isFormationToken = all.stream().anyMatch(f -> totpService.verifyToken(request.getToken(), f.getId()));
-            if (isFormationToken) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of(MESSAGE_KEY, "El código escaneado pertenece a una formación, no al control general de fichaje."));
-            }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of(MESSAGE_KEY, "El código o QR ha expirado o no es válido."));
         }
@@ -391,7 +371,6 @@ public class CheckinRestController {
         }
 
         checkin.setRectifiedCheckOutDate(request.getRectifiedDate());
-        checkin.setCheckInDate(request.getRectifiedDate());
         checkin.setIsRectified(true);
 
         if (request.getSignature() != null && !request.getSignature().isBlank()) {
@@ -415,7 +394,7 @@ public class CheckinRestController {
             // Ignorar fallo no crítico de notificación
         }
 
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(CheckinResponseDTO.fromEntity(updated));
     }
 
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {

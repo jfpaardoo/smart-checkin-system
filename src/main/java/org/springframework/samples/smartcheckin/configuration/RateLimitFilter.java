@@ -53,12 +53,11 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     private String getClientIP(HttpServletRequest request) {
-        String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader == null || xfHeader.isEmpty() || "unknown".equalsIgnoreCase(xfHeader)) {
-            return request.getRemoteAddr();
-        }
-        // X-Forwarded-For puede contener múltiples IPs si hay varios proxies. La primera es la del cliente original.
-        return xfHeader.split(",")[0].trim();
+        // En entornos detrás de proxy inverso/ingress, Spring Boot con server.forward-headers-strategy
+        // sanitiza request.getRemoteAddr() a partir de proxies de confianza. Confiar directamente en la cabecera
+        // cruda X-Forwarded-For permite a un atacante eludir el rate limit inyectando IPs arbitrarias.
+        String remoteAddr = request.getRemoteAddr();
+        return (remoteAddr != null && !remoteAddr.isBlank()) ? remoteAddr : "127.0.0.1";
     }
 
     @Override

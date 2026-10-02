@@ -4,7 +4,69 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), y este proyecto sigue [Versionado Semántico (SemVer)](https://semver.org/lang/es/).
 
-## [1.3.0](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.3.0) - 2026-09-30
+## [1.3.0](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.3.0) - 2026-10-01
+
+### Seguridad, Privacidad & Aislamiento de Documentos
+- **Aislamiento en Almacenamiento en la Nube (`CloudStorageAdapter.java`, `OneDriveAdapterImpl.java`)**:
+  - Diseñado e implementado el método `uploadOfficialSheet` para almacenar las actas oficiales de asistencia y firmas (FOR-99) en una ruta privada restringida (`/ba/formations/{folder}/official_sheets/{filename}`) sin generar enlaces anónimos de descarga pública ni compartirlos fuera del entorno corporativo.
+- **Desvinculación de Documentación Pública de Cursos (`ExportRestController.java`, `FormationRestController.java`)**:
+  - Eliminada la adición automática de actas FOR-99 a la colección `formation.getDocumentUrls()`, impidiendo que los empleados visualicen o descarguen las actas que contienen firmas digitalizadas y datos personales del resto de compañeros.
+  - Añadido filtro defensivo a nivel de endpoint REST en `FormationRestController` para garantizar que ninguna URL con destino a carpetas privadas u oficiales (`official_sheets`, `FOR-99`) se exponga en las consultas de formación.
+- **Saneamiento Retroactivo de Base de Datos (`V13__remove_for99_from_formation_documents.sql`)**:
+  - Creada y ejecutada la migración Flyway `V13__remove_for99_from_formation_documents.sql` en PostgreSQL, purgando de forma permanente todos los registros históricos de actas FOR-99 filtradas en la tabla `formation_documents`.
+  - Pruebas unitarias de aislamiento y exportación validadas al 100% en `ExportRestControllerTests` y `OneDriveAdapterImplTests`.
+
+### Añadido (Features) & Rediseño de Diplomas
+- **Rediseño Ejecutivo del Diploma / Certificado de Empleados (`CertificateGeneratorService.java`, `CertificateGeneratorServiceTests.java`)**:
+  - **Identidad Corporativa y Estética Ejecutiva**: Adaptación visual completa a los colores de Distribution Academy y BA Glass (`#0F172A` Slate Marino, `#C59B27` Oro Noble, `#8A9E22` Verde Corporativo y fondos neutros `#F8FAFC`).
+  - **Marco Vectorial y Marca de Agua**: Marco perimetral doble con esquinas geométricas grabadas y marca de agua circular de seguridad concéntrica en A4 apaisado.
+  - **Identificación y Acreditación Completa**:
+    - Cabecera con badge `● DISTRIBUTION ACADEMY ●`, título principal `CERTIFICADO DE APROVECHAMIENTO` y subtítulo de acreditación continua.
+    - Identificación del alumno con nombre, código de empleado, localizador personal y razón social de la empresa (`BA Glass Spain SAU`).
+    - Tarjeta destacada de la formación con barra de acento lateral y descripción detallada del curso formativo.
+    - Cuadrícula de 4 tarjetas con metadatos clave: fecha de emisión, cálculo dinámico de horario y duración (`Duration.between`), sede o centro (`location`) y formador o tutor responsable (`trainer`).
+    - Mesa de validación y firmas a 3 columnas: firma del alumno, tarjeta central con Sello Digital Oficial (`SMART CHECK-IN VERIFIED`) y firma digitalizada del formador o tutor (obtenida desde `formation.trainerSignature`).
+    - Pie de seguridad criptográfica con sello SHA-256 auditado y cláusula de acreditación laboral para auditorías.
+  - Pruebas unitarias de generación de diplomas y controladores (`CertificateGeneratorServiceTests`, `CertificateControllerTests`) verificadas con 16/16 pruebas superadas.
+
+### Interfaz de Usuario, PWA & Experiencia Móvil
+- **Banner Flotante de Cristal Líquido (Liquid Glass PWA Banner) (`PwaTopBanner.js`, `PwaTopBanner.test.js`)**:
+  - Rediseño visual del banner superior de instalación de la PWA mediante cápsula unificada centrada con efecto glassmorphism (`backdrop-blur-md`).
+  - Integrado en el flujo del documento (`relative`) para desplazar de forma natural y limpia la barra de navegación (`AppNavbar`) sin solapamientos ni superposiciones de contenido.
+  - Adaptabilidad total a modo claro (`bg-white/80`, `border-slate-200/80`) y modo oscuro (`bg-slate-900/80`, `border-[#b3c34c]/20`).
+  - Botón de instalación con microinteracciones de escala, gradiente corporativo `#8a9e29`/`#b3c34c`, badge de disponibilidad y cierre accesible.
+  - Cobertura completa de pruebas unitarias en `PwaTopBanner.test.js` (4/4 pruebas superadas).
+
+### Autenticación, Correos & Tareas Programadas
+- **Soporte de Recuperación por Usuario o Correo Electrónico (`ForgotPassword.js`, `ForgotPasswordRequest.java`, `AuthController.java`)**:
+  - Habilitada la opción de solicitar enlace de recuperación de contraseña ingresando indistintamente el **nombre de usuario** o el **correo electrónico**.
+  - Eliminada la restricción estricta `@Email` en `ForgotPasswordRequest` para permitir identificadores de usuario alfanuméricos.
+  - Resolución automática en `UserService.findUser` mediante `findByUsernameOrEmail`.
+  - Configuración explícita del remitente corporativo `setFrom(mailFrom)` en `AuthController.java` para prevenir rechazos en proveedores SMTP como Brevo/Gmail.
+  - Registro de trazas (`logger.info`) del enlace de recuperación en el log del backend para facilitar la verificación inmediata y depuración de envíos.
+  - Actualizadas las traducciones multiidioma (`bg`, `de`, `en`, `es`, `fr`, `pl`, `pt`, `ro`) del formulario de recuperación.
+- **Notificación por Correo de Aprobación de Cuenta (`UserRestController.java`)**:
+  - Implementado el envío automático de correo transaccional cuando un administrador aprueba una cuenta pendiente, permitiendo al empleado saber de inmediato que su cuenta está activa.
+  - El correo incluye el saludo personalizado con nombre y apellidos, el nombre de usuario asignado y el enlace directo al formulario de inicio de sesión (`/login`).
+  - Cobertura dual de activación: el correo se despacha tanto desde el endpoint directo de aprobación rápida (`PUT /api/v1/users/{userId}/approve`) como al editar y marcar como aprobado a un usuario desde la administración (`PUT /api/v1/users/{userId}`).
+- **Fiabilidad y Remitente en Envíos de Correo (`UserRestController.java`, `AuthController.java`)**:
+  - Configurada la cabecera `mailMessage.setFrom(mailFrom)` en los envíos de códigos de configuración 2FA (`setupTwoFactor`) y en los correos de aprobación de cuenta (`sendApprovalEmail`), asegurando que todos los correos del sistema posean remitente corporativo válido y registren trazas descriptivas de éxito o error en consola.
+- **Limpieza Automatizada de Tokens Expirados (`PasswordResetService.java`, `PasswordResetTokenRepository.java`, `DataRetentionScheduler.java`)**:
+  - Añadida tarea programada horaria `@Scheduled(cron = "0 0 * * * *")` para purgar tokens de recuperación de contraseña que hayan superado los 15 minutos de caducidad.
+  - Verificada la ejecución periódica de la tarea de retención de datos RGPD (`DataRetentionScheduler`), eliminando registros de auditoría (> 1 año) y fichajes/formaciones (> 4 años).
+  - Añadidas pruebas unitarias completas en `DataRetentionSchedulerTests` y `PasswordResetServiceTests` con 100% de éxito.
+
+### Calidad de Código & Saneamiento del IDE
+- **Eliminación de Promesas Flotantes (`PwaUpdateNotification.js`)**:
+  - Resueltas las advertencias del linter sobre promesas no capturadas mediante el operador `void checkVersion()`.
+- **Limpieza de Supresiones del Compilador (`DatabaseBackupService.java`)**:
+  - Retirada la anotación `@SuppressWarnings("null")` redundante, limpiando el reporte de problemas del IDE.
+- **Refactorización de Expresiones y Nomenclatura Sonar (`UserRestController.java`, `PasswordResetServiceTests.java`, `SecurityRegressionTests.java`)**:
+  - Desacoplado el operador ternario anidado en `sendApprovalEmail` de `UserRestController` para una resolución limpia y legible de la URL base del frontend.
+  - Normalizada la nomenclatura de métodos de prueba en `PasswordResetServiceTests` a camelCase estándar (`testValidatePasswordResetTokenValid`, `testValidatePasswordResetTokenExpired`, `testValidatePasswordResetTokenNotFound`).
+  - Eliminados los campos de clase no utilizados `totpService` y `userService` en `SecurityRegressionTests`, reduciendo su alcance a variables locales del método de inicialización `setUp`.
+- **Blindaje Antifraude y Consumo Atómico de Tokens TOTP (`TotpService.java`)**:
+  - Incorporada la operación atómica `consumeTokenIfAvailable` y reversión de clave `releaseTokenForUser` mediante `putIfAbsent` en la caché de un solo uso (RFC 6238), blindando la validación del segundo factor frente a peticiones concurrentes del mismo código.
 
 ### Añadido (Features) & Arquitectura de Software
 - **Ciclo de Vida de Fichajes Olvidados (Auto Check-out & Rectificación Transaccional) (`AutoCheckoutScheduledService.java`, `Checkin.java`, `CheckinRepository.java`, `CheckinRestController.java`, `RectifyCheckinRequest.java`)**:
@@ -49,38 +111,45 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
     - **Modal de Exportación Avanzada (`AdvancedExportModal.js`)**: Aligerado de 637 líneas aislando las constantes de configuración, mapeos de tipo de informe/formatos y generadores de query params en `exportModalConfig.js`.
     - **Selector Geográfico de Ubicaciones (`LocationMapPicker.js`)**: Aligerado de 581 líneas desacoplando las consultas a las APIs de geocodificación de Nominatim y Photon, el reverse geocoding y el diseño del marcador SVG en `locationPickerUtils.js`.
 
-### Seguridad & Blindaje Criptográfico
-- **Remediación de Vulnerabilidades Críticas de Seguridad y Anti-Fraude (Fase 0: C1 a C5)**:
-  - **C1: Verificación Forzada del Primer Factor y Blindaje contra Enumeración en 2FA (`AuthController.java`, `JwtUtils.java`, `TwoFactorVerifyRequest.java`, `JwtResponse.java`, `login/index.js`)**:
-    - Requerimiento obligatorio del token de desafío temporal firmado (`mfaToken`) emitido tras superar el primer factor (usuario/contraseña). Endpoints como `POST /api/v1/auth/verify-2fa` rechazan peticiones sin `mfaToken` o con token manipulado (`401 Unauthorized`).
-    - Prevención de enumeración de usuarios: la comprobación de 2FA responde con error uniforme `401 Unauthorized` si el usuario no existe, suprimiendo la revelación de estado con `404 Not Found`. Registro de intentos fallidos con bloqueo progresivo de cuenta por fuerza bruta mediante `loginAttemptService`.
-  - **C2: Bloqueo Estricto de Bypass de Captcha en Producción (`CaptchaService.java`)**:
-    - Supresión de la aceptación incondicional de tokens mágicos (`bypass-token`, `dummy-captcha-token`) en entornos productivos. Activación condicionada exclusivamente mediante la propiedad de entorno `app.captcha.bypass-enabled=true`.
-  - **C3: Blindaje de Inyección de Fichajes y Restricción de Creación Directa (`CheckinRestController.java`)**:
-    - Protegido el endpoint directo `POST /api/v1/checkins` con `@PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")` y comprobación programática en tiempo de ejecución. Los empleados regulares tienen vetado el endpoint directo (`403 Forbidden`) y están obligados a utilizar el flujo seguro con validación de terminal TOTP y biometría.
-  - **C4: Prevención de "Buddy Punching" y Suplantación en Asistencia a Formaciones (`FormationCheckinFacade.java`)**:
-    - Eliminada la posibilidad de enviar códigos de personal arbitrarios (`personalCode`) en la asistencia a formaciones (`POST /api/v1/formations/{id}/attend`). El sistema ahora extrae y aplica con autoridad el código personal de la sesión del usuario autenticado (`currentUser.getPersonalCode()`), salvo autorización administrativa explícita.
+- **Remediación Integral de Seguridad, Concurrencia y Auditoría (Auditoría C1-C5, A1-A8, P0s)**:
+  - **C1: Verificación de Desafío 2FA de Uso Único y Aislamiento de Propósito (`AuthController.java`, `JwtUtils.java`)**:
+    - `mfaToken` de uso único emitido con expiración estricta de 5 minutos y claim de propósito específico `purpose=mfa_pending`. Consumo inmediato tras verificación para impedir repetición o reutilización dentro de la ventana de validez.
+  - **C2: Blindaje de CAPTCHA y Sincronización de Variables de Entorno (`docker-compose.yml`, `CaptchaService.java`)**:
+    - Eliminado cualquier bypass por defecto en producción. Homologadas las variables de entorno de despliegue en `docker-compose.yml` (`APP_CAPTCHA_SECRET`, `APP_ENCRYPTION_SECRET`, `SMARTCHECKIN_APP_TOTPSECRET`, `TOTP_SECRET`) garantizando arranque fail-fast ante configuraciones incompletas.
+  - **C3: Restricción Estricta de Creación Directa de Fichajes (`CheckinRestController.java`)**:
+    - Protegido el endpoint directo `POST /api/v1/checkins` con `@PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")`. Empleados tienen vetado el endpoint directo y deben fichar por flujo seguro QR/TOTP o lote offline autenticado.
+  - **C4: Eliminación Total de Fallback a Códigos de Personal del Cliente (`FormationCheckinFacade.java`)**:
+    - Para empleados y usuarios no administrativos, el sistema extrae estrictamente `currentUser.getPersonalCode()` de la sesión autenticada. Se ha eliminado por completo el fallback que aceptaba `request.getPersonalCode()`; si el usuario carece de código personal, la petición se deniega inmediatamente sin aceptar datos externos.
   - **C5: Neutralización de Coordenadas de Geofencing del Lado Cliente (`CheckinRestController.java`)**:
-    - Se ignoran las coordenadas de latitud/longitud enviadas por el navegador para el centro de la geocerca (`adminLat` / `adminLng`). La referencia geográfica se consulta directamente del servidor (coordenadas seguras del terminal TOTP activo o sede corporativa persistida en base de datos).
-- **Fortalecimiento de Seguridad y Blindaje Estructural (Fase 1: P1)**:
-  - **A1: Validación de Proxies de Confianza y Estrategia de Cabeceras Reenviadas (`application.properties`)**:
-    - Incorporada la estrategia `server.forward-headers-strategy=framework` para resolver correctamente las direcciones IP reales y el protocolo TLS tras balanceadores de carga y proxies inversos (Render / Cloudflare), evitando la falsificación de cabeceras cliente.
-  - **A2: Blindaje contra Fuerza Bruta en QR Dinámico y Acotación de Búsqueda (`CheckinRestController.java`, `FormationService.java`, `FormationRepository.java`)**:
-    - Suprimido el escaneo exhaustivo en memoria de todas las formaciones históricas (`findAll()`) durante la resolución de fichajes QR.
-    - Implementada consulta optimizada en base de datos (`findActiveFormationsForDateRange`) acotada a la fecha en curso (`LocalDate.now()`), estado `PUBLISHED` y formaciones abiertas (`isClosed = false`), con resolución directa por clave primaria (`findById`) cuando se suministra el identificador de formación.
-  - **A3: Fail-Fast en Arranque para Secretos Criptográficos (`TotpService.java`, `JwtUtils.java`)**:
-    - Integrada validación de inicialización `@PostConstruct` en `TotpService`: en perfiles productivos (`prod` / `production`), el arranque del sistema se interrumpe de forma controlada (`IllegalStateException`) si `smartcheckin.app.totpSecret` no está configurado o conserva el valor por defecto. Emisión de advertencia en logs de auditoría en entornos locales.
-  - **A4: Protección y Aislamiento de Endpoints de Monitoreo Actuator (`SecurityConfiguration.java`)**:
-    - Restringidos los endpoints de métricas, prometheus e información del sistema (`/actuator/**`) con autorización exclusiva para administradores (`hasAuthority('ADMIN')`), manteniendo únicamente expuestos de forma pública los sondeos de comprobación de salud (`/actuator/health`) para balanceadores de carga y sondas de orquestación.
-  - **A5: Blindaje de Integridad Criptográfica y Eliminación de Fallback Silencioso (`StringCryptoConverter.java`, `StringCryptoConverterTests.java`)**:
-    - El conversor JPA lanza una excepción de seguridad auditada (`SecurityException`) si un atributo versionado (`v1`) no puede ser descifrado por corrupción de datos o intento de manipulación maliciosa de los bloques GCM, suprimiendo la revelación silenciosa del texto cifrado crudo.
-- **Protección contra Ataques de Repetición (Replay Attacks) en TOTP y Conformidad RFC 6238 §5.2 (`TotpService.java`, `CheckinRestController.java`, `AuthController.java`)**:
-  - Incorporada una caché en memoria de alta concurrencia mediante Caffeine (`consumedTokensCache`) con TTL de 60 segundos por usuario (`userId:token` o `username:code`).
-  - **Garantía de Token de Uso Único (Single-Use Token Guarantee)**: Cualquier intento de reutilizar un token TOTP dentro de su ventana temporal de tolerancia para fichajes generales, formaciones o autenticación de dos factores (2FA) es denegado de forma inmediata con código 400 Bad Request, neutralizando intercepciones o repeticiones maliciosas en la red.
-- **Versionado de Claves Criptográficas en Reposo y Migración Transparente a AES-256 (`StringCryptoConverter.java`, `StringCryptoConverterTests.java`)**:
-  - Implementado el formato de vector versionado `v1:{iv}:{ciphertext}` para secretos TOTP y configuraciones de nube en base de datos.
-  - Derivación criptográfica formal de 32 bytes (256 bits) mediante SHA-256 a partir de la clave de cifrado corporativa (`EncryptionConfig.getSecret()`), sustituyendo el truncamiento legacy de 16 bytes.
-  - **Compatibilidad Hacia Atrás y Migración Perezosa (Lazy Re-encryption)**: El conversor JPA descifra de forma transparente tanto registros versionados modernos (`v1`) como registros legacy `v0` de dos bloques (`{iv}:{ciphertext}`) sin interrumpir la operación del sistema, re-cifrando automáticamente a `v1` ante cualquier actualización de entidad.
+    - Se descartan `adminLat` y `adminLng` enviados por el navegador. El centro de la geocerca se resuelve con autoridad desde el servidor (coordenadas seguras del terminal TOTP activo o coordenadas corporativas persistidas en base de datos).
+  - **A1: Rate Limiting Robusto sin Falsificación de Cabeceras (`RateLimitFilter.java`)**:
+    - El filtro de limitación de tasa ya no lee directamente la cabecera `X-Forwarded-For` manipulable por el cliente. Utiliza `request.getRemoteAddr()`, resuelta y saneada de forma segura por el servidor tras la validación de proxies de confianza de Spring Boot / Tomcat.
+  - **A2: Erradicación de Escaneo Exhaustivo con `findAll()` en QR (`CheckinRestController.java`)**:
+    - Eliminados los recorridos en masa de la base de datos durante la resolución y gestión de errores de QR. La consulta se restringe por ID primario y ventana activa de formación, mitigando vectores de denegación de servicio (DoS).
+  - **A3: Fail-Fast Robusto de Secretos TOTP y Configuración Productiva (`TotpService.java`)**:
+    - Verificación de perfil de producción mediante `Environment.acceptsProfiles(Profiles.of("prod", "production"))` en lugar de llamadas a propiedades de sistema. Compatibilidad transparente con la variable Docker `TOTP_SECRET` y detención inmediata del arranque si el secreto es inseguro o inexistente.
+  - **A4: Blindaje de Canales WebSocket STOMP y Actuator (`WebSocketConfig.java`, `SecurityConfiguration.java`)**:
+    - Endpoints de Actuator restringidos a administradores (`/actuator/health` público).
+    - Incorporado `ChannelInterceptor` en `WebSocketConfig` para interceptar comandos STOMP `SUBSCRIBE` y autorizar suscripciones por rol: topics sensibles (`/topic/audit`, `/topic/alerts`, `/topic/users`, `/topic/statistics`) reservados a `ADMIN`, y notificaciones privadas (`/topic/notifications/{username}`) restringidas al usuario propietario.
+  - **A5: Integridad Criptográfica AES-256 GCM sin Fallback Silencioso (`StringCryptoConverter.java`)**:
+    - Cifrado versionado `v1:{iv}:{ciphertext}` con clave derivada de 256 bits mediante SHA-256. Excepción explícita `SecurityException` ante fallos de autenticación de bloques GCM o datos corruptos.
+  - **A6: Endurecimiento de Política de Contraseñas y Duración de Sesión (`SignupRequest.java`, `ResetPasswordRequest.java`, `ChangePasswordRequest.java`)**:
+    - Longitud mínima de contraseña elevada a 12 caracteres conforme a las guías NIST SP 800-63B / OWASP, en conjunto con verificación HIBP y BCrypt.
+  - **A7: Inmutabilidad Criptográfica de la Cadena de Auditoría (`AuditLog.java`, `AuditService.java`)**:
+    - Verificación estricta del bloque génesis (`GENESIS_PREVIOUS_HASH`) para detectar cualquier alteración en el primer registro de la cadena.
+    - Prohibición de sobrescritura automática destructiva de logs ante inconsistencias en arranque (preservación de evidencia forense para análisis de brechas).
+  - **A8: Respaldo y Restauración Completa de Base de Datos (`DatabaseBackupService.java`)**:
+    - Incorporada la entidad `Checkin` al paquete de exportación y restauración (`KEY_CHECKINS = "checkins"`), asegurando que los fichajes laborales formen parte del plan de contingencia y disaster recovery.
+  - **P0: Lote de Fichajes Offline Atómico y Anti-Fraude (`CheckinService.java`, `OfflineCheckinRequest.java`)**:
+    - Transacción atómica integral `@Transactional(rollbackFor = Exception.class)` para el procesamiento de lotes offline (`processOfflineBatch`), evitando persistencias parciales.
+    - El servidor deriva el tipo de fichaje (`checkInType`) del último estado en base de datos, ignorando el tipo enviado por el cliente.
+    - Validación rigurosa de `qrHash` (mínimo 16 caracteres), prevención de replay con `existsByOfflineQrHashAndUserId`, idempotencia por `offlineEventId` y acotación temporal estricta (rechazo de marcas temporales futuras o con más de 72 horas de antigüedad).
+  - **P0: Securización del Endpoint de Asistencia a Formaciones (`FormationRestController.java`)**:
+    - Endpoint `POST /api/v1/formations/{id}/attend` blindado exclusivamente para administradores (`@PreAuthorize("hasAuthority('ADMIN')")`). Empleados no pueden eludir la lectura de QR, TOTP y geocerca.
+  - **Concurrencia: Bloqueo Pesimista en Fichajes Concurrentes (`UserRepository.java`, `CheckinService.java`)**:
+    - Consulta `findAndLockByUsername` con `@Lock(LockModeType.PESSIMISTIC_WRITE)` sobre el agregado `User` durante el registro de fichajes, garantizando aislamiento total y eliminando condiciones de carrera por peticiones simultáneas.
+  - **TOTP: Consumo Atómico Anti-Replay (`TotpService.java`)**:
+    - Garantía atómica de consumo único mediante `asMap().putIfAbsent()` en la caché de Caffeine, impidiendo que peticiones paralelas validen el mismo token.
 
 ### Rendimiento & Optimización
 - **Eliminación del Cuello de Botella N+1 en Analíticas de Recursos Humanos (`AnalyticsService.java`, `CheckinRepository.java`, `FormationAttendanceRepository.java`)**:

@@ -74,4 +74,7 @@ public class Checkin extends BaseEntity {
 
     @Column(name = "offline_qr_hash", length = 64)
     private String offlineQrHash;
+
+    @Column(name = "offline_event_id", length = 64)
+    private String offlineEventId;
 }

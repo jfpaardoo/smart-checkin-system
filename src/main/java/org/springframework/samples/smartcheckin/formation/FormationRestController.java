@@ -66,7 +66,9 @@ public class FormationRestController {
         }
 
         List<String> docs = (isClosed || hasCheckedIn) && f.getDocumentUrls() != null
-                ? new ArrayList<>(f.getDocumentUrls())
+                ? f.getDocumentUrls().stream()
+                        .filter(url -> !isOfficialSheetDocument(url))
+                        .toList()
                 : new ArrayList<>();
 
         Formation copy = Formation.builder()
@@ -81,6 +83,14 @@ public class FormationRestController {
                 .build();
         copy.setId(f.getId());
         return copy;
+    }
+
+    private boolean isOfficialSheetDocument(String url) {
+        if (url == null) {
+            return false;
+        }
+        String lower = url.toLowerCase();
+        return lower.contains("for_99") || lower.contains("for99") || lower.contains("for 99") || lower.contains("official_sheets");
     }
 
     private User getCurrentUserSafe() {
@@ -148,6 +158,7 @@ public class FormationRestController {
     }
 
     @PostMapping("/{id}/attend")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Object> registerAttendance(@PathVariable Integer id, @RequestBody(required = false) AttendRequest request) {
         try {
             String code = request != null ? request.getPersonalCode() : null;

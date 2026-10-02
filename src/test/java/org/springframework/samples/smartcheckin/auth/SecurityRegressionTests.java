@@ -27,15 +27,13 @@ class SecurityRegressionTests {
 
     private AuthController authController;
     private JwtUtils jwtUtils;
-    private TotpService totpService;
-    private UserService userService;
     private CaptchaService captchaService;
 
     @BeforeEach
     void setUp() {
         jwtUtils = mock(JwtUtils.class);
-        totpService = mock(TotpService.class);
-        userService = mock(UserService.class);
+        TotpService totpService = mock(TotpService.class);
+        UserService userService = mock(UserService.class);
         captchaService = mock(CaptchaService.class);
         PasswordEncoder encoder = mock(PasswordEncoder.class);
 
