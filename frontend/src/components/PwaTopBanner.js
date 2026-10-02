@@ -40,6 +40,17 @@ export default function PwaTopBanner() {
     };
   }, []);
 
+  useEffect(() => {
+    if (isVisible && !isAppStandalone()) {
+      document.body.classList.add('has-pwa-top-banner');
+    } else {
+      document.body.classList.remove('has-pwa-top-banner');
+    }
+    return () => {
+      document.body.classList.remove('has-pwa-top-banner');
+    };
+  }, [isVisible]);
+
   const handleInstall = async () => {
     const installed = await promptDirectInstall();
     if (installed) {
@@ -65,7 +76,7 @@ export default function PwaTopBanner() {
   return (
     <aside
       aria-label={t('pwa.installTitle', 'Instalar Distribution Academy')}
-      className="relative z-30 mx-auto w-full max-w-[1440px] px-3 sm:px-6 pt-2.5 pb-1 transition-all duration-300 animate-fade-in"
+      className="relative z-30 mx-auto w-full max-w-[1440px] px-3 sm:px-6 pt-2.5 pb-1 transition-all duration-300 animate-fade-in da-pwa-top-banner-safe"
     >
       <div className="flex items-center justify-center">
         {/* Cápsula de Cristal Líquido Centrada */}

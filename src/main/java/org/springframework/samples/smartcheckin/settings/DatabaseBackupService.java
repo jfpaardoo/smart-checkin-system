@@ -96,7 +96,7 @@ public class DatabaseBackupService {
      */
     public byte[] generateBackupZip() throws IOException {
         Map<String, Object> exportData = new LinkedHashMap<>();
-        exportData.put("version", "1.2.0");
+        exportData.put("version", "1.3.0");
         exportData.put("timestamp", LocalDateTime.now(ZoneId.systemDefault()).toString());
         exportData.put(KEY_COMPANIES, companyRepository.findAll());
         exportData.put(KEY_USERS, userRepository.findAll());

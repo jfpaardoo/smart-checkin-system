@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FaUsers, FaBuilding, FaGraduationCap, FaQrcode, FaSignOutAlt, FaUserShield, FaUser, FaBookOpen, FaChartLine, FaIdCard, FaUserPlus, FaSignInAlt, FaShieldAlt, FaCloudUploadAlt, FaBars, FaTimes, FaCheck, FaBell, FaHeadset, FaMobileAlt } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
@@ -18,14 +18,14 @@ const swrFetcher = (url) => api.get(url).then((res) => res.data);
 
 const prefetchRouteData = (route) => {
     if (route === '/users') {
-        preload('/users', swrFetcher);
-        preload('/users/pending', swrFetcher);
+        void preload('/users', swrFetcher);
+        void preload('/users/pending', swrFetcher);
     } else if (route === '/companies') {
-        preload('/companies', swrFetcher);
+        void preload('/companies', swrFetcher);
     } else if (route === '/formations') {
-        preload('/formations', swrFetcher);
+        void preload('/formations', swrFetcher);
     } else if (route === '/audit') {
-        preload('/audit', swrFetcher);
+        void preload('/audit', swrFetcher);
     }
 };
 
@@ -149,7 +149,7 @@ function UserDropdownMenu({ isOpen, toggleMenu, closeAll, username, t, onOpenSup
                             className="da-nav-dropdown-item w-full text-left bg-transparent border-0 cursor-pointer"
                             onClick={() => {
                                 closeAll();
-                                executeOrOpenInstall();
+                                void executeOrOpenInstall();
                             }}
                         >
                             <FaMobileAlt className="text-[#8a9e22] dark:text-[#d4e84a]" /> {t('pwa.menuInstall', 'Instalar Aplicación')}
@@ -194,7 +194,7 @@ function PublicNavLinks({ t, onOpenSupport }) {
 
 function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggleMobileLang, currentLangCode, closeAll, t, i18n, onOpenSupport }) {
     return (
-        <div className={`md:hidden transition-all duration-500 ease-in-out w-full rounded-b-[40px] ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[85vh] opacity-100 bg-white/10 dark:bg-slate-900/30 backdrop-blur-2xl border-t border-white/40 dark:border-white/10 overflow-y-auto'}`}>
+        <div className={`md:hidden transition-all duration-500 ease-in-out w-full rounded-b-[40px] ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[calc(100dvh-5.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] opacity-100 bg-white/10 dark:bg-slate-900/30 backdrop-blur-2xl border-t border-white/40 dark:border-white/10 overflow-y-auto'}`}>
             <div className="px-6 pt-4 pb-8 space-y-2">
                 {roles.includes("ADMIN") && (
                     <div className="py-2 border-b border-slate-300/40 dark:border-white/10 mb-3">
@@ -231,7 +231,7 @@ function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggl
                                     className="da-nav-dropdown-item w-full text-left bg-transparent border-0 cursor-pointer"
                                     onClick={() => {
                                         closeAll();
-                                        executeOrOpenInstall();
+                                        void executeOrOpenInstall();
                                     }}
                                 >
                                     <FaMobileAlt className="text-[#8a9e22] dark:text-[#d4e84a]" /> {t('pwa.menuInstall', 'Instalar Aplicación')}
@@ -261,7 +261,7 @@ function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggl
                                         className="da-nav-dropdown-item w-full text-left bg-transparent border-0 cursor-pointer"
                                         onClick={() => {
                                             closeAll();
-                                            executeOrOpenInstall();
+                                            void executeOrOpenInstall();
                                         }}
                                     >
                                         <FaMobileAlt className="text-[#8a9e22] dark:text-[#d4e84a]" /> {t('pwa.menuInstall', 'Instalar Aplicación')}
@@ -313,7 +313,7 @@ function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggl
 function MobileNotificationDrawer({ isOpen, t }) {
     const { notifications, clearAll } = useNotifications();
     return (
-        <div className={`md:hidden transition-all duration-500 ease-in-out w-full rounded-b-[40px] ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[75vh] opacity-100 bg-white/10 dark:bg-slate-900/30 backdrop-blur-2xl border-t border-white/40 dark:border-white/10 overflow-y-auto shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]'}`}>
+        <div className={`md:hidden transition-all duration-500 ease-in-out w-full rounded-b-[40px] ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[calc(100dvh-5.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] opacity-100 bg-white/10 dark:bg-slate-900/30 backdrop-blur-2xl border-t border-white/40 dark:border-white/10 overflow-y-auto shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]'}`}>
             <div className="px-6 pt-3 pb-6">
                 <div className="flex justify-between items-center pb-2 border-b border-slate-300/40 dark:border-white/10 mb-3">
                     <span className="text-[11px] font-extrabold text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-1.5">
@@ -367,6 +367,7 @@ export default function AppNavbar() {
     const [openMenu, setOpenMenu] = useState(null);
     const [mobileLangOpen, setMobileLangOpen] = useState(false);
     const [isSupportOpen, setIsSupportOpen] = useState(false);
+    const navRef = useRef(null);
 
     const currentLangCode = i18n.resolvedLanguage || 'es';
 
@@ -390,15 +391,16 @@ export default function AppNavbar() {
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (!event.target.closest('.da-nav-dropdown-container') &&
-                !event.target.closest('.notif-dropdown-container') &&
-                !event.target.closest('.lang-switcher-container') &&
-                !event.target.closest('.mobile-menu-btn')) {
+            if (navRef.current && !navRef.current.contains(event.target)) {
                 closeAll();
             }
         };
         document.addEventListener('click', handleClickOutside);
-        return () => document.removeEventListener('click', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside, { passive: true });
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
     }, []);
 
     const isAdminOpen = openMenu === 'admin';
@@ -410,7 +412,10 @@ export default function AppNavbar() {
 
     return (
         <>
-            <nav className={`sticky top-3 z-40 mx-auto w-[calc(100%-24px)] md:w-[calc(100%-48px)] max-w-[1440px] mb-6 sm:mb-8 rounded-[40px] bg-white/35 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/60 dark:border-white/10 border-t-white/80 dark:border-t-white/15 shadow-[0_12px_40px_rgba(15,23,42,0.07),inset_0_1px_1.5px_rgba(255,255,255,0.85)] dark:shadow-[0_15px_35px_rgba(0,0,0,0.35),inset_0_1px_1px_rgba(255,255,255,0.06)] transition-all duration-300 ${isMobileDrawerOpen ? 'overflow-hidden md:overflow-visible' : 'md:overflow-visible'}`}>
+            <nav
+                ref={navRef}
+                className={`sticky z-40 mx-auto w-[calc(100%-24px)] md:w-[calc(100%-48px)] max-w-[1440px] mb-6 sm:mb-8 rounded-[40px] bg-white/35 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/60 dark:border-white/10 border-t-white/80 dark:border-t-white/15 shadow-[0_12px_40px_rgba(15,23,42,0.07),inset_0_1px_1.5px_rgba(255,255,255,0.85)] dark:shadow-[0_15px_35px_rgba(0,0,0,0.35),inset_0_1px_1px_rgba(255,255,255,0.06)] transition-all duration-300 da-navbar-sticky ${isMobileDrawerOpen ? 'overflow-hidden md:overflow-visible' : 'md:overflow-visible'}`}
+            >
                 <div className="w-full px-3.5 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-[58px] sm:h-[64px]">
                         <div className="flex items-center min-w-0 flex-1">
@@ -485,6 +490,7 @@ export default function AppNavbar() {
                             <button type="button"
                                 onClick={(e) => toggleMenu('menu', e)}
                                 aria-label={t('nav.toggleMenu', 'Toggle navigation')}
+                                aria-expanded={isNavMobileOpen}
                                 className="mobile-menu-btn p-2 rounded-[20px] text-slate-700 dark:text-white hover:bg-white/40 dark:hover:bg-white/20 focus:outline-none transition-colors"
                             >
                                 {!isNavMobileOpen ? <FaBars className="h-5 w-5 sm:h-6 sm:w-6" /> : <FaTimes className="h-5 w-5 sm:h-6 sm:w-6" />}
