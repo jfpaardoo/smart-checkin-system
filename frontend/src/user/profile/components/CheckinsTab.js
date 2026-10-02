@@ -4,7 +4,7 @@ import { TableGhostLoader } from "../../../components/GhostLoader";
 import GlassPagination from "../../../components/GlassPagination";
 import GlassEmptyState from "../../../components/GlassEmptyState";
 import api from "../../../services/api";
-import { formatDate } from "../../../utils/dateUtils";
+import { formatDate } from "../../../util/dateUtils";
 
 export default function CheckinsTab({ t }) {
   const [checkins, setCheckins] = useState([]);
@@ -23,7 +23,7 @@ export default function CheckinsTab({ t }) {
         },
       });
 
-      if (res.data && res.data.content && Array.isArray(res.data.content)) {
+      if (Array.isArray(res.data?.content)) {
         setCheckins(res.data.content);
         setTotalElements(res.data.totalElements || 0);
       } else if (Array.isArray(res.data)) {
@@ -42,7 +42,7 @@ export default function CheckinsTab({ t }) {
   }, [currentPage, pageSize]);
 
   useEffect(() => {
-    fetchCheckins();
+    void fetchCheckins();
   }, [fetchCheckins]);
 
   if (loading && checkins.length === 0) {

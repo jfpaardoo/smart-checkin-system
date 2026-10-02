@@ -63,23 +63,23 @@ export default function ForgotPassword() {
         
         <div className="w-full max-w-md bg-white/70 dark:bg-slate-900/75 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.45)] rounded-[32px] p-6 md:p-8 border border-white/60 dark:border-white/10">
           <p className="mb-6 text-sm text-center text-slate-600 dark:text-slate-300 font-medium">
-            {t('recover.forgotSubtitle', 'Introduce tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.')}
+            {t('recover.forgotSubtitle', 'Introduce tu usuario o correo electrónico y te enviaremos un enlace para restablecer tu contraseña.')}
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             
-            {/* Input Correo */}
+            {/* Input Usuario o Correo */}
             <div className="flex flex-col w-full text-left">
               <label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5 ml-1">
-                {t('recover.emailLabel', 'Correo Electrónico')} <span className="text-rose-500">*</span>
+                {t('recover.emailLabel', 'Usuario o Correo Electrónico')} <span className="text-rose-500">*</span>
               </label>
               <input
-                type="email"
+                type="text"
                 id="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="ejemplo@empresa.com"
+                placeholder={t('recover.emailPlaceholder', 'Introduce tu usuario o correo electrónico')}
                 disabled={loading}
                 className="w-full px-4 py-3 rounded-2xl border border-white/60 dark:border-white/10 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm focus:border-[#b3c34c] dark:focus:border-[#d4e84a] focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#b3c34c]/20 outline-none transition-all duration-200 text-slate-800 dark:text-slate-100 shadow-inner text-sm font-medium"
               />

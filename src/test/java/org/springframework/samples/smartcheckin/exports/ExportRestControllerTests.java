@@ -6,10 +6,17 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import static org.hamcrest.Matchers.containsString;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -408,9 +415,9 @@ class ExportRestControllerTests {
 
         when(attendanceRepository.findAll()).thenReturn(List.of(att));
 
-        try (org.mockito.MockedStatic<java.security.MessageDigest> mockedDigest = org.mockito.Mockito.mockStatic(java.security.MessageDigest.class, org.mockito.Mockito.CALLS_REAL_METHODS)) {
-            mockedDigest.when(() -> java.security.MessageDigest.getInstance("SHA-256"))
-                    .thenThrow(new java.security.NoSuchAlgorithmException("No SHA-256"));
+        try (MockedStatic<MessageDigest> mockedDigest = Mockito.mockStatic(MessageDigest.class, Mockito.CALLS_REAL_METHODS)) {
+            mockedDigest.when(() -> MessageDigest.getInstance("SHA-256"))
+                    .thenThrow(new NoSuchAlgorithmException("No SHA-256"));
 
             mockMvc.perform(get(BASE_URL + FORMATIONS_CSV))
                     .andExpect(status().isOk());
@@ -460,7 +467,7 @@ class ExportRestControllerTests {
         comp.setId(5);
         user.setCompany(comp);
         attendance.setUser(user);
-        formation.setAttendances(new java.util.ArrayList<>(List.of(attendance)));
+        formation.setAttendances(new ArrayList<>(List.of(attendance)));
 
         when(formationRepository.findAll()).thenReturn(List.of(formation));
 
@@ -534,23 +541,31 @@ class ExportRestControllerTests {
     @Test
     @WithMockUser(authorities = {"ADMIN"})
     void shouldExportOfficialFormationSheetSuccessfully() throws Exception {
-        when(formationRepository.findById(1)).thenReturn(java.util.Optional.of(formation));
+        when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
         when(officialFormationSheetService.generateOfficialSheet(any())).thenReturn(new byte[]{1, 2, 3});
 
         mockMvc.perform(get(BASE_URL + "/formations/1/official-sheet"))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("FOR_99 HRS.xls")));
+                .andExpect(header().string("Content-Disposition", containsString("FOR_99 HRS.xls")));
+
+        verify(cloudStorageAdapter).uploadOfficialSheet(any(), anyString(), anyString());
+        verify(cloudStorageAdapter, never()).uploadFile(any(), anyString());
+        verify(formationRepository, never()).save(any());
     }
 
     @Test
     @WithMockUser(authorities = {"ADMIN"})
     void shouldExportOfficialFormationSheetPdfSuccessfully() throws Exception {
-        when(formationRepository.findById(1)).thenReturn(java.util.Optional.of(formation));
+        when(formationRepository.findById(1)).thenReturn(Optional.of(formation));
         when(officialFormationSheetService.generateOfficialSheetPdf(any())).thenReturn(new byte[]{37, 80, 68, 70});
 
         mockMvc.perform(get(BASE_URL + "/formations/1/official-sheet").param("format", "pdf"))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("FOR_99 HRS.pdf")));
+                .andExpect(header().string("Content-Disposition", containsString("FOR_99 HRS.pdf")));
+
+        verify(cloudStorageAdapter).uploadOfficialSheet(any(), anyString(), anyString());
+        verify(cloudStorageAdapter, never()).uploadFile(any(), anyString());
+        verify(formationRepository, never()).save(any());
     }
 }
 

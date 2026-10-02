@@ -1,7 +1,10 @@
 package org.springframework.samples.smartcheckin.formation;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
@@ -21,9 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.samples.smartcheckin.notification.WebhookIntegrationService;
 import org.springframework.samples.smartcheckin.totp.TotpService;
-import org.jpatterns.gof.SingletonPattern;
+
 @Service
-@SingletonPattern.Singleton
 @SuppressWarnings("null")
 public class FormationService {
 
@@ -351,10 +353,10 @@ public class FormationService {
 
         if (file != null && !file.isEmpty()) {
             if (toUpdate.getDocumentUrls() == null) {
-                toUpdate.setDocumentUrls(new java.util.ArrayList<>());
+                toUpdate.setDocumentUrls(new ArrayList<>());
             }
 
-            for (String oldUrl : new java.util.ArrayList<>(toUpdate.getDocumentUrls())) {
+            for (String oldUrl : new ArrayList<>(toUpdate.getDocumentUrls())) {
                 try {
                     cloudStorageAdapter.deleteFile(oldUrl);
                 } catch (Exception e) {
@@ -489,5 +491,11 @@ public class FormationService {
         }
 
         formationRepository.delete(formation);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Formation> findActiveFormationsForToday() {
+        LocalDate today = LocalDate.now(ZoneId.systemDefault());
+        return formationRepository.findActiveFormationsForDateRange(FormationStatus.PUBLISHED, today.atStartOfDay(), today.atTime(LocalTime.MAX));
     }
 }

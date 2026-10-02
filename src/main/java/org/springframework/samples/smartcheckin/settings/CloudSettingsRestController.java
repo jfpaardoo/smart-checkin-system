@@ -12,10 +12,15 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
 import java.util.UUID;
 
@@ -85,22 +90,22 @@ public class CloudSettingsRestController {
 
     @GetMapping("/oauth/authorize-url")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<Map<String, String>> getAuthUrl(jakarta.servlet.http.HttpServletRequest request) {
+    public ResponseEntity<Map<String, String>> getAuthUrl(HttpServletRequest request) {
         String redirectUri = getDynamicRedirectUri(request);
         String frontendReturnUrl = getDynamicFrontendUrl(request);
         
         // Encode state with a UUID and base64 frontend return URL so callback redirects to correct host
-        String encodedFrontend = java.util.Base64.getUrlEncoder().withoutPadding()
-                .encodeToString(frontendReturnUrl.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        String encodedFrontend = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString(frontendReturnUrl.getBytes(StandardCharsets.UTF_8));
         String state = UUID.randomUUID().toString() + "::" + encodedFrontend;
         
         String url = "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize" +
                 "?client_id=" + azureClientId +
                 "&response_type=code" +
-                "&redirect_uri=" + java.net.URLEncoder.encode(redirectUri, java.nio.charset.StandardCharsets.UTF_8) +
+                "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
                 "&response_mode=query" +
-                "&scope=" + java.net.URLEncoder.encode("offline_access Files.ReadWrite", java.nio.charset.StandardCharsets.UTF_8) +
-                "&state=" + java.net.URLEncoder.encode(state, java.nio.charset.StandardCharsets.UTF_8);
+                "&scope=" + URLEncoder.encode("offline_access Files.ReadWrite", StandardCharsets.UTF_8) +
+                "&state=" + URLEncoder.encode(state, StandardCharsets.UTF_8);
                 
         return ResponseEntity.ok(Map.of("url", url));
     }
@@ -108,7 +113,7 @@ public class CloudSettingsRestController {
     @GetMapping("/oauth/callback")
     public void oauthCallback(@RequestParam String code, 
                               @RequestParam(required = false) String state, 
-                              jakarta.servlet.http.HttpServletRequest request,
+                              HttpServletRequest request,
                               HttpServletResponse response) throws IOException {
         
         RestTemplate restTemplate = new RestTemplate();
@@ -222,7 +227,7 @@ public class CloudSettingsRestController {
             String referer = request.getHeader("Referer");
             if (referer != null && !referer.isBlank()) {
                 try {
-                    java.net.URI uri = new java.net.URI(referer);
+                    URI uri = new URI(referer);
                     return trimTrailingSlash(uri.getScheme() + "://" + uri.getAuthority()) + frontendSettingsPath;
                 } catch (Exception e) {
                     log.debug("Referer header parsing skipped: {}", e.getMessage());
@@ -236,13 +241,13 @@ public class CloudSettingsRestController {
         return trimTrailingSlash(frontendUrl) + frontendSettingsPath;
     }
 
-    private String resolveFrontendUrlFromState(String state, jakarta.servlet.http.HttpServletRequest request) {
+    private String resolveFrontendUrlFromState(String state, HttpServletRequest request) {
         if (state != null && state.contains("::")) {
             try {
                 String[] parts = state.split("::", 2);
                 if (parts.length > 1 && !parts[1].isBlank()) {
-                    byte[] decoded = java.util.Base64.getUrlDecoder().decode(parts[1]);
-                    String url = new String(decoded, java.nio.charset.StandardCharsets.UTF_8);
+                    byte[] decoded = Base64.getUrlDecoder().decode(parts[1]);
+                    String url = new String(decoded, StandardCharsets.UTF_8);
                     if (url.startsWith("http://") || url.startsWith("https://")) {
                         return url;
                     }

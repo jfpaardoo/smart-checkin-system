@@ -5,12 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.samples.smartcheckin.util.HashUtils;
 
 @Slf4j
 @Service
@@ -36,7 +35,7 @@ public class UserSessionService {
 
     private void updateExistingSession(List<UserSession> existingList, String ipAddress) {
         UserSession session = existingList.get(0);
-        session.setLastActivityAt(LocalDateTime.now(java.time.ZoneId.systemDefault()));
+        session.setLastActivityAt(LocalDateTime.now(ZoneId.systemDefault()));
         session.setIpAddress(ipAddress);
         session.setActive(true);
         userSessionRepository.save(session);
@@ -58,7 +57,7 @@ public class UserSessionService {
                 .ipAddress(ipAddress)
                 .userAgent(userAgent != null ? userAgent.substring(0, Math.min(userAgent.length(), 500)) : "Desconocido")
                 .deviceInfo(deviceInfo)
-                .lastActivityAt(LocalDateTime.now(java.time.ZoneId.systemDefault()))
+                .lastActivityAt(LocalDateTime.now(ZoneId.systemDefault()))
                 .active(true)
                 .build();
         userSessionRepository.save(newSession);
@@ -82,7 +81,7 @@ public class UserSessionService {
     public List<UserSessionDTO> getActiveSessions(String username, String currentToken) {
         String currentTokenHash = currentToken != null ? hashToken(currentToken) : "";
         List<UserSession> sessions = userSessionRepository.findAllByUsernameAndActiveTrueOrderByLastActivityAtDesc(username);
-        LocalDateTime expirationCutoff = LocalDateTime.now(java.time.ZoneId.systemDefault()).minusHours(24);
+        LocalDateTime expirationCutoff = LocalDateTime.now(ZoneId.systemDefault()).minusHours(24);
 
         return sessions.stream()
                 .filter(s -> {
@@ -164,23 +163,17 @@ public class UserSessionService {
     }
 
     public static String hashToken(String token) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] digest = md.digest(token.getBytes(StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder();
-            for (byte b : digest) {
-                sb.append(String.format("%02x", b));
-            }
-            return sb.toString();
-        } catch (NoSuchAlgorithmException e) {
-            return String.valueOf(token.hashCode());
+        if (token == null) {
+            return "";
         }
+        String hash = HashUtils.generateHash(token);
+        return "HASH_GENERATION_FAILED".equals(hash) ? String.valueOf(token.hashCode()) : hash;
     }
 
     public static String parseDeviceInfo(String userAgent) {
         if (userAgent == null || userAgent.isBlank()) return "Dispositivo Desconocido";
         String ua = userAgent.toLowerCase();
-        return String.format("%s en %s", detectBrowser(ua), detectOs(ua));
+        return detectBrowser(ua) + " en " + detectOs(ua);
     }
 
     private static String detectBrowser(String ua) {

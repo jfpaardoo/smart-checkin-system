@@ -12,6 +12,7 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -51,7 +52,7 @@ class WebSocketConfigTests {
         when(endpointRegistration.setAllowedOriginPatterns(any())).thenReturn(endpointRegistration);
 
         webSocketConfig.registerStompEndpoints(stompEndpointRegistry);
-        verify(stompEndpointRegistry, org.mockito.Mockito.atLeastOnce()).addEndpoint("/ws");
+        verify(stompEndpointRegistry, atLeastOnce()).addEndpoint("/ws");
     }
 
     @Test

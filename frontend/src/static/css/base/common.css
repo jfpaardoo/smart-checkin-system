@@ -1633,7 +1633,7 @@ select:focus {
 
 
 
-/* Fondos blancos puros en cards de Bootstrap */
+/* Fondos en tarjetas de panel en modo oscuro */
 .dark .card {
   background: rgba(20,30,50,0.80) !important;
   border-color: rgba(255,255,255,0.08) !important;
@@ -1648,7 +1648,7 @@ select:focus {
 }
 
 /* ==========================================
-   BOOTSTRAP CLASS OVERRIDES IN DARK MODE
+   GLOBAL UTILITY OVERRIDES IN DARK MODE
    ========================================== */
 
 .dark .text-dark {

@@ -1,5 +1,6 @@
 package org.springframework.samples.smartcheckin.checkin;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -25,6 +26,8 @@ import org.springframework.samples.smartcheckin.formation.FormationService;
 import org.springframework.samples.smartcheckin.formation.FormationStatus;
 import org.springframework.samples.smartcheckin.storage.SignatureStorageService;
 import org.springframework.samples.smartcheckin.totp.TotpService;
+import org.springframework.samples.smartcheckin.company.Company;
+import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
 import org.springframework.samples.smartcheckin.notification.NotificationContext;
@@ -87,6 +90,16 @@ class CheckinRestControllerTests {
 		user.setUsername("user1");
 		user.setIsWorking(false);
 
+		Company company = new Company();
+		company.setLatitude(40.0);
+		company.setLongitude(-3.0);
+		company.setRadiusMeters(50);
+		user.setCompany(company);
+
+		Authorities adminAuth = new Authorities();
+		adminAuth.setAuthority("ADMIN");
+		user.setAuthority(adminAuth);
+
 		checkin = new Checkin();
 		checkin.setId(10);
 		checkin.setUser(user);
@@ -105,7 +118,7 @@ class CheckinRestControllerTests {
 	}
 
 	@Test
-	@WithMockUser
+	@WithMockUser(authorities = "ADMIN")
 	void checkIn() throws Exception {
 		when(userService.findCurrentUser()).thenReturn(user);
 		when(checkInService.performCheckIn(user, CheckinType.ENTRADA)).thenReturn(checkin);
@@ -115,6 +128,43 @@ class CheckinRestControllerTests {
 
 		mockMvc.perform(post(BASE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req))).andExpect(status().isCreated());
+	}
+
+	@Test
+	@WithMockUser(authorities = "USER")
+	void checkInForbiddenForRegularUser() throws Exception {
+		User regularUser = new User();
+		regularUser.setId(2);
+		Authorities userAuth = new Authorities();
+		userAuth.setAuthority("USER");
+		regularUser.setAuthority(userAuth);
+		when(userService.findCurrentUser()).thenReturn(regularUser);
+
+		CheckinRequest req = new CheckinRequest();
+		req.setCheckInType(CheckinType.ENTRADA);
+
+		mockMvc.perform(post(BASE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req))).andExpect(status().isForbidden());
+	}
+
+	@Test
+	@WithMockUser
+	void qrCheckinClientAdminCoordsIgnoredWhenFarFromCompany() throws Exception {
+		when(userService.findCurrentUser()).thenReturn(user);
+		when(totpService.verifyToken(DEFAULT_QR_TOKEN)).thenReturn(true);
+
+		// Malicious client claims they are at (28, -15) and sets adminLat/adminLng to match
+		QrCheckinRequest req = new QrCheckinRequest();
+		req.setToken(DEFAULT_QR_TOKEN);
+		req.setUserLat(28.0);
+		req.setUserLng(-15.0);
+		req.setAdminLat(28.0);
+		req.setAdminLng(-15.0);
+
+		mockMvc.perform(post(BASE_URL + QR_FICHAJE_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(req)))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath(JSON_PATH_MESSAGE).value(containsString("Demasiado lejos")));
 	}
 
 	@Test
@@ -543,6 +593,7 @@ class CheckinRestControllerTests {
 	@Test
 	@WithMockUser
 	void qrCheckinMissingAdminLocationForbidden() throws Exception {
+		user.setCompany(null);
 		when(userService.findCurrentUser()).thenReturn(user);
 		when(formationService.findAll()).thenReturn(List.of());
 		when(totpService.verifyToken(DEFAULT_QR_TOKEN)).thenReturn(true);
@@ -593,5 +644,51 @@ class CheckinRestControllerTests {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req)))
 				.andExpect(status().isCreated());
+	}
+
+	@Test
+	@WithMockUser
+	void offlineBatchCheckinSuccess() throws Exception {
+		when(userService.findCurrentUser()).thenReturn(user);
+		Checkin offlineCheckin = new Checkin();
+		offlineCheckin.setId(101);
+		offlineCheckin.setUser(user);
+		offlineCheckin.setIsOffline(true);
+		offlineCheckin.setCheckInType(CheckinType.ENTRADA);
+
+		CheckinResponseDTO dto = CheckinResponseDTO.fromEntity(offlineCheckin);
+		when(checkInService.processOfflineBatch(eq(user), anyList()))
+				.thenReturn(List.of(dto));
+
+		OfflineCheckinRequest item = OfflineCheckinRequest.builder()
+				.userLat(40.4168)
+				.userLng(-3.7038)
+				.signature("data:image/png;base64,dummy")
+				.offlineTimestamp(LocalDateTime.now())
+				.qrHash("hash_val_12345678")
+				.checkInType(CheckinType.ENTRADA)
+				.build();
+
+		when(signatureStorageService.saveSignature(anyString(), anyString())).thenReturn("sig_offline.png");
+
+		mockMvc.perform(post(BASE_URL + "/offline-batch")
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(List.of(item))))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.count").value(1))
+				.andExpect(jsonPath("$.checkins[0].id").value(101));
+	}
+
+	@Test
+	@WithMockUser
+	void offlineBatchCheckinEmptyListReturnsBadRequest() throws Exception {
+		when(userService.findCurrentUser()).thenReturn(user);
+
+		mockMvc.perform(post(BASE_URL + "/offline-batch")
+				.with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(List.of())))
+				.andExpect(status().isBadRequest());
 	}
 }

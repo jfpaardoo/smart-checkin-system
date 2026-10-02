@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import getIdFromUrl from "../../util/getIdFromUrl";
 import { CardGhostLoader } from "../../components/GhostLoader";
-import { getFileIconAndType, getCleanFileInfo } from "../../utils/fileUtils";
+import { getFileIconAndType, getCleanFileInfo } from "../../util/fileUtils";
 import SecureImage from "../../components/SecureImage";
 import { useToast } from "../../components/ToastProvider";
 import GlassButton from "../../components/GlassButton";

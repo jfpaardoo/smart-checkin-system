@@ -6,7 +6,7 @@ import { calendarSyncManager, isMobileDevice } from "../services/calendar/Calend
 import { useToast } from "./ToastProvider";
 import GlassModal from "./GlassModal";
 import GlassButton from "./GlassButton";
-import { formatDate } from "../utils/dateUtils";
+import { formatDate } from "../util/dateUtils";
 
 function StrategyOptionButton({ strat, isRecommended, isLoading, onSync }) {
   const IconComponent = strat.icon;
@@ -72,7 +72,7 @@ export default function CalendarSyncDropdown({
   const handleMainButtonClick = () => {
     if (isMobileDevice()) {
       // En móvil (iPhone/Android), añade automáticamente a la app nativa instalada por defecto
-      handleSync(recommendedId);
+      void handleSync(recommendedId);
     } else {
       // En ordenador, abre el selector de plataformas web (Outlook, Google, 365, etc.)
       setIsOpen(true);

@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faBuilding } from '@fortawesome/free-solid-svg-icons';
-import { formatDuration } from '../../../util/dateTimeUtil';
+import { formatDuration } from '../../../util/dateUtils';
 import MobileSortBar from '../../../components/MobileSortBar';
 
 const getAttendanceColorClass = (percentage) => {

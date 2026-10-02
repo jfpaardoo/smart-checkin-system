@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.samples.smartcheckin.company.Company;
 import org.springframework.samples.smartcheckin.formation.Formation;
 import org.springframework.samples.smartcheckin.formation.FormationAttendance;
 import org.springframework.samples.smartcheckin.user.User;
@@ -224,5 +225,38 @@ class CertificateGeneratorServiceTests {
         assertNotNull(pdfBytes);
         assertTrue(pdfBytes.length > 0);
         verify(signatureStorageService, times(1)).loadSignature(NULL_SIGNATURE);
+    }
+
+    @Test
+    void testGenerateCertificatePdfWithCompleteMetadataAndTrainerSignature() {
+        Company company = new Company();
+        company.setName("BA Glass Spain SAU");
+
+        User user = new User();
+        user.setFirstName("María");
+        user.setLastName("García López");
+        user.setPersonalCode("0042");
+        user.setLocator("LOC-9876");
+        user.setCompany(company);
+
+        Formation formation = new Formation();
+        formation.setName("Prevención de Riesgos Laborales en Planta");
+        formation.setDescription("Módulo avanzado de seguridad operativa en hornos y líneas de envasado.");
+        formation.setLocation("BA Glass Villafranca");
+        formation.setTrainer("Víctor Pardo");
+        String fakeTrainerSig = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+        formation.setTrainerSignature(fakeTrainerSig);
+
+        FormationAttendance attendance = new FormationAttendance();
+        attendance.setUser(user);
+        attendance.setFormation(formation);
+        attendance.setCheckInDate(LocalDateTime.of(2026, Month.SEPTEMBER, 15, 9, 0));
+        attendance.setCheckOutDate(LocalDateTime.of(2026, Month.SEPTEMBER, 15, 13, 30));
+        attendance.setSignature(fakeTrainerSig);
+
+        byte[] pdfBytes = certificateGeneratorService.generateCertificatePdf(attendance);
+
+        assertNotNull(pdfBytes);
+        assertTrue(pdfBytes.length > 0);
     }
 }

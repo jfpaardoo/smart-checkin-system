@@ -77,4 +77,3 @@ export const getCleanFileInfo = (item) => {
     return { name: "Documento Adjunto", url: item, icon: faFile, color: '#95a5a6', type: 'other' };
   }
 };
-

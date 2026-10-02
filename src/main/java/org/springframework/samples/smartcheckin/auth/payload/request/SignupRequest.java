@@ -20,7 +20,7 @@ public class SignupRequest {
     private String email;
 
     @NotBlank
-    @Size(min = 6, max = 100)
+    @Size(min = 12, max = 100, message = "La contraseña debe tener al menos 12 caracteres")
     private String password;
 
     @NotBlank

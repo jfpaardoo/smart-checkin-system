@@ -16,7 +16,7 @@ import GlassModal from '../../../components/GlassModal';
 import GlassButton from '../../../components/GlassButton';
 import { useToast } from '../../../components/ToastProvider';
 import api from '../../../services/api';
-import { formatDate } from '../../../utils/dateUtils';
+import { formatDate } from '../../../util/dateUtils';
 
 export default function PublishFormationModal({ isOpen, onClose, formation, onPublishSuccess }) {
   const { t } = useTranslation();

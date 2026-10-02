@@ -20,15 +20,13 @@ import java.io.IOException;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.jpatterns.gof.AdapterPattern;
-
 @Service
-@AdapterPattern.Adapter
 @Slf4j
 @SuppressWarnings("null")
 public class OneDriveAdapterImpl implements CloudStorageAdapter {
 
     private static final String SAFE_CHARS_REGEX = "[\\\\/:*?\"<>|~#%&{}]";
+    private static final String FOLDER_GENERAL = "general";
 
     private final CloudSettingsService cloudSettingsService;
     private final RestTemplate restTemplate = new RestTemplate();
@@ -82,9 +80,9 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
         String originalFilename = file.getOriginalFilename();
         String safeFileName = originalFilename != null ? originalFilename.replaceAll(SAFE_CHARS_REGEX, "_") : "file";
 
-        String cleanFolderName = folderName != null ? folderName.replaceAll(SAFE_CHARS_REGEX, "_").trim() : "general";
+        String cleanFolderName = folderName != null ? folderName.replaceAll(SAFE_CHARS_REGEX, "_").trim() : FOLDER_GENERAL;
         if (cleanFolderName.isEmpty()) {
-            cleanFolderName = "general";
+            cleanFolderName = FOLDER_GENERAL;
         }
 
         String uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/ba/formations/{folder}/documents/{filename}:/content";
@@ -198,6 +196,42 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
             throw new IllegalStateException("Empty or invalid response from OneDrive upload endpoint");
         }
         return (String) bodyRes.get("id"); // Returns itemId for storage reference
+    }
+
+    @Override
+    public String uploadOfficialSheet(byte[] data, String fileName, String folderName) throws IOException {
+        CloudSettings settings = cloudSettingsService.getSettings();
+        if (settings == null || settings.getOneDriveClientId() == null) {
+            throw new IllegalStateException("OneDrive credentials not configured");
+        }
+
+        String accessToken = getAccessToken(settings);
+        String safeFileName = fileName != null ? fileName.replaceAll(SAFE_CHARS_REGEX, "_") : "official_sheet.xlsx";
+
+        String cleanFolderName = folderName != null ? folderName.replaceAll(SAFE_CHARS_REGEX, "_").trim() : FOLDER_GENERAL;
+        if (cleanFolderName.isEmpty()) {
+            cleanFolderName = FOLDER_GENERAL;
+        }
+
+        // Se archiva en la carpeta administrativa aislada 'official_sheets' de la formación, sin enlace público anónimo
+        String uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/ba/formations/{folder}/official_sheets/{filename}:/content";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+
+        HttpEntity<byte[]> request = new HttpEntity<>(data, headers);
+
+        ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
+
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                uploadUrl, HttpMethod.PUT, request, responseType, cleanFolderName, safeFileName);
+
+        Map<String, Object> bodyRes = response.getBody();
+        if (bodyRes == null || !bodyRes.containsKey("id")) {
+            throw new IllegalStateException("Empty or invalid response from OneDrive upload endpoint");
+        }
+        return (String) bodyRes.get("id");
     }
 
     @Override

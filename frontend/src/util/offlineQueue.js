@@ -35,6 +35,8 @@ export async function saveOfflineCheckin(checkinPayload) {
       const store = tx.objectStore(STORE_NAME);
       const entry = {
         ...checkinPayload,
+        // Generate a stable UUID at queue time for server-side idempotency on retry
+        offlineEventId: checkinPayload.offlineEventId || crypto.randomUUID(),
         queuedAt: new Date().toISOString()
       };
       const req = store.add(entry);
@@ -127,6 +129,49 @@ function notifySyncResult(syncedCount, toast, t) {
   }
 }
 
+async function syncBatchCheckins(api, pending, toast, t) {
+  const batchRequests = pending.map(item => {
+    let offlineTimestamp = null;
+    if (item.queuedAt) {
+      // Remove timezone suffix if present for Java LocalDateTime parsing compatibility
+      offlineTimestamp = item.queuedAt.split('.')[0];
+    } else {
+      offlineTimestamp = new Date().toISOString().split('.')[0];
+    }
+
+    // Ensure each item has a stable offlineEventId for server-side idempotency.
+    // We store it in IndexedDB when first queuing so retries send the same UUID.
+    const offlineEventId = item.offlineEventId || crypto.randomUUID();
+
+    return {
+      userLat: item.userLat != null ? item.userLat : 0.0,
+      userLng: item.userLng != null ? item.userLng : 0.0,
+      signature: item.signature || null,
+      offlineTimestamp,
+      qrHash: item.token || item.qrHash || '',
+      offlineEventId,
+      // checkInType is intentionally omitted — the server derives it from user state
+    };
+  });
+
+  try {
+    const res = await api.post('/checkins/offline-batch', batchRequests);
+    if (res.status === 200 || res.status === 201) {
+      await Promise.all(pending.map(item => removePendingCheckin(item.id)));
+      return pending.length;
+    }
+  } catch (batchErr) {
+    const status = batchErr?.response?.status;
+    if (status === 400 || status === 409) {
+      // Validation rejected: fall back to single item sync to isolate invalid items
+      handleSyncError(batchErr, toast, t);
+    } else {
+      console.warn('[OfflineQueue] Batch sync failed, falling back to sequential sync:', batchErr);
+    }
+  }
+  return null;
+}
+
 export async function syncOfflineCheckins(api, toast, t) {
   if (isSyncing || typeof navigator === 'undefined' || !navigator.onLine) {
     return;
@@ -137,11 +182,20 @@ export async function syncOfflineCheckins(api, toast, t) {
     const pending = await getPendingCheckins();
     if (!pending || pending.length === 0) return;
 
-    let syncedCount = 0;
-    for (const item of pending) {
-      const isSuccess = await syncSingleCheckin(api, item, toast, t);
-      if (isSuccess) syncedCount++;
+    // Attempt atomic batch sync first
+    const batchSynced = await syncBatchCheckins(api, pending, toast, t);
+    if (batchSynced !== null) {
+      notifySyncResult(batchSynced, toast, t);
+      return;
     }
+
+    // Fallback: sequential sync for remaining/individual items
+    const remainingPending = await getPendingCheckins();
+    const syncedCount = await remainingPending.reduce(async (prevPromise, item) => {
+      const count = await prevPromise;
+      const isSuccess = await syncSingleCheckin(api, item, toast, t);
+      return isSuccess ? count + 1 : count;
+    }, Promise.resolve(0));
 
     notifySyncResult(syncedCount, toast, t);
   } finally {
@@ -156,13 +210,19 @@ export function initOfflineSync(api, toast, t) {
   if (typeof window === 'undefined') return;
 
   const handleOnline = () => {
-    syncOfflineCheckins(api, toast, t);
+    void syncOfflineCheckins(api, toast, t).catch(err => {
+      console.error('[OfflineQueue] Sync failed:', err);
+    });
   };
 
   window.addEventListener('online', handleOnline);
   // Also attempt sync on initial load if online
   if (navigator.onLine) {
-    setTimeout(() => syncOfflineCheckins(api, toast, t), 2000);
+    setTimeout(() => {
+      void syncOfflineCheckins(api, toast, t).catch(err => {
+        console.error('[OfflineQueue] Sync failed:', err);
+      });
+    }, 2000);
   }
 
   return () => {

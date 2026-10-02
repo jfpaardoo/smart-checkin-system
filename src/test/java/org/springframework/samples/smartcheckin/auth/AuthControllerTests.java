@@ -40,8 +40,8 @@ import org.springframework.samples.smartcheckin.configuration.jwt.JwtUtils;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsImpl;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsServiceImpl;
 import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
-import org.springframework.samples.smartcheckin.notifications.EmailNotificationSender;
-import org.springframework.samples.smartcheckin.notifications.PushNotificationSender;
+import org.springframework.samples.smartcheckin.notification.EmailNotificationSender;
+import org.springframework.samples.smartcheckin.notification.PushNotificationSender;
 import org.springframework.samples.smartcheckin.totp.TotpService;
 import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.samples.smartcheckin.user.AuthoritiesService;
@@ -145,7 +145,7 @@ class AuthControllerTests {
 	@SuppressWarnings("java:S6813")
 	private MockMvc mockMvc;
 
-	private static final String PASSWORD = "password";
+	private static final String PASSWORD = "Password@1234";
 	private static final String USER1 = "user1";
 	private static final String SECRET = "SECRET";
 	private static final String SIGNIN_URL = BASE_URL + "/signin";
@@ -272,14 +272,17 @@ class AuthControllerTests {
 		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
 		req.setUsername(USER1);
 		req.setCode(VALID_TOTP_CODE);
+		req.setMfaToken("valid-mfa-token");
 
 		User user = new User();
 		user.setId(1);
 		user.setUsername(USER1);
 		user.setTwoFactorSecret(SECRET);
 
+		when(jwtUtils.validateMfaChallengeToken("valid-mfa-token")).thenReturn(true);
+		when(jwtUtils.getUserNameFromMfaToken("valid-mfa-token")).thenReturn(USER1);
 		when(userService.findUser(USER1)).thenReturn(user);
-		when(totpService.validateCode(SECRET, VALID_TOTP_CODE)).thenReturn(true);
+		when(totpService.validateCode(eq(SECRET), eq(VALID_TOTP_CODE), any())).thenReturn(true);
 		when(userDetailsService.loadUserByUsername(USER1)).thenReturn(userDetails);
 		when(jwtUtils.generateJwtCookie(any(Authentication.class))).thenReturn(ResponseCookie.from("jwt", MOCK_JWT_LITERAL).path("/api").maxAge(24 * 60 * 60).httpOnly(true).build());
 
@@ -294,17 +297,20 @@ class AuthControllerTests {
 		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
 		req.setUsername(USER1);
 		req.setCode("000000");
+		req.setMfaToken("valid-mfa-token");
 
 		User user = new User();
 		user.setUsername(USER1);
 		user.setTwoFactorSecret(SECRET);
 
+		when(jwtUtils.validateMfaChallengeToken("valid-mfa-token")).thenReturn(true);
+		when(jwtUtils.getUserNameFromMfaToken("valid-mfa-token")).thenReturn(USER1);
 		when(userService.findUser(USER1)).thenReturn(user);
-		when(totpService.validateCode(SECRET, "000000")).thenReturn(false);
+		when(totpService.validateCode(eq(SECRET), eq("000000"), any())).thenReturn(false);
 
 		mockMvc.perform(post(BASE_URL + VERIFY_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(req)))
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isUnauthorized());
 	}
 
 	@Test
@@ -510,12 +516,15 @@ class AuthControllerTests {
         TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
         req.setUsername("nonexistent");
         req.setCode(VALID_TOTP_CODE);
+        req.setMfaToken("valid-mfa-token");
 
+        when(jwtUtils.validateMfaChallengeToken("valid-mfa-token")).thenReturn(true);
+        when(jwtUtils.getUserNameFromMfaToken("valid-mfa-token")).thenReturn("nonexistent");
         when(userService.findUser("nonexistent")).thenThrow(new ResourceNotFoundException("User not found"));
 
         mockMvc.perform(post(BASE_URL + VERIFY_URL).with(csrf()).contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -523,6 +532,7 @@ class AuthControllerTests {
         TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
         req.setUsername(USER1);
         req.setCode(VALID_TOTP_CODE);
+        req.setMfaToken("valid-mfa-token");
 
         User user = new User();
         user.setId(1);
@@ -530,8 +540,10 @@ class AuthControllerTests {
         user.setTwoFactorSecret(SECRET);
         user.setFailedLoginAttempts(3);
 
+        when(jwtUtils.validateMfaChallengeToken("valid-mfa-token")).thenReturn(true);
+        when(jwtUtils.getUserNameFromMfaToken("valid-mfa-token")).thenReturn(USER1);
         when(userService.findUser(USER1)).thenReturn(user);
-        when(totpService.validateCode(SECRET, VALID_TOTP_CODE)).thenReturn(true);
+        when(totpService.validateCode(eq(SECRET), eq(VALID_TOTP_CODE), any())).thenReturn(true);
         when(userDetailsService.loadUserByUsername(USER1)).thenReturn(userDetails);
         when(jwtUtils.generateJwtCookie(any(Authentication.class))).thenReturn(ResponseCookie.from("jwt", MOCK_JWT_LITERAL).path("/api").maxAge(24 * 60 * 60).httpOnly(true).build());
 
@@ -719,7 +731,7 @@ class AuthControllerTests {
 
         SignupRequest req = new SignupRequest();
         req.setUsername("newuser");
-        req.setPassword("password");
+        req.setPassword("Password@1234");
         req.setEmail("new@example.com");
         req.setPersonalCode("1234");
         req.setFirstName("First");
@@ -739,7 +751,7 @@ class AuthControllerTests {
 
         SignupRequest req = new SignupRequest();
         req.setUsername("existingUser");
-        req.setPassword("password");
+        req.setPassword("Password@1234");
         req.setEmail("exist@example.com");
         req.setPersonalCode("1234");
         req.setFirstName("First");
@@ -767,7 +779,7 @@ class AuthControllerTests {
 
         SignupRequest req = new SignupRequest();
         req.setUsername("companyUser");
-        req.setPassword("password");
+        req.setPassword("Password@1234");
         req.setEmail("comp@example.com");
         req.setPersonalCode("1234");
         req.setFirstName("First");
@@ -797,7 +809,7 @@ class AuthControllerTests {
 
         SignupRequest req = new SignupRequest();
         req.setUsername("companyUser2");
-        req.setPassword("password");
+        req.setPassword("Password@1234");
         req.setEmail("comp2@example.com");
         req.setPersonalCode("1234");
         req.setFirstName("First");
@@ -818,17 +830,20 @@ class AuthControllerTests {
         TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
         req.setUsername("userNoSecret");
         req.setCode("123456");
+        req.setMfaToken("valid-mfa-token");
 
         User user = new User();
         user.setUsername("userNoSecret");
         user.setTwoFactorSecret(null);
 
+        when(jwtUtils.validateMfaChallengeToken("valid-mfa-token")).thenReturn(true);
+        when(jwtUtils.getUserNameFromMfaToken("valid-mfa-token")).thenReturn("userNoSecret");
         when(userService.findUser("userNoSecret")).thenReturn(user);
 
         mockMvc.perform(post(BASE_URL + VERIFY_URL).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Error: Código 2FA inválido o expirado."));
     }
 
@@ -889,11 +904,36 @@ class AuthControllerTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Si el correo está registrado en el sistema, recibirás un enlace de recuperación."));
+                .andExpect(jsonPath("$.message").value("Si el usuario o correo está registrado en el sistema, recibirás un enlace de recuperación."));
 
         verify(javaMailSender).send(any(org.springframework.mail.SimpleMailMessage.class));
     }
-    @Test
+
+    @Test
+    void testForgotPasswordWithUsernameSucceeds() throws Exception {
+        User user = new User();
+        user.setUsername("john");
+        user.setEmail("john@example.com");
+        user.setFirstName("John");
+        user.setIsApproved(true);
+
+        when(userService.findUser("john")).thenReturn(user);
+        when(passwordResetService.createOrUpdatePasswordResetToken(user)).thenReturn("resetToken123");
+
+        ForgotPasswordRequest req = new ForgotPasswordRequest();
+        req.setEmail("john");
+        req.setCaptchaToken("valid-token");
+
+        mockMvc.perform(post(BASE_URL + "/forgot-password").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Si el usuario o correo está registrado en el sistema, recibirás un enlace de recuperación."));
+
+        verify(javaMailSender, atLeastOnce()).send(any(org.springframework.mail.SimpleMailMessage.class));
+    }
+
+    @Test
     void testForgotPasswordUserNotFoundSilentlySucceeds() throws Exception {
         when(userService.findUser("unknown@example.com")).thenThrow(new ResourceNotFoundException("User not found"));
 
@@ -905,7 +945,7 @@ class AuthControllerTests {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Si el correo está registrado en el sistema, recibirás un enlace de recuperación."));
+                .andExpect(jsonPath("$.message").value("Si el usuario o correo está registrado en el sistema, recibirás un enlace de recuperación."));
 
         verifyNoInteractions(javaMailSender);
     }
@@ -1008,7 +1048,10 @@ class AuthControllerTests {
         TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
         req.setUsername("backupUser");
         req.setCode("ABCD-EFGH");
+        req.setMfaToken("valid-mfa-token");
 
+        when(jwtUtils.validateMfaChallengeToken("valid-mfa-token")).thenReturn(true);
+        when(jwtUtils.getUserNameFromMfaToken("valid-mfa-token")).thenReturn("backupUser");
         when(userService.findUser("backupUser")).thenReturn(user);
         when(backupCodeService.verifyAndConsumeBackupCode(user, "ABCD-EFGH")).thenReturn(true);
 
@@ -1066,5 +1109,35 @@ class AuthControllerTests {
                 .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("La nueva contraseña ha aparecido en filtraciones de datos públicas conocidas (HaveIBeenPwned). Por favor, elige una contraseña más segura."));
+    }
+
+    @Test
+    void testVerifyTwoFactorMissingMfaTokenReturnsUnauthorized() throws Exception {
+        TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
+        req.setUsername("user1");
+        req.setCode("123456");
+        // No mfaToken set
+
+        mockMvc.perform(post(BASE_URL + VERIFY_URL).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Error: Sesión de verificación 2FA no válida o expirada."));
+    }
+
+    @Test
+    void testVerifyTwoFactorInvalidMfaTokenReturnsUnauthorized() throws Exception {
+        TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
+        req.setUsername("user1");
+        req.setCode("123456");
+        req.setMfaToken("invalid-mfa-token");
+
+        when(jwtUtils.validateMfaChallengeToken("invalid-mfa-token")).thenReturn(false);
+
+        mockMvc.perform(post(BASE_URL + VERIFY_URL).with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Error: Sesión de verificación 2FA no válida o expirada."));
     }
 }

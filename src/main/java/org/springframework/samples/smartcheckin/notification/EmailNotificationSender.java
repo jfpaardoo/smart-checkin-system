@@ -1,4 +1,4 @@
-package org.springframework.samples.smartcheckin.notifications;
+package org.springframework.samples.smartcheckin.notification;
 
 import org.springframework.samples.smartcheckin.exports.EmailService;
 import org.springframework.stereotype.Component;

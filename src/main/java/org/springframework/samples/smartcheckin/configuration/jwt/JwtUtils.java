@@ -1,5 +1,6 @@
 package org.springframework.samples.smartcheckin.configuration.jwt;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.time.Instant;
@@ -10,6 +11,9 @@ import javax.crypto.SecretKey;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseCookie;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.WebUtils;
 
 import org.slf4j.Logger;
@@ -27,13 +31,23 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 
-import org.jpatterns.gof.SingletonPattern;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 @Component
-@SingletonPattern.Singleton
-@SuppressWarnings({ "java:S6466", "null" })
+@SuppressWarnings({ "java:S6466", "java:S2143", "null" })
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
+
+    private static final String CLAIM_PURPOSE = "purpose";
+    private static final String PURPOSE_MFA_PENDING = "mfa_pending";
+
+    private final Cache<String, Boolean> consumedMfaTokensCache = Caffeine.newBuilder()
+            .expireAfterWrite(5, TimeUnit.MINUTES)
+            .maximumSize(50_000)
+            .build();
 
     @Value("${badistributionacademy.app.jwtExpirationMs:${smartcheckin.app.jwtExpirationMs:86400000}}")
     private int jwtExpirationMs;
@@ -61,8 +75,8 @@ public class JwtUtils {
         return Jwts.builder()
                 .claims(claims)
                 .subject(userPrincipal.getUsername())
-                .issuedAt(java.util.Date.from(now))
-                .expiration(java.util.Date.from(now.plusMillis(jwtExpirationMs)))
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(jwtExpirationMs)))
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -71,8 +85,8 @@ public class JwtUtils {
         if (jwtCookieSecure) return true;
         HttpServletRequest currentReq = req;
         if (currentReq == null) {
-            org.springframework.web.context.request.RequestAttributes attrs = org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
-            if (attrs instanceof org.springframework.web.context.request.ServletRequestAttributes servletRequestAttributes) {
+            RequestAttributes attrs = RequestContextHolder.getRequestAttributes();
+            if (attrs instanceof ServletRequestAttributes servletRequestAttributes) {
                 currentReq = servletRequestAttributes.getRequest();
             }
         }
@@ -125,10 +139,74 @@ public class JwtUtils {
         return Jwts.builder()
                 .claims(claims)
                 .subject(username)
-                .issuedAt(java.util.Date.from(now))
-                .expiration(java.util.Date.from(now.plusMillis(jwtExpirationMs)))
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(jwtExpirationMs)))
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    public String generateMfaChallengeToken(String username) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(CLAIM_PURPOSE, PURPOSE_MFA_PENDING);
+        claims.put("jti", UUID.randomUUID().toString());
+        Instant now = Instant.now();
+        // Expiración estricta de 5 minutos para el desafío 2FA
+        return Jwts.builder()
+                .claims(claims)
+                .subject(username)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(300_000L)))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    public boolean validateMfaChallengeToken(String token) {
+        try {
+            var payload = Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            if (!PURPOSE_MFA_PENDING.equals(payload.get(CLAIM_PURPOSE))) {
+                return false;
+            }
+            String jti = (String) payload.get("jti");
+            if (jti != null && consumedMfaTokensCache.getIfPresent(jti) != null) {
+                logger.warn("Replay attempt detected for consumed MFA token jti: {}", jti);
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            logger.warn("Invalid or expired MFA challenge token: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean consumeMfaChallengeToken(String token) {
+        if (token == null || !validateMfaChallengeToken(token)) {
+            return false;
+        }
+        try {
+            var payload = Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            String jti = (String) payload.get("jti");
+            String key = (jti != null) ? jti : token;
+            return consumedMfaTokensCache.asMap().putIfAbsent(key, Boolean.TRUE) == null;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public String getUserNameFromMfaToken(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
     }
 
     public String getUserNameFromJwtToken(String token) {
@@ -152,7 +230,11 @@ public class JwtUtils {
 
     public boolean validateJwtToken(String authToken) {
         try {
-            Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(authToken);
+            var claims = Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(authToken).getPayload();
+            if (PURPOSE_MFA_PENDING.equals(claims.get(CLAIM_PURPOSE))) {
+                logger.warn("MFA challenge token cannot be used as standard authorization token");
+                return false;
+            }
             return true;
         } catch (SignatureException e) {
             logger.error("Invalid JWT signature: {}", e.getMessage());

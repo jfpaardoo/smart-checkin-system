@@ -26,26 +26,40 @@ class CaptchaServiceTests {
     private CaptchaService captchaService;
 
     @Test
-    void testValidateCaptcha_nullOrBlank() {
+    void testValidateCaptchaNullOrBlank() {
         assertFalse(captchaService.validateCaptcha(null));
         assertFalse(captchaService.validateCaptcha(""));
         assertFalse(captchaService.validateCaptcha("   "));
     }
 
     @Test
-    void testValidateCaptcha_testTokens() {
+    void testValidateCaptchaTestTokens() {
+        ReflectionTestUtils.setField(captchaService, "bypassEnabled", true);
         assertTrue(captchaService.validateCaptcha("1x00000000000000000000AA"));
         assertTrue(captchaService.validateCaptcha("mocked-test-captcha-token"));
     }
 
     @Test
-    void testValidateCaptcha_defaultTestSecret() {
+    void testValidateCaptchaDefaultTestSecret() {
+        ReflectionTestUtils.setField(captchaService, "bypassEnabled", true);
         ReflectionTestUtils.setField(captchaService, "captchaSecret", "1x0000000000000000000000000000000AA");
         assertTrue(captchaService.validateCaptcha("any-user-token"));
     }
 
     @Test
-    void testValidateCaptcha_remoteSuccess() {
+    void testValidateCaptchaBypassDisabledRejectsMagicTokens() {
+        ReflectionTestUtils.setField(captchaService, "bypassEnabled", false);
+        ReflectionTestUtils.setField(captchaService, "captchaSecret", "custom-production-secret");
+
+        when(restTemplate.postForObject(anyString(), any(), eq(CaptchaService.CaptchaResponse.class)))
+                .thenReturn(null);
+
+        assertFalse(captchaService.validateCaptcha("1x00000000000000000000AA"));
+        assertFalse(captchaService.validateCaptcha("mocked-test-captcha-token"));
+    }
+
+    @Test
+    void testValidateCaptchaRemoteSuccess() {
         ReflectionTestUtils.setField(captchaService, "captchaSecret", "custom-production-secret");
         CaptchaService.CaptchaResponse response = new CaptchaService.CaptchaResponse();
         response.setSuccess(true);
@@ -58,7 +72,7 @@ class CaptchaServiceTests {
     }
 
     @Test
-    void testValidateCaptcha_remoteFailure() {
+    void testValidateCaptchaRemoteFailure() {
         ReflectionTestUtils.setField(captchaService, "captchaSecret", "custom-production-secret");
         CaptchaService.CaptchaResponse response = new CaptchaService.CaptchaResponse();
         response.setSuccess(false);
@@ -70,7 +84,7 @@ class CaptchaServiceTests {
     }
 
     @Test
-    void testValidateCaptcha_remoteNullResponse() {
+    void testValidateCaptchaRemoteNullResponse() {
         ReflectionTestUtils.setField(captchaService, "captchaSecret", "custom-production-secret");
 
         when(restTemplate.postForObject(anyString(), any(), eq(CaptchaService.CaptchaResponse.class)))
@@ -80,7 +94,7 @@ class CaptchaServiceTests {
     }
 
     @Test
-    void testValidateCaptcha_restClientException() {
+    void testValidateCaptchaRestClientException() {
         ReflectionTestUtils.setField(captchaService, "captchaSecret", "custom-production-secret");
 
         when(restTemplate.postForObject(anyString(), any(), eq(CaptchaService.CaptchaResponse.class)))

@@ -12,10 +12,10 @@ public class ChangePasswordRequest {
     private String currentPassword;
     
     @NotBlank(message = "La nueva contraseña es obligatoria")
-    @Size(min = 6, message = "La nueva contraseña debe tener al menos 6 caracteres")
+    @Size(min = 12, message = "La nueva contraseña debe tener al menos 12 caracteres")
     private String newPassword;
     
     @NotBlank(message = "La confirmación de contraseña es obligatoria")
-    @Size(min = 6, message = "La confirmación debe tener al menos 6 caracteres")
+    @Size(min = 12, message = "La confirmación debe tener al menos 12 caracteres")
     private String confirmPassword;
 }

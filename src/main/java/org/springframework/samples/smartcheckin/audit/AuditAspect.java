@@ -1,6 +1,8 @@
 package org.springframework.samples.smartcheckin.audit;
 
 import java.lang.reflect.Method;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -61,7 +63,7 @@ public class AuditAspect {
                 .username(username)
                 .details(details)
                 .ipAddress(ipAddress)
-                .timestamp(java.time.LocalDateTime.now(java.time.ZoneId.systemDefault()))
+                .timestamp(LocalDateTime.now(ZoneId.systemDefault()))
                 .build();
         auditService.recordAuditLog(log);
     }

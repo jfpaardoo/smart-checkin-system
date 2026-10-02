@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Map;
 import java.util.HashMap;
+import org.mockito.ArgumentMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.ParameterizedTypeReference;
@@ -794,5 +795,44 @@ class OneDriveAdapterImplTests {
 
         byte[] data = TEST_DATA.getBytes();
         assertThrows(IllegalStateException.class, () -> oneDriveAdapterImpl.uploadBackup(data, BACKUP_ZIP));
+    }
+
+    @Test
+    void testUploadOfficialSheetSuccess() throws Exception {
+        CloudSettings settings = new CloudSettings();
+        settings.setOneDriveClientId(CLIENT_ID);
+        settings.setOneDriveTenantId(TENANT);
+        when(cloudSettingsService.getSettings()).thenReturn(settings);
+
+        Map<String, Object> tokenResponse = Map.of(ACCESS_TOKEN, TOKEN_123);
+        ResponseEntity<Map<String, Object>> tokenEntity = new ResponseEntity<>(tokenResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                eq(TOKEN_URL),
+                eq(HttpMethod.POST),
+                any(HttpEntity.class),
+                ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq(TENANT)
+        )).thenReturn(tokenEntity);
+
+        Map<String, Object> uploadResponse = Map.of("id", "sheetItem99");
+        ResponseEntity<Map<String, Object>> uploadEntity = new ResponseEntity<>(uploadResponse, HttpStatus.OK);
+        when(restTemplate.exchange(
+                eq("https://graph.microsoft.com/v1.0/me/drive/root:/ba/formations/{folder}/official_sheets/{filename}:/content"),
+                eq(HttpMethod.PUT),
+                any(HttpEntity.class),
+                ArgumentMatchers.<ParameterizedTypeReference<Map<String, Object>>>any(),
+                (Object) eq(FOLDER),
+                (Object) eq("sheet.xlsx")
+        )).thenReturn(uploadEntity);
+
+        String itemId = oneDriveAdapterImpl.uploadOfficialSheet(new byte[]{1, 2, 3}, "sheet.xlsx", FOLDER);
+        assertEquals("sheetItem99", itemId);
+    }
+
+    @Test
+    void testUploadOfficialSheetUnconfigured() {
+        when(cloudSettingsService.getSettings()).thenReturn(null);
+        assertThrows(IllegalStateException.class, () -> 
+                oneDriveAdapterImpl.uploadOfficialSheet(new byte[]{1, 2, 3}, "sheet.xlsx", FOLDER));
     }
 }

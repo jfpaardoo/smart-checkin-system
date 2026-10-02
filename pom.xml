@@ -36,6 +36,7 @@
 		<npm.version>10.8.2</npm.version>
 		<frontend-src-dir>${project.basedir}/frontend</frontend-src-dir>
 		<sonar.exclusions>**/.github/**,**/node_modules/**,**/build/**,**/dist/**</sonar.exclusions>
+		<frontend.skip>false</frontend.skip>
 
 	</properties>
 
@@ -230,12 +231,6 @@
 			<artifactId>xchart</artifactId>
 			<version>3.8.8</version>
 		</dependency>
-		<!-- jpatterns -->
-		<dependency>
-			<groupId>org.jpatterns</groupId>
-			<artifactId>jpatterns</artifactId>
-			<version>0.0.1</version>
-		</dependency>
 		<!-- Jakarta XML Binding (JAXB) for Java 21 / Spring Boot 3 -->
 		<dependency>
 			<groupId>jakarta.xml.bind</groupId>
@@ -343,6 +338,7 @@
 					<npmVersion>${npm.version}</npmVersion>
 					<workingDirectory>${frontend-src-dir}</workingDirectory>
 					<installDirectory>${project.build.directory}</installDirectory>
+					<skip>${frontend.skip}</skip>
 				</configuration>
 
 				<executions>
@@ -498,11 +494,6 @@
 				<configuration>
 					<annotationProcessorPaths>
 						<path>
-							<groupId>org.mapstruct</groupId>
-							<artifactId>mapstruct-processor</artifactId>
-							<version>${mapstruct.version}</version>
-						</path>
-						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
 							<version>${lombok.version}</version>
@@ -511,6 +502,11 @@
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok-mapstruct-binding</artifactId>
 							<version>0.2.0</version>
+						</path>
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>${mapstruct.version}</version>
 						</path>
 					</annotationProcessorPaths>
 				</configuration>

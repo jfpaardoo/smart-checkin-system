@@ -16,7 +16,7 @@ import {
   faBriefcase
 } from '@fortawesome/free-solid-svg-icons';
 import dayjs from 'dayjs';
-import { formatDuration } from '../../util/dateTimeUtil';
+import { formatDuration } from '../../util/dateUtils';
 import { useToast } from '../../components/ToastProvider';
 import downloadExportFile from '../../util/downloadExportFile';
 import GlassModal from '../../components/GlassModal';

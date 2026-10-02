@@ -68,8 +68,8 @@ class UserControllerTests {
 	private static final String TWO_FACTOR_DISABLE_PATH = "/2fa/disable";
 	private static final String PASSWORD_PATH = "/me/password";
 	private static final String ENCODED_OLD_PASS = "encodedOld";
-	private static final String OLD_PASS = "oldPass123";
-	private static final String NEW_PASS = "newPass123";
+	private static final String OLD_PASS = "oldPass123456";
+	private static final String NEW_PASS = "newPass123456";
 	private static final String TOTP_SECRET = "SECRET";
 	private static final String TOTP_CODE = "123456";
 	private static final String SEARCH_PARAM = "search";

@@ -11,11 +11,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Base64;
 
-import org.jpatterns.gof.SingletonPattern;
+import org.springframework.scheduling.annotation.Scheduled;
 
 @Service
 @SuppressWarnings("null")
-@SingletonPattern.Singleton
 public class PasswordResetService {
 
     private static final int EXPIRATION_MINUTES = 15;
@@ -55,5 +54,11 @@ public class PasswordResetService {
     @Transactional
     public void deleteToken(PasswordResetToken token) {
         tokenRepository.delete(token);
+    }
+
+    @Scheduled(cron = "0 0 * * * *")
+    @Transactional
+    public void cleanupExpiredTokens() {
+        tokenRepository.deleteByExpiryDateBefore(LocalDateTime.now(ZoneId.systemDefault()));
     }
 }

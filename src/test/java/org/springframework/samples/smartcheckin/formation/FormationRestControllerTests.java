@@ -26,9 +26,10 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.samples.smartcheckin.notification.NotificationContext;
-import org.springframework.samples.smartcheckin.notifications.PushNotificationSender;
+import org.springframework.samples.smartcheckin.notification.PushNotificationSender;
 import org.springframework.samples.smartcheckin.configuration.SecurityConfiguration;
 import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter;
+import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
@@ -259,8 +260,13 @@ class FormationRestControllerTests {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(authorities = {"ADMIN"})
     void testRegisterAttendanceWithPersonalCodeInBody() throws Exception {
+        Authorities adminAuth = new Authorities();
+        adminAuth.setAuthority("ADMIN");
+        user.setAuthority(adminAuth);
+        when(userService.findCurrentUser()).thenReturn(user);
+
         AttendRequest req = new AttendRequest();
         req.setPersonalCode("9999");
         when(formationService.registerAttendance(eq(1), eq("9999"), any())).thenReturn(formation);

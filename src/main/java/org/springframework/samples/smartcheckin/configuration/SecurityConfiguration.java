@@ -96,9 +96,12 @@ public class SecurityConfiguration {
                                 "/api/v1/auth/webauthn/credentials/**")
                         .authenticated()
 
-                        // 5. Endpoints públicos (login, registro, 2FA, login biométrico)
-                        .requestMatchers("/api/v1/auth/**", "/ws/**", "/api/v1/cloud-settings/oauth/callback", "/actuator/health", "/actuator/info", "/actuator/prometheus")
-                        .permitAll()
+                        // 5. Diagnóstico de salud para balanceadores (público) y Actuator sensible (solo ADMIN)
+                        .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+                        .requestMatchers("/actuator/**").hasAuthority(ADMIN)
+
+                        // 6. Endpoints públicos (login, registro, 2FA, login biométrico)
+                        .requestMatchers("/api/v1/auth/**", "/ws/**", "/api/v1/cloud-settings/oauth/callback").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/companies").permitAll()
 
                         // 5. Perfil personal del usuario y configuración de 2FA

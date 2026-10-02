@@ -32,6 +32,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [requires2FA, setRequires2FA] = useState(false);
   const [username2FA, setUsername2FA] = useState("");
+  const [mfaToken, setMfaToken] = useState(null);
   const [requiresPasskey, setRequiresPasskey] = useState(false);
   const [passkeyUsername, setPasskeyUsername] = useState("");
   const [canFallbackTo2FA, setCanFallbackTo2FA] = useState(false);
@@ -141,6 +142,9 @@ export default function Login() {
       const data = await response.json();
 
       if (response.status === 200) {
+        if (data.mfaToken) {
+          setMfaToken(data.mfaToken);
+        }
         if (data.requiresPasskey) {
           setRequiresPasskey(true);
           setPasskeyUsername(data.username);
@@ -244,7 +248,7 @@ export default function Login() {
         headers: { "Content-Type": "application/json" },
         method: "POST",
         credentials: "include",
-        body: JSON.stringify({ username: username2FA, code: cleanCode }),
+        body: JSON.stringify({ username: username2FA, code: cleanCode, mfaToken }),
       });
 
       const data = await response.json();

@@ -237,4 +237,43 @@ class TotpServiceTests {
 		assertEquals(48.8566, result[0], 0.0001);
 		assertEquals(2.3522, result[1], 0.0001);
 	}
+
+	@Test
+	void testSingleUseTokenAntiReplayForUser() {
+		String token = "654321";
+		Integer userA = 1;
+		Integer userB = 2;
+
+		assertFalse(totpService.isTokenConsumedForUser(token, userA));
+		assertFalse(totpService.isTokenConsumedForUser(token, userB));
+
+		totpService.markTokenConsumedForUser(token, userA);
+
+		assertTrue(totpService.isTokenConsumedForUser(token, userA));
+		assertFalse(totpService.isTokenConsumedForUser(token, userB));
+	}
+
+	@Test
+	void testValidateCodeWithUsernameReplayProtection() {
+		String validToken = totpService.generateCode(TEST_SECRET_KEY);
+		assertNotNull(validToken);
+
+		// Primer uso: éxito y se marca consumido
+		assertTrue(totpService.validateCode(TEST_SECRET_KEY, validToken, "alice"));
+
+		// Segundo intento inmediato con el mismo código: debe ser rechazado por replay attack
+		assertFalse(totpService.validateCode(TEST_SECRET_KEY, validToken, "alice"));
+
+		// Otro usuario puede usar su propio token
+		String anotherToken = totpService.generateCode("ANOTHER_SECRET_123");
+		assertTrue(totpService.validateCode("ANOTHER_SECRET_123", anotherToken, "bob"));
+	}
+
+	@Test
+	void testTokenConsumedNullHandling() {
+		assertFalse(totpService.isTokenConsumedForUser(null, 1));
+		assertFalse(totpService.isTokenConsumedForUser("123456", null));
+		assertDoesNotThrow(() -> totpService.markTokenConsumedForUser(null, 1));
+		assertDoesNotThrow(() -> totpService.markTokenConsumedForUser("123456", null));
+	}
 }

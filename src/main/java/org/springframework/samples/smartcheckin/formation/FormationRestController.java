@@ -1,5 +1,9 @@
 package org.springframework.samples.smartcheckin.formation;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +66,9 @@ public class FormationRestController {
         }
 
         List<String> docs = (isClosed || hasCheckedIn) && f.getDocumentUrls() != null
-                ? new ArrayList<>(f.getDocumentUrls())
+                ? f.getDocumentUrls().stream()
+                        .filter(url -> !isOfficialSheetDocument(url))
+                        .toList()
                 : new ArrayList<>();
 
         Formation copy = Formation.builder()
@@ -77,6 +83,14 @@ public class FormationRestController {
                 .build();
         copy.setId(f.getId());
         return copy;
+    }
+
+    private boolean isOfficialSheetDocument(String url) {
+        if (url == null) {
+            return false;
+        }
+        String lower = url.toLowerCase();
+        return lower.contains("for_99") || lower.contains("for99") || lower.contains("for 99") || lower.contains("official_sheets");
     }
 
     private User getCurrentUserSafe() {
@@ -144,6 +158,7 @@ public class FormationRestController {
     }
 
     @PostMapping("/{id}/attend")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Object> registerAttendance(@PathVariable Integer id, @RequestBody(required = false) AttendRequest request) {
         try {
             String code = request != null ? request.getPersonalCode() : null;
@@ -230,10 +245,10 @@ public class FormationRestController {
             return ResponseEntity.notFound().build();
         }
 
-        java.time.format.DateTimeFormatter iCalFormat = java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'").withZone(java.time.ZoneOffset.UTC);
-        String dtStart = f.getFormationDate() != null ? f.getFormationDate().atZone(java.time.ZoneId.systemDefault()).format(iCalFormat) : "";
-        String dtEnd = f.getFormationDate() != null ? f.getFormationDate().plusHours(2).atZone(java.time.ZoneId.systemDefault()).format(iCalFormat) : dtStart;
-        String now = java.time.LocalDateTime.now(java.time.ZoneId.systemDefault()).atZone(java.time.ZoneId.systemDefault()).format(iCalFormat);
+        DateTimeFormatter iCalFormat = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'").withZone(ZoneOffset.UTC);
+        String dtStart = f.getFormationDate() != null ? f.getFormationDate().atZone(ZoneId.systemDefault()).format(iCalFormat) : "";
+        String dtEnd = f.getFormationDate() != null ? f.getFormationDate().plusHours(2).atZone(ZoneId.systemDefault()).format(iCalFormat) : dtStart;
+        String now = LocalDateTime.now(ZoneId.systemDefault()).atZone(ZoneId.systemDefault()).format(iCalFormat);
         String uid = "formation-" + f.getId() + "@smartcheckin.system";
 
         StringBuilder ics = new StringBuilder();

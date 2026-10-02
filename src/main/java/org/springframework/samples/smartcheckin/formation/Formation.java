@@ -26,13 +26,15 @@ import lombok.EqualsAndHashCode;
 import jakarta.persistence.Index;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Setter
-@org.jpatterns.gof.BuilderPattern.Builder
-@lombok.Builder
-@lombok.AllArgsConstructor
-@lombok.NoArgsConstructor
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = false, exclude = {"attendances"})
 @Entity
 @Table(name = "formations", indexes = {
@@ -54,34 +56,34 @@ public class Formation extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
-    @lombok.Builder.Default
+    @Builder.Default
     private FormationStatus status = FormationStatus.DRAFT;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "formation_documents", joinColumns = @JoinColumn(name = "formation_id"))
     @Column(name = "document_url", length = 1000)
-    @lombok.Builder.Default
+    @Builder.Default
     private List<String> documentUrls = new ArrayList<>();
 
     @OneToMany(mappedBy = "formation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonIgnoreProperties("formation")
-    @lombok.Builder.Default
+    @Builder.Default
     private List<FormationAttendance> attendances = new ArrayList<>();
 
     @NotBlank
     @Size(max = 255)
     @Column(name = "location", length = 255)
-    @lombok.Builder.Default
+    @Builder.Default
     private String location = "BA VILLAFRANCA";
 
     @NotBlank
     @Size(max = 255)
     @Column(name = "trainer", length = 255)
-    @lombok.Builder.Default
+    @Builder.Default
     private String trainer = "VICTOR PARDO";
 
     @Column(name = "is_closed")
-    @lombok.Builder.Default
+    @Builder.Default
     private Boolean isClosed = false;
 
     @Column(name = "observations", columnDefinition = "TEXT")

@@ -17,6 +17,7 @@ public class JwtResponse {
     private Boolean requiresTwoFactor = false;
     private Boolean hasPasskeys = false;
     private Boolean requiresPasskey = false;
+    private String mfaToken;
 
     public JwtResponse() {
     }

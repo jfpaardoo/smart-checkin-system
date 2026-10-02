@@ -36,16 +36,18 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Email;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
-@org.jpatterns.gof.BuilderPattern.Builder
-@lombok.Builder
-@lombok.AllArgsConstructor
-@lombok.NoArgsConstructor
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = false, exclude = {"formationAttendances", "checkins", "pushSubscriptions"})
 @Entity
 @Table(name = "appusers", indexes = {
@@ -89,27 +91,29 @@ public class User extends BaseEntity implements OrganizationalUnit {
 
     @NotNull
     @Column(name = "is_working")
-    @lombok.Builder.Default
+    @Builder.Default
     private Boolean isWorking = false;
 
     @NotNull
     @Column(name = "is_approved")
-    @lombok.Builder.Default
+    @Builder.Default
     private Boolean isApproved = true;
 
     @Column(name = "failed_login_attempts")
-    @lombok.Builder.Default
+    @Builder.Default
+    @JsonIgnore
     private Integer failedLoginAttempts = 0;
 
     @Column(name = "account_locked_until")
+    @JsonIgnore
     private LocalDateTime accountLockedUntil;
 
     @Column(name = "two_factor_enabled")
-    @lombok.Builder.Default
+    @Builder.Default
     private Boolean twoFactorEnabled = false;
 
     @Column(name = "two_factor_type", length = 10)
-    @lombok.Builder.Default
+    @Builder.Default
     private String twoFactorType = "APP"; // Can be 'APP', 'EMAIL'
 
     @Column(name = "two_factor_secret")
@@ -120,22 +124,22 @@ public class User extends BaseEntity implements OrganizationalUnit {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_2fa_backup_codes", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "code_hash")
-    @lombok.Builder.Default
+    @Builder.Default
     @JsonIgnore
     private Set<String> twoFactorBackupCodes = new HashSet<>();
 
     @NotNull
     @Column(name = "email_notifications_enabled")
-    @lombok.Builder.Default
+    @Builder.Default
     private Boolean emailNotificationsEnabled = true;
 
     @NotNull
     @Column(name = "push_notifications_enabled")
-    @lombok.Builder.Default
+    @Builder.Default
     private Boolean pushNotificationsEnabled = true;
 
     @Column(name = "privacy_policy_accepted")
-    @lombok.Builder.Default
+    @Builder.Default
     private Boolean privacyPolicyAccepted = false;
 
     @Column(name = "privacy_policy_accepted_at")
@@ -154,16 +158,19 @@ public class User extends BaseEntity implements OrganizationalUnit {
     Authorities authority;
 
     public Boolean hasAuthority(String auth) {
-        return authority.getAuthority().equals(auth);
+        return authority != null && authority.getAuthority() != null && authority.getAuthority().equals(auth);
     }
 
     public Boolean hasAnyAuthority(String... authorities) {
-        Boolean cond = false;
-        for (String auth : authorities) {
-            if (auth.equals(authority.getAuthority()))
-                cond = true;
+        if (authority == null || authority.getAuthority() == null) {
+            return false;
         }
-        return cond;
+        for (String auth : authorities) {
+            if (auth.equals(authority.getAuthority())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

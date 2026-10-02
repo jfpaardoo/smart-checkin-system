@@ -11,7 +11,7 @@ import SignatureStep from './components/SignatureStep';
 import GlassDropdown from '../../components/GlassDropdown';
 import GlassModal from '../../components/GlassModal';
 import { useQrScanner } from '../../hooks/useQrScanner';
-import { formatDate } from '../../utils/dateUtils';
+import { formatDate } from '../../util/dateUtils';
 import { saveOfflineCheckin, initOfflineSync } from '../../util/offlineQueue';
 import soundAndHaptics from '../../util/soundAndHaptics';
 import { isAppStandalone, executeOrOpenInstall } from '../../util/pwaHelper';

@@ -2,7 +2,7 @@ import React from "react";
 import { FaGraduationCap, FaCheckCircle, FaExclamationTriangle, FaAward, FaClock, FaFilePdf } from "react-icons/fa";
 import { TableGhostLoader } from "../../../components/GhostLoader";
 import api from "../../../services/api";
-import { calculateDuration, formatDate } from "../../../utils/dateUtils";
+import { calculateDuration, formatDate } from "../../../util/dateUtils";
 import { saveBlobFile } from "../../../util/downloadExportFile";
 import CalendarSyncDropdown from "../../../components/CalendarSyncDropdown";
 

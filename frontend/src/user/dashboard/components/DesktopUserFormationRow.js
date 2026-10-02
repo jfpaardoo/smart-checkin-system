@@ -4,7 +4,7 @@ import { faEye, faRightFromBracket, faFilePdf, faLocationDot, faChalkboardUser }
 import StatusBadge from '../../../components/StatusBadge';
 import GlassButton from '../../../components/GlassButton';
 import CalendarSyncDropdown from '../../../components/CalendarSyncDropdown';
-import { formatDate } from '../../../utils/dateUtils';
+import { formatDate } from '../../../util/dateUtils';
 import {
   getThemeClasses,
   getFormationIcon,

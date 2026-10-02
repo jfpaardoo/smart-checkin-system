@@ -1,6 +1,5 @@
 package org.springframework.samples.smartcheckin.audit;
 
-import org.jpatterns.gof.DecoratorPattern;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -11,7 +10,6 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@DecoratorPattern.Decorator
 public @interface Auditable {
     
     /**

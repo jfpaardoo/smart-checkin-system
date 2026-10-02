@@ -11,6 +11,8 @@ public interface CloudStorageAdapter {
 
     String uploadSignature(byte[] data, String fileName, String pathContext) throws IOException;
 
+    String uploadOfficialSheet(byte[] data, String fileName, String folderName) throws IOException;
+
     byte[] downloadFile(String itemId) throws IOException;
 
     void deleteFile(String fileIdOrUrl) throws IOException;

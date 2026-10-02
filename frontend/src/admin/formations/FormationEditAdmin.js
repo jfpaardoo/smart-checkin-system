@@ -8,7 +8,7 @@ import getIdFromUrl from "../../util/getIdFromUrl";
 import dayjs from "dayjs";
 import { CardGhostLoader } from "../../components/GhostLoader";
 import { useToast } from "../../components/ToastProvider";
-import { getCleanFileInfo } from "../../utils/fileUtils";
+import { getCleanFileInfo } from "../../util/fileUtils";
 import GlassFormHeader from "../../components/GlassFormHeader";
 import GlassButton from "../../components/GlassButton";
 import { useFormationEdit } from "./hooks/useFormationEdit";

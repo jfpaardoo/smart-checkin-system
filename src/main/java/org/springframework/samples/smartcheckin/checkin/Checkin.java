@@ -15,22 +15,25 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@org.jpatterns.gof.BuilderPattern.Builder
-@lombok.Builder
-@lombok.AllArgsConstructor
-@lombok.NoArgsConstructor
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "checkins", indexes = {
     @Index(name = "idx_checkins_user_id", columnList = "user_id"),
     @Index(name = "idx_checkins_check_in_date", columnList = "checkInDate"),
-    @Index(name = "idx_checkins_user_date", columnList = "user_id, checkInDate")
+    @Index(name = "idx_checkins_user_date", columnList = "user_id, checkInDate"),
+    @Index(name = "idx_checkins_offline", columnList = "is_offline, user_id")
 })
 public class Checkin extends BaseEntity {
 
@@ -49,4 +52,29 @@ public class Checkin extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String signature;
+
+    @Column(name = "is_auto_checkout")
+    private Boolean isAutoCheckout;
+
+    @Column(name = "is_rectified")
+    private Boolean isRectified;
+
+    @Column(name = "rectified_checkout_date")
+    private LocalDateTime rectifiedCheckOutDate;
+
+    @Column(name = "rectification_notes", columnDefinition = "TEXT")
+    private String rectificationNotes;
+
+    @Column(name = "is_offline")
+    @Builder.Default
+    private Boolean isOffline = false;
+
+    @Column(name = "offline_timestamp")
+    private LocalDateTime offlineTimestamp;
+
+    @Column(name = "offline_qr_hash", length = 64)
+    private String offlineQrHash;
+
+    @Column(name = "offline_event_id", length = 64)
+    private String offlineEventId;
 }

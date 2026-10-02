@@ -34,7 +34,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.samples.smartcheckin.exports.strategy.DataExportStrategy;
 import org.springframework.samples.smartcheckin.exports.strategy.ExportFactory;
 import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAdapter;
-import org.springframework.samples.smartcheckin.util.ByteArrayMultipartFile;
 import org.springframework.samples.smartcheckin.exports.strategy.ExportUtils;
 
 import java.util.ArrayList;
@@ -47,11 +46,15 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @SuppressWarnings("null")
 @RequestMapping("/api/v1/exports")
 public class ExportRestController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ExportRestController.class);
 
     private final CheckinRepository checkinRepository;
     private final FormationAttendanceRepository attendanceRepository;
@@ -115,7 +118,7 @@ public class ExportRestController {
             finalFilename = buildOfficialSheetFilename(formation, formationWord, summaryWord, extension);
         }
 
-        syncOfficialSheetToCloud(formation, finalFilename, data, mimeType);
+        syncOfficialSheetToCloud(formation, finalFilename, data);
 
         return createResponse(data, finalFilename, mimeType);
     }
@@ -132,26 +135,15 @@ public class ExportRestController {
         return yearMonth + "_" + fWord + "_" + safeFormationName + "_" + sWord + "_FOR_99 HRS" + extension;
     }
 
-    private void syncOfficialSheetToCloud(Formation formation, String filename, byte[] data, String mimeType) {
+    private void syncOfficialSheetToCloud(Formation formation, String filename, byte[] data) {
         if (cloudStorageAdapter == null) {
             return;
         }
         try {
-            ByteArrayMultipartFile multipartFile = 
-                    new ByteArrayMultipartFile(
-                            filename, 
-                            filename, 
-                            mimeType, 
-                            data
-                    );
-            String uploadedDoc = cloudStorageAdapter.uploadFile(multipartFile, formation.getName());
-            if (uploadedDoc != null && !formation.getDocumentUrls().contains(uploadedDoc)) {
-                formation.getDocumentUrls().add(uploadedDoc);
-                formationRepository.save(formation);
-            }
+            cloudStorageAdapter.uploadOfficialSheet(data, filename, formation.getName());
+            logger.info("Hoja oficial FOR 99 archivada en OneDrive en /ba/formations/{}/official_sheets/{}", formation.getName(), filename);
         } catch (Exception e) {
-            org.slf4j.LoggerFactory.getLogger(ExportRestController.class)
-                    .warn("No se pudo sincronizar automáticamente la hoja oficial FOR 99 en OneDrive: {}", e.getMessage());
+            logger.warn("No se pudo sincronizar automáticamente la hoja oficial FOR 99 en OneDrive: {}", e.getMessage());
         }
     }
 
