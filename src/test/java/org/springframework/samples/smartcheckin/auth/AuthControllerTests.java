@@ -906,7 +906,7 @@ class AuthControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Si el usuario o correo está registrado en el sistema, recibirás un enlace de recuperación."));
 
-        verify(javaMailSender).send(any(org.springframework.mail.SimpleMailMessage.class));
+        verify(javaMailSender, timeout(2000)).send(any(org.springframework.mail.SimpleMailMessage.class));
     }
 
     @Test
@@ -930,7 +930,7 @@ class AuthControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Si el usuario o correo está registrado en el sistema, recibirás un enlace de recuperación."));
 
-        verify(javaMailSender, atLeastOnce()).send(any(org.springframework.mail.SimpleMailMessage.class));
+        verify(javaMailSender, timeout(2000).atLeastOnce()).send(any(org.springframework.mail.SimpleMailMessage.class));
     }
 
     @Test

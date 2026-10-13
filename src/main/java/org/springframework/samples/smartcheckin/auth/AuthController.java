@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -65,6 +67,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.samples.smartcheckin.auth.webauthn.WebAuthnService;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -557,10 +560,11 @@ public class AuthController {
                 String baseUrl = frontendUrl.endsWith("/") ? frontendUrl.substring(0, frontendUrl.length() - 1) : frontendUrl;
                 String resetLink = baseUrl + "/reset-password?token=" + token;
 
-                logger.info("Generado enlace de recuperación para '{}' (email: {}): {}", 
-                        user.getUsername(), user.getEmail(), resetLink);
+                String correlationId = UUID.randomUUID().toString().substring(0, 8);
+                logger.info("[CorrId: {}] Solicitud de recuperación de contraseña generada para usuario '{}'", 
+                        correlationId, user.getUsername());
                 
-                sendPasswordResetEmail(user, resetLink);
+                CompletableFuture.runAsync(() -> sendPasswordResetEmail(user, resetLink));
             } else {
                 logger.warn("Solicitud de recuperación para '{}' ignorada: usuario inexistente, no aprobado o anonimizado", request.getEmail());
             }
@@ -592,6 +596,7 @@ public class AuthController {
         }
     }
 
+    @Transactional
     @PostMapping("/reset-password")
     @Auditable(action = "PASSWORD_RESET_SUCCESS", details = "User successfully reset their password via email token")
     public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {

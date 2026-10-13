@@ -165,11 +165,11 @@ function UserDropdownMenu({ isOpen, toggleMenu, closeAll, username, t, onOpenSup
 
 function PublicNavLinks({ t, onOpenSupport }) {
     return (
-        <div className="flex flex-col md:flex-row gap-4 items-center">
+        <div className="flex flex-col lg:flex-row gap-2.5 xl:gap-4 items-center shrink-0">
             <button
                 type="button"
                 onClick={onOpenSupport}
-                className="flex items-center justify-center gap-2 text-slate-600 dark:text-white/80 hover:text-slate-900 dark:hover:text-white no-underline font-medium transition-colors duration-300 bg-transparent border-0 cursor-pointer p-0 text-sm"
+                className="flex items-center justify-center gap-1.5 text-slate-600 dark:text-white/80 hover:text-slate-900 dark:hover:text-white no-underline font-medium transition-colors duration-300 bg-transparent border-0 cursor-pointer p-0 text-xs xl:text-sm whitespace-nowrap"
             >
                 <FaHeadset className="text-[#8a9e22] dark:text-[#d4e84a]" /> {t('nav.support', 'Ayuda y Soporte')}
             </button>
@@ -177,15 +177,15 @@ function PublicNavLinks({ t, onOpenSupport }) {
                 <button
                     type="button"
                     onClick={executeOrOpenInstall}
-                    className="flex items-center justify-center gap-1.5 text-slate-600 dark:text-white/80 hover:text-slate-900 dark:hover:text-white no-underline font-medium transition-colors duration-300 bg-transparent border-0 cursor-pointer p-0 text-sm"
+                    className="hidden xl:flex items-center justify-center gap-1.5 text-slate-600 dark:text-white/80 hover:text-slate-900 dark:hover:text-white no-underline font-medium transition-colors duration-300 bg-transparent border-0 cursor-pointer p-0 text-xs xl:text-sm whitespace-nowrap"
                 >
                     <FaMobileAlt className="text-[#8a9e22] dark:text-[#d4e84a]" /> {t('pwa.menuInstall', 'Instalar App')}
                 </button>
             )}
-            <Link to="/register" className="flex items-center justify-center gap-2 text-slate-600 dark:text-white/80 hover:text-slate-900 dark:hover:text-white no-underline font-medium transition-colors duration-300">
+            <Link to="/register" className="flex items-center justify-center gap-1.5 text-slate-600 dark:text-white/80 hover:text-slate-900 dark:hover:text-white no-underline font-medium transition-colors duration-300 text-xs xl:text-sm whitespace-nowrap">
                 <FaUserPlus /> {t('nav.register', 'Solicitar Registro')}
             </Link>
-            <Link to="/login" className="flex items-center justify-center gap-2 text-slate-600 dark:text-white/80 hover:text-slate-900 dark:hover:text-white no-underline font-medium transition-colors duration-300">
+            <Link to="/login" className="flex items-center justify-center gap-1.5 text-slate-600 dark:text-white/80 hover:text-slate-900 dark:hover:text-white no-underline font-medium transition-colors duration-300 text-xs xl:text-sm whitespace-nowrap">
                 <FaSignInAlt /> {t('nav.login', 'Iniciar Sesión')}
             </Link>
         </div>
@@ -194,7 +194,7 @@ function PublicNavLinks({ t, onOpenSupport }) {
 
 function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggleMobileLang, currentLangCode, closeAll, t, i18n, onOpenSupport }) {
     return (
-        <div className={`md:hidden transition-all duration-500 ease-in-out w-full rounded-b-[40px] ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[calc(100dvh-5.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] opacity-100 bg-white/10 dark:bg-slate-900/30 backdrop-blur-2xl border-t border-white/40 dark:border-white/10 overflow-y-auto'}`}>
+        <div className={`lg:hidden transition-all duration-500 ease-in-out w-full rounded-b-[40px] ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[calc(100dvh-5.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] opacity-100 bg-white/10 dark:bg-slate-900/30 backdrop-blur-2xl border-t border-white/40 dark:border-white/10 overflow-y-auto'}`}>
             <div className="px-6 pt-4 pb-8 space-y-2">
                 {roles.includes("ADMIN") && (
                     <div className="py-2 border-b border-slate-300/40 dark:border-white/10 mb-3">
@@ -313,7 +313,7 @@ function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggl
 function MobileNotificationDrawer({ isOpen, t }) {
     const { notifications, clearAll } = useNotifications();
     return (
-        <div className={`md:hidden transition-all duration-500 ease-in-out w-full rounded-b-[40px] ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[calc(100dvh-5.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] opacity-100 bg-white/10 dark:bg-slate-900/30 backdrop-blur-2xl border-t border-white/40 dark:border-white/10 overflow-y-auto shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]'}`}>
+        <div className={`lg:hidden transition-all duration-500 ease-in-out w-full rounded-b-[40px] ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[calc(100dvh-5.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] opacity-100 bg-white/10 dark:bg-slate-900/30 backdrop-blur-2xl border-t border-white/40 dark:border-white/10 overflow-y-auto shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]'}`}>
             <div className="px-6 pt-3 pb-6">
                 <div className="flex justify-between items-center pb-2 border-b border-slate-300/40 dark:border-white/10 mb-3">
                     <span className="text-[11px] font-extrabold text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-1.5">
@@ -414,19 +414,19 @@ export default function AppNavbar() {
         <>
             <nav
                 ref={navRef}
-                className={`sticky z-40 mx-auto w-[calc(100%-24px)] md:w-[calc(100%-48px)] max-w-[1440px] mb-6 sm:mb-8 rounded-[40px] bg-white/35 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/60 dark:border-white/10 border-t-white/80 dark:border-t-white/15 shadow-[0_12px_40px_rgba(15,23,42,0.07),inset_0_1px_1.5px_rgba(255,255,255,0.85)] dark:shadow-[0_15px_35px_rgba(0,0,0,0.35),inset_0_1px_1px_rgba(255,255,255,0.06)] transition-all duration-300 da-navbar-sticky ${isMobileDrawerOpen ? 'overflow-hidden md:overflow-visible' : 'md:overflow-visible'}`}
+                className={`sticky z-40 mx-auto w-[calc(100%-24px)] lg:w-[calc(100%-48px)] max-w-[1440px] mb-6 sm:mb-8 rounded-[40px] bg-white/35 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/60 dark:border-white/10 border-t-white/80 dark:border-t-white/15 shadow-[0_12px_40px_rgba(15,23,42,0.07),inset_0_1px_1.5px_rgba(255,255,255,0.85)] dark:shadow-[0_15px_35px_rgba(0,0,0,0.35),inset_0_1px_1px_rgba(255,255,255,0.06)] transition-all duration-300 da-navbar-sticky ${isMobileDrawerOpen ? 'overflow-hidden lg:overflow-visible' : 'lg:overflow-visible'}`}
             >
                 <div className="w-full px-3.5 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-[58px] sm:h-[64px]">
                         <div className="flex items-center min-w-0 flex-1">
-                            <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group text-slate-800 dark:text-white hover:text-slate-950 dark:hover:text-white no-underline min-w-0" onClick={closeAll}>
+                            <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group text-slate-800 dark:text-white hover:text-slate-950 dark:hover:text-white no-underline shrink-0" onClick={closeAll}>
                                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden flex items-center justify-center shadow-[0_2px_5px_rgba(0,0,0,0.12)] group-hover:scale-105 transition-transform duration-300 shrink-0 bg-white/40 dark:bg-white/10 backdrop-blur-md">
                                     <img src="/logo.png" alt={t('common.companyLogo', 'Logo de la empresa')} className="w-[48px] h-[48px] sm:w-[60px] sm:h-[60px] object-cover" />
                                 </div>
-                                <span className="text-[1.25rem] lg:text-[1.4rem] font-semibold tracking-tight hidden md:block whitespace-nowrap text-slate-800 dark:text-white">
+                                <span className="text-[1.25rem] lg:text-[1.4rem] font-semibold tracking-tight hidden lg:block whitespace-nowrap text-slate-800 dark:text-white">
                                     Distribution Academy
                                 </span>
-                                <div className="flex flex-col justify-center leading-none md:hidden shrink-0">
+                                <div className="flex flex-col justify-center leading-none lg:hidden shrink-0">
                                     <span className="text-[11.5px] sm:text-sm font-bold tracking-tight text-slate-800 dark:text-white whitespace-nowrap">
                                         Distribution
                                     </span>
@@ -436,7 +436,7 @@ export default function AppNavbar() {
                                 </div>
                             </Link>
                             {roles.includes("ADMIN") && (
-                                <div className="hidden md:flex ml-8">
+                                <div className="hidden lg:flex ml-4 xl:ml-8 shrink-0">
                                     <AdminDropdownMenu
                                         isOpen={isAdminOpen}
                                         toggleMenu={toggleMenu}
@@ -447,7 +447,7 @@ export default function AppNavbar() {
                             )}
                         </div>
 
-                        <div className="hidden md:flex md:items-center md:space-x-3">
+                        <div className="hidden lg:flex lg:items-center lg:space-x-2 xl:space-x-3 shrink-0">
                             {!user ? (
                                 <PublicNavLinks t={t} onOpenSupport={() => setIsSupportOpen(true)} />
                             ) : (
@@ -479,7 +479,7 @@ export default function AppNavbar() {
                         </div>
 
                         {/* Mobile Hamburger & Bell Toggle */}
-                        <div className="flex items-center space-x-1 sm:space-x-2 md:hidden">
+                        <div className="flex items-center space-x-1 sm:space-x-2 lg:hidden">
                             {user && (
                                 <NotificationBell
                                     isMobile={true}
