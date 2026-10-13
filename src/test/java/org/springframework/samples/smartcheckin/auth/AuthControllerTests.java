@@ -56,6 +56,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -145,6 +146,9 @@ class AuthControllerTests {
 	@SuppressWarnings("java:S6813")
 	private MockMvc mockMvc;
 
+	@Autowired
+	private AuthController authController;
+
 	private static final String PASSWORD = "Password@1234";
 	private static final String USER1 = "user1";
 	private static final String SECRET = "SECRET";
@@ -174,6 +178,10 @@ class AuthControllerTests {
 		jwtCookie = ResponseCookie.from("jwt", token).path("/api").maxAge(24 * 60 * 60).httpOnly(true).build();
 		
 		when(this.captchaService.validateCaptcha(any())).thenReturn(true);
+		ReflectionTestUtils.setField(authController, "smtpHost", "smtp.example.com");
+		ReflectionTestUtils.setField(authController, "smtpUsername", "user@example.com");
+		ReflectionTestUtils.setField(authController, "smtpPassword", "secure-password");
+		ReflectionTestUtils.setField(authController, "mailFrom", "noreply@smartcheckin.com");
 	}
 
 	@Test
@@ -931,6 +939,32 @@ class AuthControllerTests {
                 .andExpect(jsonPath("$.message").value("Si el usuario o correo está registrado en el sistema, recibirás un enlace de recuperación."));
 
         verify(javaMailSender, timeout(2000).atLeastOnce()).send(any(org.springframework.mail.SimpleMailMessage.class));
+    }
+
+    @Test
+    void testForgotPasswordDoesNotSendEmailWithPlaceholderSmtpConfig() throws Exception {
+        ReflectionTestUtils.setField(authController, "mailFrom", "noreply@ejemplo.com");
+
+        User user = new User();
+        user.setUsername("john");
+        user.setEmail("john@example.com");
+        user.setFirstName("John");
+        user.setIsApproved(true);
+
+        when(userService.findUser("john@example.com")).thenReturn(user);
+        when(passwordResetService.createOrUpdatePasswordResetToken(user)).thenReturn("resetToken123");
+
+        ForgotPasswordRequest req = new ForgotPasswordRequest();
+        req.setEmail("john@example.com");
+        req.setCaptchaToken("valid-token");
+
+        mockMvc.perform(post(BASE_URL + "/forgot-password").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Si el usuario o correo está registrado en el sistema, recibirás un enlace de recuperación."));
+
+        verify(javaMailSender, never()).send(any(org.springframework.mail.SimpleMailMessage.class));
     }
 
     @Test
