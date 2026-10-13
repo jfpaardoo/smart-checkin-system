@@ -107,7 +107,16 @@ public class AuthController {
     @Value("${app.captcha.site-key:1x00000000000000000000AA}")
     private String captchaSiteKey;
 
-    @Value("${app.mail.from:noreply@ejemplo.com}")
+    @Value("${spring.mail.host:}")
+    private String smtpHost;
+
+    @Value("${spring.mail.username:}")
+    private String smtpUsername;
+
+    @Value("${spring.mail.password:}")
+    private String smtpPassword;
+
+    @Value("${app.mail.from:}")
     private String mailFrom;
 
     @Autowired
@@ -577,7 +586,32 @@ public class AuthController {
         return ResponseEntity.ok(new MessageResponse("Si el usuario o correo está registrado en el sistema, recibirás un enlace de recuperación."));
     }
 
+    private boolean hasPlaceholderMailConfiguration() {
+        String[] candidates = {smtpHost, smtpUsername, smtpPassword, mailFrom};
+        logger.info("DEBUG SMTP candidates: host='{}', username='{}', password='{}', mailFrom='{}'",
+                smtpHost, smtpUsername, smtpPassword, mailFrom);
+        for (String candidate : candidates) {
+            if (candidate == null || candidate.isBlank()) {
+                continue;
+            }
+            String value = candidate.trim().toLowerCase();
+            if (value.contains("ejemplo") || value.contains("example.com") || value.contains("placeholder")
+                    || value.contains("falsa") || value.contains("fake")
+                    || value.contains("password_falsa") || value.contains("your_app_password")
+                    || value.contains("correo@ejemplo.com") || value.contains("noreply@ejemplo.com")
+                    || value.contains("your_email@example.com") || value.contains("onboarding@resend.dev")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void sendPasswordResetEmail(User user, String resetLink) {
+        if (hasPlaceholderMailConfiguration()) {
+            logger.warn("Configuración SMTP incompleta o con valores de ejemplo. Se omite el envío de correo de recuperación para '{}' y se recomienda definir MAIL_HOST, MAIL_USERNAME, MAIL_PASSWORD y MAIL_FROM en Render.", user.getEmail());
+            return;
+        }
+
         try {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
             if (mailFrom != null && !mailFrom.isBlank()) {
