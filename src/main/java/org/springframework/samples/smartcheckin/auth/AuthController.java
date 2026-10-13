@@ -588,8 +588,6 @@ public class AuthController {
 
     private boolean hasPlaceholderMailConfiguration() {
         String[] candidates = {smtpHost, smtpUsername, smtpPassword, mailFrom};
-        logger.info("DEBUG SMTP candidates: host='{}', username='{}', password='{}', mailFrom='{}'",
-                smtpHost, smtpUsername, smtpPassword, mailFrom);
         for (String candidate : candidates) {
             if (candidate == null || candidate.isBlank()) {
                 continue;
