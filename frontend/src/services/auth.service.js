@@ -1,7 +1,7 @@
 import api from "./api";
 
 const forgotPassword = (email, captchaToken) => {
-    return api.post("/auth/forgot-password", { email, captchaToken });
+    return api.post("/auth/forgot-password", { email, captchaToken }, { timeout: 15000 });
 };
 
 const resetPassword = (token, newPassword, confirmPassword) => {

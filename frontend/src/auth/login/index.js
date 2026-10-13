@@ -196,10 +196,11 @@ export default function Login() {
     } catch (error) {
       console.warn("Passkey challenge verification cancelled or failed:", error);
       if (error.name !== 'NotAllowedError' && !error.message?.includes('cancelled')) {
+        const backendMsg = error.response?.data?.message;
         const isFetchFail = error?.message === 'Failed to fetch';
-        const errMsg = isFetchFail
+        const errMsg = backendMsg || (isFetchFail
           ? t('common.networkError', 'Error de conexión con el servidor.')
-          : (error.message || t('login.passkeyError', 'Error al verificar la llave de acceso.'));
+          : (error.message || t('login.passkeyError', 'Error al verificar la llave de acceso.')));
         toast.error(errMsg);
       }
     } finally {
@@ -220,10 +221,11 @@ export default function Login() {
     } catch (error) {
       console.warn("Passkey login cancelled or failed:", error);
       if (error.name !== 'NotAllowedError' && !error.message?.includes('cancelled')) {
+        const backendMsg = error.response?.data?.message;
         const isFetchFail = error?.message === 'Failed to fetch';
-        const errMsg = isFetchFail
+        const errMsg = backendMsg || (isFetchFail
           ? t('common.networkError', 'Error de conexión con el servidor.')
-          : (error.message || t('login.passkeyError', 'Error al verificar la llave de acceso.'));
+          : (error.message || t('login.passkeyError', 'Error al verificar la llave de acceso.')));
         toast.error(errMsg);
       }
     } finally {

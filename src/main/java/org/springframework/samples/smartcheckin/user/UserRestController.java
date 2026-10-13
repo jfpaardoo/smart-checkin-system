@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import jakarta.validation.Valid;
 
@@ -346,7 +347,7 @@ class UserRestController {
         userService.saveUser(target);
         messagingTemplate.convertAndSend(TOPIC_UPDATE_USERS, UPDATE);
 
-        sendApprovalEmail(target);
+        CompletableFuture.runAsync(() -> sendApprovalEmail(target));
         return ResponseEntity.ok(new MessageResponse("Usuario aprobado con éxito."));
     }
 
@@ -413,7 +414,7 @@ class UserRestController {
         }
         User updated = this.userService.updateUser(user, id);
         if (wasNotApproved && Boolean.TRUE.equals(updated.getIsApproved())) {
-            sendApprovalEmail(updated);
+            CompletableFuture.runAsync(() -> sendApprovalEmail(updated));
         }
         messagingTemplate.convertAndSend(TOPIC_UPDATE_USERS, UPDATE);
         return new ResponseEntity<>(updated, HttpStatus.OK);

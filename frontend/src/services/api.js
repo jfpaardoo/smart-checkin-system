@@ -4,6 +4,7 @@ import TokenService from "./token.service";
 const instance = axios.create({
     baseURL: "/api/v1",
     withCredentials: true,
+    timeout: 30000,
     headers: {
         "Content-Type": "application/json",
     },
