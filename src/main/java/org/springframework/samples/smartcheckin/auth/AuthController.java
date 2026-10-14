@@ -68,7 +68,7 @@ import org.springframework.samples.smartcheckin.auth.service.TwoFactorBackupCode
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.samples.smartcheckin.auth.webauthn.WebAuthnService;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -95,8 +95,9 @@ public class AuthController {
     private final PushNotificationSender pushNotificationSender;
     private final PasswordResetService passwordResetService;
     private final JavaMailSender javaMailSender;
-    @Autowired
-    private ObjectProvider<Executor> taskExecutorProvider;
+    @Autowired(required = false)
+    @Qualifier("taskExecutor")
+    private Executor taskExecutor;
     private final CaptchaService captchaService;
     private final CompanyService companyService;
     private final HaveIBeenPwnedService haveIBeenPwnedService;
@@ -581,10 +582,8 @@ public class AuthController {
                 logger.info("[CorrId: {}] Solicitud de recuperación de contraseña generada para usuario '{}'", 
                         correlationId, user.getUsername());
                 
-                Executor taskExecutor = taskExecutorProvider == null
-                        ? ForkJoinPool.commonPool()
-                        : taskExecutorProvider.getIfAvailable(ForkJoinPool::commonPool);
-                CompletableFuture.runAsync(() -> sendPasswordResetEmail(user, resetLink), taskExecutor);
+                Executor emailExecutor = taskExecutor == null ? ForkJoinPool.commonPool() : taskExecutor;
+                CompletableFuture.runAsync(() -> sendPasswordResetEmail(user, resetLink), emailExecutor);
             } else {
                 logger.warn("Solicitud de recuperación para '{}' ignorada: usuario inexistente, no aprobado o anonimizado", request.getEmail());
             }
