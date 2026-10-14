@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -66,6 +68,7 @@ import org.springframework.samples.smartcheckin.auth.service.TwoFactorBackupCode
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.samples.smartcheckin.auth.webauthn.WebAuthnService;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -92,6 +95,8 @@ public class AuthController {
     private final PushNotificationSender pushNotificationSender;
     private final PasswordResetService passwordResetService;
     private final JavaMailSender javaMailSender;
+    @Autowired
+    private ObjectProvider<Executor> taskExecutorProvider;
     private final CaptchaService captchaService;
     private final CompanyService companyService;
     private final HaveIBeenPwnedService haveIBeenPwnedService;
@@ -118,6 +123,9 @@ public class AuthController {
 
     @Value("${app.mail.from:}")
     private String mailFrom;
+
+    @Value("${spring.mail.port:587}")
+    private String smtpPort;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager, UserService userService, 
@@ -573,7 +581,10 @@ public class AuthController {
                 logger.info("[CorrId: {}] Solicitud de recuperación de contraseña generada para usuario '{}'", 
                         correlationId, user.getUsername());
                 
-                CompletableFuture.runAsync(() -> sendPasswordResetEmail(user, resetLink));
+                Executor taskExecutor = taskExecutorProvider == null
+                        ? ForkJoinPool.commonPool()
+                        : taskExecutorProvider.getIfAvailable(ForkJoinPool::commonPool);
+                CompletableFuture.runAsync(() -> sendPasswordResetEmail(user, resetLink), taskExecutor);
             } else {
                 logger.warn("Solicitud de recuperación para '{}' ignorada: usuario inexistente, no aprobado o anonimizado", request.getEmail());
             }
@@ -593,7 +604,7 @@ public class AuthController {
                 continue;
             }
             String value = candidate.trim().toLowerCase();
-            if (value.contains("ejemplo") || value.contains("example.com") || value.contains("placeholder")
+            if (value.contains("ejemplo") || value.equals("example.com") || value.contains("placeholder")
                     || value.contains("falsa") || value.contains("fake")
                     || value.contains("password_falsa") || value.contains("your_app_password")
                     || value.contains("correo@ejemplo.com") || value.contains("noreply@ejemplo.com")
@@ -606,7 +617,7 @@ public class AuthController {
 
     private void sendPasswordResetEmail(User user, String resetLink) {
         if (hasPlaceholderMailConfiguration()) {
-            logger.warn("Configuración SMTP incompleta o con valores de ejemplo. Se omite el envío de correo de recuperación para '{}' y se recomienda definir MAIL_HOST, MAIL_USERNAME, MAIL_PASSWORD y MAIL_FROM en Render.", user.getEmail());
+            logger.warn("Configuración SMTP incompleta o con valores de ejemplo. Se omite el envío de correo de recuperación para '{}'. Comprueba MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD y MAIL_FROM en Render.", user.getEmail());
             return;
         }
 
@@ -624,7 +635,8 @@ public class AuthController {
             javaMailSender.send(mailMessage);
             logger.info("Correo de recuperación de contraseña enviado exitosamente a {}", user.getEmail());
         } catch (Exception e) {
-            logger.error("Error al enviar correo de recuperación a {}: {}", user.getEmail(), e.getMessage());
+            logger.error("Error al enviar correo de recuperación a {} mediante {}:{} ({}): {}",
+                    user.getEmail(), smtpHost, smtpPort, e.getClass().getSimpleName(), e.getMessage(), e);
         }
     }
 
