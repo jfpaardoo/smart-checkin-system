@@ -69,8 +69,15 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.samples.smartcheckin.auth.webauthn.WebAuthnService;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -127,6 +134,12 @@ public class AuthController {
 
     @Value("${spring.mail.port:587}")
     private String smtpPort;
+
+    @Value("${app.mail.brevo-api-key:}")
+    private String brevoApiKey;
+
+    @Autowired(required = false)
+    private RestTemplate restTemplate;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager, UserService userService, 
@@ -615,6 +628,11 @@ public class AuthController {
     }
 
     private void sendPasswordResetEmail(User user, String resetLink) {
+        if (isBrevoApiConfigured()) {
+            sendPasswordResetEmailWithBrevoApi(user, resetLink);
+            return;
+        }
+
         if (hasPlaceholderMailConfiguration()) {
             logger.warn("Configuración SMTP incompleta o con valores de ejemplo. Se omite el envío de correo de recuperación para '{}'. Comprueba MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD y MAIL_FROM en Render.", user.getEmail());
             return;
@@ -637,6 +655,47 @@ public class AuthController {
             logger.error("Error al enviar correo de recuperación a {} mediante {}:{} ({}): {}",
                     user.getEmail(), smtpHost, smtpPort, e.getClass().getSimpleName(), e.getMessage(), e);
         }
+    }
+
+    private boolean isBrevoApiConfigured() {
+        return brevoApiKey != null && !brevoApiKey.isBlank()
+                && restTemplate != null && mailFrom != null && !mailFrom.isBlank();
+    }
+
+    private boolean sendPasswordResetEmailWithBrevoApi(User user, String resetLink) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("api-key", brevoApiKey);
+
+            Map<String, Object> sender = Map.of("email", mailFrom);
+            Map<String, Object> recipient = Map.of("email", user.getEmail());
+            Map<String, Object> payload = Map.of(
+                    "sender", sender,
+                    "to", List.of(recipient),
+                    "subject", "Recuperación de Contraseña - Smart Checkin",
+                    "textContent", "Hola " + user.getFirstName() + ",\n\n"
+                            + "Has solicitado restablecer tu contraseña. Haz clic en el siguiente enlace "
+                            + "(válido por 15 minutos):\n\n" + resetLink
+                            + "\n\nSi no has sido tú, ignora este correo.");
+
+            ResponseEntity<Void> response = restTemplate.exchange(
+                    "https://api.brevo.com/v3/smtp/email",
+                    HttpMethod.POST,
+                    new HttpEntity<>(payload, headers),
+                    Void.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                logger.info("Correo de recuperación enviado mediante la API HTTPS de Brevo a {}", user.getEmail());
+                return true;
+            }
+
+            logger.warn("La API HTTPS de Brevo devolvió el estado {} para {}", response.getStatusCode(), user.getEmail());
+        } catch (RestClientException e) {
+            logger.error("Error al enviar correo de recuperación mediante la API HTTPS de Brevo a {}: {}",
+                    user.getEmail(), e.getMessage(), e);
+        }
+        return false;
     }
 
     @Transactional
