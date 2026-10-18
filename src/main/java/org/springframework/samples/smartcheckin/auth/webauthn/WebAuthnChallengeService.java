@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WebAuthnChallengeService {
 
     private static final long CHALLENGE_TTL_SECONDS = 120; // 2 minutos
+    private static final int MAX_CACHE_ENTRIES = 10_000;
     private final SecureRandom secureRandom = new SecureRandom();
     private final Map<String, ChallengeItem> challengeCache = new ConcurrentHashMap<>();
 
@@ -19,6 +20,12 @@ public class WebAuthnChallengeService {
 
     public String generateChallenge(Integer userId) {
         cleanExpiredChallenges();
+
+        // Control estricto de capacidad contra agotamiento de memoria (SEC-12)
+        if (challengeCache.size() >= MAX_CACHE_ENTRIES) {
+            challengeCache.clear();
+        }
+
         byte[] bytes = new byte[32];
         secureRandom.nextBytes(bytes);
         String challenge = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);

@@ -1,6 +1,6 @@
 package org.springframework.samples.smartcheckin.audit;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -14,6 +14,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 @Component
@@ -25,8 +28,11 @@ public class LoginFailureListener implements ApplicationListener<AuthenticationF
     private final SimpMessagingTemplate messagingTemplate;
     private final AuditService auditService;
     
-    // In-memory cache to track failures (In production, consider Redis or DB)
-    private final ConcurrentHashMap<String, AtomicInteger> failedAttempts = new ConcurrentHashMap<>();
+    // Bounded in-memory cache to track failures and prevent memory exhaustion DoS
+    private final Cache<String, AtomicInteger> failedAttempts = Caffeine.newBuilder()
+            .expireAfterWrite(15, TimeUnit.MINUTES)
+            .maximumSize(10_000)
+            .build();
 
     @Autowired
     public LoginFailureListener(SimpMessagingTemplate messagingTemplate, AuditService auditService) {
@@ -40,8 +46,8 @@ public class LoginFailureListener implements ApplicationListener<AuthenticationF
         String ipAddress = getClientIP();
 
         String key = username + "-" + ipAddress;
-        failedAttempts.putIfAbsent(key, new AtomicInteger(0));
-        int attempts = failedAttempts.get(key).incrementAndGet();
+        AtomicInteger counter = failedAttempts.get(key, k -> new AtomicInteger(0));
+        int attempts = counter.incrementAndGet();
 
         logger.warn("Failed login attempt {} for user {} from IP {}", attempts, username, ipAddress);
 
@@ -57,8 +63,8 @@ public class LoginFailureListener implements ApplicationListener<AuthenticationF
             
             logger.error("SECURITY ALERT TRIGGERED: {}", alertMessage);
             
-            // Reset after alert to prevent spamming, or you could keep increasing it and alert every 3rd time
-            failedAttempts.get(key).set(0);
+            // Reset after alert to prevent spamming
+            counter.set(0);
         }
     }
 
@@ -67,10 +73,10 @@ public class LoginFailureListener implements ApplicationListener<AuthenticationF
         if (attributes != null) {
             HttpServletRequest request = attributes.getRequest();
             String xfHeader = request.getHeader("X-Forwarded-For");
-            if (xfHeader == null) {
-                return request.getRemoteAddr();
+            if (xfHeader != null && !xfHeader.isBlank()) {
+                return xfHeader.split(",")[0].trim();
             }
-            return xfHeader.split(",")[0];
+            return request.getRemoteAddr() != null ? request.getRemoteAddr() : "UNKNOWN_IP";
         }
         return "UNKNOWN_IP";
     }

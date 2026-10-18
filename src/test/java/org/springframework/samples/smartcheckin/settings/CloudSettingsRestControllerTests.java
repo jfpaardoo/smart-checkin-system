@@ -1,13 +1,19 @@
 
 package org.springframework.samples.smartcheckin.settings;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.Map;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,11 +27,13 @@ import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SuppressWarnings("null")
-@WebMvcTest(controllers = CloudSettingsRestController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = WebSecurityConfigurer.class), excludeAutoConfiguration = SecurityConfiguration.class)
+@WebMvcTest(controllers = CloudSettingsRestController.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
+		classes = WebSecurityConfigurer.class), excludeAutoConfiguration = SecurityConfiguration.class)
 class CloudSettingsRestControllerTests {
 
 	private static final String BASE_URL = "/api/v1/cloud-settings";
@@ -37,6 +45,12 @@ class CloudSettingsRestControllerTests {
 
 	@MockitoBean
 	private DatabaseBackupService databaseBackupService;
+
+	@MockitoBean
+	private OAuthStateService oAuthStateService;
+
+	@MockitoBean
+	private RestTemplate restTemplate;
 
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -99,6 +113,53 @@ class CloudSettingsRestControllerTests {
 		doThrow(new RuntimeException("OneDrive unavailable")).when(databaseBackupService).createAndUploadBackup();
 
 		mockMvc.perform(post(BASE_URL + "/backup").with(csrf())).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@WithMockUser(authorities = {"ADMIN"})
+	void testAuthorizeUrlGeneratesSecureState() throws Exception {
+		when(cloudSettingsService.getSettings()).thenReturn(settings);
+		when(oAuthStateService.generateState(any(), any())).thenReturn("secure-random-state-12345");
+
+		mockMvc.perform(get(BASE_URL + "/oauth/authorize-url"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.url").value(containsString("state=secure-random-state-12345")));
+	}
+
+	@Test
+	@WithMockUser
+	void testCallbackWithInvalidStateRedirectsWithError() throws Exception {
+		when(oAuthStateService.validateAndConsumeState("bad-state")).thenReturn(Optional.empty());
+		when(oAuthStateService.getCanonicalFrontendSettingsUrl()).thenReturn("http://localhost:3000/admin/cloud-settings");
+
+		mockMvc.perform(get(BASE_URL + "/oauth/callback")
+				.param("code", "auth-code-123")
+				.param("state", "bad-state"))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(header().string("Location",
+						containsString("onedrive=invalid_state")));
+	}
+
+	@Test
+	@WithMockUser
+	void testCallbackWithValidStateAndCodeConnectsSuccessfully() throws Exception {
+		OAuthStateService.OAuthStateItem stateItem = new OAuthStateService.OAuthStateItem(
+				"good-state",
+				"admin",
+				Instant.now().plusSeconds(600),
+				"http://localhost:3000/admin/cloud-settings"
+		);
+		when(oAuthStateService.validateAndConsumeState("good-state")).thenReturn(Optional.of(stateItem));
+		when(cloudSettingsService.getSettings()).thenReturn(settings);
+		when(restTemplate.postForObject(anyString(), any(), eq(Map.class)))
+				.thenReturn(Map.of("refresh_token", "sample-refresh-token"));
+
+		mockMvc.perform(get(BASE_URL + "/oauth/callback")
+				.param("code", "auth-code-123")
+				.param("state", "good-state"))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(header().string("Location",
+						containsString("onedrive=connected")));
 	}
 }
 

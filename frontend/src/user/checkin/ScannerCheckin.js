@@ -418,7 +418,7 @@ export default function ScannerCheckin() {
               className="inline-flex items-center justify-center rounded-full shadow-lg p-4"
               style={{ backgroundColor: 'rgba(179, 195, 76, 0.2)', border: '2px solid var(--da-primary)' }}
             >
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--da-primary)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--da-primary)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <motion.path
                   d="M20 6L9 17l-5-5"
                   initial={{ pathLength: 0 }}

@@ -36,17 +36,16 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final JwtUtils jwtUtils;
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtBlacklistService jwtBlacklistService;
-
-    public WebSocketConfig() {
-        this(null, null, null);
-    }
+    private final WebSocketTicketService webSocketTicketService;
 
     public WebSocketConfig(JwtUtils jwtUtils,
                            UserDetailsServiceImpl userDetailsService,
-                           JwtBlacklistService jwtBlacklistService) {
+                           JwtBlacklistService jwtBlacklistService,
+                           WebSocketTicketService webSocketTicketService) {
         this.jwtUtils = jwtUtils;
         this.userDetailsService = userDetailsService;
         this.jwtBlacklistService = jwtBlacklistService;
+        this.webSocketTicketService = webSocketTicketService;
     }
 
     @Override
@@ -72,9 +71,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
-        registration.setMessageSizeLimit(10 * 1024 * 1024);
-        registration.setSendBufferSizeLimit(10 * 1024 * 1024);
-        registration.setSendTimeLimit(20 * 1000);
+        // PERF-10: Reducir buffers de 10MB a tamaños seguros para evitar ataques de agotamiento de memoria
+        registration.setMessageSizeLimit(256 * 1024); // 256 KB
+        registration.setSendBufferSizeLimit(512 * 1024); // 512 KB
+        registration.setSendTimeLimit(10 * 1000); // 10 s
     }
 
     @Override
@@ -96,6 +96,31 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     }
 
     private void authenticateConnection(StompHeaderAccessor accessor) {
+        if (!tryAuthenticateWithTicket(accessor)) {
+            tryAuthenticateWithJwtFallback(accessor);
+        }
+    }
+
+    private boolean tryAuthenticateWithTicket(StompHeaderAccessor accessor) {
+        String ticket = accessor.getFirstNativeHeader("X-WS-Ticket");
+        if (ticket == null || ticket.isBlank()) {
+            ticket = accessor.getFirstNativeHeader("ticket");
+        }
+
+        if (ticket != null && webSocketTicketService != null) {
+            var usernameOpt = webSocketTicketService.validateAndConsumeTicket(ticket);
+            if (usernameOpt.isPresent()) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(usernameOpt.get());
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                accessor.setUser(auth);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void tryAuthenticateWithJwtFallback(StompHeaderAccessor accessor) {
         String authHeader = accessor.getFirstNativeHeader("Authorization");
         String jwt = null;
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -104,12 +129,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             jwt = accessor.getFirstNativeHeader("token");
         }
 
-        if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
+        if (jwt != null && jwtUtils != null && jwtUtils.validateJwtToken(jwt)) {
             if (jwtBlacklistService != null && jwtBlacklistService.isBlacklisted(jwt)) {
                 return;
             }
             String username = jwtUtils.getUserNameFromJwtToken(jwt);
-            if (username != null) {
+            if (username != null && userDetailsService != null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -126,7 +151,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         Principal principal = accessor.getUser();
 
-        // 1. Topics administrativos protegidos
+        // SEC-07: Denegar por defecto conexiones no autenticadas en cualquier canal
+        if (principal == null) {
+            throw new AccessDeniedException("Autenticación requerida para suscribirse al canal: " + destination);
+        }
+
+        // 1. Canales administrativos protegidos (solo ADMIN)
         if ((destination.startsWith("/topic/audit")
                 || destination.startsWith("/topic/users")
                 || destination.startsWith("/topic/alerts")
@@ -135,13 +165,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             throw new AccessDeniedException("Acceso no autorizado al canal administrativo: " + destination);
         }
 
-        // 2. Notificaciones privadas por usuario
+        // 2. Canales privados por usuario
         if (destination.startsWith("/topic/notifications/")) {
             String targetUser = destination.substring("/topic/notifications/".length()).trim();
             if (targetUser.contains("/")) {
                 targetUser = targetUser.substring(0, targetUser.indexOf('/'));
             }
-            if (principal == null || (!principal.getName().equalsIgnoreCase(targetUser) && !isAdmin(principal))) {
+            if (!principal.getName().equalsIgnoreCase(targetUser) && !isAdmin(principal)) {
                 throw new AccessDeniedException("Acceso no autorizado a las notificaciones privadas de: " + targetUser);
             }
         }

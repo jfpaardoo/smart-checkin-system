@@ -23,14 +23,13 @@
 @import './static/css/responsive/responsive.css';
 
 #root {
-  overflow-x: hidden;
   width: 100%;
 }
 
 .btn-icon-expand,
 .btn-expand-label {
-    white-space: nowrap !important;
-    overflow: hidden !important;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .da-table td {

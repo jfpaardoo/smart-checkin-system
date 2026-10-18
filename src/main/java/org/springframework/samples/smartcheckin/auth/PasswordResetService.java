@@ -29,6 +29,10 @@ public class PasswordResetService {
 
     @Transactional
     public String createOrUpdatePasswordResetToken(User user) {
+        if (user != null && user.getId() != null) {
+            tokenRepository.deleteByUser_Id(user.getId());
+        }
+
         byte[] randomBytes = new byte[48];
         SECURE_RANDOM.nextBytes(randomBytes);
         String token = Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);

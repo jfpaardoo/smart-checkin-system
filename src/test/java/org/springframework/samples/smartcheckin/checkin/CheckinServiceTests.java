@@ -1,11 +1,14 @@
 package org.springframework.samples.smartcheckin.checkin;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -152,7 +155,7 @@ class CheckinServiceTests {
     @Test
     void shouldRecordOfflineCheckinWithSealedMetadata() {
         User user = createDummyUser();
-        LocalDateTime offlineTime = LocalDateTime.now().minusHours(2);
+        LocalDateTime offlineTime = LocalDateTime.now(ZoneId.systemDefault()).minusHours(2);
         OfflineCheckinRequest req = OfflineCheckinRequest.builder()
                 .userLat(40.4168)
                 .userLng(-3.7038)
@@ -172,5 +175,112 @@ class CheckinServiceTests {
         assertThat(result.getOfflineQrHash()).isEqualTo("abc123hash123456");
         assertThat(result.getCheckInType()).isEqualTo(CheckinType.ENTRADA);
         assertThat(user.getIsWorking()).isTrue();
+    }
+
+    @Test
+    void shouldThrowWhenBatchExceedsFiftyItems() {
+        User user = createDummyUser();
+        List<OfflineCheckinRequest> requests = new ArrayList<>();
+        for (int i = 0; i < 51; i++) {
+            requests.add(OfflineCheckinRequest.builder()
+                    .offlineTimestamp(LocalDateTime.now(ZoneId.systemDefault()))
+                    .qrHash("hash_offline_test_" + i)
+                    .checkInType(CheckinType.ENTRADA)
+                    .build());
+        }
+
+        assertThatThrownBy(() -> checkinService.processOfflineBatch(user, requests))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("no puede superar 50 registros por sincronización");
+    }
+
+    @Test
+    void shouldSortBatchChronologicallyByOfflineTimestamp() {
+        User user = createDummyUser();
+        LocalDateTime t1 = LocalDateTime.now(ZoneId.systemDefault()).minusHours(4);
+        LocalDateTime t2 = LocalDateTime.now(ZoneId.systemDefault()).minusHours(2);
+
+        OfflineCheckinRequest reqSalida = OfflineCheckinRequest.builder()
+                .offlineTimestamp(t2)
+                .qrHash("hash_t2_1234567890")
+                .checkInType(CheckinType.SALIDA)
+                .build();
+
+        OfflineCheckinRequest reqEntrada = OfflineCheckinRequest.builder()
+                .offlineTimestamp(t1)
+                .qrHash("hash_t1_1234567890")
+                .checkInType(CheckinType.ENTRADA)
+                .build();
+
+        // Pass unsorted (reqSalida first, reqEntrada second)
+        List<OfflineCheckinRequest> requests = List.of(reqSalida, reqEntrada);
+
+        when(checkInRepository.existsByOfflineQrHashAndUserId("hash_t1_1234567890", user.getId())).thenReturn(false);
+        when(checkInRepository.existsByOfflineQrHashAndUserId("hash_t2_1234567890", user.getId())).thenReturn(false);
+        when(checkInRepository.save(any(Checkin.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        List<CheckinResponseDTO> results = checkinService.processOfflineBatch(user, requests);
+
+        assertThat(results).hasSize(2);
+        // Should have been processed in order: reqEntrada (t1) first, reqSalida (t2) second
+        assertThat(results.get(0).getCheckInType()).isEqualTo(CheckinType.ENTRADA);
+        assertThat(results.get(1).getCheckInType()).isEqualTo(CheckinType.SALIDA);
+    }
+
+    @Test
+    void shouldRejectSignatureExceedingMaxSize() {
+        User user = createDummyUser();
+        String massiveSignature = "data:image/png;base64," + "A".repeat(500_001);
+
+        OfflineCheckinRequest req = OfflineCheckinRequest.builder()
+                .offlineTimestamp(LocalDateTime.now(ZoneId.systemDefault()))
+                .qrHash("hash_big_sig_12345")
+                .signature(massiveSignature)
+                .checkInType(CheckinType.ENTRADA)
+                .build();
+
+        List<OfflineCheckinRequest> requests = List.of(req);
+
+        assertThatThrownBy(() -> checkinService.processOfflineBatch(user, requests))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("La firma digital excede el tamaño máximo permitido");
+    }
+
+    @Test
+    void shouldRejectQrHashExceedingMaxLength() {
+        User user = createDummyUser();
+        String massiveHash = "H".repeat(256);
+
+        OfflineCheckinRequest req = OfflineCheckinRequest.builder()
+                .offlineTimestamp(LocalDateTime.now(ZoneId.systemDefault()))
+                .qrHash(massiveHash)
+                .checkInType(CheckinType.ENTRADA)
+                .build();
+
+        List<OfflineCheckinRequest> requests = List.of(req);
+
+        assertThatThrownBy(() -> checkinService.processOfflineBatch(user, requests))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("El hash del código QR offline excede la longitud máxima permitida");
+    }
+
+    @Test
+    void shouldRejectDuplicateQrHashForSameUser() {
+        User user = createDummyUser();
+        String qrHash = "reused_qr_hash_12345";
+
+        OfflineCheckinRequest req = OfflineCheckinRequest.builder()
+                .offlineTimestamp(LocalDateTime.now(ZoneId.systemDefault()))
+                .qrHash(qrHash)
+                .checkInType(CheckinType.ENTRADA)
+                .build();
+
+        when(checkInRepository.existsByOfflineQrHashAndUserId(qrHash, user.getId())).thenReturn(true);
+
+        List<OfflineCheckinRequest> requests = List.of(req);
+
+        assertThatThrownBy(() -> checkinService.processOfflineBatch(user, requests))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("El código QR offline ya ha sido utilizado para este usuario");
     }
 }

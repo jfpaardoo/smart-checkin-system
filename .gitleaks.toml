@@ -1,6 +1,11 @@
 [allowlist]
-description = "Ignore translation files and mock test secrets"
+description = "Ignore translation files and mock test dummy tokens"
 paths = [
   '''frontend/public/locales/''',
-  '''src/test/'''
+  '''frontend/build/'''
+]
+regexes = [
+  '''(?i)(mock|test|dummy|sample|fake)[0-9a-zA-Z_-]{8,}''',
+  '''(?i)client_id.*client[0-9a-zA-Z_-]*''',
+  '''(?i)secret.*secret[0-9a-zA-Z_-]*'''
 ]

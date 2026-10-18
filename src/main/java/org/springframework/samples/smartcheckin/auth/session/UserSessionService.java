@@ -1,23 +1,36 @@
 package org.springframework.samples.smartcheckin.auth.session;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.smartcheckin.util.HashUtils;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @SuppressWarnings("null")
 public class UserSessionService {
 
     private final UserSessionRepository userSessionRepository;
+
+    private final Cache<String, Instant> sessionUpdateThrottleCache = Caffeine.newBuilder()
+            .expireAfterWrite(1, TimeUnit.MINUTES)
+            .maximumSize(20_000)
+            .build();
+
+    @Autowired
+    public UserSessionService(UserSessionRepository userSessionRepository) {
+        this.userSessionRepository = userSessionRepository;
+    }
 
     @Transactional
     public void registerOrUpdateSession(String username, String token, String ipAddress, String userAgent) {
@@ -25,11 +38,17 @@ public class UserSessionService {
             return;
         }
         String tokenHash = hashToken(token);
+        if (sessionUpdateThrottleCache.getIfPresent(tokenHash) != null) {
+            return;
+        }
+
         List<UserSession> existingList = userSessionRepository.findAllByTokenHash(tokenHash);
         if (!existingList.isEmpty()) {
             updateExistingSession(existingList, ipAddress);
+            sessionUpdateThrottleCache.put(tokenHash, Instant.now());
         } else {
             createNewSession(username, tokenHash, ipAddress, userAgent);
+            sessionUpdateThrottleCache.put(tokenHash, Instant.now());
         }
     }
 
@@ -120,6 +139,7 @@ public class UserSessionService {
     public void revokeSessionByToken(String token) {
         if (token == null) return;
         String tokenHash = hashToken(token);
+        sessionUpdateThrottleCache.invalidate(tokenHash);
         List<UserSession> sessions = userSessionRepository.findAllByTokenHash(tokenHash);
         for (UserSession s : sessions) {
             s.setActive(false);
@@ -137,6 +157,7 @@ public class UserSessionService {
             if (!s.getTokenHash().equals(currentTokenHash)) {
                 s.setActive(false);
                 userSessionRepository.save(s);
+                sessionUpdateThrottleCache.invalidate(s.getTokenHash());
                 revokedCount++;
             }
         }
@@ -150,6 +171,7 @@ public class UserSessionService {
         for (UserSession s : sessions) {
             s.setActive(false);
             userSessionRepository.save(s);
+            sessionUpdateThrottleCache.invalidate(s.getTokenHash());
         }
     }
 

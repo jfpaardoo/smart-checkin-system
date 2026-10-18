@@ -3,6 +3,7 @@ package org.springframework.samples.smartcheckin.checkin;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,7 +95,11 @@ public class CheckinService {
 
         boolean currentWorking = Boolean.TRUE.equals(lockedUser.getIsWorking());
 
-        for (OfflineCheckinRequest req : requests) {
+        // P0 Antifraude/Integridad: Ordenar cronológicamente por timestamp offline para derivar entradas/salidas en orden real
+        List<OfflineCheckinRequest> sortedRequests = new ArrayList<>(requests);
+        sortedRequests.sort(Comparator.comparing(OfflineCheckinRequest::getOfflineTimestamp, Comparator.nullsLast(Comparator.naturalOrder())));
+
+        for (OfflineCheckinRequest req : sortedRequests) {
             validateOfflineCheckinRequest(req, now, lockedUser.getId());
 
             if (isOfflineEventAlreadyProcessed(req)) {
@@ -105,13 +110,15 @@ public class CheckinService {
             CheckinType derivedType = currentWorking ? CheckinType.SALIDA : CheckinType.ENTRADA;
             String signatureFile = saveOfflineSignature(req.getSignature());
 
+            LocalDateTime eventDate = req.getOfflineTimestamp() != null ? req.getOfflineTimestamp() : now;
+
             Checkin checkin = Checkin.builder()
-                    .checkInDate(now)
+                    .checkInDate(eventDate)
                     .checkInType(derivedType)
                     .user(lockedUser)
                     .signature(signatureFile)
                     .isOffline(true)
-                    .offlineTimestamp(req.getOfflineTimestamp())
+                    .offlineTimestamp(eventDate)
                     .offlineQrHash(req.getQrHash())
                     .offlineEventId(req.getOfflineEventId())
                     .build();
@@ -136,6 +143,9 @@ public class CheckinService {
         if (requests == null || requests.isEmpty()) {
             throw new IllegalArgumentException("La lista de fichajes offline no puede estar vacía.");
         }
+        if (requests.size() > 50) {
+            throw new IllegalArgumentException("El lote de fichajes offline no puede superar 50 registros por sincronización.");
+        }
     }
 
     private void validateOfflineCheckinRequest(OfflineCheckinRequest req, LocalDateTime now, Integer userId) {
@@ -159,6 +169,9 @@ public class CheckinService {
         if (qrHash == null || qrHash.trim().isEmpty() || qrHash.trim().length() < 16) {
             throw new IllegalArgumentException("El hash del código QR offline no es válido o está ausente.");
         }
+        if (qrHash.length() > 255) {
+            throw new IllegalArgumentException("El hash del código QR offline excede la longitud máxima permitida.");
+        }
         if (checkInRepository.existsByOfflineQrHashAndUserId(qrHash, userId)) {
             throw new IllegalArgumentException("El código QR offline ya ha sido utilizado para este usuario.");
         }
@@ -172,6 +185,9 @@ public class CheckinService {
 
     private String saveOfflineSignature(String signature) {
         if (signatureStorageService != null && signature != null && !signature.isBlank()) {
+            if (signature.length() > 500_000) {
+                throw new IllegalArgumentException("La firma digital excede el tamaño máximo permitido (500KB).");
+            }
             return signatureStorageService.saveSignature(signature, "checkins");
         }
         return null;
@@ -197,7 +213,7 @@ public class CheckinService {
         CheckinType derivedType = currentWorking ? CheckinType.SALIDA : CheckinType.ENTRADA;
 
         Checkin checkin = Checkin.builder()
-                .checkInDate(now)
+                .checkInDate(timestamp)
                 .checkInType(derivedType)
                 .user(lockedUser)
                 .signature(request.getSignature())

@@ -17,12 +17,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/cloud-settings")
@@ -31,6 +29,8 @@ public class CloudSettingsRestController {
 
     private final CloudSettingsService cloudSettingsService;
     private final DatabaseBackupService databaseBackupService;
+    private final OAuthStateService oAuthStateService;
+    private final RestTemplate restTemplate;
 
     @Value("${azure.client.id:test-client-id}")
     private String azureClientId;
@@ -51,9 +51,14 @@ public class CloudSettingsRestController {
     private String frontendSettingsPath;
 
     @Autowired
-    public CloudSettingsRestController(CloudSettingsService cloudSettingsService, DatabaseBackupService databaseBackupService) {
+    public CloudSettingsRestController(CloudSettingsService cloudSettingsService,
+                                       DatabaseBackupService databaseBackupService,
+                                       OAuthStateService oAuthStateService,
+                                       @Autowired(required = false) RestTemplate restTemplate) {
         this.cloudSettingsService = cloudSettingsService;
         this.databaseBackupService = databaseBackupService;
+        this.oAuthStateService = oAuthStateService;
+        this.restTemplate = restTemplate != null ? restTemplate : new RestTemplate();
     }
 
     @GetMapping
@@ -92,12 +97,14 @@ public class CloudSettingsRestController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Map<String, String>> getAuthUrl(HttpServletRequest request) {
         String redirectUri = getDynamicRedirectUri(request);
-        String frontendReturnUrl = getDynamicFrontendUrl(request);
+        String adminUsername = request.getUserPrincipal() != null ? request.getUserPrincipal().getName() : "admin";
+        String originOrHost = request.getHeader("Origin");
+        if (originOrHost == null || originOrHost.isBlank()) {
+            originOrHost = request.getHeader("Referer");
+        }
         
-        // Encode state with a UUID and base64 frontend return URL so callback redirects to correct host
-        String encodedFrontend = Base64.getUrlEncoder().withoutPadding()
-                .encodeToString(frontendReturnUrl.getBytes(StandardCharsets.UTF_8));
-        String state = UUID.randomUUID().toString() + "::" + encodedFrontend;
+        // Generar state criptográfico de un solo uso asociado a la sesión de admin y con allowlist de retorno
+        String state = oAuthStateService.generateState(adminUsername, originOrHost);
         
         String url = "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize" +
                 "?client_id=" + azureClientId +
@@ -116,11 +123,17 @@ public class CloudSettingsRestController {
                               HttpServletRequest request,
                               HttpServletResponse response) throws IOException {
         
-        RestTemplate restTemplate = new RestTemplate();
+        // 1. Validar y consumir State criptográfico de un solo uso (SEC-04)
+        Optional<OAuthStateService.OAuthStateItem> stateOpt = oAuthStateService.validateAndConsumeState(state);
+        if (stateOpt.isEmpty()) {
+            log.warn("Rechazada petición de callback OAuth: state inválido, expirado o manipulado ({})", state);
+            response.sendRedirect(oAuthStateService.getCanonicalFrontendSettingsUrl() + "?onedrive=invalid_state");
+            return;
+        }
+
+        String frontendSettingsUrl = stateOpt.get().targetFrontendUrl();
         String tokenUrl = "https://login.microsoftonline.com/consumers/oauth2/v2.0/token";
-        
         String redirectUri = getDynamicRedirectUri(request);
-        String frontendSettingsUrl = resolveFrontendUrlFromState(state, request);
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -215,49 +228,6 @@ public class CloudSettingsRestController {
         return trimTrailingSlash(backendUrl) + oauthCallbackPath;
     }
 
-    private String getDynamicFrontendUrl(jakarta.servlet.http.HttpServletRequest request) {
-        if (isNonLocalUrl(frontendUrl)) {
-            return trimTrailingSlash(frontendUrl) + frontendSettingsPath;
-        }
-        if (request != null) {
-            String origin = request.getHeader("Origin");
-            if (origin != null && !origin.isBlank()) {
-                return trimTrailingSlash(origin) + frontendSettingsPath;
-            }
-            String referer = request.getHeader("Referer");
-            if (referer != null && !referer.isBlank()) {
-                try {
-                    URI uri = new URI(referer);
-                    return trimTrailingSlash(uri.getScheme() + "://" + uri.getAuthority()) + frontendSettingsPath;
-                } catch (Exception e) {
-                    log.debug("Referer header parsing skipped: {}", e.getMessage());
-                }
-            }
-            String baseUri = getBaseUriFromRequest(request);
-            if (!baseUri.isBlank()) {
-                return baseUri + frontendSettingsPath;
-            }
-        }
-        return trimTrailingSlash(frontendUrl) + frontendSettingsPath;
-    }
-
-    private String resolveFrontendUrlFromState(String state, HttpServletRequest request) {
-        if (state != null && state.contains("::")) {
-            try {
-                String[] parts = state.split("::", 2);
-                if (parts.length > 1 && !parts[1].isBlank()) {
-                    byte[] decoded = Base64.getUrlDecoder().decode(parts[1]);
-                    String url = new String(decoded, StandardCharsets.UTF_8);
-                    if (url.startsWith("http://") || url.startsWith("https://")) {
-                        return url;
-                    }
-                }
-            } catch (Exception e) {
-                log.warn("Could not decode frontend URL from OAuth state: {}", e.getMessage());
-            }
-        }
-        return getDynamicFrontendUrl(request);
-    }
 
     @DeleteMapping("/disconnect")
     @PreAuthorize("hasAuthority('ADMIN')")

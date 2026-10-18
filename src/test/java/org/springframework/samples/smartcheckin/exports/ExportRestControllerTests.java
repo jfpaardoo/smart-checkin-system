@@ -567,5 +567,15 @@ class ExportRestControllerTests {
         verify(cloudStorageAdapter, never()).uploadFile(any(), anyString());
         verify(formationRepository, never()).save(any());
     }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void shouldExportAuditLogsSuccessfully() throws Exception {
+        when(auditLogRepository.findTop10000ByOrderByTimestampDesc()).thenReturn(List.of());
+
+        mockMvc.perform(get(BASE_URL + "/audit/csv"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition", containsString("audit_log.csv")));
+    }
 }
 

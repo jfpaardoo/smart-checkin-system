@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,11 +22,16 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode(callSuper = true, exclude = {"formation", "user"})
 @Entity
-@Table(name = "formation_attendances", indexes = {
-    @Index(name = "idx_formation_attendances_user_id", columnList = "user_id"),
-    @Index(name = "idx_formation_attendances_formation_id", columnList = "formation_id"),
-    @Index(name = "idx_formation_attendances_form_user", columnList = "formation_id, user_id")
-})
+@Table(name = "formation_attendances", 
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_formation_attendance_formation_user", columnNames = {"formation_id", "user_id"})
+    },
+    indexes = {
+        @Index(name = "idx_formation_attendances_user_id", columnList = "user_id"),
+        @Index(name = "idx_formation_attendances_formation_id", columnList = "formation_id"),
+        @Index(name = "idx_formation_attendances_form_user", columnList = "formation_id, user_id")
+    }
+)
 public class FormationAttendance extends BaseEntity {
 
     @ManyToOne

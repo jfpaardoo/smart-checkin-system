@@ -68,8 +68,8 @@ export default function FormationDetailsAdmin() {
   return (
     <div className="da-container">
       <div className="da-card">
-        <div className="da-card-header da-admin-header border-0 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 mb-4 border-b border-slate-200/60 dark:border-slate-700/60">
-          <div className="flex items-start sm:items-center gap-3 w-full lg:w-auto">
+        <div className="da-card-header da-admin-header border-0 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 pb-4 mb-4 border-b border-slate-200/60 dark:border-slate-700/60">
+          <div className="flex items-start sm:items-center gap-3 w-full xl:w-auto">
             <Link
               to="/formations"
               className="p-2.5 rounded-2xl bg-white/50 dark:bg-slate-800/50 border border-white/70 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 hover:scale-105 active:scale-95 transition shadow-xs flex items-center justify-center shrink-0 text-decoration-none mt-1 sm:mt-0"
@@ -96,7 +96,7 @@ export default function FormationDetailsAdmin() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 sm:flex sm:flex-wrap items-stretch sm:items-center justify-start sm:justify-end gap-2 w-full lg:w-auto">
+          <div className="grid grid-cols-3 sm:flex sm:flex-wrap xl:flex-nowrap items-stretch sm:items-center justify-start sm:justify-end gap-2 w-full xl:w-auto">
             {formation.isClosed && (
               <>
                 <button
@@ -140,7 +140,7 @@ export default function FormationDetailsAdmin() {
             <CalendarSyncDropdown
               formation={formation}
               buttonLabel={t('formationDetails.syncCalendar', 'Sincronizar Calendario')}
-              className="col-span-3 sm:col-span-1 sm:w-auto"
+              className="col-span-3 sm:col-span-1 sm:w-auto h-[40px] min-h-[40px] px-3.5 !rounded-2xl"
             />
 
             {formation.status === 'DRAFT' && (

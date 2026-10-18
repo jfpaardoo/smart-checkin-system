@@ -334,11 +334,20 @@ public class CsvExportStrategy implements DataExportStrategy {
         if (value == null || value.trim().isEmpty()) {
             return NOT_AVAILABLE;
         }
-        return value.replace(",", " ").trim();
+        String cleaned = value.replace(",", " ").trim();
+        // SEC-10: CSV Formula Injection Prevention (mitigar inyección de comandos en hojas de cálculo)
+        if (cleaned.startsWith("=") || cleaned.startsWith("+") || cleaned.startsWith("-") 
+                || cleaned.startsWith("@") || cleaned.startsWith("\t") || cleaned.startsWith("\r")) {
+            cleaned = "'" + cleaned;
+        }
+        return cleaned;
     }
 
     private String safe(String value) {
-        return value != null ? value : "";
+        if (value == null || value.trim().isEmpty()) {
+            return "";
+        }
+        return sanitize(value);
     }
 
     @Override

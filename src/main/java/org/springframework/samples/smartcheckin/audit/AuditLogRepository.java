@@ -9,6 +9,8 @@ public interface AuditLogRepository extends CrudRepository<AuditLog, Integer> {
 
     List<AuditLog> findAllByOrderByTimestampDesc();
 
+    List<AuditLog> findTop10000ByOrderByTimestampDesc();
+
     List<AuditLog> findAllByOrderByIdAsc();
 
     Optional<AuditLog> findTopByOrderByIdDesc();
