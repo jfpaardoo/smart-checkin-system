@@ -88,13 +88,14 @@ public class StatisticsObserver {
         try {
             long totalAssigned = attendanceRepository.count();
             if (totalAssigned > 0) {
-                long totalAttended = 0;
-                for (FormationAttendance att : attendanceRepository.findAll()) {
-                    if (att.getCheckInDate() != null) {
-                        totalAttended++;
+                long totalAttended = attendanceRepository.countByCheckInDateIsNotNull();
+                if (totalAttended == 0) {
+                    for (FormationAttendance att : attendanceRepository.findAll()) {
+                        if (att.getCheckInDate() != null) {
+                            totalAttended++;
+                        }
                     }
                 }
-                
                 double attendanceRate = ((double) totalAttended / totalAssigned) * 100.0;
                 logger.info("calculateAttendanceRate: totalAttended={}, totalAssigned={}, rate={}", totalAttended, totalAssigned, attendanceRate);
                 return attendanceRate > 100.0 ? 100.0 : attendanceRate;

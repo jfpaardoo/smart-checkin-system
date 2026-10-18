@@ -60,6 +60,7 @@ class StatisticsObserverTests {
         when(attendanceRepository.countByCheckInDateBetween(any(), any())).thenReturn(5L);
         when(formationRepository.countByFormationDateAfter(any())).thenReturn(2L);
         when(attendanceRepository.count()).thenReturn(10L);
+        when(attendanceRepository.countByCheckInDateIsNotNull()).thenReturn(8L);
         List<FormationAttendance> list1 = new ArrayList<>();
         for(int i=0; i<10; i++) {
             FormationAttendance a = new FormationAttendance();
@@ -84,7 +85,8 @@ class StatisticsObserverTests {
         when(statisticsRepository.findFirstByDate(today)).thenReturn(Optional.empty());
         when(attendanceRepository.countByCheckInDateBetween(any(), any())).thenReturn(10L);
         when(formationRepository.countByFormationDateAfter(any())).thenReturn(0L);
-        when(attendanceRepository.count()).thenReturn(10L); // 100% attendance
+        when(attendanceRepository.count()).thenReturn(10L);
+        when(attendanceRepository.countByCheckInDateIsNotNull()).thenReturn(10L);
         List<FormationAttendance> list2 = new ArrayList<>();
         for(int i=0; i<10; i++) {
             FormationAttendance a = new FormationAttendance();

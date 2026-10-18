@@ -1,4 +1,12 @@
 class TokenService {
+    getLocalAccessToken() {
+        try {
+            return window.localStorage.getItem("jwt") || null;
+        } catch {
+            return null;
+        }
+    }
+
     getUser() {
         try {
             const userStr = window.localStorage.getItem("user");

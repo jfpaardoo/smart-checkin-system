@@ -5,10 +5,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.time.Month;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -181,7 +182,7 @@ class CsvExportStrategyTests {
         checkin.setId(1);
         checkin.setUser(null);
         checkin.setCheckInType(CheckinType.SALIDA);
-        checkin.setCheckInDate(LocalDateTime.now());
+        checkin.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
 
         String csv = new String(strategy.exportCheckins(List.of(checkin)), StandardCharsets.UTF_8);
         assertTrue(csv.contains("N/A"));
@@ -195,7 +196,7 @@ class CsvExportStrategyTests {
         checkin.setId(null);
         checkin.setUser(user);
         checkin.setCheckInType(CheckinType.SALIDA);
-        checkin.setCheckInDate(LocalDateTime.now());
+        checkin.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
 
         String csv = new String(strategy.exportCheckins(List.of(checkin)), StandardCharsets.UTF_8);
         assertTrue(csv.contains("0,user"));
@@ -213,7 +214,7 @@ class CsvExportStrategyTests {
 
     @Test
     void testExportFormationsWithAttendanceAndSignatureIncludesHashAndYES() throws IOException {
-        LocalDateTime date = LocalDateTime.now().plusDays(3);
+        LocalDateTime date = LocalDateTime.now(ZoneId.systemDefault()).plusDays(3);
         User user = buildUser(1, "jdoe", "A001", "John", "Doe");
 
         LocalDateTime ci = LocalDateTime.of(2025, Month.JUNE, 1, 9, 0);
@@ -231,7 +232,7 @@ class CsvExportStrategyTests {
 
     @Test
     void testExportFormationsWithAttendanceWithoutSignatureShowsNoAndHashNA() throws IOException {
-        LocalDateTime date = LocalDateTime.now().plusDays(3);
+        LocalDateTime date = LocalDateTime.now(ZoneId.systemDefault()).plusDays(3);
         User user = buildUser(1, "jdoe", "A001", "John", "Doe");
 
         Formation f = buildFormation(11, "Orientation", date, new ArrayList<>());
@@ -354,5 +355,22 @@ class CsvExportStrategyTests {
         assertTrue(csv.contains("Username,analyst"));
         assertTrue(csv.contains("# --- FORMATION SESSIONS ---"));
         assertTrue(csv.contains("101,Security 101"));
+    }
+
+    @Test
+    void testCsvFormulaInjectionEscaping() throws IOException {
+        UserAnalyticsDTO userWithFormula = UserAnalyticsDTO.builder()
+                .userId(1)
+                .username("=cmd|' /C calc'!A0")
+                .firstName("+@Formula")
+                .lastName("-MinusFormula")
+                .companyName("@CompanyFormula")
+                .build();
+
+        String csv = new String(strategy.exportUsers(List.of(userWithFormula)), StandardCharsets.UTF_8);
+        assertTrue(csv.contains("'=cmd|' /C calc'!A0"));
+        assertTrue(csv.contains("'+@Formula"));
+        assertTrue(csv.contains("'-MinusFormula"));
+        assertTrue(csv.contains("'@CompanyFormula"));
     }
 }

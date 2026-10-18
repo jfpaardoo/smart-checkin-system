@@ -30,6 +30,10 @@ class AuditServiceTests {
     @Mock
     private AppMetricsService metricsService;
 
+    private static final String TEST_IP_A = "192.168.1.1";
+    private static final String TEST_IP_B = "10.0.0.1";
+    private static final String TEST_IP_C = "10.0.0.2";
+
     @InjectMocks
     private AuditService auditService;
 
@@ -38,7 +42,7 @@ class AuditServiceTests {
         when(auditLogRepository.findTopByOrderByIdDesc()).thenReturn(Optional.empty());
         when(auditLogRepository.save(any(AuditLog.class))).thenAnswer(i -> i.getArgument(0));
 
-        AuditLog log = new AuditLog("LOGIN_SUCCESS", "admin", "Admin logged in", "192.168.1.1");
+        AuditLog log = new AuditLog("LOGIN_SUCCESS", "admin", "Admin logged in", TEST_IP_A);
         AuditLog saved = auditService.recordAuditLog(log);
 
         assertNotNull(saved);
@@ -54,7 +58,7 @@ class AuditServiceTests {
         when(auditLogRepository.findTopByOrderByIdDesc()).thenReturn(Optional.empty());
         when(auditLogRepository.save(any(AuditLog.class))).thenAnswer(i -> i.getArgument(0));
 
-        AuditLog log = new AuditLog("CHECKIN_SUCCESS", "user1", "Checked in", "192.168.1.1");
+        AuditLog log = new AuditLog("CHECKIN_SUCCESS", "user1", "Checked in", TEST_IP_A);
         AuditLog saved = auditService.recordAuditLog(log);
 
         assertNotNull(saved);
@@ -63,7 +67,7 @@ class AuditServiceTests {
 
     @Test
     void testRecordSecondAuditLogChainsFromFirst() {
-        AuditLog firstLog = new AuditLog("FIRST_ACTION", "user1", "first details", "10.0.0.1");
+        AuditLog firstLog = new AuditLog("FIRST_ACTION", "user1", "first details", TEST_IP_B);
         firstLog.setId(1);
         firstLog.setPreviousHash(AuditService.GENESIS_PREVIOUS_HASH);
         firstLog.setLogHash("a".repeat(64));
@@ -71,7 +75,7 @@ class AuditServiceTests {
         when(auditLogRepository.findTopByOrderByIdDesc()).thenReturn(Optional.of(firstLog));
         when(auditLogRepository.save(any(AuditLog.class))).thenAnswer(i -> i.getArgument(0));
 
-        AuditLog secondLog = new AuditLog("SECOND_ACTION", "user2", "second details", "10.0.0.2");
+        AuditLog secondLog = new AuditLog("SECOND_ACTION", "user2", "second details", TEST_IP_C);
         AuditLog saved = auditService.recordAuditLog(secondLog);
 
         assertNotNull(saved);
@@ -217,5 +221,62 @@ class AuditServiceTests {
 
         assertTrue(result.isValid());
         assertEquals(0, result.getTotalLogsVerified());
+    }
+
+    @Test
+    void testValidateHmacKeyInProductionThrowsWhenMissingOrBlank() {
+        org.springframework.mock.env.MockEnvironment env = new org.springframework.mock.env.MockEnvironment();
+        env.setActiveProfiles("prod");
+        org.springframework.test.util.ReflectionTestUtils.setField(auditService, "environment", env);
+        org.springframework.test.util.ReflectionTestUtils.setField(auditService, "hmacSecretKey", "");
+
+        assertThrows(IllegalStateException.class, () -> auditService.validateHmacKeyInProduction());
+    }
+
+    @Test
+    void testValidateHmacKeyInProductionThrowsWhenEntropyIsTooShort() {
+        org.springframework.mock.env.MockEnvironment env = new org.springframework.mock.env.MockEnvironment();
+        env.setActiveProfiles("prod");
+        org.springframework.test.util.ReflectionTestUtils.setField(auditService, "environment", env);
+        org.springframework.test.util.ReflectionTestUtils.setField(auditService, "hmacSecretKey", "shortSecret123");
+
+        assertThrows(IllegalStateException.class, () -> auditService.validateHmacKeyInProduction());
+    }
+
+    @Test
+    void testValidateHmacKeyInProductionThrowsWhenEqualToJwtSecret() {
+        String sharedKey = "sharedSecretKeyThatIsAtLeast32CharactersLong123456789";
+        org.springframework.mock.env.MockEnvironment env = new org.springframework.mock.env.MockEnvironment();
+        env.setActiveProfiles("prod");
+        env.setProperty("smartcheckin.app.jwtSecret", sharedKey);
+        org.springframework.test.util.ReflectionTestUtils.setField(auditService, "environment", env);
+        org.springframework.test.util.ReflectionTestUtils.setField(auditService, "hmacSecretKey", sharedKey);
+
+        assertThrows(IllegalStateException.class, () -> auditService.validateHmacKeyInProduction());
+    }
+
+    @Test
+    void testValidateHmacKeyInProductionSuccessWhenIndependentAndStrong() {
+        org.springframework.mock.env.MockEnvironment env = new org.springframework.mock.env.MockEnvironment();
+        env.setActiveProfiles("prod");
+        env.setProperty("smartcheckin.app.jwtSecret", "jwtSecretKeyThatIsAtLeast32CharactersLong123456789");
+        org.springframework.test.util.ReflectionTestUtils.setField(auditService, "environment", env);
+        org.springframework.test.util.ReflectionTestUtils.setField(auditService, "hmacSecretKey", "auditIndependentSecretKeyThatIsAtLeast32CharactersLong123");
+
+        assertDoesNotThrow(() -> auditService.validateHmacKeyInProduction());
+    }
+
+    @Test
+    void testValidateHmacKeyInDevUsesFallbackWhenMissing() {
+        org.springframework.mock.env.MockEnvironment env = new org.springframework.mock.env.MockEnvironment();
+        env.setActiveProfiles("dev");
+        org.springframework.test.util.ReflectionTestUtils.setField(auditService, "environment", env);
+        org.springframework.test.util.ReflectionTestUtils.setField(auditService, "hmacSecretKey", null);
+
+        auditService.validateHmacKeyInProduction();
+
+        Object hmacKey = org.springframework.test.util.ReflectionTestUtils.getField(auditService, "hmacSecretKey");
+        assertNotNull(hmacKey);
+        assertFalse(hmacKey.toString().isBlank());
     }
 }

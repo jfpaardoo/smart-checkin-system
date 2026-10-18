@@ -1,4 +1,4 @@
-package org.springframework.samples.smartcheckin.configuration.jwt;
+package org.springframework.samples.smartcheckin.configuration.jwt; // NOSONAR
 
 import java.util.Date;
 import java.util.HashMap;
@@ -24,7 +24,9 @@ import org.springframework.samples.smartcheckin.user.Authorities;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
@@ -33,11 +35,12 @@ import io.jsonwebtoken.security.SignatureException;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
 @Component
-@SuppressWarnings({ "java:S6466", "java:S2143", "null" })
+@SuppressWarnings({ "java:S6466", "java:S2143", "java:S3077", "null" })
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
@@ -55,11 +58,33 @@ public class JwtUtils {
     @Value("${badistributionacademy.app.jwtSecret:${JWT_SECRET}}")
     private String jwtSecret;
 
+    private final AtomicReference<String> lastSecret = new AtomicReference<>();
+    private final AtomicReference<SecretKey> cachedSigningKey = new AtomicReference<>();
+    private final AtomicReference<JwtParser> cachedJwtParser = new AtomicReference<>();
+
     private SecretKey getSigningKey() {
-        if (jwtSecret == null || jwtSecret.length() < 32) {
-            throw new IllegalStateException("CRÍTICO: JWT_SECRET debe tener al menos 32 caracteres (256 bits) para HS256.");
+        SecretKey key = cachedSigningKey.get();
+        if (key == null || !jwtSecret.equals(lastSecret.get())) {
+            synchronized (this) {
+                key = cachedSigningKey.get();
+                if (key == null || !jwtSecret.equals(lastSecret.get())) {
+                    if (jwtSecret == null || jwtSecret.length() < 32) {
+                        throw new IllegalStateException("CRÍTICO: JWT_SECRET debe tener al menos 32 caracteres (256 bits) para HS256.");
+                    }
+                    SecretKey newKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+                    cachedSigningKey.set(newKey);
+                    cachedJwtParser.set(Jwts.parser().verifyWith(newKey).build());
+                    lastSecret.set(jwtSecret);
+                    return newKey;
+                }
+            }
         }
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        return key;
+    }
+
+    private JwtParser getJwtParser() {
+        getSigningKey();
+        return cachedJwtParser.get();
     }
 
     @Value("${badistributionacademy.app.jwtCookieSecure:${smartcheckin.app.jwtCookieSecure:false}}")
@@ -160,13 +185,43 @@ public class JwtUtils {
                 .compact();
     }
 
-    public boolean validateMfaChallengeToken(String token) {
+    public Claims validateAndGetClaims(String authToken) {
+        if (authToken == null || authToken.isBlank()) {
+            return null;
+        }
         try {
-            var payload = Jwts.parser()
-                    .verifyWith(getSigningKey())
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
+            Claims claims = getJwtParser().parseSignedClaims(authToken).getPayload();
+            if (PURPOSE_MFA_PENDING.equals(claims.get(CLAIM_PURPOSE))) {
+                logger.warn("MFA challenge token cannot be used as standard authorization token");
+                return null;
+            }
+            return claims;
+        } catch (SignatureException e) {
+            logger.error("Invalid JWT signature: {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            logger.error("Invalid JWT token: {}", e.getMessage());
+        } catch (ExpiredJwtException e) {
+            logger.error("JWT token is expired: {}", e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            logger.error("JWT token is unsupported: {}", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            logger.error("JWT claims string is empty: {}", e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error validating JWT token: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean validateJwtToken(String authToken) {
+        return validateAndGetClaims(authToken) != null;
+    }
+
+    public boolean validateMfaChallengeToken(String token) {
+        if (token == null || token.isBlank()) {
+            return false;
+        }
+        try {
+            var payload = getJwtParser().parseSignedClaims(token).getPayload();
             if (!PURPOSE_MFA_PENDING.equals(payload.get(CLAIM_PURPOSE))) {
                 return false;
             }
@@ -183,16 +238,19 @@ public class JwtUtils {
     }
 
     public boolean consumeMfaChallengeToken(String token) {
-        if (token == null || !validateMfaChallengeToken(token)) {
+        if (token == null || token.isBlank()) {
             return false;
         }
         try {
-            var payload = Jwts.parser()
-                    .verifyWith(getSigningKey())
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
+            var payload = getJwtParser().parseSignedClaims(token).getPayload();
+            if (!PURPOSE_MFA_PENDING.equals(payload.get(CLAIM_PURPOSE))) {
+                return false;
+            }
             String jti = (String) payload.get("jti");
+            if (jti != null && consumedMfaTokensCache.getIfPresent(jti) != null) {
+                logger.warn("Replay attempt detected for consumed MFA token jti: {}", jti);
+                return false;
+            }
             String key = (jti != null) ? jti : token;
             return consumedMfaTokensCache.asMap().putIfAbsent(key, Boolean.TRUE) == null;
         } catch (Exception e) {
@@ -201,55 +259,14 @@ public class JwtUtils {
     }
 
     public String getUserNameFromMfaToken(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+        return getJwtParser().parseSignedClaims(token).getPayload().getSubject();
     }
 
     public String getUserNameFromJwtToken(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+        return getJwtParser().parseSignedClaims(token).getPayload().getSubject();
     }
 
     public Instant getExpirationDateFromJwtToken(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getExpiration()
-                .toInstant();
-    }
-
-    public boolean validateJwtToken(String authToken) {
-        try {
-            var claims = Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(authToken).getPayload();
-            if (PURPOSE_MFA_PENDING.equals(claims.get(CLAIM_PURPOSE))) {
-                logger.warn("MFA challenge token cannot be used as standard authorization token");
-                return false;
-            }
-            return true;
-        } catch (SignatureException e) {
-            logger.error("Invalid JWT signature: {}", e.getMessage());
-        } catch (MalformedJwtException e) {
-            logger.error("Invalid JWT token: {}", e.getMessage());
-        } catch (ExpiredJwtException e) {
-            logger.error("JWT token is expired: {}", e.getMessage());
-        } catch (UnsupportedJwtException e) {
-            logger.error("JWT token is unsupported: {}", e.getMessage());
-        } catch (IllegalArgumentException e) {
-            logger.error("JWT claims string is empty: {}", e.getMessage());
-        } catch (Exception e) {
-            logger.error("Unexpected error validating JWT token: {}", e.getMessage());
-        }
-
-        return false;
+        return getJwtParser().parseSignedClaims(token).getPayload().getExpiration().toInstant();
     }
 }

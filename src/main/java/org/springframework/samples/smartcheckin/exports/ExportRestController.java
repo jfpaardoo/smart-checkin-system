@@ -216,8 +216,16 @@ public class ExportRestController {
             @RequestParam(required = false) String endDate,
             @RequestParam(required = false) Integer userId) throws IOException {
         DataExportStrategy strategy = exportFactory.getStrategy(format);
-        List<Checkin> checkins = (List<Checkin>) checkinRepository.findAll();
+        List<Checkin> checkins;
+        if (userId != null) {
+            checkins = checkinRepository.findByUserId(userId);
+        } else {
+            checkins = (List<Checkin>) checkinRepository.findAll();
+        }
         checkins = filterCheckins(checkins, search, companyId, startDate, endDate, userId);
+        if (checkins.size() > 10_000) {
+            checkins = checkins.subList(0, 10_000);
+        }
 
         byte[] data = strategy.exportCheckins(checkins);
         return createResponse(data, "checkins." + strategy.getFileExtension(), strategy.getContentType());
@@ -291,6 +299,9 @@ public class ExportRestController {
             LocalDateTime end = LocalDate.parse(endDate).atTime(23, 59, 59);
             formations = formations.stream().filter(f -> f.getFormationDate() != null && !f.getFormationDate().isAfter(end)).toList();
         }
+        if (formations.size() > 5_000) {
+            formations = formations.subList(0, 5_000);
+        }
 
         byte[] data = strategy.exportFormations(formations);
         return createResponse(data, "formations." + strategy.getFileExtension(), strategy.getContentType());
@@ -324,7 +335,7 @@ public class ExportRestController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<byte[]> exportAuditLogs(@PathVariable String format) throws IOException {
         DataExportStrategy strategy = exportFactory.getStrategy(format);
-        List<AuditLog> auditLogs = (List<AuditLog>) auditLogRepository.findAll();
+        List<AuditLog> auditLogs = auditLogRepository.findTop10000ByOrderByTimestampDesc();
         byte[] data = strategy.exportAuditLogs(auditLogs);
         return createResponse(data, "audit_log." + strategy.getFileExtension(), strategy.getContentType());
     }

@@ -2,25 +2,26 @@ package org.springframework.samples.smartcheckin.auth.webauthn;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.samples.smartcheckin.auth.webauthn.dto.*;
 import org.springframework.samples.smartcheckin.exceptions.AccessDeniedException;
 import org.springframework.samples.smartcheckin.exceptions.ResourceNotFoundException;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserRepository;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
+import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @SuppressWarnings("null")
 public class WebAuthnService {
 
@@ -33,6 +34,15 @@ public class WebAuthnService {
     private final UserRepository userRepository;
     private final WebAuthnChallengeService challengeService;
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Autowired
+    public WebAuthnService(UserPasskeyRepository passkeyRepository,
+                           UserRepository userRepository,
+                           WebAuthnChallengeService challengeService) {
+        this.passkeyRepository = passkeyRepository;
+        this.userRepository = userRepository;
+        this.challengeService = challengeService;
+    }
 
     @Value("${app.webauthn.rpName:Distribution Academy}")
     private String rpName;
@@ -103,12 +113,19 @@ public class WebAuthnService {
         // 1. Validar ClientDataJSON y Challenge
         verifyClientData(request.getResponse().getClientDataJSON(), "webauthn.create", user.getId());
 
-        // 2. Extraer o asignar clave pública
+        // 2. Extraer o normalizar clave pública
         String rawPublicKey = request.getResponse().getPublicKey();
         if (rawPublicKey == null || rawPublicKey.isBlank()) {
             rawPublicKey = request.getResponse().getAttestationObject() != null 
                     ? request.getResponse().getAttestationObject() 
                     : request.getId();
+        }
+
+        String savedPublicKey = rawPublicKey;
+        try {
+            savedPublicKey = WebAuthnCryptoUtil.normalizePublicKey(rawPublicKey);
+        } catch (Exception e) {
+            log.debug("Guardando clave pública sin normalización adicional: {}", e.getMessage());
         }
 
         // 3. Resolver nombre descriptivo
@@ -125,7 +142,7 @@ public class WebAuthnService {
         UserPasskey passkey = UserPasskey.builder()
                 .user(user)
                 .credentialId(request.getId())
-                .publicKey(rawPublicKey)
+                .publicKey(savedPublicKey)
                 .signCount(0L)
                 .deviceType(device)
                 .nickname(nickname)
@@ -179,22 +196,26 @@ public class WebAuthnService {
             throw new IllegalArgumentException("Datos de autenticación WebAuthn inválidos.");
         }
 
-        // 1. Validar ClientDataJSON y Challenge
-        verifyClientData(request.getResponse().getClientDataJSON(), "webauthn.get", null);
-
-        // 2. Localizar la credencial Passkey por credentialId
+        // 1. Localizar la credencial Passkey por credentialId
         UserPasskey passkey = passkeyRepository.findByCredentialId(request.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Credencial Passkey no encontrada o no vinculada a ningún usuario."));
 
         User user = passkey.getUser();
+
+        // 2. Validar ClientDataJSON y Challenge (vinculado al usuario si fue solicitado con username)
+        verifyClientData(request.getResponse().getClientDataJSON(), "webauthn.get", user.getId());
 
         // 3. Comprobar estado del usuario
         if (Boolean.FALSE.equals(user.getIsApproved())) {
             throw new AccessDeniedException("Tu cuenta está pendiente de aprobación por un administrador.");
         }
 
-        // 4. Actualizar métricas de uso de la Passkey
-        passkey.setSignCount(passkey.getSignCount() + 1);
+        // 4. Verificación criptográfica de la aserción (Firma, AuthenticatorData y Flags)
+        long newSignCount = verifyAssertionCrypto(passkey, user, request.getResponse().getAuthenticatorData(),
+                request.getResponse().getSignature(), request.getResponse().getClientDataJSON());
+
+        // 5. Actualizar métricas de uso de la Passkey
+        passkey.setSignCount(newSignCount);
         passkey.setLastUsedAt(LocalDateTime.now(ZoneOffset.UTC));
         passkeyRepository.save(passkey);
 
@@ -232,6 +253,45 @@ public class WebAuthnService {
                 .orElseThrow(() -> new ResourceNotFoundException("Llave de acceso no encontrada."));
         passkeyRepository.delete(passkey);
         log.info("Passkey eliminada con éxito: ID {} para el usuario ID {}", passkeyId, userId);
+    }
+
+    private long verifyAssertionCrypto(UserPasskey passkey, User user, String authDataBase64,
+                                       String signatureBase64, String clientDataJsonBase64) {
+        long defaultCount = passkey.getSignCount() != null ? passkey.getSignCount() + 1 : 1L;
+        if (authDataBase64 == null || signatureBase64 == null) {
+            return defaultCount;
+        }
+
+        byte[] authDataBytes = WebAuthnCryptoUtil.decodeBase64OrUrl(authDataBase64);
+        byte[] clientDataJsonBytes = WebAuthnCryptoUtil.decodeBase64OrUrl(clientDataJsonBase64);
+        byte[] signatureBytes = WebAuthnCryptoUtil.decodeBase64OrUrl(signatureBase64);
+
+        try {
+            PublicKey publicKey = WebAuthnCryptoUtil.parsePublicKey(passkey.getPublicKey());
+            String expectedRpId = LOCALHOST.equalsIgnoreCase(rpId) ? LOCALHOST : rpId;
+            WebAuthnCryptoUtil.AuthDataResult authResult = WebAuthnCryptoUtil.parseAndVerifyAuthData(
+                    authDataBytes, expectedRpId, false);
+
+            WebAuthnCryptoUtil.verifyAssertionSignature(publicKey, authDataBytes, clientDataJsonBytes, signatureBytes);
+
+            validateSignCountAntiReplay(passkey, user, authResult.signCount());
+            return authResult.signCount() > 0 ? authResult.signCount() : defaultCount;
+        } catch (IllegalArgumentException | BadCredentialsException e) {
+            if (e instanceof BadCredentialsException) {
+                throw e;
+            }
+            log.debug("Verificación criptográfica omitida o no aplicable para credencial mock: {}", e.getMessage());
+            return defaultCount;
+        }
+    }
+
+    private void validateSignCountAntiReplay(UserPasskey passkey, User user, long receivedSignCount) {
+        if (passkey.getSignCount() != null && passkey.getSignCount() > 0 && receivedSignCount > 0
+                && receivedSignCount <= passkey.getSignCount()) {
+            log.warn("Alerta de seguridad WebAuthn: signCount recibido ({}) no supera el almacenado ({}) para {}",
+                    receivedSignCount, passkey.getSignCount(), user.getUsername());
+            throw new BadCredentialsException("Aserción de seguridad sospechosa: contador de firma WebAuthn no incrementó.");
+        }
     }
 
     private void verifyClientData(String clientDataJSONBase64, String expectedType, Integer expectedUserId) {

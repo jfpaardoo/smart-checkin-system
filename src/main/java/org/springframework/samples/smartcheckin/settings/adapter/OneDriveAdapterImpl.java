@@ -116,7 +116,8 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
         headers.setBearerAuth(accessToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        String body = "{\"type\":\"view\",\"scope\":\"anonymous\"}";
+        // SEC-09: Restringir ámbito de visualización a la organización en lugar de enlace anónimo público
+        String body = "{\"type\":\"view\",\"scope\":\"organization\"}";
         HttpEntity<String> request = new HttpEntity<>(body, headers);
 
         ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};

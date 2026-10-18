@@ -262,7 +262,7 @@ class WebAuthnServiceTests {
                         .build())
                 .build();
 
-        when(challengeService.validateAndConsumeChallenge(LOGIN_CHALLENGE, null)).thenReturn(true);
+        when(challengeService.validateAndConsumeChallenge(eq(LOGIN_CHALLENGE), any())).thenReturn(true);
         when(passkeyRepository.findByCredentialId(CRED_ID)).thenReturn(Optional.of(testPasskey));
 
         User loggedUser = webAuthnService.verifyLogin(request);
@@ -285,7 +285,7 @@ class WebAuthnServiceTests {
                 .build();
 
         testUser.setIsApproved(false);
-        when(challengeService.validateAndConsumeChallenge(LOGIN_CHALLENGE, null)).thenReturn(true);
+        when(challengeService.validateAndConsumeChallenge(eq(LOGIN_CHALLENGE), any())).thenReturn(true);
         when(passkeyRepository.findByCredentialId(CRED_ID)).thenReturn(Optional.of(testPasskey));
 
         assertThrows(AccessDeniedException.class, () -> webAuthnService.verifyLogin(request));
@@ -302,7 +302,6 @@ class WebAuthnServiceTests {
                         .build())
                 .build();
 
-        when(challengeService.validateAndConsumeChallenge(LOGIN_CHALLENGE, null)).thenReturn(true);
         when(passkeyRepository.findByCredentialId("cred-not-found")).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> webAuthnService.verifyLogin(request));

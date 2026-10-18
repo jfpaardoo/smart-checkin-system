@@ -119,6 +119,9 @@ public class CheckinRestController {
         if (requests == null || requests.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of(MESSAGE_KEY, "La lista de fichajes offline no puede estar vacía."));
         }
+        if (requests.size() > 50) {
+            return ResponseEntity.badRequest().body(Map.of(MESSAGE_KEY, "El lote de fichajes offline no puede superar 50 registros por sincronización."));
+        }
 
         try {
             List<CheckinResponseDTO> processed = checkInService.processOfflineBatch(user, requests);

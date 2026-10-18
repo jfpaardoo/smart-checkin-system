@@ -32,7 +32,7 @@ public class AuditService {
     private final Environment environment;
     private AppMetricsService metricsService;
 
-    @Value("${smartcheckin.security.audit.hmac-secret:${smartcheckin.app.jwtSecret:auditHmacSecretKeyDefault12345}}")
+    @Value("${smartcheckin.security.audit.hmac-secret:}")
     private String hmacSecretKey;
 
     public AuditService(AuditLogRepository auditLogRepository, SimpMessagingTemplate messagingTemplate) {
@@ -50,9 +50,26 @@ public class AuditService {
 
     @PostConstruct
     public void validateHmacKeyInProduction() {
-        if (environment != null && environment.acceptsProfiles(Profiles.of("prod", "production"))
-                && (hmacSecretKey == null || "auditHmacSecretKeyDefault12345".equals(hmacSecretKey) || hmacSecretKey.isBlank())) {
-            throw new IllegalStateException("CRÍTICO: El secreto HMAC de auditoría no puede tener el valor por defecto en producción.");
+        if (environment != null && environment.acceptsProfiles(Profiles.of("prod", "production"))) {
+            validateProductionHmacKey();
+        } else if (hmacSecretKey == null || hmacSecretKey.isBlank()) {
+            this.hmacSecretKey = "auditHmacSecretKeyDefaultDevLocal1234567890";
+        }
+    }
+
+    private void validateProductionHmacKey() {
+        String jwtSecret = environment != null ? environment.getProperty("smartcheckin.app.jwtSecret") : null;
+        if (hmacSecretKey == null || hmacSecretKey.isBlank()) {
+            throw new IllegalStateException("CRÍTICO: El secreto HMAC de auditoría (smartcheckin.security.audit.hmac-secret) es obligatorio en producción.");
+        }
+        if (hmacSecretKey.length() < 32) {
+            throw new IllegalStateException("CRÍTICO: El secreto HMAC de auditoría debe tener una longitud mínima de 32 caracteres.");
+        }
+        if ("auditHmacSecretKeyDefault12345".equals(hmacSecretKey) || "auditHmacSecretKeyDefaultDevLocal1234567890".equals(hmacSecretKey)) {
+            throw new IllegalStateException("CRÍTICO: El secreto HMAC de auditoría no puede tener un valor por defecto en producción.");
+        }
+        if (jwtSecret != null && !jwtSecret.isBlank() && hmacSecretKey.equals(jwtSecret)) {
+            throw new IllegalStateException("CRÍTICO: Violación de separación de dominios criptográficos. La clave HMAC de auditoría NO puede ser igual a la clave JWT.");
         }
     }
 

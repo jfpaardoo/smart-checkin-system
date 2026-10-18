@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import tokenService from '../services/token.service';
+import api from '../services/api';
 
 const WebSocketContext = createContext(null);
 
@@ -31,6 +32,20 @@ export const WebSocketProvider = ({ children }) => {
         if (username) {
             const socketUrl = resolveSocketUrl();
 
+            const fetchTicket = async () => {
+                try {
+                    const token = typeof tokenService.getLocalAccessToken === 'function'
+                        ? tokenService.getLocalAccessToken()
+                        : null;
+                    const config = token ? { headers: { 'Authorization': `Bearer ${token}` } } : {};
+                    const res = await api.post('/ws/ticket', null, config);
+                    return res.data?.ticket || null;
+                } catch (e) {
+                    console.warn('No se pudo obtener ticket WebSocket:', e);
+                }
+                return null;
+            };
+
             client = new Client({
                 webSocketFactory: () => new SockJS(socketUrl),
                 connectHeaders: {},
@@ -42,6 +57,19 @@ export const WebSocketProvider = ({ children }) => {
                 reconnectDelay: 5000,
                 heartbeatIncoming: 4000,
                 heartbeatOutgoing: 4000,
+                beforeConnect: async () => {
+                    const ticket = await fetchTicket();
+                    if (ticket) {
+                        client.connectHeaders = { 'X-WS-Ticket': ticket };
+                    } else {
+                        const token = typeof tokenService.getLocalAccessToken === 'function'
+                            ? tokenService.getLocalAccessToken()
+                            : null;
+                        if (token) {
+                            client.connectHeaders = { 'Authorization': `Bearer ${token}` };
+                        }
+                    }
+                },
                 onConnect: () => {
                     setStompClient(client);
                     setIsConnected(true);
@@ -60,7 +88,7 @@ export const WebSocketProvider = ({ children }) => {
 
         return () => {
             if (client) {
-                client.deactivate();
+                void client.deactivate();
             }
         };
     }, [username]);

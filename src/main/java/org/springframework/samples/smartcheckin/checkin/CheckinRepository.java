@@ -38,4 +38,6 @@ public interface CheckinRepository extends CrudRepository<Checkin, Integer> {
     boolean existsByOfflineEventId(String offlineEventId);
 
     boolean existsByOfflineQrHashAndUserId(String offlineQrHash, Integer userId);
+
+    boolean existsBySignatureAndUserId(String signature, Integer userId);
 }

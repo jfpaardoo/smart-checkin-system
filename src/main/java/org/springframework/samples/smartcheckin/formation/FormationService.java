@@ -18,6 +18,7 @@ import org.springframework.samples.smartcheckin.settings.adapter.CloudStorageAda
 import org.springframework.samples.smartcheckin.statistics.events.FormationAttendanceEvent;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -156,15 +157,7 @@ public class FormationService {
     }
 
     private Optional<FormationAttendance> findAttendance(Formation formation, User user) {
-        try {
-            Optional<FormationAttendance> att = attendanceRepository.findByFormationAndUser(formation, user);
-            if (att.isPresent()) {
-                return att;
-            }
-        } catch (Exception e) {
-            // Fallback if duplicate records exist in database (NonUniqueResultException)
-        }
-        return attendanceRepository.findFirstByFormationAndUserOrderByCheckInDateDesc(formation, user);
+        return attendanceRepository.findByFormationAndUser(formation, user);
     }
 
     private Formation doRegisterAttendance(Integer formationId, User user, Boolean withinWorkingHours) {
@@ -188,7 +181,11 @@ public class FormationService {
             att.setUser(user);
             att.setCheckInDate(LocalDateTime.now(ZoneId.systemDefault()));
             att.setWithinWorkingHours(withinHours);
-            attendanceRepository.save(att);
+            try {
+                attendanceRepository.save(att);
+            } catch (DataIntegrityViolationException e) {
+                throw new IllegalArgumentException("Ya estás registrado en esta formación (entrada ya registrada previamente).");
+            }
             formation.getAttendances().add(att);
             try {
                 notificationContext.sendNotification(user, 

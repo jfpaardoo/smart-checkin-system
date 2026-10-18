@@ -4,4 +4,4 @@ secret:
     - "frontend/public/locales/**"
     - "**/locales/**"
     - "**/translation.json"
-    - "src/test/**"
+    - "frontend/build/**"

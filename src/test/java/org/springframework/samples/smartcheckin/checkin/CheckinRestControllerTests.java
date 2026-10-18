@@ -664,7 +664,7 @@ class CheckinRestControllerTests {
 				.userLat(40.4168)
 				.userLng(-3.7038)
 				.signature("data:image/png;base64,dummy")
-				.offlineTimestamp(LocalDateTime.now())
+				.offlineTimestamp(LocalDateTime.now(ZoneId.systemDefault()))
 				.qrHash("hash_val_12345678")
 				.checkInType(CheckinType.ENTRADA)
 				.build();
@@ -682,13 +682,22 @@ class CheckinRestControllerTests {
 
 	@Test
 	@WithMockUser
-	void offlineBatchCheckinEmptyListReturnsBadRequest() throws Exception {
+	void offlineBatchCheckinExceedsMaxBatchSizeReturnsBadRequest() throws Exception {
 		when(userService.findCurrentUser()).thenReturn(user);
+
+		List<OfflineCheckinRequest> list = new java.util.ArrayList<>();
+		for (int i = 0; i < 51; i++) {
+			list.add(OfflineCheckinRequest.builder()
+					.offlineTimestamp(LocalDateTime.now(ZoneId.systemDefault()))
+					.qrHash("hash_" + i)
+					.checkInType(CheckinType.ENTRADA)
+					.build());
+		}
 
 		mockMvc.perform(post(BASE_URL + "/offline-batch")
 				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(List.of())))
+				.content(objectMapper.writeValueAsString(list)))
 				.andExpect(status().isBadRequest());
 	}
 }
