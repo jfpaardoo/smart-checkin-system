@@ -108,4 +108,48 @@ class RateLimitFilterTests {
         rateLimitFilter.doFilterInternal(request, response, filterChain);
         verify(filterChain, times(2)).doFilter(request, response);
     }
+    @Test
+    void testRateLimit_SignupEndpoint_ShouldApplyStrictLimit() throws Exception {
+        when(request.getRequestURI()).thenReturn("/api/v1/auth/signup");
+        when(request.getRemoteAddr()).thenReturn("192.168.1.110");
+
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter);
+        when(response.getWriter()).thenReturn(printWriter);
+
+        for (int i = 0; i < 10; i++) {
+            rateLimitFilter.doFilterInternal(request, response, filterChain);
+        }
+        verify(filterChain, times(10)).doFilter(request, response);
+
+        rateLimitFilter.doFilterInternal(request, response, filterChain);
+        verify(response).setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+    }
+
+    @Test
+    void testRateLimit_QrFichaje_PerUserKey_ShouldAllowMultipleUsersOnSameIP() throws Exception {
+        when(request.getRequestURI()).thenReturn("/api/v1/checkins/qr-fichaje");
+        when(request.getRemoteAddr()).thenReturn("203.0.113.10"); // Same public classroom NAT IP
+
+        org.springframework.security.core.Authentication authUser1 =
+                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken("student1", "pass", java.util.Collections.emptyList());
+        org.springframework.security.core.Authentication authUser2 =
+                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken("student2", "pass", java.util.Collections.emptyList());
+
+        // student1 scans 20 times
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(authUser1);
+        for (int i = 0; i < 20; i++) {
+            rateLimitFilter.doFilterInternal(request, response, filterChain);
+        }
+
+        // student2 scans 20 times on same IP without being blocked
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(authUser2);
+        for (int i = 0; i < 20; i++) {
+            rateLimitFilter.doFilterInternal(request, response, filterChain);
+        }
+
+        verify(filterChain, times(40)).doFilter(request, response);
+        verify(response, never()).setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+    }
 }

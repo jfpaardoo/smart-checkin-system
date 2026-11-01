@@ -177,7 +177,7 @@ const FullscreenPinFooter = ({ isFlashlightMode, totpToken, progress, isEnding, 
                         height: '100%',
                         borderRadius: '9999px',
                         background: isEnding ? '#ef4444' : '#84cc16',
-                        transition: 'width 100ms linear, background 0.4s ease'
+                        transition: 'width 1000ms linear, background 0.4s ease'
                     }}
                 />
             </div>

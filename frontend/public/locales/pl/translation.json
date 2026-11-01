@@ -15,7 +15,8 @@
     "audit": "Dziennik Audytu",
     "cloudSettings": "Ustawienia Chmury",
     "toggleMenu": "Przełącz nawigację",
-    "support": "Pomoc i Wsparcie"
+    "support": "Pomoc i Wsparcie",
+    "checkin": "Odprawa"
   },
   "home": {
     "welcome": "Witaj w Distribution Academy",
@@ -66,7 +67,34 @@
     "department": "Dział",
     "role": "Rola",
     "personalQrTitle": "Osobisty Kod QR Identyfikacji",
-    "personalQrDesc": "Pokaż ten kod instruktorowi lub przełożonemu, aby się zidentyfikować."
+    "personalQrDesc": "Pokaż ten kod instruktorowi lub przełożonemu, aby się zidentyfikować.",
+    "trainingStatus": "Status szkolenia",
+    "inTraining": "W trakcie szkolenia",
+    "noActiveTraining": "Brak aktywnego szkolenia",
+    "inTrainingNotice": "Masz aktywną sesję szkoleniową.",
+    "readyToScanTraining": "Gotowy do zarejestrowania obecności na szkoleniu.",
+    "scanTrainingQR": "Skanuj QR szkolenia",
+    "finishTraining": "Zakończ obecność / Podpisz",
+    "adminWelcome": "Panel Kontrolny i Nadzór",
+    "adminSub": "Monitorowanie w czasie rzeczywistym aktywności, szkoleń i wskaźników systemu.",
+    "employeeHubTitle": "Moje Centrum Szkoleniowe",
+    "employeeHubSub": "Sprawdź nadchodzące sesje, postępy w nauce i status obecności.",
+    "todayOverview": "Podsumowanie Dnia",
+    "activeFormationsMetric": "Aktywne Szkolenia",
+    "averageHoursMetric": "Średnia Godzin",
+    "attendanceRateMetric": "Wskaźnik Obecności",
+    "nextUpcomingSession": "Najbliższa Sesja",
+    "noUpcomingSessions": "Brak zaplanowanych szkoleń na dzisiaj.",
+    "trainingHoursCompleted": "Godziny Szkoleń",
+    "totalTrainingsAttended": "Ukończone Szkolenia",
+    "certificatesAvailable": "Wydane Certyfikaty",
+    "viewAllFormations": "Zobacz Pełny Katalog",
+    "quickQrAction": "Wyświetl QR",
+    "activeSessionBadge": "W Trakcie",
+    "completedBadge": "Zakończona",
+    "pendingCheckinBadge": "Oczekuje na Odprawę",
+    "scheduledDate": "Zaplanowana data",
+    "trainer": "Instruktor"
   },
   "login": {
     "passkeyBtn": "Zaloguj się kluczem dostępu (Passkey)",
@@ -1337,4 +1365,3 @@
     "footerNotice": "Korzystając ze Smart Check-in, oświadczasz, że zapoznałeś się i akceptujesz niniejszy Regulamin."
   }
 }
-

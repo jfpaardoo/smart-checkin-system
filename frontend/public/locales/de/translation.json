@@ -15,7 +15,8 @@
     "audit": "Audit-Protokoll",
     "cloudSettings": "Cloud-Einstellungen",
     "toggleMenu": "Navigation umschalten",
-    "support": "Hilfe & Support"
+    "support": "Hilfe & Support",
+    "checkin": "Einchecken"
   },
   "home": {
     "welcome": "Willkommen bei Distribution Academy",
@@ -66,7 +67,34 @@
     "department": "Abteilung",
     "role": "Rolle",
     "personalQrTitle": "Persönlicher Identifikations-QR",
-    "personalQrDesc": "Zeigen Sie diesen Code dem Ausbilder oder Vorgesetzten zur Identifikation."
+    "personalQrDesc": "Zeigen Sie diesen Code dem Ausbilder oder Vorgesetzten zur Identifikation.",
+    "trainingStatus": "Schulungsstatus",
+    "inTraining": "In Schulung",
+    "noActiveTraining": "Keine aktive Schulung",
+    "inTrainingNotice": "Sie haben eine aktive Schulungssitzung.",
+    "readyToScanTraining": "Bereit zur Registrierung der Schulungsteilnahme.",
+    "scanTrainingQR": "Schulungs-QR scannen",
+    "finishTraining": "Teilnahme beenden / Unterschreiben",
+    "adminWelcome": "Kontroll- und Überwachungszentrum",
+    "adminSub": "Echtzeit-Überwachung von Aktivitäten, Schulungen und Systemmetriken.",
+    "employeeHubTitle": "Mein Schulungszentrum",
+    "employeeHubSub": "Sehen Sie Ihre nächsten Termine, Lernfortschritte und Anwesenheiten ein.",
+    "todayOverview": "Heutige Übersicht",
+    "activeFormationsMetric": "Aktive Schulungen",
+    "averageHoursMetric": "Durchschnittsstunden",
+    "attendanceRateMetric": "Anwesenheitsquote",
+    "nextUpcomingSession": "Nächste Schulungssitzung",
+    "noUpcomingSessions": "Heute stehen keine Schulungen auf Ihrem Plan.",
+    "trainingHoursCompleted": "Schulungsstunden",
+    "totalTrainingsAttended": "Teilgenommene Kurse",
+    "certificatesAvailable": "Ausgestellte Zertifikate",
+    "viewAllFormations": "Katalog ansehen",
+    "quickQrAction": "QR projizieren",
+    "activeSessionBadge": "Laufend",
+    "completedBadge": "Abgeschlossen",
+    "pendingCheckinBadge": "Einchecken ausstehend",
+    "scheduledDate": "Geplantes Datum",
+    "trainer": "Dozent"
   },
   "login": {
     "passkeyBtn": "Mit Passkey anmelden (Biometrie)",
@@ -1337,4 +1365,3 @@
     "footerNotice": "Durch den Zugriff auf und die Nutzung von Smart Check-in erklären Sie, diese Nutzungsbedingungen gelesen und akzeptiert zu haben."
   }
 }
-

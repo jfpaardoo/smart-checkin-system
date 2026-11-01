@@ -58,17 +58,38 @@ const SignatureStep = forwardRef(({ onSubmit, onCancel, submitLabel }, ref) => {
   }));
 
   useEffect(() => {
+    let lastWidth = 0;
+
     const handleResize = () => {
       if (containerRef.current && sigCanvas.current) {
+        const width = containerRef.current.offsetWidth;
+        // En móviles, el scroll o touch dispara eventos de resize vertical al ocultar la barra de URL.
+        // Si el ancho no ha cambiado, evitamos alterar el canvas para no borrar la firma del usuario.
+        if (lastWidth > 0 && Math.abs(width - lastWidth) < 2) {
+          return;
+        }
+
         const canvas = sigCanvas.current.getCanvas();
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        const width = containerRef.current.offsetWidth;
         const height = 160;
+
+        // Guardar trazos vectoriales existentes antes de ajustar dimensiones
+        const existingData = (!sigCanvas.current.isEmpty() && typeof sigCanvas.current.toData === 'function')
+          ? sigCanvas.current.toData()
+          : null;
 
         canvas.width = width * ratio;
         canvas.height = height * ratio;
         canvas.getContext("2d").scale(ratio, ratio);
-        sigCanvas.current.clear();
+
+        // Restaurar trazos vectoriales en lugar de borrar la firma
+        if (existingData && existingData.length > 0 && typeof sigCanvas.current.fromData === 'function') {
+          sigCanvas.current.fromData(existingData);
+        } else {
+          sigCanvas.current.clear();
+        }
+
+        lastWidth = width;
       }
     };
 

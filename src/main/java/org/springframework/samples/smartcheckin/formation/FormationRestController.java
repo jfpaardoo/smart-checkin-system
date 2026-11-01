@@ -126,7 +126,7 @@ public class FormationRestController {
     }
 
     @PostMapping("/{id}/publish")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<Object> publishFormation(
             @PathVariable Integer id,
             @RequestBody(required = false) FormationPublishRequest request) {
@@ -139,7 +139,7 @@ public class FormationRestController {
     }
 
     @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<Formation> createFormation(
             @RequestPart("formation") @Valid FormationRequest request,
             @RequestPart(value = "files", required = false) List<MultipartFile> files) {
@@ -148,7 +148,7 @@ public class FormationRestController {
     }
 
     @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<Formation> updateFormation(
             @PathVariable Integer id,
             @RequestPart("formation") @Valid FormationRequest request,
@@ -158,7 +158,7 @@ public class FormationRestController {
     }
 
     @PostMapping("/{id}/attend")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<Object> registerAttendance(@PathVariable Integer id, @RequestBody(required = false) AttendRequest request) {
         try {
             String code = request != null ? request.getPersonalCode() : null;
@@ -181,7 +181,7 @@ public class FormationRestController {
     }
 
     @PostMapping("/{formationId}/attendances")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<String> addAttendee(@PathVariable Integer formationId, @RequestBody Map<String, Integer> payload) {
         try {
             Integer userId = payload.get("userId");
@@ -193,7 +193,7 @@ public class FormationRestController {
     }
 
     @DeleteMapping("/{formationId}/attendances/{userId}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<String> removeAttendee(@PathVariable Integer formationId, @PathVariable Integer userId) {
         try {
             facade.removeAttendee(formationId, userId);
@@ -204,7 +204,7 @@ public class FormationRestController {
     }
 
     @PostMapping("/{id}/close")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<Object> closeFormation(@PathVariable Integer id, @RequestBody(required = false) CloseFormationRequest request) {
         try {
             Formation closed = formationService.closeFormation(
@@ -224,7 +224,7 @@ public class FormationRestController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<Object> deleteFormation(@PathVariable Integer id) {
         try {
             facade.deleteFormation(id);
@@ -238,7 +238,7 @@ public class FormationRestController {
     }
 
     @GetMapping(value = "/{id}/calendar.ics", produces = "text/calendar")
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('EMPLOYEE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER', 'EMPLOYEE')")
     public ResponseEntity<byte[]> getFormationCalendarIcs(@PathVariable Integer id) {
         Formation f = formationService.findById(id).orElse(null);
         if (f == null) {

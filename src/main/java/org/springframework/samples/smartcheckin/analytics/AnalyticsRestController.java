@@ -27,7 +27,7 @@ public class AnalyticsRestController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<List<PlatformStatistic>> getAnalytics(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate) {
@@ -73,7 +73,7 @@ public class AnalyticsRestController {
     }
 
     @GetMapping("/users")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<List<UserAnalyticsDTO>> getAllUsersAnalytics(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Integer companyId) {
@@ -81,7 +81,7 @@ public class AnalyticsRestController {
     }
 
     @GetMapping("/users/{userId}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<UserAnalyticsDTO> getUserAnalytics(@PathVariable Integer userId) {
         return analyticsService.getUserAnalytics(userId)
                 .map(ResponseEntity::ok)
@@ -89,7 +89,7 @@ public class AnalyticsRestController {
     }
 
     @GetMapping("/formations")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<List<FormationAnalyticsDTO>> getFormationAnalytics() {
         return ResponseEntity.ok(analyticsService.getFormationAnalytics());
     }

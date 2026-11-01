@@ -37,13 +37,14 @@ import org.springframework.beans.factory.annotation.Value;
 public class SecurityConfiguration {
 
     private static final String ADMIN = "ADMIN";
+    private static final String HR_MANAGER = "HR_MANAGER";
     private static final String FORMATIONS_BASE = "/api/v1/formations";
     private static final String FORMATIONS_WILDCARD = "/api/v1/formations/**";
 
     @Bean
     @SuppressWarnings({ "null", "java:S4502" })
     protected SecurityFilterChain configure(HttpSecurity http, AuthEntryPointJwt unauthorizedHandler,
-            AuthTokenFilter authTokenFilter) throws Exception {
+            AuthTokenFilter authTokenFilter, RateLimitFilter rateLimitFilter) throws Exception {
 
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -114,25 +115,25 @@ public class SecurityConfiguration {
 
                         // 6. Administración y HR
                         .requestMatchers("/api/v1/companies", "/api/v1/companies/**").hasAuthority(ADMIN)
-                        .requestMatchers("/api/v1/users/pending", "/api/v1/users/*/approve").hasAuthority(ADMIN)
-                        .requestMatchers("/api/v1/users", "/api/v1/users/**").hasAuthority(ADMIN)
-                        .requestMatchers("/api/v1/analytics/**").hasAuthority(ADMIN)
-                        .requestMatchers("/api/v1/exports/**").hasAuthority(ADMIN)
+                        .requestMatchers("/api/v1/users/pending", "/api/v1/users/*/approve").hasAnyAuthority(ADMIN, HR_MANAGER)
+                        .requestMatchers("/api/v1/users", "/api/v1/users/**").hasAnyAuthority(ADMIN, HR_MANAGER)
+                        .requestMatchers("/api/v1/analytics/**").hasAnyAuthority(ADMIN, HR_MANAGER)
+                        .requestMatchers("/api/v1/exports/**").hasAnyAuthority(ADMIN, HR_MANAGER)
                         .requestMatchers("/api/v1/audit/**").hasAuthority(ADMIN)
                         .requestMatchers("/api/v1/cloud-settings/**").hasAuthority(ADMIN)
                         .requestMatchers(PathRequest.toH2Console()).hasAuthority(ADMIN)
                         .requestMatchers("/h2-console/**").hasAuthority(ADMIN)
 
                         // 7. Formaciones (POST, PUT, DELETE restringidos a ADMIN)
-                        .requestMatchers(HttpMethod.POST, FORMATIONS_BASE).hasAuthority(ADMIN)
-                        .requestMatchers(HttpMethod.PUT, FORMATIONS_BASE, FORMATIONS_WILDCARD).hasAuthority(ADMIN)
-                        .requestMatchers(HttpMethod.DELETE, FORMATIONS_BASE, FORMATIONS_WILDCARD).hasAuthority(ADMIN)
+                        .requestMatchers(HttpMethod.POST, FORMATIONS_BASE).hasAnyAuthority(ADMIN, HR_MANAGER)
+                        .requestMatchers(HttpMethod.PUT, FORMATIONS_BASE, FORMATIONS_WILDCARD).hasAnyAuthority(ADMIN, HR_MANAGER)
+                        .requestMatchers(HttpMethod.DELETE, FORMATIONS_BASE, FORMATIONS_WILDCARD).hasAnyAuthority(ADMIN, HR_MANAGER)
 
                         // 8. Formaciones GET y checkout permitidos para autenticados
                         .requestMatchers(FORMATIONS_BASE, FORMATIONS_WILDCARD).authenticated()
 
                         // 9. Endpoints TOTP restringidos a administradores / formadores
-                        .requestMatchers("/api/v1/totp/**").hasAuthority(ADMIN)
+                        .requestMatchers("/api/v1/totp/**").hasAnyAuthority(ADMIN, HR_MANAGER)
 
                         // 10. Otros endpoints autenticados
                         .requestMatchers("/api/v1/ws/ticket").authenticated()
@@ -144,9 +145,22 @@ public class SecurityConfiguration {
                         // 10. Denegar lo demás por defecto
                         .anyRequest().denyAll())
 
-                .addFilterBefore(new RateLimitFilter(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(rateLimitFilter, AuthTokenFilter.class);
         return http.build();
+    }
+
+    @Bean
+    public RateLimitFilter rateLimitFilter() {
+        return new RateLimitFilter();
+    }
+
+    @Bean
+    public org.springframework.boot.web.servlet.FilterRegistrationBean<RateLimitFilter> rateLimitFilterRegistration(RateLimitFilter filter) {
+        org.springframework.boot.web.servlet.FilterRegistrationBean<RateLimitFilter> registration =
+                new org.springframework.boot.web.servlet.FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
     }
 
     @Bean

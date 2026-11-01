@@ -134,9 +134,13 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
       {step === 'scan' && renderScanStep()}
       {step === 'sign' && (
         <SignatureStep
-          onSubmit={(signatureBase64) => {
-            onSubmitCheckout(signatureBase64, validatedTokenRef.current);
-            handleClose();
+          onSubmit={async (signatureBase64) => {
+            try {
+              await onSubmitCheckout(signatureBase64, validatedTokenRef.current);
+              handleClose();
+            } catch (err) {
+              console.error('Error al procesar checkout de formación:', err);
+            }
           }}
           submitLabel={t('dashboard.confirmCheckout')}
         />

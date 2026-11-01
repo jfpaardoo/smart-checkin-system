@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import tokenService from '../services/token.service';
-import Login from '../auth/login';
 import { CardGhostLoader } from '../components/GhostLoader';
 
 // Cache global de validación reciente para evitar loaders y parpadeos en cada cambio de menú
@@ -27,7 +26,6 @@ const PrivateRoute = ({ children, roles = [] }) => {
 
     const [isLoading, setIsLoading] = useState(!isRecentlyValidated && !!username);
     const [isValid, setIsValid] = useState(isRecentlyValidated ? true : null);
-    const [message, setMessage] = useState(null);
 
     useEffect(() => {
         if (!username) {
@@ -80,7 +78,6 @@ const PrivateRoute = ({ children, roles = [] }) => {
                 if (cancelled) return;
                 if (err.message === 'Sesión expirada') {
                     setIsValid(false);
-                    setMessage(err.message);
                 } else {
                     // Error de conectividad temporal / timeout: mantener sesión local activa
                     console.debug('Aviso de conectividad en validación de sesión:', err.message);
@@ -95,7 +92,7 @@ const PrivateRoute = ({ children, roles = [] }) => {
     }, [username]);
 
     if (!user) {
-        return <Login message={message} navigation={false} />;
+        return <Navigate to="/login" replace />;
     }
 
     if (isLoading) {
@@ -103,7 +100,7 @@ const PrivateRoute = ({ children, roles = [] }) => {
     }
 
     if (isValid !== true) {
-        return <Login message={message} navigation={true} />;
+        return <Navigate to="/login" replace />;
     }
 
     if (!hasRequiredRole) {

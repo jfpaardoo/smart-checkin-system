@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.samples.smartcheckin.auth.payload.request.TwoFactorVerifyRequest;
 import org.springframework.samples.smartcheckin.auth.payload.response.MessageResponse;
@@ -156,17 +158,20 @@ class UserRestController {
     }
 
     @DeleteMapping("/me")
-    public ResponseEntity<Void> deleteMyAccount() {
+    public ResponseEntity<Void> deleteMyAccount(
+            @RequestHeader(value = "X-Confirm-Password", required = false) String headerPassword,
+            @RequestBody(required = false) Map<String, String> body) {
         User user = userService.findCurrentUser();
-        
-        // Ensure admins cannot delete themselves directly if it causes issues, but per GDPR, any user has the right to be forgotten.
-        // We might want to restrict this if they are the ONLY admin, but for now we proceed.
+        String password = headerPassword != null ? headerPassword : (body != null ? body.get("password") : null);
+        if (password != null && !passwordEncoder.matches(password, user.getPassword())) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
         userService.deleteUser(user.getId());
-        
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("me/formations")
+    @Transactional(readOnly = true)
     public ResponseEntity<List<FormationAttendance>> getMyFormations() {
         User currentUser = userService.findCurrentUser();
         List<FormationAttendance> list = currentUser.getFormationAttendances();
@@ -245,8 +250,18 @@ class UserRestController {
 
     @PostMapping("2fa/setup")
     @Auditable(action = "2FA_SETUP_INIT", details = "User initiated 2FA setup")
-    public ResponseEntity<Map<String, String>> setupTwoFactor(@RequestParam(required = false, defaultValue = "APP") String type, Principal principal) {
+    public ResponseEntity<Map<String, String>> setupTwoFactor(
+            @RequestParam(required = false, defaultValue = "APP") String type,
+            @RequestParam(required = false) String currentPassword,
+            Principal principal) {
         User user = userService.findUser(principal.getName());
+        if (Boolean.TRUE.equals(user.getTwoFactorEnabled())) {
+            if (currentPassword == null || !passwordEncoder.matches(currentPassword, user.getPassword())) {
+                Map<String, String> err = new HashMap<>();
+                err.put("message", "Se requiere la contrasena actual para reconfigurar el doble factor.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(err);
+            }
+        }
         byte[] buffer = new byte[10];
         SECURE_RANDOM.nextBytes(buffer);
         String secret = new Base32().encodeAsString(buffer).replace("=", "");
@@ -286,7 +301,7 @@ class UserRestController {
     @Auditable(action = "2FA_ENABLE", details = "User enabled Two-Factor Authentication")
     public ResponseEntity<TwoFactorEnableResponse> enableTwoFactor(@RequestBody @Valid TwoFactorVerifyRequest request, Principal principal) {
         User user = userService.findUser(principal.getName());
-        if (user.getTwoFactorSecret() != null && totpService.validateCode(user.getTwoFactorSecret(), request.getCode())) {
+        if (user.getTwoFactorSecret() != null && totpService.validateCode(user.getTwoFactorSecret(), request.getCode(), user.getUsername())) {
             user.setTwoFactorEnabled(true);
             if (request.getType() != null && !request.getType().isBlank()) {
                 user.setTwoFactorType(request.getType());
@@ -315,7 +330,7 @@ class UserRestController {
     @Auditable(action = "2FA_DISABLE", details = "User disabled Two-Factor Authentication")
     public ResponseEntity<MessageResponse> disableTwoFactor(@RequestBody @Valid TwoFactorVerifyRequest request, Principal principal) {
         User user = userService.findUser(principal.getName());
-        if (user.getTwoFactorSecret() != null && totpService.validateCode(user.getTwoFactorSecret(), request.getCode())) {
+        if (user.getTwoFactorSecret() != null && totpService.validateCode(user.getTwoFactorSecret(), request.getCode(), user.getUsername())) {
             user.setTwoFactorEnabled(false);
             user.setTwoFactorSecret(null);
             if (user.getTwoFactorBackupCodes() != null) {

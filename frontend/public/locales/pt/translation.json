@@ -15,7 +15,8 @@
     "audit": "Auditoria",
     "cloudSettings": "Definições de Nuvem",
     "toggleMenu": "Alternar navegação",
-    "support": "Ajuda e Suporte"
+    "support": "Ajuda e Suporte",
+    "checkin": "Registar"
   },
   "home": {
     "welcome": "Bem-vindo ao Distribution Academy",
@@ -66,7 +67,34 @@
     "department": "Departamento",
     "role": "Cargo",
     "personalQrTitle": "Código QR de Identificação",
-    "personalQrDesc": "Apresente este código ao instrutor ou supervisor para se identificar."
+    "personalQrDesc": "Apresente este código ao instrutor ou supervisor para se identificar.",
+    "trainingStatus": "Estado da Formação",
+    "inTraining": "Em Formação",
+    "noActiveTraining": "Sem Formação Ativa",
+    "inTrainingNotice": "Tem uma sessão de formação em curso.",
+    "readyToScanTraining": "Pronto para registar a presença na formação.",
+    "scanTrainingQR": "Digitalizar QR de Formação",
+    "finishTraining": "Finalizar Presença / Assinar",
+    "adminWelcome": "Painel de Controlo e Supervisão",
+    "adminSub": "Monitorização em tempo real de atividade, formações e métricas do sistema.",
+    "employeeHubTitle": "Meu Centro de Formação",
+    "employeeHubSub": "Consulte as suas próximas sessões, progresso formativo e presenças.",
+    "todayOverview": "Resumo de Hoje",
+    "activeFormationsMetric": "Formações Ativas",
+    "averageHoursMetric": "Horas Médias",
+    "attendanceRateMetric": "Taxa de Presença",
+    "nextUpcomingSession": "Próxima Sessão Agendada",
+    "noUpcomingSessions": "Não tem sessões de formação agendadas para hoje.",
+    "trainingHoursCompleted": "Horas de Formação",
+    "totalTrainingsAttended": "Formações Realizadas",
+    "certificatesAvailable": "Certificados Emitidos",
+    "viewAllFormations": "Ver Catálogo Completo",
+    "quickQrAction": "Projetar QR",
+    "activeSessionBadge": "Em Curso",
+    "completedBadge": "Concluída",
+    "pendingCheckinBadge": "Check-in Pendente",
+    "scheduledDate": "Data agendada",
+    "trainer": "Instrutor"
   },
   "login": {
     "passkeyBtn": "Entrar com Chave de Acesso (Biometria)",
@@ -1337,4 +1365,3 @@
     "footerNotice": "Ao aceder ao Smart Check-in, declara ter lido, compreendido e aceite estes Termos e Condições de Uso."
   }
 }
-

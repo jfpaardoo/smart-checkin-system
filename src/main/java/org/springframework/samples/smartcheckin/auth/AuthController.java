@@ -100,9 +100,7 @@ public class AuthController {
     private final PushNotificationSender pushNotificationSender;
     private final PasswordResetService passwordResetService;
     private final JavaMailSender javaMailSender;
-    @Autowired(required = false)
-    @Qualifier("taskExecutor")
-    private Executor taskExecutor;
+    private final Executor taskExecutor;
     private final CaptchaService captchaService;
     private final CompanyService companyService;
     private final HaveIBeenPwnedService haveIBeenPwnedService;
@@ -136,8 +134,24 @@ public class AuthController {
     @Value("${app.mail.brevo-api-key:}")
     private String brevoApiKey;
 
-    @Autowired(required = false)
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
+
+    public AuthController(AuthenticationManager authenticationManager, UserService userService, 
+            AuthoritiesService authoritiesService, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, 
+            SimpMessagingTemplate messagingTemplate, TotpService totpService, UserDetailsServiceImpl userDetailsServiceImpl,
+            AnomalyDetectionService anomalyDetectionService, HttpServletRequest request,
+            JwtBlacklistService jwtBlacklistService, EmailNotificationSender emailNotificationSender, PushNotificationSender pushNotificationSender,
+            PasswordResetService passwordResetService, JavaMailSender javaMailSender,
+            CaptchaService captchaService, CompanyService companyService,
+            HaveIBeenPwnedService haveIBeenPwnedService, TwoFactorBackupCodeService backupCodeService,
+            UserSessionService userSessionService, WebAuthnService webAuthnService) {
+        this(authenticationManager, userService, authoritiesService, jwtUtils, passwordEncoder,
+                messagingTemplate, totpService, userDetailsServiceImpl, anomalyDetectionService,
+                request, jwtBlacklistService, emailNotificationSender, pushNotificationSender,
+                passwordResetService, javaMailSender, captchaService, companyService,
+                haveIBeenPwnedService, backupCodeService, userSessionService, webAuthnService,
+                null, null);
+    }
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager, UserService userService, 
@@ -148,7 +162,9 @@ public class AuthController {
             PasswordResetService passwordResetService, JavaMailSender javaMailSender,
             CaptchaService captchaService, CompanyService companyService,
             HaveIBeenPwnedService haveIBeenPwnedService, TwoFactorBackupCodeService backupCodeService,
-            UserSessionService userSessionService, WebAuthnService webAuthnService) {
+            UserSessionService userSessionService, WebAuthnService webAuthnService,
+            @Autowired(required = false) @Qualifier("taskExecutor") Executor taskExecutor,
+            @Autowired(required = false) RestTemplate restTemplate) {
         
         this.userService = userService;
         this.authoritiesService = authoritiesService;
@@ -172,6 +188,8 @@ public class AuthController {
         this.backupCodeService = backupCodeService;
         this.userSessionService = userSessionService;
         this.webAuthnService = webAuthnService;
+        this.taskExecutor = taskExecutor;
+        this.restTemplate = restTemplate;
     }
 
     private String extractJwtFromRequest(HttpServletRequest req) {

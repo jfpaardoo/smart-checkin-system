@@ -13,6 +13,11 @@ import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.samples.smartcheckin.user.UserRepository;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
+import java.security.Signature;
+import java.security.spec.ECGenParameterSpec;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -248,8 +253,31 @@ class WebAuthnServiceTests {
     }
 
     @Test
-    void testVerifyLoginSuccess() {
-        String clientJsonBase64 = Base64.getUrlEncoder().withoutPadding().encodeToString(VALID_GET_JSON.getBytes(StandardCharsets.UTF_8));
+    void testVerifyLoginSuccess() throws Exception {
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC");
+        kpg.initialize(new ECGenParameterSpec("secp256r1"));
+        KeyPair keyPair = kpg.generateKeyPair();
+        String pubKeyBase64 = java.util.Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded());
+        testPasskey.setPublicKey(pubKeyBase64);
+
+        byte[] rpIdHash = MessageDigest.getInstance("SHA-256").digest("localhost".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        byte[] authData = new byte[37];
+        System.arraycopy(rpIdHash, 0, authData, 0, 32);
+        authData[32] = (byte) 0x01; // UP
+        authData[33] = 0; authData[34] = 0; authData[35] = 0; authData[36] = 1; // signCount = 1
+
+        byte[] clientJsonBytes = VALID_GET_JSON.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] clientHash = MessageDigest.getInstance("SHA-256").digest(clientJsonBytes);
+        byte[] toSign = new byte[authData.length + 32];
+        System.arraycopy(authData, 0, toSign, 0, authData.length);
+        System.arraycopy(clientHash, 0, toSign, authData.length, 32);
+
+        Signature sig = Signature.getInstance("SHA256withECDSA");
+        sig.initSign(keyPair.getPrivate());
+        sig.update(toSign);
+        byte[] signature = sig.sign();
+
+        String clientJsonBase64 = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(clientJsonBytes);
 
         LoginVerifyRequest request = LoginVerifyRequest.builder()
                 .id(CRED_ID)
@@ -257,8 +285,8 @@ class WebAuthnServiceTests {
                 .type(PUBLIC_KEY_TYPE)
                 .response(LoginVerifyRequest.ResponseData.builder()
                         .clientDataJSON(clientJsonBase64)
-                        .authenticatorData("authData")
-                        .signature("sig")
+                        .authenticatorData(java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(authData))
+                        .signature(java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(signature))
                         .build())
                 .build();
 
@@ -274,6 +302,7 @@ class WebAuthnServiceTests {
     }
 
     @Test
+    
     void testVerifyLoginUserNotApprovedThrowsException() {
         String clientJsonBase64 = Base64.getUrlEncoder().withoutPadding().encodeToString(VALID_GET_JSON.getBytes(StandardCharsets.UTF_8));
 

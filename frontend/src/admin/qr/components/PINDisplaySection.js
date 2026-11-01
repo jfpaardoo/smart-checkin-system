@@ -122,7 +122,7 @@ export default function PINDisplaySection({
                         boxShadow: isEnding
                             ? '0 0 10px rgba(239,68,68,0.7), 0 0 20px rgba(239,68,68,0.35)'
                             : '0 0 10px rgba(179,195,76,0.6), 0 0 20px rgba(204,227,100,0.3)',
-                        transition: 'width 100ms linear, background 0.4s ease, box-shadow 0.4s ease',
+                        transition: 'width 1000ms linear, background 0.4s ease, box-shadow 0.4s ease',
                     }}
                 />
             </div>

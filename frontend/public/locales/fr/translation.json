@@ -15,7 +15,8 @@
     "audit": "Journal d'Audit",
     "cloudSettings": "Paramètres Cloud",
     "toggleMenu": "Basculer la navigation",
-    "support": "Aide et Support"
+    "support": "Aide et Support",
+    "checkin": "Pointer"
   },
   "home": {
     "welcome": "Bienvenue sur Distribution Academy",
@@ -66,7 +67,34 @@
     "department": "Département",
     "role": "Rôle",
     "personalQrTitle": "Code QR d'Identification",
-    "personalQrDesc": "Présentez ce code au formateur ou au superviseur pour vous identifier."
+    "personalQrDesc": "Présentez ce code au formateur ou au superviseur pour vous identifier.",
+    "trainingStatus": "Statut de Formation",
+    "inTraining": "En Formation",
+    "noActiveTraining": "Aucune Formation Active",
+    "inTrainingNotice": "Vous avez une session de formation en cours.",
+    "readyToScanTraining": "Prêt à enregistrer votre présence à la formation.",
+    "scanTrainingQR": "Scanner QR de Formation",
+    "finishTraining": "Terminer la Présence / Signer",
+    "adminWelcome": "Tableau de Bord & Supervision",
+    "adminSub": "Surveillance en temps réel des activités, formations et métriques.",
+    "employeeHubTitle": "Mon Centre de Formation",
+    "employeeHubSub": "Consultez vos prochaines sessions, votre progression et vos présences.",
+    "todayOverview": "Aperçu du Jour",
+    "activeFormationsMetric": "Formations Actives",
+    "averageHoursMetric": "Heures Moyennes",
+    "attendanceRateMetric": "Taux de Présence",
+    "nextUpcomingSession": "Prochaine Session",
+    "noUpcomingSessions": "Aucune session de formation prévue pour aujourd’hui.",
+    "trainingHoursCompleted": "Heures de Formation",
+    "totalTrainingsAttended": "Formations Suivies",
+    "certificatesAvailable": "Certificats Délivrés",
+    "viewAllFormations": "Voir le Catalogue",
+    "quickQrAction": "Projeter le QR",
+    "activeSessionBadge": "En Cours",
+    "completedBadge": "Terminée",
+    "pendingCheckinBadge": "Pointage Requis",
+    "scheduledDate": "Date prévue",
+    "trainer": "Formateur"
   },
   "login": {
     "passkeyBtn": "Connexion par Clé d'Accès (Biométrie)",
@@ -1337,4 +1365,3 @@
     "footerNotice": "En accédant à Smart Check-in, vous reconnaissez avoir pris connaissance et accepté l'ensemble des présentes conditions d'utilisation."
   }
 }
-

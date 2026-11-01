@@ -81,7 +81,7 @@ export default function UserDashboard() {
       <div className="da-card">
         {/* Header de Bienvenida Premium */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-6 mb-6 border-b border-white/40 dark:border-white/10">
-          <div className="flex items-center gap-3.5 text-center sm:text-left">
+          <div className="flex items-center gap-3.5 text-center sm:text-left w-full sm:w-auto">
             <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-[#b3c34c]/30 to-emerald-500/20 text-[#677717] dark:text-[#d4e84a] flex items-center justify-center text-xl shadow-xs border border-white/60 dark:border-white/10 shrink-0">
               <FontAwesomeIcon icon={faGraduationCap} />
             </div>
@@ -97,7 +97,7 @@ export default function UserDashboard() {
 
           <Link 
             to="/checkin" 
-            className="da-btn-primary px-6 py-3 text-xs sm:text-sm font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center gap-2 text-decoration-none shrink-0 w-full sm:w-auto"
+            className="da-btn-primary px-5 py-2.5 text-xs sm:text-sm font-bold rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-102 active:scale-95 flex items-center justify-center gap-2 text-decoration-none shrink-0 w-full sm:w-auto whitespace-nowrap"
           >
             <FontAwesomeIcon icon={faQrcode} className="text-base" />
             <span>{t('dashboard.scannerButton', 'Escanear QR para Fichar')}</span>

@@ -51,8 +51,20 @@ function triggerNativeNotification(text) {
 }
 
 export function NotificationProvider({ children }) {
-  const user = tokenService.getUser();
+  const [user, setUser] = useState(() => tokenService.getUser());
   const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setUser(tokenService.getUser());
+    };
+    window.addEventListener('auth-change', handleAuthChange);
+    window.addEventListener('storage', handleAuthChange);
+    return () => {
+      window.removeEventListener('auth-change', handleAuthChange);
+      window.removeEventListener('storage', handleAuthChange);
+    };
+  }, []);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 

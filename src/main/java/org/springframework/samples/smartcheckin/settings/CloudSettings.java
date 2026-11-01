@@ -3,6 +3,8 @@ package org.springframework.samples.smartcheckin.settings;
 import org.springframework.samples.smartcheckin.model.BaseEntity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import org.springframework.samples.smartcheckin.configuration.StringCryptoConverter;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -23,12 +25,14 @@ public class CloudSettings extends BaseEntity {
     @Column(name = "onedrive_client_id")
     private String oneDriveClientId;
 
+    @Convert(converter = StringCryptoConverter.class)
     @Column(name = "onedrive_client_secret")
     private String oneDriveClientSecret;
 
     @Column(name = "onedrive_tenant_id")
     private String oneDriveTenantId;
 
+    @Convert(converter = StringCryptoConverter.class)
     @Column(name = "onedrive_refresh_token", columnDefinition = "TEXT")
     private String oneDriveRefreshToken;
 

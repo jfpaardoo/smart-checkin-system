@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,6 +51,10 @@ public class DatabaseBackupService {
     private static final String KEY_AUDIT_LOGS = "auditLogs";
     private static final String KEY_CHECKINS = "checkins";
 
+    // Protección anti-Zip-Bomb y OOM
+    private static final int MAX_ZIP_ENTRIES = 10;
+    private static final long MAX_UNCOMPRESSED_SIZE_BYTES = 50L * 1024 * 1024; // 50 MB límite de descompresión
+
     private final CompanyRepository companyRepository;
     private final UserRepository userRepository;
     private final FormationRepository formationRepository;
@@ -92,32 +98,48 @@ public class DatabaseBackupService {
     }
 
     /**
-     * Generates a full compressed backup package containing all core entities.
+     * Generates a full compressed backup package streaming directly into ZipOutputStream
+     * to avoid OutOfMemoryError in constrained heap environments (-Xmx320m).
      */
     public byte[] generateBackupZip() throws IOException {
-        Map<String, Object> exportData = new LinkedHashMap<>();
-        exportData.put("version", "1.3.0");
-        exportData.put("timestamp", LocalDateTime.now(ZoneId.systemDefault()).toString());
-        exportData.put(KEY_COMPANIES, companyRepository.findAll());
-        exportData.put(KEY_USERS, userRepository.findAll());
-        exportData.put(KEY_FORMATIONS, formationRepository.findAll());
-        exportData.put(KEY_ATTENDANCES, formationAttendanceRepository.findAll());
-        exportData.put(KEY_AUDIT_LOGS, auditLogRepository.findAll());
-        if (checkinRepository != null) {
-            exportData.put(KEY_CHECKINS, checkinRepository.findAll());
-        }
-
-        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(exportData);
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
             ZipEntry entry = new ZipEntry("db_backup.json");
             zos.putNextEntry(entry);
-            zos.write(json.getBytes(StandardCharsets.UTF_8));
+
+            try (JsonGenerator jg = objectMapper.getFactory().createGenerator(zos, JsonEncoding.UTF8)) {
+                jg.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
+                jg.writeStartObject();
+                jg.writeStringField("version", "1.3.0");
+                jg.writeStringField("timestamp", LocalDateTime.now(ZoneId.systemDefault()).toString());
+
+                writeEntityArray(jg, KEY_COMPANIES, companyRepository.findAll());
+                writeEntityArray(jg, KEY_USERS, userRepository.findAll());
+                writeEntityArray(jg, KEY_FORMATIONS, formationRepository.findAll());
+                writeEntityArray(jg, KEY_ATTENDANCES, formationAttendanceRepository.findAll());
+                writeEntityArray(jg, KEY_AUDIT_LOGS, auditLogRepository.findAll());
+                if (checkinRepository != null) {
+                    writeEntityArray(jg, KEY_CHECKINS, checkinRepository.findAll());
+                }
+
+                jg.writeEndObject();
+                jg.flush();
+            }
+
             zos.closeEntry();
         }
 
         return baos.toByteArray();
+    }
+
+    private void writeEntityArray(JsonGenerator jg, String key, Iterable<?> entities) throws IOException {
+        jg.writeArrayFieldStart(key);
+        if (entities != null) {
+            for (Object entity : entities) {
+                objectMapper.writeValue(jg, entity);
+            }
+        }
+        jg.writeEndArray();
     }
 
     /**
@@ -181,19 +203,35 @@ public class DatabaseBackupService {
     }
 
     private String extractJsonFromZip(byte[] zipBytes) throws IOException {
+        int entryCount = 0;
+        long totalBytesRead = 0;
+        String jsonResult = null;
+
         try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
-                if ("db_backup.json".equals(entry.getName()) || entry.getName().endsWith(".json")) {
+                entryCount++;
+                if (entryCount > MAX_ZIP_ENTRIES) {
+                    throw new SecurityException("El archivo ZIP contiene demasiadas entradas (posible Zip Bomb).");
+                }
+
+                if (jsonResult == null && ("db_backup.json".equals(entry.getName()) || entry.getName().endsWith(".json"))) {
                     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                    byte[] data = new byte[4096];
+                    byte[] data = new byte[8192];
                     int bytesRead;
                     while ((bytesRead = zis.read(data, 0, data.length)) != -1) {
+                        totalBytesRead += bytesRead;
+                        if (totalBytesRead > MAX_UNCOMPRESSED_SIZE_BYTES) {
+                            throw new SecurityException("El tamaño descomprimido del backup supera el límite de seguridad de 50MB (posible Zip Bomb).");
+                        }
                         buffer.write(data, 0, bytesRead);
                     }
-                    return buffer.toString(StandardCharsets.UTF_8);
+                    jsonResult = buffer.toString(StandardCharsets.UTF_8);
                 }
             }
+        }
+        if (jsonResult != null) {
+            return jsonResult;
         }
         throw new IllegalArgumentException("Invalid backup package: no JSON backup file found inside ZIP.");
     }

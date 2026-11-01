@@ -16,7 +16,6 @@ import org.springframework.samples.smartcheckin.user.UserService;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@SuppressWarnings("null")
 class SignatureRestControllerTests {
 
     private LocalFileSystemService localFileSystemService;

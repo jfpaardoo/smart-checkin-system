@@ -138,17 +138,6 @@ export default function SecureCaptureShield({
             }
         };
 
-        let rAFId;
-        const checkFocusLoop = () => {
-            if (typeof document !== 'undefined') {
-                if (typeof document.hasFocus === 'function' && !document.hasFocus() && document.visibilityState === 'visible') {
-                    triggerBlackout();
-                }
-            }
-            rAFId = requestAnimationFrame(checkFocusLoop);
-        };
-        rAFId = requestAnimationFrame(checkFocusLoop);
-
         window.addEventListener('blur', handleBlur);
         window.addEventListener('focus', handleFocus);
         document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -160,7 +149,6 @@ export default function SecureCaptureShield({
         document.addEventListener('mouseleave', handleMouseLeave);
 
         return () => {
-            if (rAFId) cancelAnimationFrame(rAFId);
             window.removeEventListener('blur', handleBlur);
             window.removeEventListener('focus', handleFocus);
             document.removeEventListener('visibilitychange', handleVisibilityChange);

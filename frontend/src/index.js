@@ -2,7 +2,6 @@ import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import './global.css';
-import '@splidejs/react-splide/css/sea-green';
 import './i18n';
 import App from './App';
 import reportWebVitals from './reportWebVitals';

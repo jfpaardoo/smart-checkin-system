@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.smartcheckin.audit.Auditable;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,8 +34,24 @@ public class CompanyRestController {
 
     @GetMapping
     @PreAuthorize("permitAll()")
-    public ResponseEntity<List<Company>> findAll() {
-        return ResponseEntity.ok(companyService.findAll());
+    public ResponseEntity<List<Company>> findAll(Authentication authentication) {
+        List<Company> companies = companyService.findAll();
+        boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(a -> "ADMIN".equalsIgnoreCase(a.getAuthority()));
+        if (!isAdmin) {
+            return ResponseEntity.ok(companies.stream().map(c -> {
+                Company sanitized = new Company();
+                sanitized.setId(c.getId());
+                sanitized.setName(c.getName());
+                sanitized.setDescription(c.getDescription());
+                sanitized.setAddress(c.getAddress());
+                sanitized.setLatitude(null);
+                sanitized.setLongitude(null);
+                sanitized.setRadiusMeters(null);
+                return sanitized;
+            }).toList());
+        }
+        return ResponseEntity.ok(companies);
     }
 
     @GetMapping("/{id}")

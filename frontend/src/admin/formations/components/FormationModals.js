@@ -9,17 +9,18 @@ import { formatDate } from "../../../util/dateUtils";
 import SecureImage from "../../../components/SecureImage";
 import GlassModal from "../../../components/GlassModal";
 
-export function DocumentPreviewModal({ isOpen, toggle, document }) {
+export function DocumentPreviewModal({ isOpen, toggle, document, fileUrl, fileName }) {
   const { t } = useTranslation();
 
-  if (!document) return null;
+  const doc = document || (fileUrl ? { url: fileUrl, name: fileName || 'Documento' } : null);
+  if (!doc) return null;
 
-  const fileInfo = getFileIconAndType(document.name);
+  const fileInfo = getFileIconAndType(doc.name);
 
   const modalTitle = (
     <div className="truncate max-w-[55vw] text-slate-800 dark:text-slate-100 flex items-center gap-2">
       <FontAwesomeIcon icon={fileInfo.icon} style={{ color: fileInfo.color }} />
-      <span>{document.name}</span>
+      <span>{doc.name}</span>
     </div>
   );
   
@@ -41,16 +42,16 @@ export function DocumentPreviewModal({ isOpen, toggle, document }) {
     >
       <div className="p-2 text-center">
         <div className="p-4 bg-white/70 dark:bg-slate-800/70 rounded-2xl shadow-xs border border-slate-200 dark:border-slate-700">
-          <h5 className="text-slate-800 dark:text-slate-100 mb-3 break-all font-bold">{document.name}</h5>
+          <h5 className="text-slate-800 dark:text-slate-100 mb-3 break-all font-bold">{doc.name}</h5>
           
-          {(!document.url.includes("onedrive.live.com") && !document.url.includes("1drv.ms") && !document.url.includes("sharepoint.com")) ? (
+          {(!doc.url.includes("onedrive.live.com") && !doc.url.includes("1drv.ms") && !doc.url.includes("sharepoint.com")) ? (
             <div className="mb-4 h-[500px] w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
               <iframe 
-                src={getEmbedUrl(document.url)} 
+                src={getEmbedUrl(doc.url)} 
                 width="100%" 
                 height="100%" 
                 style={{ border: 'none' }}
-                title={document.name}
+                title={doc.name}
                 allowFullScreen
                 sandbox="allow-scripts allow-popups"
               ></iframe>
@@ -69,7 +70,7 @@ export function DocumentPreviewModal({ isOpen, toggle, document }) {
             {t('formationDetails.cloudDocDescription', 'Este documento está almacenado de forma segura en la nube. Haz clic en el botón inferior para abrirlo.')}
           </p>
           <a
-            href={document.url}
+            href={doc.url}
             target="_blank"
             rel="noopener noreferrer"
             className="da-btn-blue px-4 py-2 inline-flex items-center justify-center gap-2 text-decoration-none rounded-xl text-xs font-bold"

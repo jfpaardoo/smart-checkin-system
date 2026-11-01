@@ -292,6 +292,7 @@ export default function FormationDetailsModal({ isOpen, onClose, selectedAtt }) 
         <DocumentPreviewModal
           isOpen={!!previewDoc}
           toggle={() => setPreviewDoc(null)}
+          document={previewDoc}
           fileUrl={previewDoc.url}
           fileName={previewDoc.name}
         />

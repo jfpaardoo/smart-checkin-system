@@ -141,4 +141,18 @@ class DatabaseBackupServiceTests {
         verify(formationAttendanceRepository, atLeastOnce()).save(any(FormationAttendance.class));
         verify(auditLogRepository, atLeastOnce()).save(any(AuditLog.class));
     }
+    @Test
+    @DisplayName("Rechaza archivos ZIP maliciosos con demasiadas entradas (anti-Zip-Bomb)")
+    void testRejectZipWithTooManyEntries() throws Exception {
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        try (java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(baos)) {
+            for (int i = 0; i < 15; i++) {
+                zos.putNextEntry(new java.util.zip.ZipEntry("file_" + i + ".json"));
+                zos.write("{}".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                zos.closeEntry();
+            }
+        }
+
+        assertThrows(SecurityException.class, () -> backupService.restoreBackupFromZip(baos.toByteArray()));
+    }
 }

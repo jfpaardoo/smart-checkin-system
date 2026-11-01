@@ -121,7 +121,7 @@ public class User extends BaseEntity implements OrganizationalUnit {
     @JsonIgnore
     private String twoFactorSecret;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "user_2fa_backup_codes", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "code_hash")
     @Builder.Default

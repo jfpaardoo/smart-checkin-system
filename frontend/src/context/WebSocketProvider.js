@@ -21,10 +21,21 @@ const resolveSocketUrl = () => {
 export const WebSocketProvider = ({ children }) => {
     const [stompClient, setStompClient] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
-    
-    // Grab the user to trigger connection
-    const user = tokenService.getUser();
-    const username = user?.username;
+    const [currentUser, setCurrentUser] = useState(() => tokenService.getUser());
+
+    useEffect(() => {
+        const handleAuthChange = () => {
+            setCurrentUser(tokenService.getUser());
+        };
+        window.addEventListener('auth-change', handleAuthChange);
+        window.addEventListener('storage', handleAuthChange);
+        return () => {
+            window.removeEventListener('auth-change', handleAuthChange);
+            window.removeEventListener('storage', handleAuthChange);
+        };
+    }, []);
+
+    const username = currentUser?.username;
 
     useEffect(() => {
         let client = null;
@@ -84,6 +95,9 @@ export const WebSocketProvider = ({ children }) => {
             });
 
             client.activate();
+        } else {
+            setStompClient(null);
+            setIsConnected(false);
         }
 
         return () => {

@@ -277,12 +277,16 @@ public class AnalyticsService {
         boolean hasSig = att.getSignature() != null && !att.getSignature().trim().isEmpty();
         String hash = ExportUtils.generateVerificationHash(att);
 
+        String userEmail = (att.getUser() != null && att.getUser().getEmail() != null)
+                ? att.getUser().getEmail()
+                : (u.getEmail() != null ? u.getEmail() : u.getUsername());
+
         return UserFormationExportDTO.builder()
                 .userId(u.getUserId())
                 .username(u.getUsername())
                 .personalCode(u.getPersonalCode())
                 .fullName(((u.getFirstName() != null ? u.getFirstName() : "") + " " + (u.getLastName() != null ? u.getLastName() : "")).trim())
-                .email(u.getUsername())
+                .email(userEmail)
                 .locator(u.getLocator())
                 .companyId(u.getCompanyId())
                 .companyName(u.getCompanyName())
@@ -379,6 +383,7 @@ public class AnalyticsService {
         return UserAnalyticsDTO.builder()
                 .userId(user.getId())
                 .username(user.getUsername())
+                .email(user.getEmail())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .personalCode(user.getPersonalCode())
@@ -462,8 +467,11 @@ public class AnalyticsService {
             if (c.getCheckInType() == CheckinType.ENTRADA) {
                 lastEntrada = c.getCheckInDate();
             } else if (c.getCheckInType() == CheckinType.SALIDA && lastEntrada != null) {
-                if (c.getCheckInDate() != null && c.getCheckInDate().isAfter(lastEntrada)) {
-                    totalMinutes += Duration.between(lastEntrada.atZone(ZoneOffset.UTC), c.getCheckInDate().atZone(ZoneOffset.UTC)).toMinutes();
+                LocalDateTime salidaDate = (c.getRectifiedCheckOutDate() != null)
+                        ? c.getRectifiedCheckOutDate()
+                        : c.getCheckInDate();
+                if (salidaDate != null && salidaDate.isAfter(lastEntrada)) {
+                    totalMinutes += Duration.between(lastEntrada.atZone(ZoneOffset.UTC), salidaDate.atZone(ZoneOffset.UTC)).toMinutes();
                 }
                 lastEntrada = null;
             }
@@ -484,7 +492,10 @@ public class AnalyticsService {
 
     private long calculateTotalActiveUsers() {
         long total = StreamSupport.stream(userRepository.findAll().spliterator(), false)
-                .filter(u -> u.getAuthority() != null && "USER".equals(u.getAuthority().getAuthority()) && Boolean.TRUE.equals(u.getIsWorking()))
+                .filter(u -> u.getAuthority() != null
+                        && ("EMPLOYEE".equalsIgnoreCase(u.getAuthority().getAuthority()) || "USER".equalsIgnoreCase(u.getAuthority().getAuthority()))
+                        && Boolean.TRUE.equals(u.getIsApproved())
+                        && (u.getUsername() == null || !u.getUsername().startsWith("GDPR_DEL_")))
                 .count();
         return total == 0 ? 1 : total;
     }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaClock, FaSignOutAlt, FaShieldAlt } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import useIdleTimeout from '../hooks/useIdleTimeout';
@@ -26,7 +26,19 @@ const formatTime = (secs) => {
 
 export default function SessionTimeoutModal() {
   const { t } = useTranslation();
-  const user = tokenService.getUser();
+  const [user, setUser] = useState(() => tokenService.getUser());
+
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setUser(tokenService.getUser());
+    };
+    window.addEventListener('auth-change', handleAuthChange);
+    window.addEventListener('storage', handleAuthChange);
+    return () => {
+      window.removeEventListener('auth-change', handleAuthChange);
+      window.removeEventListener('storage', handleAuthChange);
+    };
+  }, []);
 
   const { isWarningModalOpen, remainingSeconds, stayLoggedIn, handleLogout } = useIdleTimeout({
     idleTime: 15 * 60 * 1000, // 15 minutos

@@ -10,11 +10,15 @@ import org.springframework.samples.smartcheckin.user.UserRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Tarea programada para gestionar el ciclo de vida de fichajes olvidados (Auto Check-out).
@@ -37,6 +41,8 @@ public class AutoCheckoutScheduledService {
 
     @Value("${smartcheckin.autocheckout.default-shift-hours:8}")
     private int defaultShiftHours;
+
+    private record PendingNotification(User user, String title, String message) {}
 
     @Autowired
     public AutoCheckoutScheduledService(CheckinRepository checkinRepository,
@@ -73,6 +79,8 @@ public class AutoCheckoutScheduledService {
 
         int processed = 0;
         LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
+        List<PendingNotification> pendingNotifications = new ArrayList<>();
+
         for (Checkin entryCheckin : staleCheckins) {
             User user = entryCheckin.getUser();
             if (user == null || !Boolean.TRUE.equals(user.getIsWorking())) {
@@ -100,22 +108,48 @@ public class AutoCheckoutScheduledService {
             user.setIsWorking(false);
             userRepository.save(user);
 
-            // Emitir notificación transaccional al empleado
-            try {
-                String title = "Salida provisional automática registrada";
-                String message = "Se ha registrado una salida provisional para tu jornada del " +
-                        entryCheckin.getCheckInDate().toLocalDate() +
-                        ". Por favor, confirma o rectifica tus horas reales de salida mediante firma digital.";
-                notificationContext.sendNotification(user, title, message);
-            } catch (Exception e) {
-                logger.warn("No se pudo enviar la notificación de auto check-out al usuario {}: {}",
-                        user.getUsername(), e.getMessage());
-            }
+            // Preparar notificación para emitir tras commit de la transacción
+            String title = "Salida provisional automática registrada";
+            String message = "Se ha registrado una salida provisional para tu jornada del " +
+                    entryCheckin.getCheckInDate().toLocalDate() +
+                    ". Por favor, confirma o rectifica tus horas reales de salida mediante firma digital.";
+            pendingNotifications.add(new PendingNotification(user, title, message));
 
             processed++;
         }
 
+        // Desacoplar las notificaciones de la transacción de base de datos activa
+        dispatchNotificationsAfterCommit(pendingNotifications);
+
         logger.info("Auto check-out completado. Se generaron {} salidas provisionales.", processed);
         return processed;
+    }
+
+    private void dispatchNotificationsAfterCommit(List<PendingNotification> pendingNotifications) {
+        if (pendingNotifications.isEmpty()) {
+            return;
+        }
+
+        Runnable dispatchAction = () -> {
+            for (PendingNotification notif : pendingNotifications) {
+                try {
+                    notificationContext.sendNotification(notif.user(), notif.title(), notif.message());
+                } catch (Exception e) {
+                    logger.warn("No se pudo enviar la notificación de auto check-out al usuario {}: {}",
+                            notif.user().getUsername(), e.getMessage());
+                }
+            }
+        };
+
+        if (TransactionSynchronizationManager.isSynchronizationActive() && TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    CompletableFuture.runAsync(dispatchAction);
+                }
+            });
+        } else {
+            CompletableFuture.runAsync(dispatchAction);
+        }
     }
 }

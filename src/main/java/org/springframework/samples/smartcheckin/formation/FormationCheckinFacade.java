@@ -13,8 +13,12 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.samples.smartcheckin.audit.Auditable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 @Slf4j
@@ -37,6 +41,19 @@ public class FormationCheckinFacade {
         this.cloudStorageAdapter = cloudStorageAdapter;
         this.pushNotificationSender = pushNotificationSender;
         this.notificationContext = notificationContext;
+    }
+
+    private void executeAfterCommitOrNow(Runnable action) {
+        if (TransactionSynchronizationManager.isSynchronizationActive() && TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    CompletableFuture.runAsync(action);
+                }
+            });
+        } else {
+            CompletableFuture.runAsync(action);
+        }
     }
 
     public void notifyFormationsUpdate(Integer formationId) {
@@ -178,12 +195,13 @@ public class FormationCheckinFacade {
         uploadFiles(files, request.getName(), formation.getDocumentUrls());
 
         Formation saved = formationService.saveFormation(formation);
-        notifyFormationsUpdate(saved.getId());
-
-        if (FormationStatus.PUBLISHED.equals(saved.getStatus())) {
-            boolean notifyAll = request.getTargetUserIds() == null || request.getTargetUserIds().isEmpty();
-            dispatchPublicationNotifications(saved, request.getTargetUserIds(), notifyAll);
-        }
+        executeAfterCommitOrNow(() -> {
+            notifyFormationsUpdate(saved.getId());
+            if (FormationStatus.PUBLISHED.equals(saved.getStatus())) {
+                boolean notifyAll = request.getTargetUserIds() == null || request.getTargetUserIds().isEmpty();
+                dispatchPublicationNotifications(saved, request.getTargetUserIds(), notifyAll);
+            }
+        });
 
         return saved;
     }
@@ -195,8 +213,10 @@ public class FormationCheckinFacade {
         boolean notifyAll = publishRequest == null || !Boolean.FALSE.equals(publishRequest.getNotifyAll());
 
         Formation published = formationService.publishFormation(id, targetIds);
-        notifyFormationsUpdate(published.getId());
-        dispatchPublicationNotifications(published, targetIds, notifyAll);
+        executeAfterCommitOrNow(() -> {
+            notifyFormationsUpdate(published.getId());
+            dispatchPublicationNotifications(published, targetIds, notifyAll);
+        });
         return published;
     }
 
@@ -211,12 +231,13 @@ public class FormationCheckinFacade {
         uploadFiles(files, request.getName(), existing.getDocumentUrls());
         
         Formation saved = formationService.updateFormation(existing, id);
-        notifyFormationsUpdate(saved.getId());
-
-        if (FormationStatus.PUBLISHED.equals(saved.getStatus())) {
-            boolean notifyAll = request.getTargetUserIds() == null || request.getTargetUserIds().isEmpty();
-            dispatchUpdateNotifications(saved, request.getTargetUserIds(), notifyAll);
-        }
+        executeAfterCommitOrNow(() -> {
+            notifyFormationsUpdate(saved.getId());
+            if (FormationStatus.PUBLISHED.equals(saved.getStatus())) {
+                boolean notifyAll = request.getTargetUserIds() == null || request.getTargetUserIds().isEmpty();
+                dispatchUpdateNotifications(saved, request.getTargetUserIds(), notifyAll);
+            }
+        });
 
         return saved;
     }
@@ -279,7 +300,7 @@ public class FormationCheckinFacade {
             code = currentUser.getPersonalCode();
         }
         Formation formation = formationService.registerAttendance(id, code, withinWorkingHours);
-        notifyFormationsUpdate(id);
+        executeAfterCommitOrNow(() -> notifyFormationsUpdate(id));
         return formation;
     }
 
@@ -292,7 +313,7 @@ public class FormationCheckinFacade {
     public Formation checkoutAttendance(Integer id, String signature, String token) {
         User currentUser = userService.findCurrentUser();
         Formation formation = formationService.checkoutAttendance(id, currentUser.getPersonalCode(), signature, token);
-        notifyFormationsUpdate(id);
+        executeAfterCommitOrNow(() -> notifyFormationsUpdate(id));
         return formation;
     }
 
@@ -304,23 +325,26 @@ public class FormationCheckinFacade {
     @Auditable(action = "FORMATION_ADD_ATTENDEE", details = "Admin added attendee to formation")
     public void addAttendee(Integer formationId, Integer userId) {
         formationService.addAttendee(formationId, userId);
-        notifyFormationsUpdate(formationId);
+        executeAfterCommitOrNow(() -> notifyFormationsUpdate(formationId));
     }
 
     @Auditable(action = "FORMATION_REMOVE_ATTENDEE", details = "Admin removed attendee from formation")
     public void removeAttendee(Integer formationId, Integer userId) {
         formationService.removeAttendee(formationId, userId);
-        notifyFormationsUpdate(formationId);
+        executeAfterCommitOrNow(() -> notifyFormationsUpdate(formationId));
     }
 
     @Auditable(action = "FORMATION_DELETE", details = "Admin deleted a formation")
     public void deleteFormation(Integer id) {
-        formationService.findById(id).ifPresent(existing -> {
-            if (FormationStatus.PUBLISHED.equals(existing.getStatus())) {
-                dispatchCancellationNotifications(existing);
-            }
-        });
+        Optional<Formation> opt = formationService.findById(id);
         formationService.deleteFormation(id);
-        notifyFormationsUpdate(id);
+        executeAfterCommitOrNow(() -> {
+            opt.ifPresent(existing -> {
+                if (FormationStatus.PUBLISHED.equals(existing.getStatus())) {
+                    dispatchCancellationNotifications(existing);
+                }
+            });
+            notifyFormationsUpdate(id);
+        });
     }
 }

@@ -144,8 +144,6 @@ _site/
 .vscode/
 /.apt_generated/
 coverage/jacoco.xml
-.gitignore
-package-lock.json
 allure-results/*
 target/site/allure-maven-plugin
 target/site/allure-results

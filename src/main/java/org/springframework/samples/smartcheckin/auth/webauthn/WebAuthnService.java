@@ -258,8 +258,8 @@ public class WebAuthnService {
     private long verifyAssertionCrypto(UserPasskey passkey, User user, String authDataBase64,
                                        String signatureBase64, String clientDataJsonBase64) {
         long defaultCount = passkey.getSignCount() != null ? passkey.getSignCount() + 1 : 1L;
-        if (authDataBase64 == null || signatureBase64 == null) {
-            return defaultCount;
+        if (authDataBase64 == null || signatureBase64 == null || clientDataJsonBase64 == null) {
+            throw new BadCredentialsException("Firma o datos de autenticacion WebAuthn no proporcionados.");
         }
 
         byte[] authDataBytes = WebAuthnCryptoUtil.decodeBase64OrUrl(authDataBase64);
@@ -276,12 +276,9 @@ public class WebAuthnService {
 
             validateSignCountAntiReplay(passkey, user, authResult.signCount());
             return authResult.signCount() > 0 ? authResult.signCount() : defaultCount;
-        } catch (IllegalArgumentException | BadCredentialsException e) {
-            if (e instanceof BadCredentialsException) {
-                throw e;
-            }
-            log.debug("Verificación criptográfica omitida o no aplicable para credencial mock: {}", e.getMessage());
-            return defaultCount;
+        } catch (IllegalArgumentException e) {
+            log.warn("Firma o clave publica WebAuthn invalida para usuario {}: {}", user.getUsername(), e.getMessage());
+            throw new BadCredentialsException("Verificacion criptografica de Passkey fallida: " + e.getMessage());
         }
     }
 
