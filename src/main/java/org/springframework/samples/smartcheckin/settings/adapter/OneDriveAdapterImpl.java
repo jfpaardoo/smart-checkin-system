@@ -7,15 +7,20 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.samples.smartcheckin.settings.CloudSettings;
 import org.springframework.samples.smartcheckin.settings.CloudSettingsService;
 
+import java.time.Duration;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.io.IOException;
 
 import lombok.extern.slf4j.Slf4j;
@@ -29,14 +34,39 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
     private static final String FOLDER_GENERAL = "general";
 
     private final CloudSettingsService cloudSettingsService;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
+
+    private record CachedToken(String token, long expiresAtMillis, String refreshTokenHash) {}
+    private final AtomicReference<CachedToken> cachedToken = new AtomicReference<>(null);
 
     @Autowired
-    public OneDriveAdapterImpl(CloudSettingsService cloudSettingsService) {
+    public OneDriveAdapterImpl(CloudSettingsService cloudSettingsService,
+                               @Autowired(required = false) RestTemplate restTemplate) {
         this.cloudSettingsService = cloudSettingsService;
+        if (restTemplate != null) {
+            this.restTemplate = restTemplate;
+        } else {
+            SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+            factory.setConnectTimeout(Duration.ofSeconds(10));
+            factory.setReadTimeout(Duration.ofSeconds(30));
+            this.restTemplate = new RestTemplate(factory);
+        }
     }
 
-    private String getAccessToken(CloudSettings settings) {
+    public OneDriveAdapterImpl(CloudSettingsService cloudSettingsService) {
+        this(cloudSettingsService, null);
+    }
+
+    private synchronized String getAccessToken(CloudSettings settings) {
+        String refreshToken = settings.getOneDriveRefreshToken();
+        String currentHash = refreshToken != null ? String.valueOf(refreshToken.hashCode()) : "";
+        long now = System.currentTimeMillis();
+
+        CachedToken current = cachedToken.get();
+        if (current != null && now < current.expiresAtMillis() && Objects.equals(current.refreshTokenHash(), currentHash)) {
+            return current.token();
+        }
+
         String tenantId = settings.getOneDriveTenantId();
         if (tenantId == null || tenantId.trim().isEmpty()) {
             tenantId = "common";
@@ -65,7 +95,18 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
         if (bodyRes == null || !bodyRes.containsKey("access_token")) {
             throw new IllegalStateException("Empty or invalid response from OneDrive token endpoint");
         }
-        return (String) bodyRes.get("access_token");
+        String token = (String) bodyRes.get("access_token");
+        Number expiresIn = (Number) bodyRes.getOrDefault("expires_in", 3600);
+        long ttlMillis = Math.max(60, expiresIn.longValue() - 300) * 1000L;
+        this.cachedToken.set(new CachedToken(token, now + ttlMillis, currentHash));
+        return token;
+    }
+
+    private void invalidateCachedTokenOnAuthError(Exception e) {
+        if (e instanceof HttpStatusCodeException se && se.getStatusCode().value() == 401) {
+            log.debug("OneDrive 401 Unauthorized encountered, invalidating cached access token");
+            this.cachedToken.set(null);
+        }
     }
 
     @Override
@@ -74,8 +115,6 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
         if (settings == null || settings.getOneDriveClientId() == null) {
             throw new IllegalStateException("OneDrive credentials not configured");
         }
-
-        String accessToken = getAccessToken(settings);
 
         String originalFilename = file.getOriginalFilename();
         String safeFileName = originalFilename != null ? originalFilename.replaceAll(SAFE_CHARS_REGEX, "_") : "file";
@@ -87,26 +126,33 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
 
         String uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/ba/formations/{folder}/documents/{filename}:/content";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        try {
+            String accessToken = getAccessToken(settings);
 
-        HttpEntity<byte[]> request = new HttpEntity<>(file.getBytes(), headers);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(accessToken);
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 
-        ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
-        
-        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                uploadUrl, HttpMethod.PUT, request, responseType, cleanFolderName, safeFileName);
-        
-        Map<String, Object> bodyRes = response.getBody();
-        if (bodyRes == null || !bodyRes.containsKey("id")) {
-            throw new IllegalStateException("Empty or invalid response from OneDrive upload endpoint");
+            HttpEntity<byte[]> request = new HttpEntity<>(file.getBytes(), headers);
+
+            ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
+            
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    uploadUrl, HttpMethod.PUT, request, responseType, cleanFolderName, safeFileName);
+            
+            Map<String, Object> bodyRes = response.getBody();
+            if (bodyRes == null || !bodyRes.containsKey("id")) {
+                throw new IllegalStateException("Empty or invalid response from OneDrive upload endpoint");
+            }
+            String itemId = (String) bodyRes.get("id");
+
+            String shareLink = createShareLink(itemId, accessToken);
+            
+            return originalFilename + "||" + shareLink + "||" + itemId;
+        } catch (Exception e) {
+            invalidateCachedTokenOnAuthError(e);
+            throw e;
         }
-        String itemId = (String) bodyRes.get("id");
-
-        String shareLink = createShareLink(itemId, accessToken);
-        
-        return originalFilename + "||" + shareLink + "||" + itemId;
     }
 
     private String createShareLink(String itemId, String accessToken) {
@@ -142,29 +188,34 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
             throw new IllegalStateException("OneDrive credentials not configured");
         }
 
-        String accessToken = getAccessToken(settings);
         String safeFileName = fileName != null ? fileName.replaceAll(SAFE_CHARS_REGEX, "_") : "backup.zip";
-        
         String uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/ba/backups/{filename}:/content";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        try {
+            String accessToken = getAccessToken(settings);
 
-        HttpEntity<byte[]> request = new HttpEntity<>(data, headers);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(accessToken);
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 
-        ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
-        
-        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                uploadUrl, HttpMethod.PUT, request, responseType, safeFileName);
-        
-        Map<String, Object> bodyRes = response.getBody();
-        if (bodyRes == null || !bodyRes.containsKey("id")) {
-            throw new IllegalStateException("Empty or invalid response from OneDrive upload endpoint");
+            HttpEntity<byte[]> request = new HttpEntity<>(data, headers);
+
+            ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
+            
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    uploadUrl, HttpMethod.PUT, request, responseType, safeFileName);
+            
+            Map<String, Object> bodyRes = response.getBody();
+            if (bodyRes == null || !bodyRes.containsKey("id")) {
+                throw new IllegalStateException("Empty or invalid response from OneDrive upload endpoint");
+            }
+            String itemId = (String) bodyRes.get("id");
+
+            return createShareLink(itemId, accessToken);
+        } catch (Exception e) {
+            invalidateCachedTokenOnAuthError(e);
+            throw e;
         }
-        String itemId = (String) bodyRes.get("id");
-
-        return createShareLink(itemId, accessToken);
     }
 
     @Override
@@ -174,29 +225,35 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
             throw new IllegalStateException("OneDrive credentials not configured");
         }
 
-        String accessToken = getAccessToken(settings);
         String safeFileName = fileName != null ? fileName.replaceAll(SAFE_CHARS_REGEX, "_") : "signature.png";
         
         // Clean pathContext and construct URL, allowing slashes to maintain subfolder structure
         String safePathContext = pathContext != null ? pathContext.replaceAll("[\\\\:*?\"<>|~#%&{}]", "_").trim() : "checkins";
         String uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/ba/{pathContext}/signatures/{filename}:/content";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        try {
+            String accessToken = getAccessToken(settings);
 
-        HttpEntity<byte[]> request = new HttpEntity<>(data, headers);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(accessToken);
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 
-        ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
-        
-        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                uploadUrl, HttpMethod.PUT, request, responseType, safePathContext, safeFileName);
-        
-        Map<String, Object> bodyRes = response.getBody();
-        if (bodyRes == null || !bodyRes.containsKey("id")) {
-            throw new IllegalStateException("Empty or invalid response from OneDrive upload endpoint");
+            HttpEntity<byte[]> request = new HttpEntity<>(data, headers);
+
+            ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
+            
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    uploadUrl, HttpMethod.PUT, request, responseType, safePathContext, safeFileName);
+            
+            Map<String, Object> bodyRes = response.getBody();
+            if (bodyRes == null || !bodyRes.containsKey("id")) {
+                throw new IllegalStateException("Empty or invalid response from OneDrive upload endpoint");
+            }
+            return (String) bodyRes.get("id"); // Returns itemId for storage reference
+        } catch (Exception e) {
+            invalidateCachedTokenOnAuthError(e);
+            throw e;
         }
-        return (String) bodyRes.get("id"); // Returns itemId for storage reference
     }
 
     @Override
@@ -206,7 +263,6 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
             throw new IllegalStateException("OneDrive credentials not configured");
         }
 
-        String accessToken = getAccessToken(settings);
         String safeFileName = fileName != null ? fileName.replaceAll(SAFE_CHARS_REGEX, "_") : "official_sheet.xlsx";
 
         String cleanFolderName = folderName != null ? folderName.replaceAll(SAFE_CHARS_REGEX, "_").trim() : FOLDER_GENERAL;
@@ -217,22 +273,29 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
         // Se archiva en la carpeta administrativa aislada 'official_sheets' de la formación, sin enlace público anónimo
         String uploadUrl = "https://graph.microsoft.com/v1.0/me/drive/root:/ba/formations/{folder}/official_sheets/{filename}:/content";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        try {
+            String accessToken = getAccessToken(settings);
 
-        HttpEntity<byte[]> request = new HttpEntity<>(data, headers);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(accessToken);
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 
-        ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
+            HttpEntity<byte[]> request = new HttpEntity<>(data, headers);
 
-        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                uploadUrl, HttpMethod.PUT, request, responseType, cleanFolderName, safeFileName);
+            ParameterizedTypeReference<Map<String, Object>> responseType = new ParameterizedTypeReference<Map<String, Object>>() {};
 
-        Map<String, Object> bodyRes = response.getBody();
-        if (bodyRes == null || !bodyRes.containsKey("id")) {
-            throw new IllegalStateException("Empty or invalid response from OneDrive upload endpoint");
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    uploadUrl, HttpMethod.PUT, request, responseType, cleanFolderName, safeFileName);
+
+            Map<String, Object> bodyRes = response.getBody();
+            if (bodyRes == null || !bodyRes.containsKey("id")) {
+                throw new IllegalStateException("Empty or invalid response from OneDrive upload endpoint");
+            }
+            return (String) bodyRes.get("id");
+        } catch (Exception e) {
+            invalidateCachedTokenOnAuthError(e);
+            throw e;
         }
-        return (String) bodyRes.get("id");
     }
 
     @Override
@@ -242,19 +305,21 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
             throw new IllegalStateException("OneDrive credentials not configured");
         }
 
-        String accessToken = getAccessToken(settings);
         String downloadUrl = "https://graph.microsoft.com/v1.0/me/drive/items/{itemId}/content";
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        
-        HttpEntity<Void> request = new HttpEntity<>(headers);
-        
         try {
+            String accessToken = getAccessToken(settings);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(accessToken);
+            
+            HttpEntity<Void> request = new HttpEntity<>(headers);
+            
             ResponseEntity<byte[]> response = restTemplate.exchange(
                     downloadUrl, HttpMethod.GET, request, byte[].class, itemId);
             return response.getBody();
         } catch (Exception e) {
+            invalidateCachedTokenOnAuthError(e);
             log.error("Error downloading file from OneDrive: {}", e.getMessage());
             return new byte[0];
         }
@@ -300,6 +365,7 @@ public class OneDriveAdapterImpl implements CloudStorageAdapter {
 
             restTemplate.exchange(deleteUrl, HttpMethod.DELETE, request, Void.class, fileId);
         } catch (Exception e) {
+            invalidateCachedTokenOnAuthError(e);
             log.warn("Advertencia: No se pudo eliminar el archivo en OneDrive: " + e.getMessage());
         }
     }

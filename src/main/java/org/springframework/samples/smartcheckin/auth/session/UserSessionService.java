@@ -27,6 +27,11 @@ public class UserSessionService {
             .maximumSize(20_000)
             .build();
 
+    private final Cache<String, Boolean> sessionStatusCache = Caffeine.newBuilder()
+            .expireAfterWrite(5, TimeUnit.MINUTES)
+            .maximumSize(10_000)
+            .build();
+
     @Autowired
     public UserSessionService(UserSessionRepository userSessionRepository) {
         this.userSessionRepository = userSessionRepository;
@@ -46,9 +51,11 @@ public class UserSessionService {
         if (!existingList.isEmpty()) {
             updateExistingSession(existingList, ipAddress);
             sessionUpdateThrottleCache.put(tokenHash, Instant.now());
+            sessionStatusCache.put(tokenHash, Boolean.TRUE);
         } else {
             createNewSession(username, tokenHash, ipAddress, userAgent);
             sessionUpdateThrottleCache.put(tokenHash, Instant.now());
+            sessionStatusCache.put(tokenHash, Boolean.TRUE);
         }
     }
 
@@ -89,6 +96,7 @@ public class UserSessionService {
                 for (UserSession s : sameDeviceSessions) {
                     s.setActive(false);
                     userSessionRepository.save(s);
+                    sessionStatusCache.invalidate(s.getTokenHash());
                 }
             }
         } catch (Exception e) {
@@ -107,6 +115,7 @@ public class UserSessionService {
                     if (s.getLastActivityAt() != null && s.getLastActivityAt().isBefore(expirationCutoff)) {
                         s.setActive(false);
                         userSessionRepository.save(s);
+                        sessionStatusCache.invalidate(s.getTokenHash());
                         return false;
                     }
                     return true;
@@ -130,6 +139,7 @@ public class UserSessionService {
             UserSession session = opt.get();
             session.setActive(false);
             userSessionRepository.save(session);
+            sessionStatusCache.invalidate(session.getTokenHash());
             return true;
         }
         return false;
@@ -140,6 +150,7 @@ public class UserSessionService {
         if (token == null) return;
         String tokenHash = hashToken(token);
         sessionUpdateThrottleCache.invalidate(tokenHash);
+        sessionStatusCache.invalidate(tokenHash);
         List<UserSession> sessions = userSessionRepository.findAllByTokenHash(tokenHash);
         for (UserSession s : sessions) {
             s.setActive(false);
@@ -158,6 +169,7 @@ public class UserSessionService {
                 s.setActive(false);
                 userSessionRepository.save(s);
                 sessionUpdateThrottleCache.invalidate(s.getTokenHash());
+                sessionStatusCache.invalidate(s.getTokenHash());
                 revokedCount++;
             }
         }
@@ -172,6 +184,7 @@ public class UserSessionService {
             s.setActive(false);
             userSessionRepository.save(s);
             sessionUpdateThrottleCache.invalidate(s.getTokenHash());
+            sessionStatusCache.invalidate(s.getTokenHash());
         }
     }
 
@@ -179,9 +192,11 @@ public class UserSessionService {
     public boolean isSessionActive(String token) {
         if (token == null) return false;
         String tokenHash = hashToken(token);
-        return userSessionRepository.findFirstByTokenHashOrderByLastActivityAtDesc(tokenHash)
+        return Boolean.TRUE.equals(sessionStatusCache.get(tokenHash, k ->
+            userSessionRepository.findFirstByTokenHashOrderByLastActivityAtDesc(k)
                 .map(UserSession::isActive)
-                .orElse(true); // default true if session record not yet migrated
+                .orElse(true) // default true if session record not yet migrated
+        ));
     }
 
     public static String hashToken(String token) {

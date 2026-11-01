@@ -329,6 +329,7 @@ class UserControllerTests {
 	void shouldEnableTwoFactorSuccess() throws Exception {
 		user.setTwoFactorSecret(TOTP_SECRET);
 		when(userService.findUser(anyString())).thenReturn(user);
+		when(totpService.validateCode(eq(TOTP_SECRET), eq(TOTP_CODE), any())).thenReturn(true);
 		when(totpService.validateCode(TOTP_SECRET, TOTP_CODE)).thenReturn(true);
 
 		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
@@ -343,6 +344,7 @@ class UserControllerTests {
 	void shouldDisableTwoFactor() throws Exception {
 		user.setTwoFactorSecret(TOTP_SECRET);
 		when(userService.findUser(anyString())).thenReturn(user);
+		when(totpService.validateCode(eq(TOTP_SECRET), eq(TOTP_CODE), any())).thenReturn(true);
 		when(totpService.validateCode(TOTP_SECRET, TOTP_CODE)).thenReturn(true);
 
 		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
@@ -463,6 +465,7 @@ class UserControllerTests {
 	void shouldFailEnableTwoFactor() throws Exception {
 		user.setTwoFactorSecret(TOTP_SECRET);
 		when(userService.findUser(anyString())).thenReturn(user);
+		when(totpService.validateCode(eq(TOTP_SECRET), eq(TOTP_CODE), any())).thenReturn(false);
 		when(totpService.validateCode(TOTP_SECRET, TOTP_CODE)).thenReturn(false); // Wrong code
 
 		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();
@@ -703,6 +706,7 @@ class UserControllerTests {
     void shouldFailDisableTwoFactorWrongCode() throws Exception {
 		user.setTwoFactorSecret(TOTP_SECRET);
 		when(userService.findUser(anyString())).thenReturn(user);
+		when(totpService.validateCode(eq(TOTP_SECRET), eq("000000"), any())).thenReturn(false);
 		when(totpService.validateCode(TOTP_SECRET, "000000")).thenReturn(false);
 
 		TwoFactorVerifyRequest req = new TwoFactorVerifyRequest();

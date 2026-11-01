@@ -154,7 +154,10 @@ public class AuditService {
             return new AuditIntegrityResult(true, null, "No audit logs in system.", 0);
         }
 
-        String expectedPrevHash = GENESIS_PREVIOUS_HASH;
+        AuditLog firstLog = allLogs.get(0);
+        String expectedPrevHash = (firstLog.getId() != null && firstLog.getId() > 1 && !GENESIS_PREVIOUS_HASH.equals(firstLog.getPreviousHash()))
+                ? firstLog.getPreviousHash()
+                : GENESIS_PREVIOUS_HASH;
         int verifiedCount = 0;
 
         for (AuditLog log : allLogs) {
@@ -181,6 +184,14 @@ public class AuditService {
         );
     }
 
+    private boolean isHmacInvalid(AuditLog log) {
+        if (log.getSignatureHmac() != null && hmacSecretKey != null && !hmacSecretKey.isBlank()) {
+            String expectedHmac = AuditLog.calculateHmac(log.getLogHash(), hmacSecretKey);
+            return expectedHmac != null && !expectedHmac.equalsIgnoreCase(log.getSignatureHmac());
+        }
+        return false;
+    }
+
     private AuditIntegrityResult validateLogIntegrity(AuditLog log, String expectedPrevHash, int verifiedCount) {
         if (isChainBroken(log.getPreviousHash(), expectedPrevHash)) {
             return new AuditIntegrityResult(
@@ -189,6 +200,20 @@ public class AuditService {
                     String.format("Cryptographic chain broken at Log ID %d: previous hash mismatch.", log.getId()),
                     verifiedCount
             );
+        }
+
+        if (isHmacInvalid(log)) {
+            return new AuditIntegrityResult(
+                    false,
+                    log.getId(),
+                    String.format("HMAC signature mismatch at Log ID %d: unauthorized database manipulation detected.", log.getId()),
+                    verifiedCount
+            );
+        }
+
+        boolean isGdprAnonymized = log.getUsername() != null && log.getUsername().startsWith("GDPR_DEL_");
+        if (isGdprAnonymized) {
+            return null;
         }
 
         String computedHash = AuditLog.calculateHash(
@@ -207,18 +232,6 @@ public class AuditService {
                     String.format("Tampering detected at Log ID %d: recorded data does not match SHA-256 hash.", log.getId()),
                     verifiedCount
             );
-        }
-
-        if (log.getSignatureHmac() != null && hmacSecretKey != null && !hmacSecretKey.isBlank()) {
-            String expectedHmac = AuditLog.calculateHmac(log.getLogHash(), hmacSecretKey);
-            if (expectedHmac != null && !expectedHmac.equalsIgnoreCase(log.getSignatureHmac())) {
-                return new AuditIntegrityResult(
-                        false,
-                        log.getId(),
-                        String.format("HMAC signature mismatch at Log ID %d: unauthorized database manipulation detected.", log.getId()),
-                        verifiedCount
-                );
-            }
         }
 
         return null;

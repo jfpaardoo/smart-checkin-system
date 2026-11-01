@@ -166,7 +166,7 @@ public class CheckinService {
     }
 
     private void validateOfflineQrHash(String qrHash, Integer userId) {
-        if (qrHash == null || qrHash.trim().isEmpty() || qrHash.trim().length() < 16) {
+        if (qrHash == null || qrHash.trim().isEmpty() || qrHash.trim().length() < 6) {
             throw new IllegalArgumentException("El hash del código QR offline no es válido o está ausente.");
         }
         if (qrHash.length() > 255) {

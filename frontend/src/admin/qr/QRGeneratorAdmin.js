@@ -106,7 +106,7 @@ export default function QRGeneratorAdmin() {
         };
         
         calculateProgress();
-        const interval = setInterval(calculateProgress, 100);
+        const interval = setInterval(calculateProgress, 1000);
         return () => clearInterval(interval);
     }, [fetchCurrentToken, isFormationClosed]);
 

@@ -4,6 +4,56 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), y este proyecto sigue [Versionado Semántico (SemVer)](https://semver.org/lang/es/).
 
+## [1.4.0](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.4.0) - 2026-11-01
+
+### Interfaz de Usuario, PWA & Experiencia Móvil
+- **Dock de Navegación Móvil de Cristal Líquido (Liquid Glass Dock) (`BottomTabBar.js`, `BottomTabBar.test.js`, `App.css`)**:
+  - Implementada barra inferior de navegación flotante centrada tipo dock (`max-w-md mx-auto`) con estética *Liquid Glass* (`backdrop-blur-xl`, bordes translúcidos, adaptabilidad total a modo claro y oscuro).
+  - Cápsula indicadora deslizante fluida (`da-tab-sliding-capsule`) que se desplaza horizontalmente entre pestañas usando transiciones aceleradas por hardware y curvas bezier suaves (`cubic-bezier(0.25, 1, 0.5, 1)`), eliminando parpadeos y cortes bruscos.
+  - Sincronización reactiva inmediata con el ciclo de vida de la sesión (`window.addEventListener('auth-change')` y `'storage'`), actualizando roles y opciones de navegación en tiempo real sin recargas de página.
+  - Menú adaptativo y contextual según rol:
+    - **ADMIN**: Inicio (`/`), Formaciones (`/formations`), QR Aula (`/qr-generator`), Perfil (`/profile`) (eliminada la opción redundante de fichaje para administradores).
+    - **HR_MANAGER**: Inicio (`/`), Formaciones (`/formations`), Analíticas (`/analytics`), Perfil (`/profile`).
+    - **EMPLOYEE**: Inicio (`/`), Fichar (`/checkin`), Mis Cursos (`/dashboard`), Perfil (`/profile`).
+  - Cobertura completa de pruebas unitarias (`BottomTabBar.test.js`) con verificación de renderizado condicional por rol, reactividad ante autenticación y eventos táctiles con feedback sonoro/háptico.
+- **Rediseño Integral de la Página de Inicio (Home Hub: Employee & Staff) (`home/index.js`)**:
+  - Reemplazo del diseño redundante de fichaje por dos centros de control específicos según el rol del usuario conectado:
+    - **Centro de Formación del Empleado (`EmployeeTrainingHub`)**:
+      - Tarjetas de estado con 3 métricas formativas clave: Formaciones Asistidas, Formaciones Completadas y Certificados Emitidos.
+      - Tarjeta interactiva de Próxima Sesión Convocada con formateo dinámico de fecha/hora localizado (`toLocaleDateString` con el idioma activo), sede, instructor responsable y enlace directo de acceso.
+    - **Centro de Supervisión y Mando (`StaffSupervisionHub`)**:
+      - Tarjetas de monitorización operativa en tiempo real con 3 métricas de gestión: Convocatorias Activas, Horas Promedio por Empleado y Tasa Global de Asistencia.
+      - Cuadrícula de acciones prioritarias de administración (Generación de QR, Convocatorias, Analíticas y Exportes, Gestión de Plantilla) y accesos directos de auditoría y configuración cloud.
+  - Enrutamiento robusto con comodín de redirección segura (`<Route path="*" element={<Navigate to="/" replace />} />`) para rutas inexistentes.
+
+### Internacionalización (i18n)
+- **Sincronización Completa de Idiomas (`frontend/public/locales/`)**:
+  - Incorporadas y sincronizadas todas las nuevas claves de navegación, centros de control, instructores y fechas programadas a través de los 8 idiomas oficiales soportados: Español (`es`), Inglés (`en`), Francés (`fr`), Alemán (`de`), Portugués (`pt`), Polaco (`pl`), Rumano (`ro`) y Búlgaro (`bg`).
+
+### Seguridad & Autenticación Reforzada
+- **Corrección de Bypass en Autenticación Biométrica WebAuthn (`webauthnUtil.js`, `AuthController.java`)**:
+  - Mitigado el fallo silencioso en el flujo de credenciales WebAuthn mediante validación forzada en el backend con challenge criptográfico no reutilizable.
+  - Soporte de *Step-Up Authentication* para operaciones sensibles (exportación masiva de actas, modificación de configuraciones de nube y cambios de roles de usuario).
+- **Protocolo de Sincronización Offline Anti-Manipulación (`OfflineQueue.js`, `AttendanceSyncController.java`)**:
+  - Validación de integridad mediante firma HMAC-SHA256 en lotes de sincronización offline, impidiendo la alteración local de marcas temporales y coordenadas GPS.
+  - Ventana máxima defensiva de sincronización offline de 72 horas para rechazar asistencias manipuladas retroactivamente.
+- **Defensa ante Ataques de Denegación de Servicio (DoS)**:
+  - Implementada protección contra *Zip Bomb* en descompresión de paquetes documentales mediante límites de ratio de compresión y tamaño máximo expandido.
+  - Mitigación de fugas de memoria (OOM) en exportación de actas mediante streaming directo hacia el cliente sin buffering en memoria heap.
+- **Mecanismos de Respaldo y Gestión de Sesiones**:
+  - Sistema de códigos de respaldo (*Backup Codes*) de un solo uso para recuperación segura ante pérdida de dispositivo 2FA TOTP.
+  - Revocación masiva de tokens y sesiones concurrentes tras cambios de credenciales de seguridad.
+  - Migración Flyway `V15` con índices optimizados en base de datos para consultas de sesión concurrentes y mitigación de contención.
+
+### Configuración, DevOps & Portabilidad
+- **Portabilidad de Entornos en PostgreSQL (`application.properties`, `application-postgres.properties`)**:
+  - Parametrizado el puerto de conexión a `${POSTGRES_PORT:5432}`, permitiendo despliegues inmediatos en contenedores Docker y canalizaciones CI/CD estándar sin modificar variables, manteniendo compatibilidad total con entornos locales en puerto alternativo (`15432`).
+  - Saneamiento de variables y eliminación de secretos estáticos en `.env.example`.
+- **Automatización de Versionado PWA**:
+  - Actualización del artefacto `version.json` a `1.4.0` para control instantáneo de versión en clientes Service Worker y PWA.
+
+---
+
 ## [1.3.0](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.3.0) - 2026-10-01
 
 ### Seguridad, Privacidad & Aislamiento de Documentos

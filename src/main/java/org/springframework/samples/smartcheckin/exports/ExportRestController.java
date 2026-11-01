@@ -91,7 +91,7 @@ public class ExportRestController {
     }
 
     @GetMapping("/formations/{id}/official-sheet")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<byte[]> exportOfficialFormationSheet(
             @PathVariable Integer id,
             @RequestParam(required = false) String formationWord,
@@ -148,7 +148,7 @@ public class ExportRestController {
     }
 
     @GetMapping("/user-formations/{format}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<byte[]> exportUserFormations(
             @PathVariable String format,
             @RequestParam(required = false) String search,
@@ -177,7 +177,7 @@ public class ExportRestController {
     }
 
     @GetMapping("/user/{userId}/{format}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<byte[]> exportSingleUserDossier(
             @PathVariable Integer userId,
             @PathVariable String format) throws IOException {
@@ -191,7 +191,7 @@ public class ExportRestController {
     }
 
     @GetMapping("/users/{format}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<byte[]> exportUsers(
             @PathVariable String format,
             @RequestParam(required = false) String search,
@@ -207,7 +207,7 @@ public class ExportRestController {
     }
 
     @GetMapping("/checkins/{format}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<byte[]> exportCheckins(
             @PathVariable String format,
             @RequestParam(required = false) String search,
@@ -272,7 +272,7 @@ public class ExportRestController {
     }
 
     @GetMapping("/formations/{format}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<byte[]> exportFormations(
             @PathVariable String format,
             @RequestParam(required = false) String search,
@@ -332,7 +332,7 @@ public class ExportRestController {
     }
 
     @GetMapping("/audit/{format}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
     public ResponseEntity<byte[]> exportAuditLogs(@PathVariable String format) throws IOException {
         DataExportStrategy strategy = exportFactory.getStrategy(format);
         List<AuditLog> auditLogs = auditLogRepository.findTop10000ByOrderByTimestampDesc();

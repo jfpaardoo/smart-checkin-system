@@ -279,4 +279,58 @@ class AuditServiceTests {
         assertNotNull(hmacKey);
         assertFalse(hmacKey.toString().isBlank());
     }
+    @Test
+    void testVerifyIntegrity_WhenOlderLogsPurgedByRetention_ChainRemainsValid() {
+        auditService.setMetricsService(metricsService);
+        auditService.setHmacSecretKey("testHmacKey");
+
+        // Log ID 50 is the oldest remaining log after retention cleanup (logs 1..49 deleted)
+        AuditLog log50 = new AuditLog("CHECKIN", "user1", "details", "127.0.0.1");
+        log50.setId(50);
+        log50.setTimestamp(LocalDateTime.of(2026, Month.JANUARY, 1, 10, 0));
+        String purgedPredecessorHash = "e".repeat(64);
+        log50.setPreviousHash(purgedPredecessorHash);
+        String hash50 = AuditLog.calculateHash(purgedPredecessorHash, log50.getTimestamp(), log50.getAction(), log50.getUsername(), log50.getDetails(), log50.getIpAddress());
+        log50.setLogHash(hash50);
+        log50.setSignatureHmac(AuditLog.calculateHmac(hash50, "testHmacKey"));
+
+        AuditLog log51 = new AuditLog("CHECKOUT", "user1", "details", "127.0.0.1");
+        log51.setId(51);
+        log51.setTimestamp(LocalDateTime.of(2026, Month.JANUARY, 1, 14, 0));
+        log51.setPreviousHash(hash50);
+        String hash51 = AuditLog.calculateHash(hash50, log51.getTimestamp(), log51.getAction(), log51.getUsername(), log51.getDetails(), log51.getIpAddress());
+        log51.setLogHash(hash51);
+        log51.setSignatureHmac(AuditLog.calculateHmac(hash51, "testHmacKey"));
+
+        when(auditLogRepository.findAllByOrderByIdAsc()).thenReturn(List.of(log50, log51));
+
+        AuditIntegrityResult result = auditService.verifyIntegrity();
+        assertTrue(result.isValid(), "Debe ser válido aun cuando los registros anteriores fueron purgados por retención");
+        assertEquals(2, result.getTotalLogsVerified());
+    }
+
+    @Test
+    void testVerifyIntegrity_WhenUserAnonymizedUnderGdpr_ChainRemainsValid() {
+        auditService.setMetricsService(metricsService);
+        auditService.setHmacSecretKey("testHmacKey");
+
+        // Original log signed before GDPR erasure
+        AuditLog log1 = new AuditLog("LOGIN", "john.doe", "User logged in", "127.0.0.1");
+        log1.setId(1);
+        log1.setTimestamp(LocalDateTime.of(2026, Month.JANUARY, 1, 10, 0));
+        log1.setPreviousHash(AuditService.GENESIS_PREVIOUS_HASH);
+        String hash1 = AuditLog.calculateHash(AuditService.GENESIS_PREVIOUS_HASH, log1.getTimestamp(), log1.getAction(), "john.doe", "User logged in", "127.0.0.1");
+        log1.setLogHash(hash1);
+        log1.setSignatureHmac(AuditLog.calculateHmac(hash1, "testHmacKey"));
+
+        // User exercises Right to be Forgotten: username and details are redacted to GDPR_DEL_*
+        log1.setUsername("GDPR_DEL_a1b2c3d4");
+        log1.setDetails("User GDPR_DEL_a1b2c3d4 logged in");
+
+        when(auditLogRepository.findAllByOrderByIdAsc()).thenReturn(List.of(log1));
+
+        AuditIntegrityResult result = auditService.verifyIntegrity();
+        assertTrue(result.isValid(), "Los registros anonimizados bajo RGPD deben ser válidos manteniendo la cadena criptográfica y HMAC");
+        assertEquals(1, result.getTotalLogsVerified());
+    }
 }

@@ -82,7 +82,7 @@ export default function PrivacyPolicy() {
             </p>
             <ul className="list-disc pl-5 space-y-2 text-slate-600 dark:text-slate-300">
               <li>
-                <strong className="text-slate-800 dark:text-slate-200">{t('privacy.secNotCollectedItem1Title', 'Sin Rastreo GPS ni Geolocalización:')}</strong> {t('privacy.secNotCollectedItem1Desc', 'No se realiza ningún seguimiento de ubicación geográfica por GPS ni en segundo plano. La presencia física se valida únicamente mediante la proximidad al proyector de códigos QR en aula.')}
+                <strong className="text-slate-800 dark:text-slate-200">{t('privacy.secNotCollectedItem1Title', 'Geolocalización Puntual para Control de Presencia en Aula:')}</strong> {t('privacy.secNotCollectedItem1Desc', 'No se realiza ningún rastreo en segundo plano ni continuo. La ubicación GPS se consulta de manera puntual y voluntaria exclusivamente en el momento exacto de registrar el fichaje para verificar la presencia física en el centro o aula autorizada (geofencing) y no se almacena como historial de seguimiento.')}
               </li>
               <li>
                 <strong className="text-slate-800 dark:text-slate-200">{t('privacy.secNotCollectedItem2Title', 'Sin Almacenamiento de Fotos ni Vídeos:')}</strong> {t('privacy.secNotCollectedItem2Desc', 'La cámara sólo decodifica el código QR en memoria RAM local del navegador. Nunca se graban, transfieren ni conservan capturas de imagen o vídeo.')}

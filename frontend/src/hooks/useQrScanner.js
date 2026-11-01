@@ -32,6 +32,9 @@ function triggerHapticAndAudio() {
 
       osc.start();
       osc.stop(ctx.currentTime + 0.16);
+      setTimeout(() => {
+        ctx.close().catch(() => {});
+      }, 300);
     }
   } catch (error_) {
     console.debug('Audio chime failed', error_);

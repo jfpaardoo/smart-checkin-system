@@ -13,3 +13,10 @@ Thumbs.db
 .idea/
 .vscode/
 *.iml
+.env
+.env.*
+!.env.example
+uploads/
+.allure/
+allure-results/
+coverage/

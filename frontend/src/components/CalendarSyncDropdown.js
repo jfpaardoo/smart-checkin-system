@@ -107,6 +107,7 @@ export default function CalendarSyncDropdown({
       {/* Modal Nativo Liquid Glass: Sin problemas de clipping ni transparencia */}
       <GlassModal
         isOpen={isOpen}
+        toggle={() => setIsOpen(false)}
         onClose={() => setIsOpen(false)}
         size="md"
         title={

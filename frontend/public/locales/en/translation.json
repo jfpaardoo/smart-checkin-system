@@ -15,7 +15,8 @@
     "audit": "Audit Log",
     "cloudSettings": "Cloud Settings",
     "toggleMenu": "Toggle navigation",
-    "support": "Help & Support"
+    "support": "Help & Support",
+    "checkin": "Check-in"
   },
   "home": {
     "welcome": "Welcome to Distribution Academy",
@@ -66,7 +67,34 @@
     "department": "Department",
     "role": "Role",
     "personalQrTitle": "Personal Identification QR",
-    "personalQrDesc": "Present this code to the trainer or supervisor to identify yourself."
+    "personalQrDesc": "Present this code to the trainer or supervisor to identify yourself.",
+    "trainingStatus": "Training Status",
+    "inTraining": "In Training",
+    "noActiveTraining": "No Active Training",
+    "inTrainingNotice": "You have an active training session in progress.",
+    "readyToScanTraining": "Ready to record attendance for your training session.",
+    "scanTrainingQR": "Scan Training QR",
+    "finishTraining": "End Attendance / Sign",
+    "adminWelcome": "Control and Monitoring Panel",
+    "adminSub": "Real-time monitoring of activity, training sessions and system metrics.",
+    "employeeHubTitle": "My Training Center",
+    "employeeHubSub": "View your upcoming sessions, training progress and attendance status.",
+    "todayOverview": "Today Overview",
+    "activeFormationsMetric": "Active Trainings",
+    "averageHoursMetric": "Average Hours",
+    "attendanceRateMetric": "Attendance Rate",
+    "nextUpcomingSession": "Next Upcoming Session",
+    "noUpcomingSessions": "No upcoming training sessions scheduled for today or near dates.",
+    "trainingHoursCompleted": "Training Hours",
+    "totalTrainingsAttended": "Attended Trainings",
+    "certificatesAvailable": "Issued Certificates",
+    "viewAllFormations": "View Full Catalog",
+    "quickQrAction": "Project Classroom QR",
+    "activeSessionBadge": "In Progress",
+    "completedBadge": "Completed",
+    "pendingCheckinBadge": "Pending Check-in",
+    "scheduledDate": "Scheduled date",
+    "trainer": "Instructor"
   },
   "login": {
     "passkeyBtn": "Sign in with Passkey (Biometrics)",
@@ -1337,4 +1365,3 @@
     "footerNotice": "By accessing and using the Distribution Academy Smart Check-in system, you declare that you have read, understood, and fully accepted these Terms and Conditions of Use."
   }
 }
-

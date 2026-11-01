@@ -15,7 +15,8 @@
     "audit": "Одитен Дневник",
     "cloudSettings": "Облачни Настройки",
     "toggleMenu": "Превключване на навигацията",
-    "support": "Помощ и Поддръжка"
+    "support": "Помощ и Поддръжка",
+    "checkin": "Регистрация"
   },
   "home": {
     "welcome": "Добре дошли в Distribution Academy",
@@ -66,7 +67,34 @@
     "department": "Отдел",
     "role": "Роля",
     "personalQrTitle": "Личен QR код за идентификация",
-    "personalQrDesc": "Покажете този код на инструктора или ръководителя за идентификация."
+    "personalQrDesc": "Покажете този код на инструктора или ръководителя за идентификация.",
+    "trainingStatus": "Статус на обучението",
+    "inTraining": "В обучение",
+    "noActiveTraining": "Няма активно обучение",
+    "inTrainingNotice": "Имате активна сесия за обучение в ход.",
+    "readyToScanTraining": "Готови за регистриране на присъствие на обучение.",
+    "scanTrainingQR": "Сканиране на QR за обучение",
+    "finishTraining": "Край на присъствие / Подпис",
+    "adminWelcome": "Контролен и мониторингов панел",
+    "adminSub": "Мониторинг в реално време на активността, обученията и системните метрики.",
+    "employeeHubTitle": "Моят център за обучение",
+    "employeeHubSub": "Прегледайте предстоящите сесии, напредъка и присъствието си.",
+    "todayOverview": "Преглед за днес",
+    "activeFormationsMetric": "Активни обучения",
+    "averageHoursMetric": "Средни часове",
+    "attendanceRateMetric": "Процент на присъствие",
+    "nextUpcomingSession": "Следваща сесия",
+    "noUpcomingSessions": "Нямате насрочени обучения за днес.",
+    "trainingHoursCompleted": "Часове обучение",
+    "totalTrainingsAttended": "Посетени обучения",
+    "certificatesAvailable": "Издадени сертификати",
+    "viewAllFormations": "Виж целия каталог",
+    "quickQrAction": "Проектирай QR",
+    "activeSessionBadge": "В ход",
+    "completedBadge": "Завършено",
+    "pendingCheckinBadge": "Чака регистрация",
+    "scheduledDate": "Планирана дата",
+    "trainer": "Инструктор"
   },
   "login": {
     "passkeyBtn": "Вход с Ключ за Достъп (Биометрия)",
@@ -1337,4 +1365,3 @@
     "footerNotice": "Чрез достъпа до Smart Check-in потвърждавате, че сте прочели и приели настоящите Общи Условия."
   }
 }
-

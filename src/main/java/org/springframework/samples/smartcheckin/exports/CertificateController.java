@@ -32,7 +32,7 @@ public class CertificateController {
     }
 
     @GetMapping("/attendance/{attendanceId}")
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('EMPLOYEE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER', 'EMPLOYEE')")
     public ResponseEntity<byte[]> downloadCertificate(@PathVariable Integer attendanceId) {
         if (attendanceId == null) {
             return ResponseEntity.badRequest().build();

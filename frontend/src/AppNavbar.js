@@ -68,7 +68,7 @@ function ThemeToggleButton() {
                 }}
             >
                 {/* Sol */}
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="5"/>
                     <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
                     <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
@@ -89,7 +89,7 @@ function ThemeToggleButton() {
                 }}
             >
                 {/* Luna */}
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                 </svg>
             </span>
@@ -97,25 +97,34 @@ function ThemeToggleButton() {
     );
 }
 
-function AdminDropdownMenu({ isOpen, toggleMenu, closeAll, t }) {
+function AdminDropdownMenu({ isOpen, toggleMenu, closeAll, t, roles = [] }) {
+    const isAdmin = roles.includes("ADMIN");
     return (
         <div className="relative dropdown-container">
             <button type="button" onClick={(e) => toggleMenu('admin', e)} className="da-nav-btn">
                 <FaUserShield className="text-slate-600 dark:text-white/80" />
-                {t('nav.administration')}
-                <svg className={`w-4 h-4 ml-1 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                {isAdmin ? t('nav.administration', 'Administración') : t('nav.management', 'Gestión RRHH')}
+                <svg aria-hidden="true" className={`w-4 h-4 ml-1 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
             <div className={`da-nav-dropdown-container left-0 w-[240px] transition-all duration-300 origin-top-left ${isOpen ? 'opacity-100 scale-100 translate-y-0 visible' : 'opacity-0 scale-95 -translate-y-4 invisible pointer-events-none'}`}>
                 <div className="py-1" role="menu">
-                    <Link to="/users" className="da-nav-dropdown-item" onMouseEnter={() => prefetchRouteData('/users')} onClick={closeAll}><FaUsers className="text-slate-500 dark:text-white/60" /> {t('nav.manageUsers')}</Link>
-                    <Link to="/companies" className="da-nav-dropdown-item" onMouseEnter={() => prefetchRouteData('/companies')} onClick={closeAll}><FaBuilding className="text-slate-500 dark:text-white/60" /> {t('nav.manageCompanies', 'Empresas')}</Link>
-                    <Link to="/formations" className="da-nav-dropdown-item" onMouseEnter={() => prefetchRouteData('/formations')} onClick={closeAll}><FaGraduationCap className="text-slate-500 dark:text-white/60" /> {t('nav.manageFormations')}</Link>
-                    <Link to="/analytics" className="da-nav-dropdown-item" onClick={closeAll}><FaChartLine className="text-slate-500 dark:text-white/60" /> {t('nav.analytics')}</Link>
-                    <Link to="/audit" className="da-nav-dropdown-item" onMouseEnter={() => prefetchRouteData('/audit')} onClick={closeAll}><FaShieldAlt className="text-slate-500 dark:text-white/60" /> {t('nav.audit', 'Auditoría')}</Link>
-                    <Link to="/admin/cloud-settings" className="da-nav-dropdown-item" onClick={closeAll}><FaCloudUploadAlt className="text-slate-500 dark:text-white/60" /> {t('nav.cloudSettings', 'Ajustes de Nube')}</Link>
+                    <Link to="/users" className="da-nav-dropdown-item" onMouseEnter={() => prefetchRouteData('/users')} onClick={closeAll}><FaUsers className="text-slate-500 dark:text-white/60" /> {t('nav.manageUsers', 'Usuarios')}</Link>
+                    {isAdmin && (
+                        <Link to="/companies" className="da-nav-dropdown-item" onMouseEnter={() => prefetchRouteData('/companies')} onClick={closeAll}><FaBuilding className="text-slate-500 dark:text-white/60" /> {t('nav.manageCompanies', 'Empresas')}</Link>
+                    )}
+                    <Link to="/formations" className="da-nav-dropdown-item" onMouseEnter={() => prefetchRouteData('/formations')} onClick={closeAll}><FaGraduationCap className="text-slate-500 dark:text-white/60" /> {t('nav.manageFormations', 'Formaciones')}</Link>
+                    <Link to="/analytics" className="da-nav-dropdown-item" onClick={closeAll}><FaChartLine className="text-slate-500 dark:text-white/60" /> {t('nav.analytics', 'Analíticas')}</Link>
+                    {isAdmin && (
+                        <>
+                            <Link to="/audit" className="da-nav-dropdown-item" onMouseEnter={() => prefetchRouteData('/audit')} onClick={closeAll}><FaShieldAlt className="text-slate-500 dark:text-white/60" /> {t('nav.audit', 'Auditoría')}</Link>
+                            <Link to="/admin/cloud-settings" className="da-nav-dropdown-item" onClick={closeAll}><FaCloudUploadAlt className="text-slate-500 dark:text-white/60" /> {t('nav.cloudSettings', 'Ajustes de Nube')}</Link>
+                        </>
+                    )}
                     <div className="border-t border-slate-300/40 dark:border-white/20 my-1 mx-2"></div>
-                    <Link to="/qr-generator" className="da-nav-dropdown-item" onClick={closeAll}><FaQrcode className="text-slate-500 dark:text-white/60" /> {t('nav.qrGenerator')}</Link>
-                    <Link to="/docs" className="da-nav-dropdown-item" onClick={closeAll}><FaBookOpen className="text-slate-500 dark:text-white/60" /> {t('nav.docs')}</Link>
+                    <Link to="/qr-generator" className="da-nav-dropdown-item" onClick={closeAll}><FaQrcode className="text-slate-500 dark:text-white/60" /> {t('nav.qrGenerator', 'Generador QR')}</Link>
+                    {isAdmin && (
+                        <Link to="/docs" className="da-nav-dropdown-item" onClick={closeAll}><FaBookOpen className="text-slate-500 dark:text-white/60" /> {t('nav.docs', 'Documentación API')}</Link>
+                    )}
                 </div>
             </div>
         </div>
@@ -128,7 +137,7 @@ function UserDropdownMenu({ isOpen, toggleMenu, closeAll, username, t, onOpenSup
             <button type="button" onClick={(e) => toggleMenu('user', e)} className="da-nav-btn">
                 <FaUser className="text-slate-600 dark:text-white/80" />
                 {username}
-                <svg className={`w-4 h-4 ml-1 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                <svg aria-hidden="true" className={`w-4 h-4 ml-1 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
             <div className={`da-nav-dropdown-container right-0 w-[230px] transition-all duration-300 origin-top-right ${isOpen ? 'opacity-100 scale-100 translate-y-0 visible' : 'opacity-0 scale-95 -translate-y-4 invisible pointer-events-none'}`}>
                 <div className="py-1" role="menu">
@@ -194,21 +203,31 @@ function PublicNavLinks({ t, onOpenSupport }) {
 
 function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggleMobileLang, currentLangCode, closeAll, t, i18n, onOpenSupport }) {
     return (
-        <div className={`lg:hidden transition-all duration-500 ease-in-out w-full rounded-b-[40px] ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[calc(100dvh-5.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] opacity-100 bg-white/10 dark:bg-slate-900/30 backdrop-blur-2xl border-t border-white/40 dark:border-white/10 overflow-y-auto'}`}>
-            <div className="px-6 pt-4 pb-8 space-y-2">
-                {roles.includes("ADMIN") && (
+        <div className={`lg:hidden transition-all duration-500 ease-in-out w-full rounded-b-[40px] ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[calc(100dvh-5.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] opacity-100 bg-white/45 dark:bg-slate-900/65 backdrop-blur-3xl border-t border-white/60 dark:border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.18)] overflow-y-auto'}`}>
+            <div className="px-6 pt-4 pb-12 space-y-2">
+                {(roles.includes("ADMIN") || roles.includes("HR_MANAGER")) && (
                     <div className="py-2 border-b border-slate-300/40 dark:border-white/10 mb-3">
-                        <div className="text-[10px] font-extrabold text-slate-500 dark:text-white/40 mb-3 uppercase tracking-widest">{t('nav.administration')}</div>
+                        <div className="text-[10px] font-extrabold text-slate-500 dark:text-white/40 mb-3 uppercase tracking-widest">
+                            {roles.includes("ADMIN") ? t('nav.administration', 'Administración') : t('nav.management', 'Gestión RRHH')}
+                        </div>
                         <div className="space-y-1">
-                            <Link to="/users" className="da-nav-dropdown-item" onTouchStart={() => prefetchRouteData('/users')} onMouseEnter={() => prefetchRouteData('/users')} onClick={closeAll}><FaUsers className="text-slate-500 dark:text-white/60" /> {t('nav.manageUsers')}</Link>
-                            <Link to="/companies" className="da-nav-dropdown-item" onTouchStart={() => prefetchRouteData('/companies')} onMouseEnter={() => prefetchRouteData('/companies')} onClick={closeAll}><FaBuilding className="text-slate-500 dark:text-white/60" /> {t('nav.manageCompanies', 'Empresas')}</Link>
-                            <Link to="/formations" className="da-nav-dropdown-item" onTouchStart={() => prefetchRouteData('/formations')} onMouseEnter={() => prefetchRouteData('/formations')} onClick={closeAll}><FaGraduationCap className="text-slate-500 dark:text-white/60" /> {t('nav.manageFormations')}</Link>
-                            <Link to="/analytics" className="da-nav-dropdown-item" onClick={closeAll}><FaChartLine className="text-slate-500 dark:text-white/60" /> {t('nav.analytics')}</Link>
-                            <Link to="/audit" className="da-nav-dropdown-item" onTouchStart={() => prefetchRouteData('/audit')} onMouseEnter={() => prefetchRouteData('/audit')} onClick={closeAll}><FaShieldAlt className="text-slate-500 dark:text-white/60" /> {t('nav.audit', 'Auditoría')}</Link>
-                            <Link to="/admin/cloud-settings" className="da-nav-dropdown-item" onClick={closeAll}><FaCloudUploadAlt className="text-slate-500 dark:text-white/60" /> {t('nav.cloudSettings', 'Ajustes de Nube')}</Link>
+                            <Link to="/users" className="da-nav-dropdown-item" onTouchStart={() => prefetchRouteData('/users')} onMouseEnter={() => prefetchRouteData('/users')} onClick={closeAll}><FaUsers className="text-slate-500 dark:text-white/60" /> {t('nav.manageUsers', 'Usuarios')}</Link>
+                            {roles.includes("ADMIN") && (
+                                <Link to="/companies" className="da-nav-dropdown-item" onTouchStart={() => prefetchRouteData('/companies')} onMouseEnter={() => prefetchRouteData('/companies')} onClick={closeAll}><FaBuilding className="text-slate-500 dark:text-white/60" /> {t('nav.manageCompanies', 'Empresas')}</Link>
+                            )}
+                            <Link to="/formations" className="da-nav-dropdown-item" onTouchStart={() => prefetchRouteData('/formations')} onMouseEnter={() => prefetchRouteData('/formations')} onClick={closeAll}><FaGraduationCap className="text-slate-500 dark:text-white/60" /> {t('nav.manageFormations', 'Formaciones')}</Link>
+                            <Link to="/analytics" className="da-nav-dropdown-item" onClick={closeAll}><FaChartLine className="text-slate-500 dark:text-white/60" /> {t('nav.analytics', 'Analíticas')}</Link>
+                            {roles.includes("ADMIN") && (
+                                <>
+                                    <Link to="/audit" className="da-nav-dropdown-item" onTouchStart={() => prefetchRouteData('/audit')} onMouseEnter={() => prefetchRouteData('/audit')} onClick={closeAll}><FaShieldAlt className="text-slate-500 dark:text-white/60" /> {t('nav.audit', 'Auditoría')}</Link>
+                                    <Link to="/admin/cloud-settings" className="da-nav-dropdown-item" onClick={closeAll}><FaCloudUploadAlt className="text-slate-500 dark:text-white/60" /> {t('nav.cloudSettings', 'Ajustes de Nube')}</Link>
+                                </>
+                            )}
                             <div className="border-t border-slate-300/40 dark:border-white/20 my-1 mx-2"></div>
-                            <Link to="/qr-generator" className="da-nav-dropdown-item" onClick={closeAll}><FaQrcode className="text-slate-500 dark:text-white/60" /> {t('nav.qrGenerator')}</Link>
-                            <Link to="/docs" className="da-nav-dropdown-item" onClick={closeAll}><FaBookOpen className="text-slate-500 dark:text-white/60" /> {t('nav.docs')}</Link>
+                            <Link to="/qr-generator" className="da-nav-dropdown-item" onClick={closeAll}><FaQrcode className="text-slate-500 dark:text-white/60" /> {t('nav.qrGenerator', 'Generador QR')}</Link>
+                            {roles.includes("ADMIN") && (
+                                <Link to="/docs" className="da-nav-dropdown-item" onClick={closeAll}><FaBookOpen className="text-slate-500 dark:text-white/60" /> {t('nav.docs', 'Documentación API')}</Link>
+                            )}
                         </div>
                     </div>
                 )}
@@ -244,6 +263,12 @@ function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggl
                         <div className="border-t border-slate-300/40 dark:border-white/10 pt-4 mt-2">
                             <div className="text-[10px] font-extrabold text-slate-500 dark:text-white/40 mb-3 uppercase tracking-widest">{username}</div>
                             <div className="space-y-1">
+                                {!roles.includes("ADMIN") && (
+                                    <>
+                                        <Link to="/checkin" className="da-nav-dropdown-item font-semibold text-[#73841e] dark:text-[#d4e84a]" onClick={closeAll}><FaQrcode className="text-[#73841e] dark:text-[#d4e84a]" /> {t('nav.checkin', 'Fichar con QR')}</Link>
+                                        <Link to="/dashboard" className="da-nav-dropdown-item" onClick={closeAll}><FaGraduationCap className="text-slate-500 dark:text-white/60" /> {t('nav.myFormations', 'Mis Formaciones')}</Link>
+                                    </>
+                                )}
                                 <Link to="/profile" className="da-nav-dropdown-item" onClick={closeAll}><FaIdCard className="text-slate-500 dark:text-white/60" /> {t('nav.profile', 'Mi Perfil')}</Link>
                                 <button
                                     type="button"
@@ -313,7 +338,7 @@ function MobileMenuDrawer({ isOpen, roles, user, username, mobileLangOpen, toggl
 function MobileNotificationDrawer({ isOpen, t }) {
     const { notifications, clearAll } = useNotifications();
     return (
-        <div className={`lg:hidden transition-all duration-500 ease-in-out w-full rounded-b-[40px] ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[calc(100dvh-5.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] opacity-100 bg-white/10 dark:bg-slate-900/30 backdrop-blur-2xl border-t border-white/40 dark:border-white/10 overflow-y-auto shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]'}`}>
+        <div className={`lg:hidden transition-all duration-500 ease-in-out w-full rounded-b-[40px] ${!isOpen ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[calc(100dvh-5.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] opacity-100 bg-white/45 dark:bg-slate-900/65 backdrop-blur-3xl border-t border-white/60 dark:border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.18)] overflow-y-auto shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]'}`}>
             <div className="px-6 pt-3 pb-6">
                 <div className="flex justify-between items-center pb-2 border-b border-slate-300/40 dark:border-white/10 mb-3">
                     <span className="text-[11px] font-extrabold text-slate-800 dark:text-white uppercase tracking-widest flex items-center gap-1.5">
@@ -410,11 +435,22 @@ export default function AppNavbar() {
     const isNavMobileOpen = openMenu === 'menu';
     const isMobileDrawerOpen = isNavMobileOpen || isNotifOpen;
 
+    useEffect(() => {
+        if (isMobileDrawerOpen) {
+            document.body.setAttribute('data-mobile-menu-open', 'true');
+        } else {
+            document.body.removeAttribute('data-mobile-menu-open');
+        }
+        return () => {
+            document.body.removeAttribute('data-mobile-menu-open');
+        };
+    }, [isMobileDrawerOpen]);
+
     return (
         <>
             <nav
                 ref={navRef}
-                className={`sticky z-40 mx-auto w-[calc(100%-24px)] lg:w-[calc(100%-48px)] max-w-[1440px] mb-6 sm:mb-8 rounded-[40px] bg-white/35 dark:bg-slate-900/40 backdrop-blur-2xl border border-white/60 dark:border-white/10 border-t-white/80 dark:border-t-white/15 shadow-[0_12px_40px_rgba(15,23,42,0.07),inset_0_1px_1.5px_rgba(255,255,255,0.85)] dark:shadow-[0_15px_35px_rgba(0,0,0,0.35),inset_0_1px_1px_rgba(255,255,255,0.06)] transition-all duration-300 da-navbar-sticky ${isMobileDrawerOpen ? 'overflow-hidden lg:overflow-visible' : 'lg:overflow-visible'}`}
+                className={`sticky ${isMobileDrawerOpen ? 'z-50' : 'z-40'} mx-auto w-[calc(100%-24px)] lg:w-[calc(100%-48px)] max-w-[1440px] mb-6 sm:mb-8 rounded-[40px] bg-white/45 dark:bg-slate-900/50 backdrop-blur-3xl border border-white/65 dark:border-white/10 border-t-white/85 dark:border-t-white/20 shadow-[0_12px_40px_rgba(15,23,42,0.08),inset_0_1px_1.5px_rgba(255,255,255,0.85)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.45),inset_0_1px_1px_rgba(255,255,255,0.1)] transition-all duration-300 da-navbar-sticky ${isMobileDrawerOpen ? 'overflow-hidden lg:overflow-visible' : 'lg:overflow-visible'}`}
             >
                 <div className="w-full px-3.5 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-[58px] sm:h-[64px]">
@@ -435,13 +471,14 @@ export default function AppNavbar() {
                                     </span>
                                 </div>
                             </Link>
-                            {roles.includes("ADMIN") && (
+                            {(roles.includes("ADMIN") || roles.includes("HR_MANAGER")) && (
                                 <div className="hidden lg:flex ml-4 xl:ml-8 shrink-0">
                                     <AdminDropdownMenu
                                         isOpen={isAdminOpen}
                                         toggleMenu={toggleMenu}
                                         closeAll={closeAll}
                                         t={t}
+                                        roles={roles}
                                     />
                                 </div>
                             )}

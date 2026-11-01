@@ -1,283 +1,478 @@
 import React from 'react';
 import useSWR from 'swr';
 import { Link } from 'react-router-dom';
-import { FaQrcode, FaChartBar, FaUsers, FaGraduationCap, FaUser, FaSignInAlt, FaShieldAlt, FaUserPlus } from 'react-icons/fa';
+import { 
+  FaQrcode, 
+  FaChartBar, 
+  FaUsers, 
+  FaGraduationCap, 
+  FaSignInAlt, 
+  FaShieldAlt, 
+  FaUserPlus,
+  FaClock,
+  FaBriefcase,
+  FaCalendarAlt,
+  FaAward,
+  FaMapMarkerAlt,
+  FaArrowRight,
+  FaCheckCircle
+} from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import tokenService from '../services/token.service';
+import api from '../services/api';
 import { CardGhostLoader } from '../components/GhostLoader';
 
-const fetcher = (url) => fetch(url, { credentials: 'include' }).then((r) => r.ok ? r.json() : null);
+const fetcher = (url) => api.get(url).then((res) => res.data).catch(() => null);
+
+function extractUserRoles(user) {
+  if (Array.isArray(user?.roles)) {
+    return user.roles;
+  }
+  if (user?.authority?.authority) {
+    return [user.authority.authority];
+  }
+  if (user?.authority) {
+    return [user.authority];
+  }
+  return [];
+}
+
+function HomeHeader({ t }) {
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-center text-center sm:text-left gap-3 sm:gap-4 lg:gap-5 mb-6 sm:mb-8 pb-5 sm:pb-6 border-b border-white/40 dark:border-white/10 w-full">
+      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden flex items-center justify-center shadow-md border border-white/40 dark:border-white/10 bg-white dark:bg-slate-800 shrink-0 p-1">
+        <img
+          src="/favicon.png"
+          alt={t('common.companyLogo', 'Logo de la empresa')}
+          className="w-full h-full object-contain"
+        />
+      </div>
+      <div>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight mb-1">
+          Distribution Academy
+        </h1>
+        <p className="text-xs sm:text-sm lg:text-base font-medium text-slate-500 dark:text-slate-400 mb-0">
+          {t('home.subtitle', 'Sistema Inteligente de Gestión de Formaciones')}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function EmployeeTrainingStatusCard({ isWorking, t }) {
+  return (
+    <div className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl border transition-all duration-300 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 ${
+      isWorking 
+        ? 'bg-emerald-500/10 dark:bg-emerald-950/25 border-emerald-500/30' 
+        : 'bg-white/50 dark:bg-slate-800/40 border-white/60 dark:border-white/10'
+    }`}>
+      <div className="flex items-center gap-3.5">
+        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
+          isWorking 
+            ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] animate-pulse' 
+            : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+        }`}>
+          <FaClock className="text-xl" />
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              {t('home.trainingStatus', 'Estado de Formación')}
+            </span>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+              isWorking 
+                ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' 
+                : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
+            }`}>
+              {isWorking ? t('home.inTraining', 'En Formación') : t('home.noActiveTraining', 'Sin Formación Activa')}
+            </span>
+          </div>
+          <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100 mb-0 mt-0.5">
+            {isWorking 
+              ? t('home.inTrainingNotice', 'Tienes una sesión de formación en curso.') 
+              : t('home.readyToScanTraining', 'Listo para registrar asistencia a tu sesión de formación.')}
+          </h3>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 w-full md:w-auto">
+        {isWorking ? (
+          <Link
+            to="/dashboard"
+            className="da-btn-primary flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold no-underline w-full md:w-auto text-slate-900 shadow-sm hover:scale-105 active:scale-95 transition-transform"
+          >
+            <span>{t('home.finishTraining', 'Finalizar Asistencia / Firmar')}</span>
+            <FaArrowRight className="text-xs" />
+          </Link>
+        ) : (
+          <Link
+            to="/checkin"
+            className="da-btn-primary flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold no-underline w-full md:w-auto text-slate-900 shadow-sm hover:scale-105 active:scale-95 transition-transform"
+          >
+            <FaQrcode className="text-sm" />
+            <span>{t('home.scanTrainingQR', 'Escanear QR de Formación')}</span>
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function formatFormationDate(dateString, language, fallbackText) {
+  if (!dateString) return fallbackText;
+  try {
+    const d = new Date(dateString);
+    if (Number.isNaN(d.getTime())) return dateString;
+    return d.toLocaleDateString(language || 'es-ES', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch {
+    return dateString;
+  }
+}
+
+function EmployeeTrainingHub({ attendances, formations }) {
+  const { t, i18n } = useTranslation();
+  const totalAttended = attendances.length;
+  const completedTrainings = attendances.filter(a => a.checkOutDate || a.signedSignature).length;
+  const activeFormation = formations.find(f => f.status === 'IN_PROGRESS' || f.status === 'PUBLISHED');
+
+  return (
+    <div className="space-y-6 w-full text-left">
+      {/* 3 Métricas clave de Formación */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full">
+        <div className="p-4 rounded-2xl bg-white/40 dark:bg-slate-800/40 border border-white/50 dark:border-white/10 flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+            <FaGraduationCap className="text-xl" />
+          </div>
+          <div>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">
+              {t('home.totalTrainingsAttended', 'Formaciones Asistidas')}
+            </span>
+            <span className="text-xl font-extrabold text-slate-800 dark:text-slate-100">
+              {totalAttended}
+            </span>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white/40 dark:bg-slate-800/40 border border-white/50 dark:border-white/10 flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+            <FaCheckCircle className="text-xl" />
+          </div>
+          <div>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">
+              {t('home.completedBadge', 'Completadas')}
+            </span>
+            <span className="text-xl font-extrabold text-slate-800 dark:text-slate-100">
+              {completedTrainings}
+            </span>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white/40 dark:bg-slate-800/40 border border-white/50 dark:border-white/10 flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <FaAward className="text-xl" />
+          </div>
+          <div>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">
+              {t('home.certificatesAvailable', 'Certificados Emitidos')}
+            </span>
+            <span className="text-xl font-extrabold text-slate-800 dark:text-slate-100">
+              {completedTrainings}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Próxima sesión convocada */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-white/50 dark:bg-slate-800/40 border border-white/60 dark:border-white/10 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-white/40 dark:border-white/10">
+          <div className="flex items-center gap-2">
+            <FaCalendarAlt className="text-slate-500 dark:text-slate-400 text-sm" />
+            <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 mb-0">
+              {t('home.nextUpcomingSession', 'Próxima Sesión Convocada')}
+            </h3>
+          </div>
+          <Link to="/dashboard" className="text-xs font-bold text-[#73841e] dark:text-[#d4e84a] no-underline hover:underline whitespace-nowrap">
+            {t('home.viewAllFormations', 'Ver Catálogo Completo')} →
+          </Link>
+        </div>
+
+        {activeFormation ? (
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-white/60 dark:bg-slate-800/60 border border-white/60 dark:border-white/10">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                  {t('home.activeSessionBadge', 'En Convocatoria')}
+                </span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  {formatFormationDate(activeFormation.formationDate, i18n.language, t('home.scheduledDate', 'Fecha programada'))}
+                </span>
+              </div>
+              <h4 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1">
+                {activeFormation.name}
+              </h4>
+              <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+                {activeFormation.location && (
+                  <span className="flex items-center gap-1">
+                    <FaMapMarkerAlt /> {activeFormation.location}
+                  </span>
+                )}
+                {activeFormation.trainer && (
+                  <span>{t('home.trainer', 'Instructor')}: {activeFormation.trainer}</span>
+                )}
+              </div>
+            </div>
+
+            <Link
+              to="/checkin"
+              className="da-btn-primary py-2 px-3.5 rounded-xl text-xs font-bold no-underline text-slate-900 shrink-0 hover:scale-102 transition-transform"
+            >
+              {t('home.scanTrainingQR', 'Fichar Asistencia')}
+            </Link>
+          </div>
+        ) : (
+          <div className="py-6 text-center text-slate-500 dark:text-slate-400 text-xs sm:text-sm">
+            {t('home.noUpcomingSessions', 'No tienes sesiones programadas para hoy o próximas fechas.')}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StaffSupervisionHub({ stats, username, isAdmin, t }) {
+  const latestStat = Array.isArray(stats) && stats.length > 0 ? stats[0] : null;
+  const activeFormationsCount = latestStat?.activeFormations ?? 0;
+  const averageHours = latestStat?.averageHoursPerEmployee ? latestStat.averageHoursPerEmployee.toFixed(1) : '0.0';
+  const attendanceRate = latestStat?.formationAttendanceRate ? `${latestStat.formationAttendanceRate.toFixed(0)}%` : '100%';
+
+  return (
+    <div className="space-y-6 w-full text-left">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pb-3 border-b border-white/40 dark:border-white/10">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2.5 rounded-2xl bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a]">
+            {isAdmin ? <FaShieldAlt className="text-xl" /> : <FaBriefcase className="text-xl" />}
+          </div>
+          <div>
+            <h2 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100 mb-0">
+              {t('home.adminWelcome', 'Panel de Control y Supervisión')}
+            </h2>
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              {t('home.adminSub', 'Monitorización en tiempo real de actividad, formaciones y métricas.')}
+            </span>
+          </div>
+        </div>
+        <span className="text-xs text-slate-500 dark:text-slate-400">
+          {t('home.sessionStartedAs', 'Sesión iniciada como:')}{' '}
+          <strong className="text-slate-700 dark:text-slate-200">@{username}</strong>
+        </span>
+      </div>
+
+      {/* 3 Widgets métricos en tiempo real */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 w-full">
+        <div className="p-4 sm:p-5 rounded-2xl bg-white/40 dark:bg-slate-800/40 border border-white/50 dark:border-white/10 flex items-center justify-between">
+          <div>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block mb-1">
+              {t('home.activeFormationsMetric', 'Formaciones Activas')}
+            </span>
+            <span className="text-2xl font-black text-slate-800 dark:text-slate-100">
+              {activeFormationsCount}
+            </span>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+            <FaGraduationCap className="text-xl" />
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-5 rounded-2xl bg-white/40 dark:bg-slate-800/40 border border-white/50 dark:border-white/10 flex items-center justify-between">
+          <div>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block mb-1">
+              {t('home.averageHoursMetric', 'Horas Promedio')}
+            </span>
+            <span className="text-2xl font-black text-slate-800 dark:text-slate-100">
+              {averageHours}h
+            </span>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <FaClock className="text-xl" />
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-5 rounded-2xl bg-white/40 dark:bg-slate-800/40 border border-white/50 dark:border-white/10 flex items-center justify-between">
+          <div>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block mb-1">
+              {t('home.attendanceRateMetric', 'Tasa de Asistencia')}
+            </span>
+            <span className="text-2xl font-black text-slate-800 dark:text-slate-100">
+              {attendanceRate}
+            </span>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <FaChartBar className="text-xl" />
+          </div>
+        </div>
+      </div>
+
+      {/* Proyección rápida de QR y gestión activa */}
+      <div className="p-5 rounded-2xl sm:rounded-3xl bg-white/50 dark:bg-slate-800/40 border border-white/60 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1">
+            {t('home.projectQR', 'Proyectar Código QR de Aula')}
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-0">
+            {t('home.projectQRDesc', 'Genera el QR dinámico rotativo con PIN seguro para registrar alumnos.')}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Link
+            to="/qr-generator"
+            className="da-btn-primary flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold no-underline w-full sm:w-auto text-slate-900 shadow-sm hover:scale-105 active:scale-95 transition-transform"
+          >
+            <FaQrcode className="text-sm" />
+            <span>{t('home.projectQRBtn', 'Proyectar QR →')}</span>
+          </Link>
+          <Link
+            to="/users"
+            className="da-btn-secondary flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs sm:text-sm font-bold no-underline w-full sm:w-auto text-slate-700 dark:text-slate-200 shadow-sm"
+          >
+            <FaUsers className="text-sm" />
+            <span>{t('home.viewEmployeesBtn', 'Plantilla')}</span>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GuestLandingSection({ t }) {
+  return (
+    <div className="py-6 flex flex-col items-center justify-center">
+      <div className="mb-6 max-w-xl mx-auto">
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+          {t('home.guestWelcomeTitle', 'Portal de Asistencia y Formaciones')}
+        </h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-0">
+          {t('home.guestWelcomeSub', 'Acceso rápido y seguro a convocatorias, control de asistencia QR y firma digital.')}
+        </p>
+      </div>
+
+      <div className="flex flex-col items-center gap-3 w-full max-w-xs px-2 mt-2">
+        <Link
+          to="/login"
+          className="da-btn-primary flex items-center justify-center gap-2 rounded-2xl w-full py-3 px-4 text-sm font-bold text-decoration-none shadow-md hover:scale-102 active:scale-98 transition-all"
+        >
+          <FaSignInAlt />
+          <span>{t('nav.login', 'Iniciar Sesión')}</span>
+        </Link>
+
+        <Link
+          to="/register"
+          className="da-btn-secondary flex items-center justify-center gap-2 rounded-2xl w-full py-3 px-4 text-sm font-bold text-decoration-none shadow-sm hover:scale-102 active:scale-98 transition-all"
+        >
+          <FaUserPlus />
+          <span>{t('nav.register', 'Solicitar Registro')}</span>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function HomeFooter({ t }) {
+  return (
+    <div className="w-full text-center mt-2 pb-4 text-xs text-slate-500 dark:text-slate-400">
+      <span>&copy; {new Date().getFullYear()} Distribution Academy | </span>
+      <Link 
+        to="/terms" 
+        className="font-semibold text-slate-600 dark:text-slate-300 hover:text-[#b3c34c] dark:hover:text-[#d4e84a] text-decoration-none transition-colors ml-1"
+      >
+        {t('login.termsAndConditions', 'Términos y Condiciones')}
+      </Link>
+      <span className="mx-1">•</span>
+      <Link 
+        to="/privacy-policy" 
+        className="font-semibold text-slate-600 dark:text-slate-300 hover:text-[#b3c34c] dark:hover:text-[#d4e84a] text-decoration-none transition-colors"
+      >
+        {t('login.privacyPolicy', 'Política de Privacidad')}
+      </Link>
+    </div>
+  );
+}
 
 export default function Home() {
   const { t } = useTranslation();
   const jwt = tokenService.getUser();
-  const user = tokenService.getUser();
+  const localUser = tokenService.getUser();
+  const localRoles = extractUserRoles(localUser);
+  const isLocalStaff = localRoles.includes('ADMIN') || localRoles.includes('HR_MANAGER');
 
-  const { isLoading: isSWRloading } = useSWR(
-    jwt ? "/api/v1/users/me" : null,
+  const { data: meUser, isLoading: isSWRloading } = useSWR(
+    jwt ? "/users/me" : null,
     fetcher
   );
 
-  const loadingUser = jwt ? isSWRloading : false;
-  const isAdmin = user?.authority?.authority === 'ADMIN' || user?.roles?.includes('ADMIN');
+  const user = meUser || localUser;
+  const roles = extractUserRoles(user);
+  const isAdmin = roles.includes('ADMIN');
+  const isHR = roles.includes('HR_MANAGER');
+  const isStaff = isAdmin || isHR;
 
-  if (jwt && loadingUser) {
+  const { data: stats } = useSWR(
+    jwt && isLocalStaff ? "/analytics" : null,
+    fetcher
+  );
+
+  const { data: myAttendances } = useSWR(
+    jwt && !isLocalStaff ? "/users/me/formations" : null,
+    fetcher
+  );
+
+  const { data: allFormations } = useSWR(
+    jwt && !isLocalStaff ? "/formations" : null,
+    fetcher
+  );
+
+  if (jwt && isSWRloading) {
     return <CardGhostLoader />;
   }
 
+  const isWorking = Boolean(user?.isWorking);
+
   return (
-    <div className="w-full max-w-[1440px] mx-auto flex flex-col items-center justify-center min-h-[calc(100vh-120px)] py-3 sm:py-6 px-2 sm:px-6 lg:px-8">
-      <div className="da-card home-card w-full text-center p-5 sm:p-8 md:p-10 lg:p-12 2xl:p-16 my-2 sm:my-4">
-        
-        {/* LOGO & TITLE HEADER */}
-        <div className="flex flex-col sm:flex-row items-center justify-center text-center sm:text-left gap-3 sm:gap-4 lg:gap-5 mb-6 sm:mb-8 lg:mb-10 pb-5 sm:pb-6 lg:pb-8 border-b border-white/40 dark:border-white/10 w-full">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 2xl:w-20 2xl:h-20 rounded-2xl 2xl:rounded-3xl overflow-hidden flex items-center justify-center shadow-md border border-white/40 dark:border-white/10 bg-white dark:bg-slate-800 shrink-0 p-1">
-            <img
-              src="/favicon.png"
-              alt={t('common.companyLogo', 'Logo de la empresa')}
-              className="w-full h-full object-contain"
+    <div className="w-full max-w-[1440px] mx-auto flex flex-col items-center justify-center min-h-[calc(100vh-140px)] py-3 sm:py-6 px-3 sm:px-6 lg:px-8">
+      <div className="da-card home-card w-full text-center p-5 sm:p-8 md:p-10 my-2 sm:my-4">
+        <HomeHeader t={t} />
+
+        {jwt && !isStaff && (
+          <>
+            <EmployeeTrainingStatusCard isWorking={isWorking} t={t} />
+            <EmployeeTrainingHub
+              attendances={Array.isArray(myAttendances) ? myAttendances : []}
+              formations={Array.isArray(allFormations) ? allFormations : []}
+              t={t}
             />
-          </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl 2xl:text-5xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight mb-1">
-              Distribution Academy
-            </h1>
-            <p className="text-xs sm:text-sm lg:text-base font-medium text-slate-500 dark:text-slate-400 mb-0">
-              {t('home.subtitle', 'Sistema Inteligente de Fichaje y Gestión de Formaciones')}
-            </p>
-          </div>
-        </div>
-
-        {/* LOGGED IN - ADMIN HUB */}
-        {jwt && isAdmin && (
-          <div className="space-y-6 lg:space-y-8 w-full">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
-              <div className="flex items-center gap-2">
-                <div className="p-2 2xl:p-3 rounded-xl 2xl:rounded-2xl bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a]">
-                  <FaShieldAlt className="text-lg 2xl:text-2xl" />
-                </div>
-                <h2 className="text-lg sm:text-xl 2xl:text-2xl font-bold text-slate-800 dark:text-slate-100 mb-0">
-                  {t('home.quickActions', 'Acciones Rápidas')}
-                </h2>
-              </div>
-              <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                {t('home.sessionStartedAs', 'Sesión iniciada como:')}{' '}
-                <strong className="text-slate-700 dark:text-slate-200 font-bold">@{user?.username}</strong>
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 2xl:gap-8 w-full">
-              <Link to="/qr-generator" className="text-decoration-none block h-full group w-full">
-                <div className="da-action-card w-full h-full flex flex-col items-center justify-between text-center p-4 sm:p-5 lg:p-6 2xl:p-8 rounded-2xl sm:rounded-3xl 2xl:rounded-[32px] transition-all duration-300">
-                  <div className="flex flex-col items-center w-full">
-                    <div className="da-action-icon-wrapper mb-3 2xl:mb-4 2xl:w-20 2xl:h-20">
-                      <FaQrcode className="text-2xl 2xl:text-4xl" />
-                    </div>
-                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base 2xl:text-lg mb-1">
-                      {t('home.projectQR', 'Generar Código QR')}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-0">
-                      {t('home.projectQRDesc', 'Proyectar QR para asistencia a formación')}
-                    </p>
-                  </div>
-                  <span className="da-btn-primary w-full mt-4 2xl:mt-6 py-2 2xl:py-3 px-3 rounded-xl 2xl:rounded-2xl text-xs sm:text-sm font-bold block text-center shadow-xs">
-                    {t('home.projectQRBtn', 'Proyectar QR →')}
-                  </span>
-                </div>
-              </Link>
-
-              <Link to="/analytics" className="text-decoration-none block h-full group w-full">
-                <div className="da-action-card w-full h-full flex flex-col items-center justify-between text-center p-4 sm:p-5 lg:p-6 2xl:p-8 rounded-2xl sm:rounded-3xl 2xl:rounded-[32px] transition-all duration-300">
-                  <div className="flex flex-col items-center w-full">
-                    <div className="da-action-icon-wrapper mb-3 2xl:mb-4 2xl:w-20 2xl:h-20">
-                      <FaChartBar className="text-2xl 2xl:text-4xl" />
-                    </div>
-                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base 2xl:text-lg mb-1">
-                      {t('home.viewAnalytics', 'Analíticas y Reportes')}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-0">
-                      {t('home.viewAnalyticsDesc', 'Descargar informes Excel y PDF')}
-                    </p>
-                  </div>
-                  <span className="da-btn-primary w-full mt-4 2xl:mt-6 py-2 2xl:py-3 px-3 rounded-xl 2xl:rounded-2xl text-xs sm:text-sm font-bold block text-center shadow-xs">
-                    {t('home.viewDataBtn', 'Ver Datos →')}
-                  </span>
-                </div>
-              </Link>
-
-              <Link to="/formations" className="text-decoration-none block h-full group w-full">
-                <div className="da-action-card w-full h-full flex flex-col items-center justify-between text-center p-4 sm:p-5 lg:p-6 2xl:p-8 rounded-2xl sm:rounded-3xl 2xl:rounded-[32px] transition-all duration-300">
-                  <div className="flex flex-col items-center w-full">
-                    <div className="da-action-icon-wrapper mb-3 2xl:mb-4 2xl:w-20 2xl:h-20">
-                      <FaGraduationCap className="text-2xl 2xl:text-4xl" />
-                    </div>
-                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base 2xl:text-lg mb-1">
-                      {t('home.manageFormations', 'Gestionar Formaciones')}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-0">
-                      {t('home.manageFormationsDesc', 'Crear y administrar convocatorias')}
-                    </p>
-                  </div>
-                  <span className="da-btn-primary w-full mt-4 2xl:mt-6 py-2 2xl:py-3 px-3 rounded-xl 2xl:rounded-2xl text-xs sm:text-sm font-bold block text-center shadow-xs">
-                    {t('home.manageBtn', 'Administrar →')}
-                  </span>
-                </div>
-              </Link>
-
-              <Link to="/users" className="text-decoration-none block h-full group w-full">
-                <div className="da-action-card w-full h-full flex flex-col items-center justify-between text-center p-4 sm:p-5 lg:p-6 2xl:p-8 rounded-2xl sm:rounded-3xl 2xl:rounded-[32px] transition-all duration-300">
-                  <div className="flex flex-col items-center w-full">
-                    <div className="da-action-icon-wrapper mb-3 2xl:mb-4 2xl:w-20 2xl:h-20">
-                      <FaUsers className="text-2xl 2xl:text-4xl" />
-                    </div>
-                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base 2xl:text-lg mb-1">
-                      {t('home.manageUsers', 'Gestionar Usuarios')}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-0">
-                      {t('home.manageUsersDesc', 'Administrar plantilla de empleados')}
-                    </p>
-                  </div>
-                  <span className="da-btn-primary w-full mt-4 2xl:mt-6 py-2 2xl:py-3 px-3 rounded-xl 2xl:rounded-2xl text-xs sm:text-sm font-bold block text-center shadow-xs">
-                    {t('home.viewEmployeesBtn', 'Ver Empleados →')}
-                  </span>
-                </div>
-              </Link>
-            </div>
-          </div>
+          </>
         )}
 
-        {/* LOGGED IN - EMPLOYEE HUB */}
-        {jwt && !isAdmin && (
-          <div className="space-y-6 lg:space-y-8 w-full">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
-              <div className="flex items-center gap-2">
-                <div className="p-2 2xl:p-3 rounded-xl 2xl:rounded-2xl bg-[#b3c34c]/20 text-[#73841e] dark:text-[#d4e84a]">
-                  <FaUser className="text-lg 2xl:text-2xl" />
-                </div>
-                <h2 className="text-lg sm:text-xl 2xl:text-2xl font-bold text-slate-800 dark:text-slate-100 mb-0">
-                  {t('home.employeeQuickAccess', 'Acceso Rápido')}
-                </h2>
-              </div>
-              <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                {t('home.sessionStartedAs', 'Sesión iniciada como:')}{' '}
-                <strong className="text-slate-700 dark:text-slate-200 font-bold">@{user?.username}</strong>
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 lg:gap-5 2xl:gap-8 w-full">
-              <Link to="/checkin" className="text-decoration-none block h-full group w-full">
-                <div className="da-action-card w-full h-full flex flex-col items-center justify-between text-center p-4 sm:p-5 lg:p-6 2xl:p-8 rounded-2xl sm:rounded-3xl 2xl:rounded-[32px] transition-all duration-300">
-                  <div className="flex flex-col items-center w-full">
-                    <div className="da-action-icon-wrapper mb-3 2xl:mb-4 2xl:w-20 2xl:h-20">
-                      <FaQrcode className="text-2xl 2xl:text-4xl" />
-                    </div>
-                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base 2xl:text-lg mb-1">
-                      {t('home.directQRCheckin', 'Fichaje Directo QR')}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-0">
-                      {t('home.directQRCheckinDesc', 'Escanear el código QR del aula para registrar asistencia')}
-                    </p>
-                  </div>
-                  <span className="da-btn-primary w-full mt-4 2xl:mt-6 py-2 2xl:py-3 px-3 rounded-xl 2xl:rounded-2xl text-xs sm:text-sm font-bold block text-center shadow-xs">
-                    {t('home.scanQRBtn', 'Escanear QR →')}
-                  </span>
-                </div>
-              </Link>
-
-              <Link to="/dashboard" className="text-decoration-none block h-full group w-full">
-                <div className="da-action-card w-full h-full flex flex-col items-center justify-between text-center p-4 sm:p-5 lg:p-6 2xl:p-8 rounded-2xl sm:rounded-3xl 2xl:rounded-[32px] transition-all duration-300">
-                  <div className="flex flex-col items-center w-full">
-                    <div className="da-action-icon-wrapper mb-3 2xl:mb-4 2xl:w-20 2xl:h-20">
-                      <FaGraduationCap className="text-2xl 2xl:text-4xl" />
-                    </div>
-                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base 2xl:text-lg mb-1">
-                      {t('home.myFormationsBtn', 'Ver Mis Formaciones')}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-0">
-                      {t('home.myFormationsDesc', 'Historial y estado de tus capacitaciones')}
-                    </p>
-                  </div>
-                  <span className="da-btn-primary w-full mt-4 2xl:mt-6 py-2 2xl:py-3 px-3 rounded-xl 2xl:rounded-2xl text-xs sm:text-sm font-bold block text-center shadow-xs">
-                    {t('home.viewFormationsBtn', 'Ver Formaciones →')}
-                  </span>
-                </div>
-              </Link>
-
-              <Link to="/profile" className="text-decoration-none block h-full group w-full">
-                <div className="da-action-card w-full h-full flex flex-col items-center justify-between text-center p-4 sm:p-5 lg:p-6 2xl:p-8 rounded-2xl sm:rounded-3xl 2xl:rounded-[32px] transition-all duration-300">
-                  <div className="flex flex-col items-center w-full">
-                    <div className="da-action-icon-wrapper mb-3 2xl:mb-4 2xl:w-20 2xl:h-20">
-                      <FaUser className="text-2xl 2xl:text-4xl" />
-                    </div>
-                    <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base 2xl:text-lg mb-1">
-                      {t('home.myProfileBtn', 'Ver Mi Perfil')}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-0">
-                      {t('home.myProfileDesc', 'Consultar datos personales y cambiar contraseña')}
-                    </p>
-                  </div>
-                  <span className="da-btn-primary w-full mt-4 2xl:mt-6 py-2 2xl:py-3 px-3 rounded-xl 2xl:rounded-2xl text-xs sm:text-sm font-bold block text-center shadow-xs">
-                    {t('home.goToProfileBtn', 'Ir a Mi Perfil →')}
-                  </span>
-                </div>
-              </Link>
-            </div>
-          </div>
+        {jwt && isStaff && (
+          <StaffSupervisionHub
+            stats={stats}
+            username={user?.username}
+            isAdmin={isAdmin}
+            t={t}
+          />
         )}
 
-        {/* NOT LOGGED IN - GUEST LANDING */}
         {!jwt && (
-          <div className="py-6 flex flex-col items-center justify-center">
-            <div className="mb-6 max-w-xl mx-auto">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-                {t('home.guestWelcomeTitle', 'Portal de Asistencia y Formaciones')}
-              </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-0">
-                {t('home.guestWelcomeSub', 'Acceso rápido y seguro a convocatorias, control de asistencia QR y firma digital.')}
-              </p>
-            </div>
-
-            {/* CONTENEDOR FLEX EN COLUMNA CON BOTONES SEPARADOS Y ESTILIZADOS */}
-            <div className="flex flex-col items-center gap-3 w-full max-w-xs px-2 mt-2">
-              <Link
-                to="/login"
-                className="da-btn-primary flex items-center justify-center gap-2 rounded-2xl w-full py-3 px-4 text-sm font-bold text-decoration-none shadow-md hover:scale-102 active:scale-98 transition-all"
-              >
-                <FaSignInAlt />
-                <span>{t('nav.login', 'Iniciar Sesión')}</span>
-              </Link>
-
-              <Link
-                to="/register"
-                className="da-btn-secondary flex items-center justify-center gap-2 rounded-2xl w-full py-3 px-4 text-sm font-bold text-decoration-none shadow-sm hover:scale-102 active:scale-98 transition-all"
-              >
-                <FaUserPlus />
-                <span>{t('nav.register', 'Solicitar Registro')}</span>
-              </Link>
-            </div>
-          </div>
+          <GuestLandingSection t={t} />
         )}
-
       </div>
 
-      {/* FOOTER PÚBLICO HOME */}
-      <div className="w-full text-center mt-2 pb-4 text-xs text-slate-500 dark:text-slate-400">
-        <span>&copy; {new Date().getFullYear()} Distribution Academy | </span>
-        <Link 
-          to="/terms" 
-          className="font-semibold text-slate-600 dark:text-slate-300 hover:text-[#b3c34c] dark:hover:text-[#d4e84a] text-decoration-none transition-colors ml-1"
-        >
-          {t('login.termsAndConditions', 'Términos y Condiciones')}
-        </Link>
-        <span className="mx-1">•</span>
-        <Link 
-          to="/privacy-policy" 
-          className="font-semibold text-slate-600 dark:text-slate-300 hover:text-[#b3c34c] dark:hover:text-[#d4e84a] text-decoration-none transition-colors"
-        >
-          {t('login.privacyPolicy', 'Política de Privacidad')}
-        </Link>
-      </div>
-
+      <HomeFooter t={t} />
     </div>
   );
 }

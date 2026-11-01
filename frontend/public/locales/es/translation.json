@@ -15,7 +15,8 @@
     "audit": "Auditoría",
     "cloudSettings": "Ajustes de Nube",
     "toggleMenu": "Alternar navegación",
-    "support": "Ayuda y Soporte"
+    "support": "Ayuda y Soporte",
+    "checkin": "Fichar"
   },
   "home": {
     "welcome": "Bienvenido a Distribution Academy",
@@ -66,7 +67,34 @@
     "department": "Departamento",
     "role": "Rol",
     "personalQrTitle": "Código QR de Identificación",
-    "personalQrDesc": "Presenta este código al instructor o supervisor para identificarte."
+    "personalQrDesc": "Presenta este código al instructor o supervisor para identificarte.",
+    "trainingStatus": "Estado de Formación",
+    "inTraining": "En Formación",
+    "noActiveTraining": "Sin Formación Activa",
+    "inTrainingNotice": "Tienes una sesión de formación en curso.",
+    "readyToScanTraining": "Listo para registrar asistencia a tu sesión de formación.",
+    "scanTrainingQR": "Escanear QR de Formación",
+    "finishTraining": "Finalizar Asistencia / Firmar",
+    "adminWelcome": "Panel de Control y Supervisión",
+    "adminSub": "Monitorización en tiempo real de actividad, formaciones y métricas del sistema.",
+    "employeeHubTitle": "Mi Centro de Formación",
+    "employeeHubSub": "Consulta tus próximas sesiones, progreso formativo y estado de asistencia.",
+    "todayOverview": "Resumen de Hoy",
+    "activeFormationsMetric": "Formaciones Activas",
+    "averageHoursMetric": "Horas Promedio",
+    "attendanceRateMetric": "Tasa de Asistencia",
+    "nextUpcomingSession": "Próxima Sesión Convocada",
+    "noUpcomingSessions": "No tienes sesiones programadas para hoy o próximas fechas.",
+    "trainingHoursCompleted": "Horas de Formación",
+    "totalTrainingsAttended": "Formaciones Asistidas",
+    "certificatesAvailable": "Certificados Emitidos",
+    "viewAllFormations": "Ver Catálogo Completo",
+    "quickQrAction": "Proyectar QR de Aula",
+    "activeSessionBadge": "En Curso",
+    "completedBadge": "Completada",
+    "pendingCheckinBadge": "Pendiente de Fichar",
+    "scheduledDate": "Fecha programada",
+    "trainer": "Instructor"
   },
   "login": {
     "passkeyBtn": "Acceder con Llave de Acceso (Biometría)",
@@ -1337,4 +1365,3 @@
     "footerNotice": "Al acceder y utilizar el sistema Smart Check-in de Distribution Academy, usted declara haber leído, comprendido y aceptado en su totalidad estos Términos y Condiciones de Uso."
   }
 }
-

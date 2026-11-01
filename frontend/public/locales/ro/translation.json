@@ -15,7 +15,8 @@
     "audit": "Jurnal de Audit",
     "cloudSettings": "Setări Cloud",
     "toggleMenu": "Comutare navigare",
-    "support": "Ajutor și Asistență"
+    "support": "Ajutor și Asistență",
+    "checkin": "Pontare"
   },
   "home": {
     "welcome": "Bine ați venit la Distribution Academy",
@@ -66,7 +67,34 @@
     "department": "Departament",
     "role": "Rol",
     "personalQrTitle": "Cod QR Personal de Identificare",
-    "personalQrDesc": "Prezentați acest cod instructorului sau supervizorului pentru identificare."
+    "personalQrDesc": "Prezentați acest cod instructorului sau supervizorului pentru identificare.",
+    "trainingStatus": "Stare instruire",
+    "inTraining": "În curs de instruire",
+    "noActiveTraining": "Fără instruire activă",
+    "inTrainingNotice": "Aveți o sesiune de instruire în curs.",
+    "readyToScanTraining": "Gata pentru înregistrarea prezenței la instruire.",
+    "scanTrainingQR": "Scanați QR-ul instruirii",
+    "finishTraining": "Finalizează prezența / Semnează",
+    "adminWelcome": "Panou de Control și Supraveghere",
+    "adminSub": "Monitorizare în timp real a activității, instruirilor și metricilor sistemului.",
+    "employeeHubTitle": "Centrul Meu de Instruire",
+    "employeeHubSub": "Consultați sesiunile viitoare, progresul de instruire și prezența.",
+    "todayOverview": "Rezumatul Zilei",
+    "activeFormationsMetric": "Instruiri Active",
+    "averageHoursMetric": "Ore Medii",
+    "attendanceRateMetric": "Rata de Prezență",
+    "nextUpcomingSession": "Următoarea Sesiune",
+    "noUpcomingSessions": "Nu aveți sesiuni programate pentru astăzi.",
+    "trainingHoursCompleted": "Ore de Instruire",
+    "totalTrainingsAttended": "Instruiri Participante",
+    "certificatesAvailable": "Certificate Emise",
+    "viewAllFormations": "Vezi Catalogul",
+    "quickQrAction": "Proiectează QR",
+    "activeSessionBadge": "În Curs",
+    "completedBadge": "Finalizată",
+    "pendingCheckinBadge": "Pontare În Așteptare",
+    "scheduledDate": "Data programată",
+    "trainer": "Instructor"
   },
   "login": {
     "passkeyBtn": "Autentificare cu Cheie de Acces (Biometrie)",
@@ -1337,4 +1365,3 @@
     "footerNotice": "Prin accesarea Smart Check-in, declarați că ați citit și acceptat în totalitate acești Termeni și Condiții de Utilizare."
   }
 }
-

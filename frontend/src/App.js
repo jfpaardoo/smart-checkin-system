@@ -1,10 +1,11 @@
 import React, { Suspense } from "react";
 import "./App.css";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { SWRConfig } from "swr";
 import { ErrorBoundary } from "react-error-boundary";
 import AppNavbar from "./AppNavbar";
+import BottomTabBar from "./components/BottomTabBar";
 import Home from "./home";
 import PrivateRoute from "./privateRoute";
 import { ToastProvider } from "./components/ToastProvider";
@@ -119,23 +120,24 @@ function AnimatedRoutes() {
             <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
 
             {/* Rutas de Administración */}
-            <Route path="/users" element={<PrivateRoute roles={['ADMIN']}><UserListAdmin /></PrivateRoute>} />
-            <Route path="/users/:id" element={<PrivateRoute roles={['ADMIN']}><UserEditAdmin /></PrivateRoute>} />
-            <Route path="/users/:username" element={<PrivateRoute roles={['ADMIN']}><UserEditAdmin /></PrivateRoute>} />
-            <Route path="/formations" element={<PrivateRoute roles={['ADMIN']}><FormationListAdmin /></PrivateRoute>} />
-            <Route path="/formations/new" element={<PrivateRoute roles={['ADMIN']}><FormationEditAdmin /></PrivateRoute>} />
-            <Route path="/formations/:id" element={<PrivateRoute roles={['ADMIN']}><FormationEditAdmin /></PrivateRoute>} />
-            <Route path="/formations/:id/edit" element={<PrivateRoute roles={['ADMIN']}><FormationEditAdmin /></PrivateRoute>} />
-            <Route path="/formations/:id/details" element={<PrivateRoute roles={['ADMIN']}><FormationDetailsAdmin /></PrivateRoute>} />
+            <Route path="/users" element={<PrivateRoute roles={['ADMIN', 'HR_MANAGER']}><UserListAdmin /></PrivateRoute>} />
+            <Route path="/users/:id" element={<PrivateRoute roles={['ADMIN', 'HR_MANAGER']}><UserEditAdmin /></PrivateRoute>} />
+            <Route path="/users/:username" element={<PrivateRoute roles={['ADMIN', 'HR_MANAGER']}><UserEditAdmin /></PrivateRoute>} />
+            <Route path="/formations" element={<PrivateRoute roles={['ADMIN', 'HR_MANAGER']}><FormationListAdmin /></PrivateRoute>} />
+            <Route path="/formations/new" element={<PrivateRoute roles={['ADMIN', 'HR_MANAGER']}><FormationEditAdmin /></PrivateRoute>} />
+            <Route path="/formations/:id" element={<PrivateRoute roles={['ADMIN', 'HR_MANAGER']}><FormationEditAdmin /></PrivateRoute>} />
+            <Route path="/formations/:id/edit" element={<PrivateRoute roles={['ADMIN', 'HR_MANAGER']}><FormationEditAdmin /></PrivateRoute>} />
+            <Route path="/formations/:id/details" element={<PrivateRoute roles={['ADMIN', 'HR_MANAGER']}><FormationDetailsAdmin /></PrivateRoute>} />
             <Route path="/companies" element={<PrivateRoute roles={['ADMIN']}><CompanyListAdmin /></PrivateRoute>} />
             <Route path="/companies/new" element={<PrivateRoute roles={['ADMIN']}><CompanyEditAdmin /></PrivateRoute>} />
             <Route path="/companies/:id" element={<PrivateRoute roles={['ADMIN']}><CompanyEditAdmin /></PrivateRoute>} />
-            <Route path="/qr-generator" element={<PrivateRoute roles={['ADMIN']}><QRGeneratorAdmin /></PrivateRoute>} />
-            <Route path="/analytics" element={<PrivateRoute roles={['ADMIN']}><AnalyticsDashboard /></PrivateRoute>} />
+            <Route path="/qr-generator" element={<PrivateRoute roles={['ADMIN', 'HR_MANAGER']}><QRGeneratorAdmin /></PrivateRoute>} />
+            <Route path="/analytics" element={<PrivateRoute roles={['ADMIN', 'HR_MANAGER']}><AnalyticsDashboard /></PrivateRoute>} />
             <Route path="/audit" element={<PrivateRoute roles={['ADMIN']}><AuditDashboard /></PrivateRoute>} />
             <Route path="/admin/cloud-settings" element={<PrivateRoute roles={['ADMIN']}><CloudSettingsAdmin /></PrivateRoute>} />
             <Route path="/settings" element={<PrivateRoute roles={['ADMIN']}><CloudSettingsAdmin /></PrivateRoute>} />
             <Route path="/docs" element={<PrivateRoute roles={['ADMIN']}><SwaggerDocs /></PrivateRoute>} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
       </PageTransition>
@@ -154,7 +156,10 @@ function App() {
             <SessionTimeoutModal />
             <PwaInstallPrompt />
             <PwaUpdateNotification />
-            <AnimatedRoutes />
+            <main className="pb-20 md:pb-6">
+              <AnimatedRoutes />
+            </main>
+            <BottomTabBar />
           </ErrorBoundary>
         </NotificationProvider>
       </ToastProvider>
