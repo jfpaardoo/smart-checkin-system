@@ -25,7 +25,13 @@ export const WebSocketProvider = ({ children }) => {
 
     useEffect(() => {
         const handleAuthChange = () => {
-            setCurrentUser(tokenService.getUser());
+            const nextUser = tokenService.getUser();
+            setCurrentUser(prev => {
+                if (prev?.username === nextUser?.username) {
+                    return prev;
+                }
+                return nextUser;
+            });
         };
         window.addEventListener('auth-change', handleAuthChange);
         window.addEventListener('storage', handleAuthChange);

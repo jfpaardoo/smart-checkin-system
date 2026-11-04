@@ -4,6 +4,34 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), y este proyecto sigue [Versionado Semántico (SemVer)](https://semver.org/lang/es/).
 
+## [1.4.1](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.4.1) - 2026-11-04
+
+### Seguridad, Autenticación & Calidad de Código
+- **Corrección en Flujo de Eliminación de Cuenta (`UserRestController.java`, `UserControllerTests.java`)**:
+  - Ajustada la validación en `DELETE /api/v1/users/me` para permitir la eliminación de cuenta a la sesión autenticada tras la confirmación explícita del usuario (`ELIMINAR`), manteniendo la verificación estricta de contraseña únicamente cuando sea provista.
+  - Añadida cobertura de pruebas unitarias completa (`UserControllerTests`) para escenarios con contraseña correcta, incorrecta y sin contraseña.
+  - Resueltas las incidencias de SonarQube `java:S3358` (operaciones ternarias anidadas en `password`) y `java:S1066` (fusión de condicionales en `2fa/setup`).
+- **Seguridad en Exportación de Auditoría (`ExportRestController.java`)**:
+  - Restringido el endpoint `/api/v1/exports/audit/{format}` exclusivamente al rol `ADMIN` (`@PreAuthorize("hasAuthority('ADMIN')")`), garantizando el principio de mínimo privilegio y alineación total con `SecurityConfiguration`.
+
+### Rendimiento & Optimización Backend ↔ Frontend
+- **Optimización de Consulta de Plantilla Activa (`AnalyticsService.java`, `UserRepository.java`)**:
+  - Reemplazada la iteración y filtrado en memoria de toda la tabla de usuarios (`userRepository.findAll()`) por una consulta JPQL agregada directa e indexada `countActiveEmployees()`, reduciendo la latencia y el consumo de memoria heap en cálculos analíticos de formaciones.
+  - Resuelta la incidencia SonarQube `java:S3358` en la resolución de correo de usuario en analíticas.
+- **Optimización y Estabilidad en Conexión STOMP WebSocket (`WebSocketProvider.js`)**:
+  - Implementada comparación de identidad de usuario antes de reconectar, eliminando desconexiones y reconexiones redundantes del cliente STOMP ante eventos de `auth-change` o modificaciones en `localStorage`.
+
+### Interfaz de Usuario, PWA & Sincronización Offline
+- **Métricas y Selección Dinámica en el Centro de Formación (`home/index.js`)**:
+  - Corregida la métrica de Formaciones Asistidas para contabilizar únicamente asistencias con entrada registrada (`checkInDate != null`), ignorando convocatorias futuras no asistidas.
+  - Corregida la referencia de firma (`a.signature`) en el cómputo de cursos completados y certificados emitidos.
+  - Ordenación cronológica ascendente por `formationDate` para la selección de la Próxima Sesión Convocada, priorizando sesiones en curso y excluyendo cursos ya finalizados o cerrados.
+  - Corregido el bug de evaluación de valor cero en la tasa de asistencia (`attendanceRate != null`) en el panel de supervisión de personal.
+- **Integridad de Zona Horaria en Sincronización Offline (`offlineQueue.js`)**:
+  - Implementada la utilidad `formatLocalISO` para preservar la hora local real del dispositivo (`YYYY-MM-DDTHH:mm:ss`) al procesar lotes offline (`/checkins/offline-batch`), evitando desfases de 1 a 2 horas provocados por la conversión UTC truncada.
+- **Versionado PWA**:
+  - Actualizados los artefactos de versionado a `1.4.1` en `pom.xml`, `package.json`, `package-lock.json` y `version.json`.
+
 ## [1.4.0](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.4.0) - 2026-11-01
 
 ### Interfaz de Usuario, PWA & Experiencia Móvil

@@ -332,7 +332,7 @@ public class ExportRestController {
     }
 
     @GetMapping("/audit/{format}")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<byte[]> exportAuditLogs(@PathVariable String format) throws IOException {
         DataExportStrategy strategy = exportFactory.getStrategy(format);
         List<AuditLog> auditLogs = auditLogRepository.findTop10000ByOrderByTimestampDesc();

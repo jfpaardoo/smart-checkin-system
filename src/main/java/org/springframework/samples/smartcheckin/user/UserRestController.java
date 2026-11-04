@@ -162,7 +162,10 @@ class UserRestController {
             @RequestHeader(value = "X-Confirm-Password", required = false) String headerPassword,
             @RequestBody(required = false) Map<String, String> body) {
         User user = userService.findCurrentUser();
-        String password = headerPassword != null ? headerPassword : (body != null ? body.get("password") : null);
+        String password = headerPassword;
+        if (password == null && body != null) {
+            password = body.get("password");
+        }
         if (password != null && !passwordEncoder.matches(password, user.getPassword())) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
@@ -255,12 +258,11 @@ class UserRestController {
             @RequestParam(required = false) String currentPassword,
             Principal principal) {
         User user = userService.findUser(principal.getName());
-        if (Boolean.TRUE.equals(user.getTwoFactorEnabled())) {
-            if (currentPassword == null || !passwordEncoder.matches(currentPassword, user.getPassword())) {
-                Map<String, String> err = new HashMap<>();
-                err.put("message", "Se requiere la contrasena actual para reconfigurar el doble factor.");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(err);
-            }
+        if (Boolean.TRUE.equals(user.getTwoFactorEnabled()) 
+                && (currentPassword == null || !passwordEncoder.matches(currentPassword, user.getPassword()))) {
+            Map<String, String> err = new HashMap<>();
+            err.put("message", "Se requiere la contrasena actual para reconfigurar el doble factor.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(err);
         }
         byte[] buffer = new byte[10];
         SECURE_RANDOM.nextBytes(buffer);

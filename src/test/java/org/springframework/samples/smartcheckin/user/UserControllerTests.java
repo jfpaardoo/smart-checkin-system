@@ -736,4 +736,59 @@ class UserControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath(SIZE_PATH).value(1));
     }
+
+    @Test
+    @WithMockUser("testUser")
+    void shouldDeleteMyAccountWhenPasswordNotProvided() throws Exception {
+        user.setPassword(ENCODED_OLD_PASS);
+        when(userService.findCurrentUser()).thenReturn(user);
+
+        mockMvc.perform(delete(BASE_URL + "/me").with(csrf()))
+                .andExpect(status().isNoContent());
+        verify(userService, times(1)).deleteUser(user.getId());
+    }
+
+    @Test
+    @WithMockUser("testUser")
+    void shouldNotDeleteMyAccountWhenPasswordWrong() throws Exception {
+        user.setPassword(ENCODED_OLD_PASS);
+        when(userService.findCurrentUser()).thenReturn(user);
+        when(passwordEncoder.matches("wrongPassword", ENCODED_OLD_PASS)).thenReturn(false);
+
+        mockMvc.perform(delete(BASE_URL + "/me")
+                .header("X-Confirm-Password", "wrongPassword")
+                .with(csrf()))
+                .andExpect(status().isForbidden());
+        verify(userService, never()).deleteUser(anyInt());
+    }
+
+    @Test
+    @WithMockUser("testUser")
+    void shouldDeleteMyAccountWhenPasswordCorrectHeader() throws Exception {
+        user.setPassword(ENCODED_OLD_PASS);
+        when(userService.findCurrentUser()).thenReturn(user);
+        when(passwordEncoder.matches(OLD_PASS, ENCODED_OLD_PASS)).thenReturn(true);
+
+        mockMvc.perform(delete(BASE_URL + "/me")
+                .header("X-Confirm-Password", OLD_PASS)
+                .with(csrf()))
+                .andExpect(status().isNoContent());
+        verify(userService, times(1)).deleteUser(user.getId());
+    }
+
+    @Test
+    @WithMockUser("testUser")
+    void shouldDeleteMyAccountWhenPasswordCorrectBody() throws Exception {
+        user.setPassword(ENCODED_OLD_PASS);
+        when(userService.findCurrentUser()).thenReturn(user);
+        when(passwordEncoder.matches(OLD_PASS, ENCODED_OLD_PASS)).thenReturn(true);
+
+        Map<String, String> body = Map.of("password", OLD_PASS);
+        mockMvc.perform(delete(BASE_URL + "/me")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(body))
+                .with(csrf()))
+                .andExpect(status().isNoContent());
+        verify(userService, times(1)).deleteUser(user.getId());
+    }
 }
