@@ -1,0 +1,64 @@
+name: Automated Release from Changelog
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'CHANGELOG.md'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract Version and Notes from CHANGELOG.md
+        id: changelog_reader
+        run: |
+          # Normalizar finales de línea CRLF -> LF
+          sed -i 's/\r$//' CHANGELOG.md
+
+          # 1. Extraer la primera versión que coincida con el patrón ## [X.Y.Z]
+          VERSION=$(grep -m 1 -E '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md | sed -E 's/## \[([0-9]+\.[0-9]+\.[0-9]+)\].*/\1/')
+          
+          if [ -z "$VERSION" ]; then
+            echo "Error: No se encontró ninguna versión válida en CHANGELOG.md"
+            exit 1
+          fi
+
+          TAG="v$VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Detectada versión $VERSION ($TAG)"
+
+          # 2. Extraer las notas de esa versión específica del Changelog
+          awk "/## \[$VERSION\]/{flag=1; next} /## \[[0-9]+\.[0-9]+\.[0-9]+\]/{if (flag) exit} flag" CHANGELOG.md > release_notes.md
+          
+          # 3. Comprobar si el tag ya existe en el repositorio remoto
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "El tag $TAG ya existe en Git. Omitiendo creación de release."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release
+        if: steps.changelog_reader.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.changelog_reader.outputs.tag }}
+          name: Release ${{ steps.changelog_reader.outputs.tag }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
