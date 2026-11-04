@@ -137,9 +137,36 @@ function formatFormationDate(dateString, language, fallbackText) {
 
 function EmployeeTrainingHub({ attendances, formations }) {
   const { t, i18n } = useTranslation();
-  const totalAttended = attendances.length;
-  const completedTrainings = attendances.filter(a => a.checkOutDate || a.signedSignature).length;
-  const activeFormation = formations.find(f => f.status === 'IN_PROGRESS' || f.status === 'PUBLISHED');
+  const totalAttended = attendances.filter(a => a.checkInDate != null).length;
+  const completedTrainings = attendances.filter(a => a.checkOutDate || a.signature).length;
+  const certificatesIssued = attendances.filter(a => 
+    (a.checkOutDate || a.signature) && 
+    (a.formation?.isClosed || a.formation?.status === 'CLOSED' || a.checkOutDate)
+  ).length;
+
+  const completedFormationIds = new Set(
+    attendances
+      .filter(a => a.checkOutDate || a.signature)
+      .map(a => a.formation?.id)
+      .filter(Boolean)
+  );
+
+  const candidateFormations = (formations || []).filter(f => {
+    if (f.status !== 'IN_PROGRESS' && f.status !== 'PUBLISHED') return false;
+    if (f.isClosed || f.status === 'CLOSED') return false;
+    if (completedFormationIds.has(f.id)) return false;
+    return true;
+  });
+
+  candidateFormations.sort((a, b) => {
+    if (a.status === 'IN_PROGRESS' && b.status !== 'IN_PROGRESS') return -1;
+    if (b.status === 'IN_PROGRESS' && a.status !== 'IN_PROGRESS') return 1;
+    const dateA = a.formationDate ? new Date(a.formationDate).getTime() : Infinity;
+    const dateB = b.formationDate ? new Date(b.formationDate).getTime() : Infinity;
+    return dateA - dateB;
+  });
+
+  const activeFormation = candidateFormations.length > 0 ? candidateFormations[0] : null;
 
   return (
     <div className="space-y-6 w-full text-left">
@@ -182,7 +209,7 @@ function EmployeeTrainingHub({ attendances, formations }) {
               {t('home.certificatesAvailable', 'Certificados Emitidos')}
             </span>
             <span className="text-xl font-extrabold text-slate-800 dark:text-slate-100">
-              {completedTrainings}
+              {certificatesIssued}
             </span>
           </div>
         </div>
@@ -249,7 +276,7 @@ function StaffSupervisionHub({ stats, username, isAdmin, t }) {
   const latestStat = Array.isArray(stats) && stats.length > 0 ? stats[0] : null;
   const activeFormationsCount = latestStat?.activeFormations ?? 0;
   const averageHours = latestStat?.averageHoursPerEmployee ? latestStat.averageHoursPerEmployee.toFixed(1) : '0.0';
-  const attendanceRate = latestStat?.formationAttendanceRate ? `${latestStat.formationAttendanceRate.toFixed(0)}%` : '100%';
+  const attendanceRate = latestStat?.formationAttendanceRate != null ? `${latestStat.formationAttendanceRate.toFixed(0)}%` : '100%';
 
   return (
     <div className="space-y-6 w-full text-left">

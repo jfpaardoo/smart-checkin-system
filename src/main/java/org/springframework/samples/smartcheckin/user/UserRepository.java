@@ -52,4 +52,7 @@ public interface UserRepository extends  CrudRepository<User, Integer>{
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.company LEFT JOIN FETCH u.authority WHERE u.company.id = :companyId")
     List<User> findByCompanyId(Integer companyId);
+
+    @Query("SELECT COUNT(u) FROM User u WHERE (u.authority.authority IN ('EMPLOYEE', 'USER')) AND u.isApproved = true AND (u.username IS NULL OR u.username NOT LIKE 'GDPR_DEL_%')")
+    long countActiveEmployees();
 }

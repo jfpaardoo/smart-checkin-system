@@ -277,9 +277,14 @@ public class AnalyticsService {
         boolean hasSig = att.getSignature() != null && !att.getSignature().trim().isEmpty();
         String hash = ExportUtils.generateVerificationHash(att);
 
-        String userEmail = (att.getUser() != null && att.getUser().getEmail() != null)
-                ? att.getUser().getEmail()
-                : (u.getEmail() != null ? u.getEmail() : u.getUsername());
+        String userEmail;
+        if (att.getUser() != null && att.getUser().getEmail() != null) {
+            userEmail = att.getUser().getEmail();
+        } else if (u.getEmail() != null) {
+            userEmail = u.getEmail();
+        } else {
+            userEmail = u.getUsername();
+        }
 
         return UserFormationExportDTO.builder()
                 .userId(u.getUserId())
@@ -491,6 +496,14 @@ public class AnalyticsService {
     }
 
     private long calculateTotalActiveUsers() {
+        try {
+            long count = userRepository.countActiveEmployees();
+            if (count > 0) {
+                return count;
+            }
+        } catch (Exception e) {
+            // Fallback to in-memory count
+        }
         long total = StreamSupport.stream(userRepository.findAll().spliterator(), false)
                 .filter(u -> u.getAuthority() != null
                         && ("EMPLOYEE".equalsIgnoreCase(u.getAuthority().getAuthority()) || "USER".equalsIgnoreCase(u.getAuthority().getAuthority()))

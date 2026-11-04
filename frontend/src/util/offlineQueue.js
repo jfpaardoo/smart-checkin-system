@@ -129,15 +129,25 @@ function notifySyncResult(syncedCount, toast, t) {
   }
 }
 
+function formatLocalISO(d) {
+  const date = d instanceof Date ? d : new Date(d);
+  if (Number.isNaN(date.getTime())) {
+    return new Date().toISOString().split('.')[0];
+  }
+  const pad = (n) => String(n).padStart(2, '0');
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+}
+
 async function syncBatchCheckins(api, pending, toast, t) {
   const batchRequests = pending.map(item => {
-    let offlineTimestamp = null;
-    if (item.queuedAt) {
-      // Remove timezone suffix if present for Java LocalDateTime parsing compatibility
-      offlineTimestamp = item.queuedAt.split('.')[0];
-    } else {
-      offlineTimestamp = new Date().toISOString().split('.')[0];
-    }
+    // Preserve user local timezone when converting to Java LocalDateTime format
+    const offlineTimestamp = formatLocalISO(item.queuedAt || new Date());
 
     // Ensure each item has a stable offlineEventId for server-side idempotency.
     // We store it in IndexedDB when first queuing so retries send the same UUID.
