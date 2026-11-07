@@ -75,5 +75,27 @@ class AuditControllerTests {
 
         mockMvc.perform(get(BASE_URL + "/csv")).andExpect(status().isOk());
     }
+
+	@Test
+	@WithMockUser(authorities = {"ADMIN"})
+	void testGetAuditLogsPaged() throws Exception {
+		AuditLog log = new AuditLog("USER_SAVE", "user1", TEST_DETAILS, TEST_IP);
+		org.springframework.data.domain.Page<AuditLog> page = new org.springframework.data.domain.PageImpl<>(List.of(log));
+		when(auditLogRepository.findAllByOrderByTimestampDesc(any(org.springframework.data.domain.Pageable.class))).thenReturn(page);
+
+		mockMvc.perform(get(BASE_URL).param("page", "0").param("size", "10"))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser(authorities = {"ADMIN"})
+	void testGetAuditLogsPagedWithFilter() throws Exception {
+		AuditLog log = new AuditLog("USER_SAVE", "user1", TEST_DETAILS, TEST_IP);
+		org.springframework.data.domain.Page<AuditLog> page = new org.springframework.data.domain.PageImpl<>(List.of(log));
+		when(auditLogRepository.searchAuditLogsPaged(eq("USER_SAVE"), eq("user1"), any(org.springframework.data.domain.Pageable.class))).thenReturn(page);
+
+		mockMvc.perform(get(BASE_URL).param("page", "0").param("size", "10").param("action", "USER_SAVE").param("username", "user1"))
+				.andExpect(status().isOk());
+	}
 }
 

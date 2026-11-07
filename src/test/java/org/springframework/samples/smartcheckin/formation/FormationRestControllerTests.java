@@ -499,6 +499,16 @@ class FormationRestControllerTests {
 
     @Test
     @WithMockUser
+    void getAllFormationsPaged() throws Exception {
+        org.springframework.data.domain.Page<Formation> page = new org.springframework.data.domain.PageImpl<>(List.of(formation));
+        when(formationService.findAllVisiblePaged(anyBoolean(), any(), any(org.springframework.data.domain.Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get(BASE_URL).param("page", "0").param("size", "10"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser
     void registerAttendanceWithNullRequest() throws Exception {
         when(userService.findCurrentUser()).thenReturn(user);
         when(formationService.registerAttendance(eq(1), eq("1234"), any())).thenReturn(formation);

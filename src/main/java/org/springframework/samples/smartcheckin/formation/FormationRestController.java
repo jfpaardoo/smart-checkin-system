@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -102,10 +104,22 @@ public class FormationRestController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Formation>> getAllFormations(@RequestParam(required = false) String search) {
+    public ResponseEntity<Object> getAllFormations(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer size) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ADMIN"));
         User currentUser = !isAdmin ? getCurrentUserSafe() : null;
+
+        if (page != null) {
+            Page<Formation> paged = formationService.findAllVisiblePaged(isAdmin, search, PageRequest.of(Math.max(0, page), Math.max(1, size)));
+            if (!isAdmin) {
+                paged = paged.map(f -> sanitizeFormationForUser(f, false, currentUser));
+            }
+            return ResponseEntity.ok(paged);
+        }
+
         List<Formation> list = formationService.findAllVisible(isAdmin, search);
         if (!isAdmin) {
             list = list.stream().map(f -> sanitizeFormationForUser(f, false, currentUser)).toList();

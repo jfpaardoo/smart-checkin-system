@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '../../components/ToastProvider';
 import { useWebSocket } from '../../context/WebSocketProvider';
 
-const fetcher = (url) => api.get(url).then((res) => (Array.isArray(res.data) ? res.data : []));
+const fetcher = (url) => api.get(url).then((res) => (Array.isArray(res.data) ? res.data : (res.data?.content || [])));
 
 dayjs.extend(utc);
 

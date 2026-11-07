@@ -179,6 +179,23 @@ class UserControllerTests {
 
 	@Test
 	@WithMockUser("admin")
+	void shouldFindAllUsersPaged() throws Exception {
+		User mockUser = new User();
+		mockUser.setId(1);
+		mockUser.setUsername("user");
+		mockUser.setPassword(PASSWORD);
+		mockUser.setEmail("mock@example.com");
+		mockUser.setPersonalCode("1000");
+
+		org.springframework.data.domain.Page<User> page = new org.springframework.data.domain.PageImpl<>(List.of(mockUser));
+		doReturn(page).when(userService).searchUsersPaged(any(), any(), any(org.springframework.data.domain.Pageable.class));
+
+		mockMvc.perform(get(BASE_URL).param("page", "0").param("size", "10"))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@WithMockUser("admin")
 	void shouldFindAllAuths() throws Exception {
 		Authorities aux = new Authorities();
 		aux.setId(2);

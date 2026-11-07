@@ -13,7 +13,7 @@ import api from "../../services/api";
 import FormationTable from "./components/FormationTable";
 import PublishFormationModal from "./components/PublishFormationModal";
 
-const fetcher = (url) => api.get(url).then((res) => (Array.isArray(res.data) ? res.data : []));
+const fetcher = (url) => api.get(url).then((res) => (Array.isArray(res.data) ? res.data : (res.data?.content || [])));
 
 const getFormationSortValue = (f, key) => {
   if (key === 'formationDate') {

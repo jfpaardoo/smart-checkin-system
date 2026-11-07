@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 import java.io.IOException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -107,6 +109,16 @@ public class FormationService {
         }
         return formationRepository.findByStatusInAndSearch(
             List.of(FormationStatus.PUBLISHED, FormationStatus.CLOSED), cleanSearch);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Formation> findAllVisiblePaged(boolean isAdmin, String search, Pageable pageable) {
+        String cleanSearch = (search != null && !search.isBlank()) ? search.trim() : null;
+        if (isAdmin) {
+            return formationRepository.searchAllPaged(cleanSearch, pageable);
+        }
+        return formationRepository.findByStatusInAndSearchPaged(
+            List.of(FormationStatus.PUBLISHED, FormationStatus.CLOSED), cleanSearch, pageable);
     }
 
     @Transactional(readOnly = true)
