@@ -33,10 +33,17 @@ export async function saveOfflineCheckin(checkinPayload) {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, 'readwrite');
       const store = tx.objectStore(STORE_NAME);
+      const generateUuid = () => {
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+          return crypto.randomUUID();
+        }
+        return 'offline-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+      };
+
       const entry = {
         ...checkinPayload,
         // Generate a stable UUID at queue time for server-side idempotency on retry
-        offlineEventId: checkinPayload.offlineEventId || crypto.randomUUID(),
+        offlineEventId: checkinPayload.offlineEventId || generateUuid(),
         queuedAt: new Date().toISOString()
       };
       const req = store.add(entry);
@@ -129,7 +136,7 @@ function notifySyncResult(syncedCount, toast, t) {
   }
 }
 
-function formatLocalISO(d) {
+export function formatLocalISO(d) {
   const date = d instanceof Date ? d : new Date(d);
   if (Number.isNaN(date.getTime())) {
     return new Date().toISOString().split('.')[0];
@@ -151,7 +158,7 @@ async function syncBatchCheckins(api, pending, toast, t) {
 
     // Ensure each item has a stable offlineEventId for server-side idempotency.
     // We store it in IndexedDB when first queuing so retries send the same UUID.
-    const offlineEventId = item.offlineEventId || crypto.randomUUID();
+    const offlineEventId = item.offlineEventId || (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : 'offline-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9));
 
     return {
       userLat: item.userLat != null ? item.userLat : 0.0,
