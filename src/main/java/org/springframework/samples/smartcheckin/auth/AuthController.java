@@ -80,7 +80,7 @@ import org.springframework.web.client.RestTemplate;
 @RestController
 @RequestMapping("/api/v1/auth")
 @Tag(name = "Authentication", description = "The Authentication API based on JWT")
-@SuppressWarnings("null")
+@SuppressWarnings({"null", "java:S107"})
 public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
@@ -136,6 +136,7 @@ public class AuthController {
 
     private final RestTemplate restTemplate;
 
+    @SuppressWarnings("java:S107")
     public AuthController(AuthenticationManager authenticationManager, UserService userService, 
             AuthoritiesService authoritiesService, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, 
             SimpMessagingTemplate messagingTemplate, TotpService totpService, UserDetailsServiceImpl userDetailsServiceImpl,
@@ -154,6 +155,7 @@ public class AuthController {
     }
 
     @Autowired
+    @SuppressWarnings("java:S107")
     public AuthController(AuthenticationManager authenticationManager, UserService userService, 
             AuthoritiesService authoritiesService, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, 
             SimpMessagingTemplate messagingTemplate, TotpService totpService, UserDetailsServiceImpl userDetailsServiceImpl,

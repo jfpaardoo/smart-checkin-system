@@ -1,6 +1,5 @@
-package org.springframework.samples.smartcheckin.configuration.jwt; // NOSONAR
+package org.springframework.samples.smartcheckin.configuration.jwt;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.time.Instant;
@@ -40,7 +39,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
 @Component
-@SuppressWarnings({ "java:S6466", "java:S2143", "java:S3077", "null" })
+@SuppressWarnings({ "java:S6466", "java:S2143", "java:S3077", "java:S1168", "null" })
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
@@ -100,8 +99,8 @@ public class JwtUtils {
         return Jwts.builder()
                 .claims(claims)
                 .subject(userPrincipal.getUsername())
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plusMillis(jwtExpirationMs)))
+                .issuedAt(java.util.Date.from(now))
+                .expiration(java.util.Date.from(now.plusMillis(jwtExpirationMs)))
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -179,8 +178,8 @@ public class JwtUtils {
         return Jwts.builder()
                 .claims(claims)
                 .subject(username)
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plusMillis(jwtExpirationMs)))
+                .issuedAt(java.util.Date.from(now))
+                .expiration(java.util.Date.from(now.plusMillis(jwtExpirationMs)))
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -194,12 +193,13 @@ public class JwtUtils {
         return Jwts.builder()
                 .claims(claims)
                 .subject(username)
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plusMillis(300_000L)))
+                .issuedAt(java.util.Date.from(now))
+                .expiration(java.util.Date.from(now.plusMillis(300_000L)))
                 .signWith(getSigningKey())
                 .compact();
     }
 
+    @SuppressWarnings("java:S1168")
     public Claims validateAndGetClaims(String authToken) {
         if (authToken == null || authToken.isBlank()) {
             return null;

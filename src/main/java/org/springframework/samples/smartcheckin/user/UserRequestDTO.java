@@ -74,14 +74,14 @@ public class UserRequestDTO {
         user.setLastName(this.lastName);
         user.setPersonalCode(this.personalCode);
         user.setLocator(this.locator);
-        user.setIsWorking(this.isWorking != null ? this.isWorking : false);
-        user.setIsApproved(this.isApproved != null ? this.isApproved : true);
+        user.setIsWorking(Boolean.TRUE.equals(this.isWorking));
+        user.setIsApproved(!Boolean.FALSE.equals(this.isApproved));
         user.setAuthority(this.authority);
         user.setCompany(this.company);
         user.setTwoFactorType(this.twoFactorType != null ? this.twoFactorType : "APP");
-        user.setTwoFactorEnabled(this.twoFactorEnabled != null ? this.twoFactorEnabled : false);
-        user.setEmailNotificationsEnabled(this.emailNotificationsEnabled != null ? this.emailNotificationsEnabled : true);
-        user.setPushNotificationsEnabled(this.pushNotificationsEnabled != null ? this.pushNotificationsEnabled : true);
+        user.setTwoFactorEnabled(Boolean.TRUE.equals(this.twoFactorEnabled));
+        user.setEmailNotificationsEnabled(!Boolean.FALSE.equals(this.emailNotificationsEnabled));
+        user.setPushNotificationsEnabled(!Boolean.FALSE.equals(this.pushNotificationsEnabled));
         return user;
     }
 }
