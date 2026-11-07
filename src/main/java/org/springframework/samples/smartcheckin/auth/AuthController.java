@@ -193,14 +193,7 @@ public class AuthController {
     }
 
     private String extractJwtFromRequest(HttpServletRequest req) {
-        String jwt = jwtUtils.getJwtFromCookies(req);
-        if (jwt == null) {
-            String authHeader = req.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                return authHeader.substring(7);
-            }
-        }
-        return jwt;
+        return jwtUtils.extractJwtFromRequest(req);
     }
 
     @PostMapping("/logout")
@@ -576,13 +569,7 @@ public class AuthController {
 
     @GetMapping("/validate")
     public ResponseEntity<Boolean> validateToken(HttpServletRequest request) {
-        String token = jwtUtils.getJwtFromCookies(request);
-        if (token == null) {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                token = authHeader.substring(7);
-            }
-        }
+        String token = jwtUtils.extractJwtFromRequest(request);
         Boolean isValid = (token != null && jwtUtils.validateJwtToken(token));
         return ResponseEntity.ok(isValid);
     }

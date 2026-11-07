@@ -240,7 +240,7 @@ class UserRestController {
         userService.saveUser(currentUser);
         if (userSessionService != null && jwtUtils != null && httpRequest != null) {
             try {
-                String currentJwt = jwtUtils.getJwtFromCookies(httpRequest);
+                String currentJwt = jwtUtils.extractJwtFromRequest(httpRequest);
                 userSessionService.revokeOtherSessions(currentUser.getUsername(), currentJwt);
             } catch (Exception ignored) {
                 // Ignore session revocation errors during password change
@@ -414,9 +414,9 @@ class UserRestController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @SuppressWarnings("squid:S4684")
     @Auditable(action = "USER_CREATE", details = "Admin created user")
-    public ResponseEntity<User> create(@RequestBody @Valid User user) {
+    public ResponseEntity<User> create(@RequestBody @Valid UserRequestDTO request) {
+        User user = request.toEntity();
         if (user.getPassword() != null) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
@@ -428,12 +428,12 @@ class UserRestController {
 
     @PutMapping(value = "{userId}")
     @ResponseStatus(HttpStatus.OK)
-    @SuppressWarnings("squid:S4684")
     @Auditable(action = "USER_UPDATE", details = "Admin updated user")
-    public ResponseEntity<User> update(@PathVariable("userId") Integer id, @RequestBody @Valid User user) {
+    public ResponseEntity<User> update(@PathVariable("userId") Integer id, @RequestBody @Valid UserRequestDTO request) {
         User existing = userService.findUser(id);
         RestPreconditions.checkNotNull(existing, "User", "ID", id);
         boolean wasNotApproved = Boolean.FALSE.equals(existing.getIsApproved());
+        User user = request.toEntity();
 
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));

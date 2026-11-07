@@ -157,6 +157,21 @@ public class JwtUtils {
         }
     }
 
+    public String extractJwtFromRequest(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+        String cookieJwt = getJwtFromCookies(request);
+        if (cookieJwt != null && !cookieJwt.isBlank()) {
+            return cookieJwt;
+        }
+        String headerAuth = request.getHeader("Authorization");
+        if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
+            return headerAuth.substring(7).trim();
+        }
+        return null;
+    }
+
     public String generateTokenFromUsername(String username, Authorities authority) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("authorities", authority.getAuthority());

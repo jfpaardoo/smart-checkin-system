@@ -152,4 +152,24 @@ class RateLimitFilterTests {
         verify(response, never()).setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
         org.springframework.security.core.context.SecurityContextHolder.clearContext();
     }
+
+    @Test
+    void testRateLimit_WithXForwardedForHeader() throws Exception {
+        when(request.getRequestURI()).thenReturn("/api/v1/auth/signin");
+        when(request.getHeader("X-Forwarded-For")).thenReturn("203.0.113.195, 172.18.0.1");
+        when(request.getRemoteAddr()).thenReturn("172.18.0.1");
+
+        rateLimitFilter.doFilterInternal(request, response, filterChain);
+        verify(filterChain, times(1)).doFilter(request, response);
+    }
+
+    @Test
+    void testRateLimit_WithXRealIpHeader() throws Exception {
+        when(request.getRequestURI()).thenReturn("/api/v1/auth/signin");
+        when(request.getHeader("X-Real-IP")).thenReturn("203.0.113.50");
+        when(request.getRemoteAddr()).thenReturn("172.18.0.1");
+
+        rateLimitFilter.doFilterInternal(request, response, filterChain);
+        verify(filterChain, times(1)).doFilter(request, response);
+    }
 }

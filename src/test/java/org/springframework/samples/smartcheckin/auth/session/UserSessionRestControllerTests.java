@@ -69,6 +69,7 @@ class UserSessionRestControllerTests {
                 .isCurrent(true)
                 .build();
 
+        when(jwtUtils.extractJwtFromRequest(any())).thenReturn(CURRENT_JWT);
         when(jwtUtils.getJwtFromCookies(any())).thenReturn(CURRENT_JWT);
         when(userSessionService.getActiveSessions(SESSION_USER, CURRENT_JWT)).thenReturn(List.of(dto));
 
@@ -101,6 +102,7 @@ class UserSessionRestControllerTests {
     @Test
     @WithMockUser(username = SESSION_USER)
     void testRevokeOtherSessions() throws Exception {
+        when(jwtUtils.extractJwtFromRequest(any())).thenReturn(CURRENT_JWT);
         when(jwtUtils.getJwtFromCookies(any())).thenReturn(CURRENT_JWT);
         when(userSessionService.revokeOtherSessions(SESSION_USER, CURRENT_JWT)).thenReturn(3);
 
