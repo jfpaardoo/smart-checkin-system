@@ -236,7 +236,12 @@ export default function LocationMapPicker({
     }
 
     return () => {
+      if (markerRef.current) {
+        markerRef.current.off("dragend");
+        markerRef.current = null;
+      }
       if (mapInstanceRef.current) {
+        mapInstanceRef.current.off("click");
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }

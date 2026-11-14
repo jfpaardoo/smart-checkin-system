@@ -58,18 +58,38 @@ export default function PwaUpdateNotification() {
 
   // 2. Detección por Service Worker Lifecycle
   useEffect(() => {
-    if (!('serviceWorker' in navigator)) return;
+    if (!('serviceWorker' in navigator)) return undefined;
 
+    let isMounted = true;
     let refreshing = false;
+    let activeRegistration = null;
+    let intervalId = null;
+
     const handleControllerChange = () => {
       if (!refreshing) {
         refreshing = true;
         window.location.reload();
       }
     };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && activeRegistration) {
+        activeRegistration.update().catch(() => {});
+      }
+    };
+
     navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    intervalId = setInterval(() => {
+      if (activeRegistration) {
+        activeRegistration.update().catch(() => {});
+      }
+    }, 10 * 60 * 1000);
 
     navigator.serviceWorker.register('/sw.js').then((registration) => {
+      if (!isMounted) return;
+      activeRegistration = registration;
+
       if (registration.waiting) {
         waitingWorkerRef.current = registration.waiting;
         setUpdateAvailable(true);
@@ -87,28 +107,17 @@ export default function PwaUpdateNotification() {
           }
         });
       });
-
-      const handleVisibilityChange = () => {
-        if (document.visibilityState === 'visible') {
-          registration.update().catch(() => {});
-        }
-      };
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-
-      const intervalId = setInterval(() => {
-        registration.update().catch(() => {});
-      }, 10 * 60 * 1000);
-
-      return () => {
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-        clearInterval(intervalId);
-      };
     }).catch((err) => {
       console.warn("ServiceWorker registration error:", err);
     });
 
     return () => {
+      isMounted = false;
       navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
     };
   }, []);
 

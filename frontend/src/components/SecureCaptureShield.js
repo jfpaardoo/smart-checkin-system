@@ -138,28 +138,24 @@ export default function SecureCaptureShield({
             }
         };
 
-        window.addEventListener('blur', handleBlur);
-        window.addEventListener('focus', handleFocus);
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        window.addEventListener('pagehide', handlePageHide);
-        window.addEventListener('beforeunload', handlePageHide);
-        window.addEventListener('keydown', handleKeyDown, true);
-        window.addEventListener('keyup', handleKeyUp, true);
-        window.addEventListener('touchstart', handleTouchStart, { passive: true });
-        document.addEventListener('mouseleave', handleMouseLeave);
+        const controller = new AbortController();
+        const { signal } = controller;
+
+        window.addEventListener('blur', handleBlur, { signal });
+        window.addEventListener('focus', handleFocus, { signal });
+        document.addEventListener('visibilitychange', handleVisibilityChange, { signal });
+        window.addEventListener('pagehide', handlePageHide, { signal });
+        window.addEventListener('beforeunload', handlePageHide, { signal });
+        window.addEventListener('keydown', handleKeyDown, { capture: true, signal });
+        window.addEventListener('keyup', handleKeyUp, { capture: true, signal });
+        window.addEventListener('touchstart', handleTouchStart, { passive: true, signal });
+        document.addEventListener('mouseleave', handleMouseLeave, { signal });
 
         return () => {
-            window.removeEventListener('blur', handleBlur);
-            window.removeEventListener('focus', handleFocus);
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            window.removeEventListener('pagehide', handlePageHide);
-            window.removeEventListener('beforeunload', handlePageHide);
-            window.removeEventListener('keydown', handleKeyDown, true);
-            window.removeEventListener('keyup', handleKeyUp, true);
-            window.removeEventListener('touchstart', handleTouchStart);
-            document.removeEventListener('mouseleave', handleMouseLeave);
+            controller.abort();
             if (unblackoutTimeoutRef.current) {
                 clearTimeout(unblackoutTimeoutRef.current);
+                unblackoutTimeoutRef.current = null;
             }
         };
     }, [triggerBlackout, handleDismissBlackout, wipeClipboardSafe, applyBlackoutDOM]);
