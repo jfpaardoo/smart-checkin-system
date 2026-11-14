@@ -21,6 +21,8 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
   - Implementada paginación y filtrado indexado en servidor manteniendo retrocompatibilidad cuando `page` no se especifica.
 - **Sincronización Dinámica de Caché Service Worker (`generate-version.js`, `sw.js`)**:
   - Sincronización automática de `CURRENT_CACHE_NAME` (`da-cache-vX.Y.Z`) al generar `version.json`, evitando cachés obsoletas tras despliegues.
+- **Animaciones Fluidas y Físicas de Muelle en Notificaciones Toast (`ToastProvider.js`, `ToastProvider.test.js`)**:
+  - Migradas las notificaciones *Liquid Glass* a `framer-motion` (`AnimatePresence mode="popLayout"`, físicas `spring`, composición exclusiva GPU `transform`/`opacity` eliminando `clip-path` sobre `backdrop-blur`), gesto *swipe-up* para descartar y soporte `prefers-reduced-motion`.
 - **Limpieza de Metadatos OpenAPI (`application.properties`, `OpenApiConfiguration.java`)**:
   - Depuración y ordenación de la configuración de documentación OpenAPI.
 
