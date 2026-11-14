@@ -19,10 +19,10 @@ export default function ManualCheckinForm({ onSubmit, onCancel }) {
 
   return (
     <div className="text-center p-4">
-      <h4 className="mb-4" style={{ color: '#2c3e50', fontWeight: 600 }}>
+      <h4 className="mb-2 text-lg font-bold text-slate-800 dark:text-slate-100">
         {t('checkin.enterCodeManually', 'Ingresar Código Manualmente')}
       </h4>
-      <p className="mb-4 text-muted">
+      <p className="mb-5 text-sm text-slate-500 dark:text-slate-400">
         {t('checkin.enter6DigitCode', 'Introduce el código de 6 dígitos de la formación.')}
       </p>
       
@@ -43,16 +43,7 @@ export default function ManualCheckinForm({ onSubmit, onCancel }) {
                 setManualCode(val);
               }
             }}
-            className="da-input mx-auto max-w-full"
-            style={{
-              fontSize: 'clamp(1.5rem, 6vw, 2.3rem)',
-              textAlign: 'center',
-              letterSpacing: 'clamp(4px, 1.8vw, 10px)',
-              width: '100%',
-              maxWidth: '260px',
-              padding: '12px 8px',
-              boxSizing: 'border-box'
-            }}
+            className="da-input mx-auto w-full max-w-[260px] py-3 px-2 box-border text-center font-mono font-bold text-[clamp(1.5rem,6vw,2.3rem)] tracking-[clamp(4px,1.8vw,10px)]"
             autoFocus
           />
         </div>

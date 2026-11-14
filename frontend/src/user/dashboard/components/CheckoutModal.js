@@ -63,12 +63,12 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
 
   const renderScanStep = () => (
     <div>
-      <h5 className="text-center mb-2 text-sm font-semibold text-slate-800">{t('dashboard.scanStep')}</h5>
+      <h5 className="text-center mb-2 text-sm font-semibold text-slate-800 dark:text-slate-100">{t('dashboard.scanStep')}</h5>
       {!isManualCheckout ? (
         <>
-          <div className="mb-2 mx-auto flex items-center justify-center gap-2" style={{ maxWidth: '300px' }}>
+          <div className="mb-2 mx-auto max-w-[300px] flex items-center justify-center gap-2">
             {cameras && cameras.length > 1 && (
-              <div className="flex-1" style={{ minWidth: 0 }}>
+              <div className="flex-1 min-w-0">
                 <GlassDropdown
                   options={cameras}
                   value={selectedCameraId}
@@ -79,7 +79,7 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
             )}
             <button
               type="button"
-              className="da-btn da-btn-secondary px-2.5 py-2 rounded-full text-xs font-semibold shrink-0 d-inline-flex align-items-center gap-1.5"
+              className="da-btn da-btn-secondary px-2.5 py-2 rounded-full text-xs font-semibold shrink-0 inline-flex items-center gap-1.5"
               onClick={toggleCamera}
               title={facingMode === 'environment' ? 'Cambiar a frontal' : 'Cambiar a trasera'}
             >
@@ -89,8 +89,7 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
           </div>
 
           <div
-            className="relative mx-auto rounded-2xl overflow-hidden shadow-sm flex items-center justify-center border border-white/20"
-            style={{ width: '100%', maxWidth: '280px', aspectRatio: '1 / 1', borderRadius: '16px', margin: '0 auto 8px', backgroundColor: '#000' }}
+            className="relative w-full max-w-[280px] aspect-square mx-auto mb-2 bg-black rounded-2xl overflow-hidden shadow-sm flex items-center justify-center border border-white/20"
           >
             {!isScannerReady && (
               <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-slate-900 text-slate-200 p-3">
@@ -98,7 +97,7 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
                 <p className="text-xs font-semibold text-slate-300 mb-0">{t('checkin.startingCamera', 'Iniciando cámara...')}</p>
               </div>
             )}
-            <div id="checkout-qr-reader" style={{ width: '100%', height: '100%' }} />
+            <div id="checkout-qr-reader" className="w-full h-full" />
           </div>
 
           <div className="text-center mt-2">
@@ -146,7 +145,7 @@ export default function CheckoutModal({ isOpen, onClose, selectedAtt, onSubmitCh
         />
       )}
 
-      <div className="flex justify-end mt-3 pt-2 border-t border-black/5">
+      <div className="flex justify-end mt-3 pt-2 border-t border-black/5 dark:border-white/10">
         <button type="button" className="da-btn da-btn-secondary m-0 px-3 py-1.5 text-xs rounded-full" onClick={handleClose}>
           {t('dashboard.close')}
         </button>

@@ -218,7 +218,7 @@ export default function ScannerCheckin() {
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm">
           <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-[28px] p-8 border border-white/40 dark:border-white/10 shadow-2xl text-center flex flex-col items-center gap-4 max-w-[320px] w-full mx-4 animate-in fade-in zoom-in-95 duration-200">
-            <FontAwesomeIcon icon={faSpinner} className="fa-spin text-4xl" style={{ color: 'var(--da-primary)' }} />
+            <FontAwesomeIcon icon={faSpinner} className="fa-spin text-4xl text-[#b3c34c]" />
             <p className="text-slate-800 dark:text-slate-100 font-bold mb-0 text-base">
               {t('checkin.processing', 'Procesando registro...')}
             </p>
@@ -262,9 +262,9 @@ export default function ScannerCheckin() {
           </div>
         </div>
 
-        <div style={{ display: isScanningEnabled ? 'block' : 'none' }}>
+        <div className={isScanningEnabled ? 'block' : 'hidden'}>
           <div className="text-center mb-6">
-            <FontAwesomeIcon icon={faQrcode} size="3x" style={{ color: 'var(--da-primary)' }} className="mb-4" />
+            <FontAwesomeIcon icon={faQrcode} size="3x" className="mb-4 text-[#b3c34c]" />
             <h2 className="text-slate-800 dark:text-slate-100 font-bold text-2xl sm:text-3xl mb-2">
               {t('checkin.scanQr', 'Escanear el QR')}
             </h2>
@@ -293,9 +293,9 @@ export default function ScannerCheckin() {
           </div>
 
           <div className="scanner-section text-center flex flex-col items-center">
-            <div className="mb-3 w-full flex items-center justify-center gap-2" style={{ maxWidth: '360px' }}>
+            <div className="mb-3 w-full max-w-[360px] flex items-center justify-center gap-2">
               {cameras && cameras.length > 1 && (
-                <div className="flex-1" style={{ minWidth: 0 }}>
+                <div className="flex-1 min-w-0">
                   <GlassDropdown
                     options={cameras}
                     value={selectedCameraId}
@@ -307,14 +307,14 @@ export default function ScannerCheckin() {
               )}
               <button 
                 type="button" 
-                className="da-btn da-btn-secondary px-3 py-2 rounded-full text-xs font-semibold shrink-0 d-inline-flex align-items-center gap-2" 
+                className="da-btn da-btn-secondary px-3 py-2 rounded-full text-xs font-semibold shrink-0 inline-flex items-center gap-2" 
                 onClick={toggleCamera}
                 title={facingMode === 'environment' 
                   ? t('checkin.useFrontCamera', 'Cambiar a cámara frontal') 
                   : t('checkin.useBackCamera', 'Cambiar a cámara trasera')}
               >
                 <FontAwesomeIcon icon={faCameraRotate} />
-                <span className="d-none d-sm-inline">
+                <span className="hidden sm:inline">
                   {facingMode === 'environment' 
                     ? t('checkin.useFrontCamera', 'Frontal') 
                     : t('checkin.useBackCamera', 'Trasera')}
@@ -322,10 +322,7 @@ export default function ScannerCheckin() {
               </button>
             </div>
 
-            <div 
-              className="w-full rounded-2xl overflow-hidden shadow-md relative flex items-center justify-center border border-white/20"
-              style={{ maxWidth: '360px', aspectRatio: '1 / 1', backgroundColor: '#000000' }}
-            >
+            <div className="w-full max-w-[360px] aspect-square bg-black rounded-2xl overflow-hidden shadow-md relative flex items-center justify-center border border-white/20">
               {!isScannerReady && (
                 <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-slate-900 text-slate-200 p-4">
                   <FontAwesomeIcon icon={faCamera} className="fa-spin text-3xl text-emerald-400" />
@@ -334,20 +331,16 @@ export default function ScannerCheckin() {
                   </p>
                 </div>
               )}
-              <div 
-                id="qr-reader" 
-                style={{ width: '100%', height: '100%' }}
-              />
+              <div id="qr-reader" className="w-full h-full" />
             </div>
 
             <div className="mt-6 pt-2 flex flex-col items-center gap-3 w-full">
               <button 
                 type="button" 
-                className="da-btn da-btn-secondary py-3 px-4 w-full text-xs sm:text-sm" 
-                style={{ maxWidth: '360px' }}
+                className="da-btn da-btn-secondary py-3 px-4 w-full max-w-[360px] text-xs sm:text-sm" 
                 onClick={() => setIsManualInput(true)}
               >
-                <FontAwesomeIcon icon={faKeyboard} className="me-2" />
+                <FontAwesomeIcon icon={faKeyboard} className="mr-2" />
                 {t('checkin.cantScan', '¿No puedes escanear? Ingresar código manualmente')}
               </button>
 
@@ -355,8 +348,7 @@ export default function ScannerCheckin() {
                 <button
                   type="button"
                   onClick={executeOrOpenInstall}
-                  className="py-2.5 px-4 w-full rounded-2xl bg-white/60 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer shadow-xs"
-                  style={{ maxWidth: '360px' }}
+                  className="py-2.5 px-4 w-full max-w-[360px] rounded-2xl bg-white/60 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer shadow-xs"
                 >
                   <FaMobileAlt className="text-[#7a8a18] dark:text-[#d4e157]" size={14} />
                   <span>{t('pwa.scannerPrompt', 'Instalar App en el móvil para fichar más rápido')}</span>
@@ -369,7 +361,7 @@ export default function ScannerCheckin() {
         {isManualInput && (
           <div>
             <div className="text-center mb-6">
-              <FontAwesomeIcon icon={faKeyboard} size="3x" style={{ color: 'var(--da-primary)' }} className="mb-4" />
+              <FontAwesomeIcon icon={faKeyboard} size="3x" className="mb-4 text-[#b3c34c]" />
               <h2 className="text-slate-800 dark:text-slate-100 font-bold text-3xl mb-2">
                 {t('checkin.manualCheckin', 'Check-in Manual')}
               </h2>
@@ -415,8 +407,7 @@ export default function ScannerCheckin() {
               initial={{ scale: 0, rotate: -45 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: 'spring', damping: 15, stiffness: 300, delay: 0.1 }}
-              className="inline-flex items-center justify-center rounded-full shadow-lg p-4"
-              style={{ backgroundColor: 'rgba(179, 195, 76, 0.2)', border: '2px solid var(--da-primary)' }}
+              className="inline-flex items-center justify-center rounded-full shadow-lg p-4 bg-[#b3c34c]/20 border-2 border-[#b3c34c]"
             >
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--da-primary)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <motion.path
@@ -437,7 +428,7 @@ export default function ScannerCheckin() {
           {formationDetails?.formationDate && (
             <div className="p-3 mx-auto bg-white/50 dark:bg-white/5 rounded-2xl border border-white/70 dark:border-white/10 inline-block shadow-2xs backdrop-blur-md">
               <p className="mb-0 font-medium text-slate-700 dark:text-slate-200 text-sm">
-                <FontAwesomeIcon icon={faCalendarCheck} className="me-2" style={{ color: 'var(--da-primary)' }} />
+                <FontAwesomeIcon icon={faCalendarCheck} className="mr-2 text-[#b3c34c]" />
                 {t('checkin.dateLabel', 'Fecha')}: {formatDate(formationDetails.formationDate)}
               </p>
             </div>
