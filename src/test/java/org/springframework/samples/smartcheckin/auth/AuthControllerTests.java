@@ -371,7 +371,7 @@ class AuthControllerTests {
 	@Test
 	void shouldValidateToken() throws Exception {
 		when(jwtUtils.validateJwtToken(MOCK_JWT_LITERAL)).thenReturn(true);
-		when(jwtUtils.getJwtFromCookies(any())).thenReturn(MOCK_JWT_LITERAL);
+		when(jwtUtils.extractJwtFromRequest(any())).thenReturn(MOCK_JWT_LITERAL);
 
 		mockMvc.perform(get(BASE_URL + "/validate").header("Authorization", "Bearer " + MOCK_JWT_LITERAL))
 				.andExpect(status().isOk())
@@ -508,7 +508,7 @@ class AuthControllerTests {
 
 	@Test
 	void shouldLogoutUserSuccessfully() throws Exception {
-		when(jwtUtils.getJwtFromCookies(any())).thenReturn("MOCK_VALID_JWT_TOKEN");
+		when(jwtUtils.extractJwtFromRequest(any())).thenReturn("MOCK_VALID_JWT_TOKEN");
 		when(jwtUtils.getCleanJwtCookie()).thenReturn(ResponseCookie.from("jwt", "").path("/api").maxAge(0).build());
 		
 		mockMvc.perform(post(LOGOUT_URL).with(csrf())
@@ -567,7 +567,7 @@ class AuthControllerTests {
     @Test
     @SuppressWarnings("java:S1313")
     void testLogoutWithExpiredJwtInCookie() throws Exception {
-        when(jwtUtils.getJwtFromCookies(any())).thenReturn("EXPIRED_JWT");
+        when(jwtUtils.extractJwtFromRequest(any())).thenReturn("EXPIRED_JWT");
         when(jwtUtils.getUserNameFromJwtToken("EXPIRED_JWT")).thenThrow(new RuntimeException("Token expired"));
         when(jwtUtils.getCleanJwtCookie()).thenReturn(ResponseCookie.from("jwt", "").path("/api").maxAge(0).build());
 
@@ -583,7 +583,7 @@ class AuthControllerTests {
 
     @Test
     void testLogoutWithoutTokenReturnsBadRequest() throws Exception {
-        when(jwtUtils.getJwtFromCookies(any())).thenReturn(null);
+        when(jwtUtils.extractJwtFromRequest(any())).thenReturn(null);
 
         mockMvc.perform(post(LOGOUT_URL).with(csrf()))
                 .andExpect(status().isBadRequest())
@@ -864,14 +864,14 @@ class AuthControllerTests {
 
     @Test
     void testValidateTokenTrueAndFalse() throws Exception {
-        when(jwtUtils.getJwtFromCookies(any())).thenReturn("VALID_COOKIE_JWT");
+        when(jwtUtils.extractJwtFromRequest(any())).thenReturn("VALID_COOKIE_JWT");
         when(jwtUtils.validateJwtToken("VALID_COOKIE_JWT")).thenReturn(true);
 
         mockMvc.perform(get(BASE_URL + "/validate").with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
 
-        when(jwtUtils.getJwtFromCookies(any())).thenReturn(null);
+        when(jwtUtils.extractJwtFromRequest(any())).thenReturn(null);
 
         mockMvc.perform(get(BASE_URL + "/validate").with(csrf()))
                 .andExpect(status().isOk())

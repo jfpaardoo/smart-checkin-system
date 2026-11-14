@@ -78,7 +78,7 @@ class AutoCheckoutScheduledServiceTests {
                         && c.getUser().equals(user)
         ));
         verify(userRepository).save(argThat(u -> Boolean.FALSE.equals(u.getIsWorking())));
-        verify(notificationContext).sendNotification(eq(user), anyString(), anyString());
+        verify(notificationContext, timeout(2000)).sendNotification(eq(user), anyString(), anyString());
     }
 
     @Test
