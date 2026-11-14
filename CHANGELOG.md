@@ -17,6 +17,10 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
   - Sanitización de celdas potencialmente ejecutables al exportar registros de auditoría (`/api/v1/audit/csv`).
 - **Endurecimiento de Orígenes Dinámicos y Consola H2 (`application.properties`, `application-postgres.properties`, `OAuthStateService.java`)**:
   - Soporte de comodines de puerto (`http://localhost:*`, `http://127.0.0.1:*`) en CORS y validación de orígenes OAuth2 (`OAuthStateService`), y desactivación por defecto de `/h2-console` en perfiles PostgreSQL/producción.
+- **Remediación de Vulnerabilidades Críticas/Altas (Trivy & CodeQL) y Actualización de Dependencias (`pom.xml`, `Dockerfile`, `LocalFileSystemService.java`, `FormationRestController.java`, `CloudSettingsRestController.java`, `fileUtils.js`, `FormationModals.js`)**:
+  - Actualización de `spring-boot-starter-parent` a `3.5.16`, `thymeleaf` a `3.1.7.RELEASE`, `tomcat-embed-core` a `10.1.61`, `spring-framework` a `6.2.19`, `spring-security` a `6.5.11`, `jackson-bom` a `2.21.8`, `postgresql` a `42.7.14`, `commons-lang3` a `3.18.0`, `log4j2` a `2.25.5`, `logback` a `1.5.34` y `micrometer` a `1.15.12`.
+  - Exclusión de `org.asynchttpclient:async-http-client` (y sus dependencias transitivas `netty-*`) en `nl.martijndwars:web-push`, y actualización de paquetes Alpine (`apk upgrade --no-cache`) en el contenedor de ejecución (`Dockerfile`).
+  - Sanitización estricta de rutas en `LocalFileSystemService`, validación de `hostname` mediante `URL` en `fileUtils.js` / `FormationModals.js` y ocultación de trazas internas en respuestas HTTP de error.
 
 ### Rendimiento, Paginación & PWA
 - **Paginación y Búsqueda en Base de Datos (`UserRepository`, `FormationRepository`, `AuditLogRepository`, Services & Controllers)**:

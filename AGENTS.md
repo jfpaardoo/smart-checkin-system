@@ -19,7 +19,7 @@ Este documento actúa como la guía operativa y de contexto técnico principal p
 
 | Capa / Dominio | Tecnologías Principales |
 |---|---|
-| **Backend** | Java 21, Spring Boot 3.5.5, Spring Security 6, Spring Data JPA / Hibernate, MapStruct 1.6.3, Lombok 1.18.46 |
+| **Backend** | Java 21, Spring Boot 3.5.16, Spring Security 6.5.11, Spring Data JPA / Hibernate, MapStruct 1.6.3, Lombok 1.18.46 |
 | **Bases de Datos** | PostgreSQL 15 (producción / Docker), H2 Database (entornos de pruebas) |
 | **Frontend** | React 18, Tailwind CSS, Framer Motion, HTML5-QRCode, HTML5 Canvas (Firma digital), Axios, STOMP/WebSocket (`@stomp/stompjs`) |
 | **Internacionalización** | `react-i18next` con soporte para 8 idiomas oficiales (`es`, `en`, `fr`, `de`, `pt`, `pl`, `ro`, `bg`) |

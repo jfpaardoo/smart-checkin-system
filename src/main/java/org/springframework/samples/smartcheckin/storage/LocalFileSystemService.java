@@ -102,15 +102,29 @@ public class LocalFileSystemService implements SignatureStorageService {
         return isPng ? ".png" : ".jpg";
     }
 
+    private Path resolveSafePath(String fileName, String errorMessage) {
+        if (fileName == null || fileName.isBlank() || fileName.contains("..")
+                || fileName.contains("/") || fileName.contains("\\")) {
+            throw new SecurityException(errorMessage);
+        }
+        Path baseDir = this.rootLocation.toAbsolutePath().normalize();
+        Path safeFileName = Paths.get(fileName).getFileName();
+        if (safeFileName == null) {
+            throw new SecurityException(errorMessage);
+        }
+        Path resolved = baseDir.resolve(safeFileName).normalize();
+        if (!resolved.startsWith(baseDir) || !baseDir.equals(resolved.getParent())) {
+            throw new SecurityException(errorMessage);
+        }
+        return resolved;
+    }
+
     /**
      * Retrieves the file as a byte array for PDF generation or serving.
      */
     public byte[] loadSignature(String fileName) {
         try {
-            Path file = rootLocation.resolve(fileName).normalize().toAbsolutePath();
-            if (!file.getParent().equals(this.rootLocation.toAbsolutePath())) {
-                throw new SecurityException("Cannot load file outside current directory.");
-            }
+            Path file = resolveSafePath(fileName, "Cannot load file outside current directory.");
             if (Files.exists(file) && Files.isReadable(file)) {
                 return Files.readAllBytes(file);
             } else {
@@ -127,10 +141,7 @@ public class LocalFileSystemService implements SignatureStorageService {
      */
     public boolean deleteSignature(String fileName) {
         try {
-            Path file = rootLocation.resolve(fileName).normalize().toAbsolutePath();
-            if (!file.getParent().equals(this.rootLocation.toAbsolutePath())) {
-                throw new SecurityException("Cannot delete file outside current directory.");
-            }
+            Path file = resolveSafePath(fileName, "Cannot delete file outside current directory.");
             return Files.deleteIfExists(file);
         } catch (IOException e) {
             logger.error("Error deleting signature file: {}", e.getMessage(), e);

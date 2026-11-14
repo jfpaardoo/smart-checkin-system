@@ -202,7 +202,7 @@ public class FormationRestController {
             facade.addAttendee(formationId, userId);
             return ResponseEntity.ok("Successfully added attendee");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Failed to add attendee: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Failed to add attendee");
         }
     }
 
@@ -213,7 +213,7 @@ public class FormationRestController {
             facade.removeAttendee(formationId, userId);
             return ResponseEntity.ok("Successfully removed attendee");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Failed to remove attendee: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Failed to remove attendee");
         }
     }
 
