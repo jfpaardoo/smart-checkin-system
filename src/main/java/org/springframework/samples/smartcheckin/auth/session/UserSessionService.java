@@ -25,11 +25,13 @@ public class UserSessionService {
     private final Cache<String, Instant> sessionUpdateThrottleCache = Caffeine.newBuilder()
             .expireAfterWrite(1, TimeUnit.MINUTES)
             .maximumSize(20_000)
+            .recordStats()
             .build();
 
     private final Cache<String, Boolean> sessionStatusCache = Caffeine.newBuilder()
             .expireAfterWrite(5, TimeUnit.MINUTES)
             .maximumSize(10_000)
+            .recordStats()
             .build();
 
     @Autowired

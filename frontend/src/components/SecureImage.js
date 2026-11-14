@@ -64,11 +64,11 @@ const SecureImage = ({ src, alt, style, className }) => {
     const finalSrc = src?.startsWith('data:image') ? src : objectUrl;
 
     if (loading) {
-        return <div className="text-muted small" style={style}>{t('signature.loading', 'Cargando firma...')}</div>;
+        return <div className="text-xs text-slate-500 dark:text-slate-400 animate-pulse" style={style}>{t('signature.loading', 'Cargando firma...')}</div>;
     }
 
     if (error || !finalSrc) {
-        return <div className="text-danger small" style={style}>{t('signature.loadError', 'Error al cargar firma')}</div>;
+        return <div className="text-xs text-red-500 dark:text-red-400 font-medium" style={style}>{t('signature.loadError', 'Error al cargar firma')}</div>;
     }
 
     return <img src={finalSrc} alt={alt} style={style} className={className} loading="lazy" decoding="async" />;

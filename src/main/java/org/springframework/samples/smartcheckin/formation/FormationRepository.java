@@ -1,5 +1,7 @@
 package org.springframework.samples.smartcheckin.formation;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -19,8 +21,16 @@ public interface FormationRepository extends CrudRepository<Formation, Integer> 
     @Query("SELECT f FROM Formation f WHERE (:search IS NULL OR LOWER(f.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(f.description) LIKE LOWER(CONCAT('%', :search, '%')))")
     List<Formation> searchAll(@Param("search") String search);
 
+    @Query(value = "SELECT f FROM Formation f WHERE (:search IS NULL OR LOWER(f.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(f.description) LIKE LOWER(CONCAT('%', :search, '%')))",
+           countQuery = "SELECT COUNT(f) FROM Formation f WHERE (:search IS NULL OR LOWER(f.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(f.description) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Formation> searchAllPaged(@Param("search") String search, Pageable pageable);
+
     @Query("SELECT f FROM Formation f WHERE f.status IN :statuses AND (:search IS NULL OR LOWER(f.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(f.description) LIKE LOWER(CONCAT('%', :search, '%')))")
     List<Formation> findByStatusInAndSearch(@Param("statuses") List<FormationStatus> statuses, @Param("search") String search);
+
+    @Query(value = "SELECT f FROM Formation f WHERE f.status IN :statuses AND (:search IS NULL OR LOWER(f.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(f.description) LIKE LOWER(CONCAT('%', :search, '%')))",
+           countQuery = "SELECT COUNT(f) FROM Formation f WHERE f.status IN :statuses AND (:search IS NULL OR LOWER(f.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(f.description) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Formation> findByStatusInAndSearchPaged(@Param("statuses") List<FormationStatus> statuses, @Param("search") String search, Pageable pageable);
 
     Long countByFormationDateAfter(LocalDateTime date);
     Long countByFormationDateBefore(LocalDateTime date);

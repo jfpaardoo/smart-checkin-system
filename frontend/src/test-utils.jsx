@@ -7,7 +7,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { NotificationProvider } from './context/NotificationContext';
 
 const AllProviders = ({ children }) => (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <ThemeProvider>
             <I18nextProvider i18n={i18n}>
                 <ToastProvider>

@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 import GlassModal from './GlassModal';
 
 const CONFIRM_VARIANT_CLASSES = {
-  danger: 'da-btn-danger',
-  warning: 'bg-amber-500 hover:bg-amber-600 text-white',
-  primary: 'da-btn-primary'
+  danger: 'da-btn-danger bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white shadow-[0_4px_14px_rgba(239,68,68,0.3)]',
+  warning: 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-[0_4px_14px_rgba(245,158,11,0.3)]',
+  primary: 'da-btn-primary bg-gradient-to-r from-[#b3c34c] to-[#9eb038] hover:from-[#a2b144] hover:to-[#8d9e2e] text-slate-950 shadow-[0_4px_14px_rgba(179,195,76,0.3)]'
 };
 
 /**

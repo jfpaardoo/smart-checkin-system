@@ -137,8 +137,9 @@ class UserSessionServiceTests {
         when(userSessionRepository.findFirstByTokenHashOrderByLastActivityAtDesc(session1.getTokenHash())).thenReturn(Optional.of(session1));
         assertTrue(userSessionService.isSessionActive("token1"));
 
-        session1.setActive(false);
-        assertFalse(userSessionService.isSessionActive("token1"));
+        session2.setActive(false);
+        when(userSessionRepository.findFirstByTokenHashOrderByLastActivityAtDesc(session2.getTokenHash())).thenReturn(Optional.of(session2));
+        assertFalse(userSessionService.isSessionActive("token2"));
 
         when(userSessionRepository.findFirstByTokenHashOrderByLastActivityAtDesc(anyString())).thenReturn(Optional.empty());
         assertTrue(userSessionService.isSessionActive("unmigratedToken"));

@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { useToast } from "../../../components/ToastProvider";
-import { getFileIconAndType, getEmbedUrl } from "../../../util/fileUtils";
+import { getFileIconAndType, getEmbedUrl, isMicrosoftCloudHost } from "../../../util/fileUtils";
 import { formatDate } from "../../../util/dateUtils";
 import SecureImage from "../../../components/SecureImage";
 import GlassModal from "../../../components/GlassModal";
@@ -44,7 +44,7 @@ export function DocumentPreviewModal({ isOpen, toggle, document, fileUrl, fileNa
         <div className="p-4 bg-white/70 dark:bg-slate-800/70 rounded-2xl shadow-xs border border-slate-200 dark:border-slate-700">
           <h5 className="text-slate-800 dark:text-slate-100 mb-3 break-all font-bold">{doc.name}</h5>
           
-          {(!doc.url.includes("onedrive.live.com") && !doc.url.includes("1drv.ms") && !doc.url.includes("sharepoint.com")) ? (
+          {!isMicrosoftCloudHost(doc.url) ? (
             <div className="mb-4 h-[500px] w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
               <iframe 
                 src={getEmbedUrl(doc.url)} 

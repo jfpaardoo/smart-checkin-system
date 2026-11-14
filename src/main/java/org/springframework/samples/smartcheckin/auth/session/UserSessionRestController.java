@@ -27,7 +27,7 @@ public class UserSessionRestController {
     @GetMapping
     public ResponseEntity<List<UserSessionDTO>> getMyActiveSessions(HttpServletRequest request) {
         User currentUser = userService.findCurrentUser();
-        String currentJwt = jwtUtils.getJwtFromCookies(request);
+        String currentJwt = jwtUtils.extractJwtFromRequest(request);
         List<UserSessionDTO> sessions = userSessionService.getActiveSessions(currentUser.getUsername(), currentJwt);
         return ResponseEntity.ok(sessions);
     }
@@ -48,7 +48,7 @@ public class UserSessionRestController {
     @DeleteMapping("/others")
     public ResponseEntity<MessageResponse> revokeOtherSessions(HttpServletRequest request) {
         User currentUser = userService.findCurrentUser();
-        String currentJwt = jwtUtils.getJwtFromCookies(request);
+        String currentJwt = jwtUtils.extractJwtFromRequest(request);
         int revokedCount = userSessionService.revokeOtherSessions(currentUser.getUsername(), currentJwt);
         return ResponseEntity.ok(new MessageResponse(String.format("Se han cerrado %d sesiones en otros dispositivos.", revokedCount)));
     }

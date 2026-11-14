@@ -3,6 +3,8 @@ package org.springframework.samples.smartcheckin.user;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.lang.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.Lock;
@@ -49,6 +51,34 @@ public interface UserRepository extends  CrudRepository<User, Integer>{
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.company LEFT JOIN FETCH u.authority WHERE u.isApproved = true AND u.authority.authority = :auth AND u.username NOT LIKE 'GDPR_DEL_%'")
     List<User> findAllApprovedUsersByAuthority(String auth);
+
+    @Query(value = "SELECT u FROM User u LEFT JOIN FETCH u.company LEFT JOIN FETCH u.authority " +
+           "WHERE u.isApproved = true AND (u.username IS NULL OR u.username NOT LIKE 'GDPR_DEL_%') " +
+           "AND (:auth IS NULL OR :auth = '' OR u.authority.authority = :auth) " +
+           "AND (:query IS NULL OR :query = '' OR (" +
+           "LOWER(u.username) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(u.firstName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(u.lastName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(u.personalCode) LIKE LOWER(CONCAT('%', :query, '%'))))",
+           countQuery = "SELECT COUNT(u) FROM User u " +
+           "WHERE u.isApproved = true AND (u.username IS NULL OR u.username NOT LIKE 'GDPR_DEL_%') " +
+           "AND (:auth IS NULL OR :auth = '' OR u.authority.authority = :auth) " +
+           "AND (:query IS NULL OR :query = '' OR (" +
+           "LOWER(u.username) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(u.firstName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(u.lastName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(u.personalCode) LIKE LOWER(CONCAT('%', :query, '%'))))")
+    Page<User> searchApprovedUsersPaged(@Param("auth") String auth, @Param("query") String query, Pageable pageable);
+
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.company LEFT JOIN FETCH u.authority " +
+           "WHERE u.isApproved = true AND (u.username IS NULL OR u.username NOT LIKE 'GDPR_DEL_%') " +
+           "AND (:auth IS NULL OR :auth = '' OR u.authority.authority = :auth) " +
+           "AND (:query IS NULL OR :query = '' OR (" +
+           "LOWER(u.username) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(u.firstName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(u.lastName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "LOWER(u.personalCode) LIKE LOWER(CONCAT('%', :query, '%'))))")
+    List<User> searchApprovedUsers(@Param("auth") String auth, @Param("query") String query);
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.company LEFT JOIN FETCH u.authority WHERE u.company.id = :companyId")
     List<User> findByCompanyId(Integer companyId);

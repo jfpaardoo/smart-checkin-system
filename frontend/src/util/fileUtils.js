@@ -34,6 +34,41 @@ export const getFileIconAndType = (fileName) => {
 };
 
 /**
+ * Checks if a URL belongs to the onedrive.live.com host (or subdomain).
+ * @param {string} url
+ * @returns {boolean}
+ */
+export const isOneDriveLiveHost = (url) => {
+  if (!url) return false;
+  try {
+    const base = typeof window !== "undefined" && window.location?.origin ? window.location.origin : "https://localhost";
+    const { hostname } = new URL(url, base);
+    const lowerHost = hostname.toLowerCase();
+    return lowerHost === "onedrive.live.com" || lowerHost.endsWith(".onedrive.live.com");
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Checks if a URL belongs to a Microsoft Cloud host (OneDrive / SharePoint) that blocks iframe embedding via CSP.
+ * @param {string} url
+ * @returns {boolean}
+ */
+export const isMicrosoftCloudHost = (url) => {
+  if (!url) return false;
+  try {
+    const base = typeof window !== "undefined" && window.location?.origin ? window.location.origin : "https://localhost";
+    const { hostname } = new URL(url, base);
+    const lowerHost = hostname.toLowerCase();
+    const microsoftHosts = ["onedrive.live.com", "1drv.ms", "sharepoint.com"];
+    return microsoftHosts.some((domain) => lowerHost === domain || lowerHost.endsWith(`.${domain}`));
+  } catch {
+    return false;
+  }
+};
+
+/**
  * Transforms a cloud document URL into an embeddable format.
  * @param {string} url 
  * @returns {string} Embed URL
@@ -42,7 +77,7 @@ export const getEmbedUrl = (url) => {
   if (!url) return "";
   let embedUrl = url;
   
-  if (embedUrl.includes("onedrive.live.com")) {
+  if (isOneDriveLiveHost(embedUrl)) {
     embedUrl = embedUrl.replace("/redir?", "/embed?").replace("/view.aspx?", "/embed?");
     embedUrl = embedUrl.replace("onedrive.live.com/?", "onedrive.live.com/embed?");
     

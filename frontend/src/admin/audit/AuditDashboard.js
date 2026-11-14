@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '../../components/ToastProvider';
 import { useWebSocket } from '../../context/WebSocketProvider';
 
-const fetcher = (url) => api.get(url).then((res) => (Array.isArray(res.data) ? res.data : []));
+const fetcher = (url) => api.get(url).then((res) => (Array.isArray(res.data) ? res.data : (res.data?.content || [])));
 
 dayjs.extend(utc);
 
@@ -276,11 +276,11 @@ export default function AuditDashboard() {
               <table className="w-full text-left border-collapse align-middle">
                 <thead>
                   <tr className="border-b border-white/40 dark:border-white/10 bg-white/50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 text-xs font-bold uppercase tracking-wider">
-                    <th className="py-4 px-5 text-slate-500 dark:text-slate-400" style={{ width: '15%' }}>{t('audit.columns.timestamp', 'Fecha/Hora')}</th>
-                    <th className="py-4 px-5" style={{ width: '18%' }}>{t('audit.columns.action', 'Acción')}</th>
-                    <th className="py-4 px-5" style={{ width: '15%' }}>{t('audit.columns.user', 'Usuario')}</th>
-                    <th className="py-4 px-5" style={{ width: '38%' }}>{t('audit.columns.details', 'Detalles')}</th>
-                    <th className="py-4 px-5" style={{ width: '14%' }}>{t('audit.columns.ip', 'IP')}</th>
+                    <th className="py-4 px-5 w-[15%] text-slate-500 dark:text-slate-400">{t('audit.columns.timestamp', 'Fecha/Hora')}</th>
+                    <th className="py-4 px-5 w-[18%]">{t('audit.columns.action', 'Acción')}</th>
+                    <th className="py-4 px-5 w-[15%]">{t('audit.columns.user', 'Usuario')}</th>
+                    <th className="py-4 px-5 w-[38%]">{t('audit.columns.details', 'Detalles')}</th>
+                    <th className="py-4 px-5 w-[14%]">{t('audit.columns.ip', 'IP')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/40 dark:divide-white/10 text-sm text-slate-800 dark:text-slate-100">

@@ -13,6 +13,8 @@ import jakarta.validation.Valid;
 import org.apache.commons.codec.binary.Base32;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,8 +99,15 @@ class UserRestController {
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> findAll(@RequestParam(required = false) String auth,
-                                              @RequestParam(required = false) String search) {
+    public ResponseEntity<Object> findAll(@RequestParam(required = false) String auth,
+                                          @RequestParam(required = false) String search,
+                                          @RequestParam(required = false) Integer page,
+                                          @RequestParam(required = false, defaultValue = "10") Integer size) {
+        if (page != null) {
+            Page<User> paged = userService.searchUsersPaged(auth, search, PageRequest.of(Math.max(0, page), Math.max(1, size)));
+            return new ResponseEntity<>(paged, HttpStatus.OK);
+        }
+
         List<User> res;
         if (auth != null && !auth.isBlank()) {
             res = (List<User>) userService.findAllByAuthority(auth);
@@ -106,7 +115,7 @@ class UserRestController {
             res = (List<User>) userService.findApprovedUsers();
         }
 
-        if (search != null && !search.isBlank()) {
+        if (search != null && !search.isBlank() && res != null) {
             String q = search.toLowerCase().trim();
             res = res.stream().filter(u ->
                 (u.getUsername() != null && u.getUsername().toLowerCase().contains(q)) ||
@@ -231,7 +240,7 @@ class UserRestController {
         userService.saveUser(currentUser);
         if (userSessionService != null && jwtUtils != null && httpRequest != null) {
             try {
-                String currentJwt = jwtUtils.getJwtFromCookies(httpRequest);
+                String currentJwt = jwtUtils.extractJwtFromRequest(httpRequest);
                 userSessionService.revokeOtherSessions(currentUser.getUsername(), currentJwt);
             } catch (Exception ignored) {
                 // Ignore session revocation errors during password change
@@ -405,9 +414,9 @@ class UserRestController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @SuppressWarnings("squid:S4684")
     @Auditable(action = "USER_CREATE", details = "Admin created user")
-    public ResponseEntity<User> create(@RequestBody @Valid User user) {
+    public ResponseEntity<User> create(@RequestBody @Valid UserRequestDTO request) {
+        User user = request.toEntity();
         if (user.getPassword() != null) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
@@ -419,12 +428,12 @@ class UserRestController {
 
     @PutMapping(value = "{userId}")
     @ResponseStatus(HttpStatus.OK)
-    @SuppressWarnings("squid:S4684")
     @Auditable(action = "USER_UPDATE", details = "Admin updated user")
-    public ResponseEntity<User> update(@PathVariable("userId") Integer id, @RequestBody @Valid User user) {
+    public ResponseEntity<User> update(@PathVariable("userId") Integer id, @RequestBody @Valid UserRequestDTO request) {
         User existing = userService.findUser(id);
         RestPreconditions.checkNotNull(existing, "User", "ID", id);
         boolean wasNotApproved = Boolean.FALSE.equals(existing.getIsApproved());
+        User user = request.toEntity();
 
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));

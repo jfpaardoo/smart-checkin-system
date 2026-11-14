@@ -15,6 +15,8 @@ import org.springframework.samples.smartcheckin.audit.AuditLogRepository;
 import org.springframework.samples.smartcheckin.storage.SignatureStorageService;
 import java.util.UUID;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @SuppressWarnings("null")
@@ -93,6 +95,20 @@ public class UserService {
     @Transactional(readOnly = true)
     public Iterable<User> findApprovedUsers() {
         return userRepository.findAllApprovedUsers();
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> searchUsers(String auth, String query) {
+        String cleanAuth = (auth != null && !auth.isBlank()) ? auth.trim() : null;
+        String cleanQuery = (query != null && !query.isBlank()) ? query.trim() : null;
+        return userRepository.searchApprovedUsers(cleanAuth, cleanQuery);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<User> searchUsersPaged(String auth, String query, Pageable pageable) {
+        String cleanAuth = (auth != null && !auth.isBlank()) ? auth.trim() : null;
+        String cleanQuery = (query != null && !query.isBlank()) ? query.trim() : null;
+        return userRepository.searchApprovedUsersPaged(cleanAuth, cleanQuery, pageable);
     }
 
     @Transactional

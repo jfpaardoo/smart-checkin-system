@@ -4,6 +4,53 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), y este proyecto sigue [Versionado Semántico (SemVer)](https://semver.org/lang/es/).
 
+## [1.4.2](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.4.2) - 2026-11-14
+
+### Seguridad, Autenticación & Protección de Datos
+- **Resolución de IP Real en Rate Limiting (`RateLimitFilter.java`)**:
+  - Implementada extracción fiable de la IP del cliente evaluando `X-Forwarded-For`, `X-Real-IP` y `getRemoteAddr()` para evitar colisiones de cuota detrás de proxies inversos.
+- **Soporte Unificado de Sesión Cookie + Bearer (`JwtUtils.java`, `AuthController.java`, `UserRestController.java`, `UserSessionRestController.java`)**:
+  - Introducido `extractJwtFromRequest(HttpServletRequest)` para extraer el token JWT tanto de la cookie `jwt` como de la cabecera `Authorization: Bearer`.
+- **Protección contra Mass-Assignment en Usuarios (`UserRequestDTO.java`, `UserRestController.java`)**:
+  - Sustituido el binding directo de la entidad `User` en creación/actualización por `UserRequestDTO` con validación explícita y mapeo seguro.
+- **Protección contra Formula Injection en CSV (`AuditController.java`)**:
+  - Sanitización de celdas potencialmente ejecutables al exportar registros de auditoría (`/api/v1/audit/csv`).
+- **Endurecimiento de Orígenes Dinámicos y Consola H2 (`application.properties`, `application-postgres.properties`, `OAuthStateService.java`)**:
+  - Soporte de comodines de puerto (`http://localhost:*`, `http://127.0.0.1:*`) en CORS y validación de orígenes OAuth2 (`OAuthStateService`), y desactivación por defecto de `/h2-console` en perfiles PostgreSQL/producción.
+- **Remediación de Vulnerabilidades Críticas/Altas (Trivy & CodeQL) y Actualización de Dependencias (`pom.xml`, `Dockerfile`, `LocalFileSystemService.java`, `FormationRestController.java`, `CloudSettingsRestController.java`, `fileUtils.js`, `FormationModals.js`)**:
+  - Actualización de `spring-boot-starter-parent` a `3.5.16`, `thymeleaf` a `3.1.7.RELEASE`, `tomcat-embed-core` a `10.1.61`, `spring-framework` a `6.2.19`, `spring-security` a `6.5.11`, `jackson-bom` a `2.21.8`, `postgresql` a `42.7.14`, `commons-lang3` a `3.18.0`, `log4j2` a `2.25.5`, `logback` a `1.5.34` y `micrometer` a `1.15.12`.
+  - Exclusión de `org.asynchttpclient:async-http-client` (y sus dependencias transitivas `netty-*`) en `nl.martijndwars:web-push`, y actualización de paquetes Alpine (`apk upgrade --no-cache`) en el contenedor de ejecución (`Dockerfile`).
+  - Sanitización estricta de rutas en `LocalFileSystemService`, validación de `hostname` mediante `URL` en `fileUtils.js` / `FormationModals.js` y ocultación de trazas internas en respuestas HTTP de error.
+
+### Rendimiento, Paginación & PWA
+- **Paginación y Búsqueda en Base de Datos (`UserRepository`, `FormationRepository`, `AuditLogRepository`, Services & Controllers)**:
+  - Implementada paginación y filtrado indexado en servidor manteniendo retrocompatibilidad cuando `page` no se especifica.
+- **Sincronización Dinámica de Caché Service Worker (`generate-version.js`, `sw.js`)**:
+  - Sincronización automática de `CURRENT_CACHE_NAME` (`da-cache-vX.Y.Z`) al generar `version.json`, evitando cachés obsoletas tras despliegues.
+- **Animaciones Fluidas y Físicas de Muelle en Notificaciones Toast y Navegación (`ToastProvider.js`, `BottomTabBar.js`, `PwaUpdateNotification.js`)**:
+  - Migradas las notificaciones *Liquid Glass* y el banner de actualización PWA a `framer-motion` (`AnimatePresence`, físicas `spring`, composición exclusiva GPU `transform`/`opacity` eliminando `clip-path` sobre `backdrop-blur`), gesto *swipe-up* para descartar y soporte `prefers-reduced-motion`.
+  - Migrado el indicador deslizante de pestaña activa en `BottomTabBar.js` a `layoutId` con físicas de muelle (`spring`) de 120Hz, eliminando cálculos manuales de porcentaje e inline styles.
+- **Migración a Tailwind CSS Puro en Componentes Base y Vistas (`GlassModal.js`, `PageTransition.js`, `GhostLoader.js`, `GlassSearchBar.js`, `GlassDropdown.js`, `GlassButton.js`, `GlassConfirmModal.js`, `SecureImage.js`, `AppNavbar.js`, `ScannerCheckin.js`, `ManualCheckinForm.js`, `CheckoutModal.js`, `AuditDashboard.js`, `App.js`)**:
+  - Eliminados bloques `style={{ ... }}` y clases heredadas (`fw-bold`, `btn-primary`, `text-muted`, `d-inline-flex`, `da-ghost-*`) en favor de utilidades puras de Tailwind CSS (`backdrop-blur-2xl`, `overscroll-contain`, `transform-gpu`, esqueletos adaptativos claro/oscuro, contraste oscuro en entrada manual y gradientes con sombras cromáticas).
+- **Resiliencia en Pre-carga SWR y Proxy de Desarrollo (`AppNavbar.js`, `App.js`, `setupProxy.js`)**:
+  - Captura segura de promesas en `preload` de barra de navegación, desactivación de reintentos en cascada (`shouldRetryOnError: false`) y manejador `onError` JSON `503` en el proxy local ante reinicios en caliente del backend.
+- **Observabilidad de Cachés Caffeine y Limpieza de Arranque (`application.properties`, `application-postgres.properties`, `pom.xml`)**:
+  - Activado `recordStats` en cachés Caffeine para exposición de métricas en Micrometer/Prometheus, eliminado el dialecto explícito deprecado `PostgreSQLDialect` en Hibernate 6 y actualizado el artefacto Maven `allure-jupiter`.
+- **Limpieza de Metadatos OpenAPI (`application.properties`, `OpenApiConfiguration.java`)**:
+  - Depuración y ordenación de la configuración de documentación OpenAPI.
+
+### Calidad de Software, Testing & CI/CD
+- **Cobertura de Pruebas Frontend (`offlineQueue.test.js`, `ManualCheckinForm.test.js`)**:
+  - Añadidas pruebas unitarias para la cola offline en IndexedDB (guardado idempotente, `formatLocalISO`, sincronización por lotes y fallback secuencial) y el formulario de fichaje manual.
+- **Validador de Paridad i18n (`frontend/scripts/check-i18n.js`, `npm run i18n:check`)**:
+  - Verificación automatizada de paridad de claves entre los 8 idiomas oficiales (`es`, `en`, `fr`, `de`, `pt`, `pl`, `ro`, `bg`).
+- **Pipeline Frontend CI (`.github/workflows/frontend-ci.yml`)**:
+  - Flujo de GitHub Actions para validar paridad i18n, ejecutar tests unitarios de React y verificar el build de producción en cada PR/push.
+- **Resolución de Incidencias SonarQube y Estabilización de Tests**:
+  - Resueltas alertas `java:S107`, `java:S2143`, `java:S1168`, `java:S1125` y advertencias de null-safety; alineados `AuthControllerTests`, `UserSessionServiceTests` y `AutoCheckoutScheduledServiceTests`.
+- **Guía Operativa del Repositorio (`AGENTS.md`)**:
+  - Documentación integral de arquitectura, estándares de código, comandos y protocolo de lanzamiento.
+
 ## [1.4.1](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.4.1) - 2026-11-04
 
 ### Seguridad, Autenticación & Calidad de Código

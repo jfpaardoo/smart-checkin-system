@@ -26,8 +26,9 @@ RUN mvn clean package -DskipTests
 # STAGE 2: Production Runtime
 FROM eclipse-temurin:21-jre-alpine AS runner
 
-# Create non-root user for security compliance
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+# Upgrade OS packages (e.g. zlib CVE-2026-4738) and create non-root user for security compliance
+RUN apk update && apk upgrade --no-cache && \
+    addgroup -S appgroup && adduser -S appuser -G appgroup
 
 WORKDIR /app
 

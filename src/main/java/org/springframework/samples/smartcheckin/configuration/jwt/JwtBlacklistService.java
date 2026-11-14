@@ -26,6 +26,7 @@ public class JwtBlacklistService {
     private final Cache<String, Boolean> blacklistCache = Caffeine.newBuilder()
             .expireAfterWrite(1, TimeUnit.MINUTES)
             .maximumSize(20_000)
+            .recordStats()
             .build();
 
     @Autowired

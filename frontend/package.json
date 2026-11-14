@@ -1,7 +1,7 @@
 {
   "proxy": "http://localhost:8080",
   "name": "smartcheckin",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "private": true,
   "reactDoctor": {
     "rules": {
@@ -61,6 +61,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "test:e2e": "playwright test --test-dir=e2e",
+    "i18n:check": "node scripts/check-i18n.js",
     "coverage": "react-scripts test --coverage --watchAll --collectCoverageFrom='!src/{index,reportWebVitals,error-page,App}.{js,jsx}'",
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "eject": "react-scripts eject",

@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { LazyMotion, domAnimation, m } from 'framer-motion';
 
 const pageVariants = {
   initial: {
@@ -33,20 +33,17 @@ const pageTransition = {
  */
 export default function PageTransition({ children }) {
   return (
-    <motion.div
-      initial="initial"
-      animate="in"
-      exit="out"
-      variants={pageVariants}
-      transition={pageTransition}
-      style={{
-        width: '100%',
-        transform: 'translateZ(0)',
-        backfaceVisibility: 'hidden',
-        willChange: 'transform, opacity'
-      }}
-    >
-      {children}
-    </motion.div>
+    <LazyMotion features={domAnimation}>
+      <m.div
+        initial="initial"
+        animate="in"
+        exit="out"
+        variants={pageVariants}
+        transition={pageTransition}
+        className="w-full transform-gpu [backface-visibility:hidden]"
+      >
+        {children}
+      </m.div>
+    </LazyMotion>
   );
 }

@@ -1,4 +1,5 @@
 package org.springframework.samples.smartcheckin.configuration;
+
 import org.springframework.context.annotation.Configuration;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -10,16 +11,19 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 
 @Configuration
 @OpenAPIDefinition(
-  info =@Info(
-    title = "Distribution Academy APIs",
-    version = "v1.0",
+  info = @Info(
+    title = "Distribution Academy APIs — Smart Check-in System",
+    version = "${api.version:1.4.2}",
     contact = @Contact(
-      name = "Distribution Academy Team", email = "info@example.com", url = "https://www.example.com"
+      name = "Equipo de Desarrollo Distribution Academy",
+      email = "support@distributionacademy.local",
+      url = "https://github.com/jfpaardoo/smart-checkin-system"
     ),
     license = @License(
-      name = "Apache 2.0", url = "https://www.apache.org/licenses/LICENSE-2.0"
+      name = "MIT License",
+      url = "https://opensource.org/licenses/MIT"
     ),
-    termsOfService = "${tos.uri}",
+    termsOfService = "${tos.uri:/terms-and-conditions}",
     description = "${api.description}"
   )
 )

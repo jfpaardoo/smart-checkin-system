@@ -89,7 +89,7 @@ public class CloudSettingsRestController {
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             log.error("Error forcing backup: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error forcing database backup");
         }
     }
 

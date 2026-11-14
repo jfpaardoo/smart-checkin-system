@@ -1,12 +1,12 @@
 import React, { useId } from 'react';
 
 /**
- * Calculates column header skeleton width.
+ * Calculates column header skeleton Tailwind width class.
  */
-const getHeaderWidth = (colIndex, totalCols) => {
-    if (colIndex === 0) return '45%';
-    if (colIndex === totalCols - 1) return '50px';
-    return '30%';
+const getHeaderWidthClass = (colIndex, totalCols) => {
+    if (colIndex === 0) return 'w-[45%]';
+    if (colIndex === totalCols - 1) return 'w-[50px]';
+    return 'w-[30%]';
 };
 
 /**
@@ -34,12 +34,9 @@ const renderCellContent = (colIndex, totalCols) => {
         );
     }
 
-    const cellWidth = colIndex === 1 ? '60%' : '40%';
+    const cellWidthClass = colIndex === 1 ? 'w-3/5' : 'w-2/5';
     return (
-        <div 
-            className="h-3.5 rounded-md bg-slate-300/50 dark:bg-slate-700/50"
-            style={{ width: cellWidth }}
-        ></div>
+        <div className={`h-3.5 ${cellWidthClass} rounded-md bg-slate-300/50 dark:bg-slate-700/50`}></div>
     );
 };
 
@@ -68,10 +65,7 @@ export const TableGhostLoader = ({ rows = 5, columns = 4, showFilter = true }) =
                         <tr className="border-b border-white/40 dark:border-white/10 bg-white/50 dark:bg-slate-800/60 h-12">
                             {colList.map((colKey, i) => (
                                 <th key={colKey} className="py-4 px-5">
-                                    <div 
-                                        className="h-3.5 rounded-md bg-slate-300/60 dark:bg-slate-700/60"
-                                        style={{ width: getHeaderWidth(i, columns) }}
-                                    ></div>
+                                    <div className={`h-3.5 ${getHeaderWidthClass(i, columns)} rounded-md bg-slate-300/60 dark:bg-slate-700/60`}></div>
                                 </th>
                             ))}
                         </tr>

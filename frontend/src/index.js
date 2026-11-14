@@ -37,12 +37,18 @@ if (typeof window !== 'undefined' && window.HTMLMediaElement) {
   window.addEventListener('unhandledrejection', (event) => {
     const reason = event?.reason;
     const msg = String(reason?.message || reason || '');
+    const status = reason?.response?.status;
+    const isTransientProxyOrNetwork =
+      reason?.isAxiosError && (status === 502 || status === 503 || status === 504 || reason?.code === 'ERR_NETWORK');
+
     if (
+      isTransientProxyOrNetwork ||
       msg.includes('interrupted') ||
       msg.includes('pause()') ||
       msg.includes('new load request') ||
       (reason?.name === 'AbortError' && msg.includes('play'))
     ) {
+      console.debug('[App] Handled transient rejection:', msg);
       event.preventDefault();
       event.stopImmediatePropagation();
     }

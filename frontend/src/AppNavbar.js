@@ -14,18 +14,22 @@ import soundAndHaptics from './util/soundAndHaptics';
 import { preload } from 'swr';
 import api from './services/api';
 
-const swrFetcher = (url) => api.get(url).then((res) => res.data);
+const swrFetcher = (url) => api.get(url).then((res) => res.data).catch(() => null);
+
+const safePreload = (url) => {
+    Promise.resolve(preload(url, swrFetcher)).catch(() => null);
+};
 
 const prefetchRouteData = (route) => {
     if (route === '/users') {
-        void preload('/users', swrFetcher);
-        void preload('/users/pending', swrFetcher);
+        safePreload('/users');
+        safePreload('/users/pending');
     } else if (route === '/companies') {
-        void preload('/companies', swrFetcher);
+        safePreload('/companies');
     } else if (route === '/formations') {
-        void preload('/formations', swrFetcher);
+        safePreload('/formations');
     } else if (route === '/audit') {
-        void preload('/audit', swrFetcher);
+        safePreload('/audit');
     }
 };
 
@@ -56,16 +60,9 @@ function ThemeToggleButton() {
             className="relative p-2 rounded-[20px] text-slate-700 dark:text-white hover:bg-white/50 dark:hover:bg-white/15 focus:outline-none transition-all duration-300 group"
         >
             <span
-                className="block transition-all duration-500"
-                style={{
-                    transform: isDark ? 'rotate(0deg) scale(1)' : 'rotate(30deg) scale(0.85)',
-                    opacity: isDark ? 1 : 0,
-                    position: isDark ? 'relative' : 'absolute',
-                    inset: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
+                className={`inset-0 flex items-center justify-center transition-[transform,opacity] duration-500 ${
+                    isDark ? 'relative opacity-100 rotate-0 scale-100' : 'absolute opacity-0 rotate-[30deg] scale-85'
+                }`}
             >
                 {/* Sol */}
                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -77,16 +74,9 @@ function ThemeToggleButton() {
                 </svg>
             </span>
             <span
-                className="block transition-all duration-500"
-                style={{
-                    transform: isDark ? 'rotate(-30deg) scale(0.85)' : 'rotate(0deg) scale(1)',
-                    opacity: isDark ? 0 : 1,
-                    position: isDark ? 'absolute' : 'relative',
-                    inset: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
+                className={`inset-0 flex items-center justify-center transition-[transform,opacity] duration-500 ${
+                    isDark ? 'absolute opacity-0 -rotate-[30deg] scale-85' : 'relative opacity-100 rotate-0 scale-100'
+                }`}
             >
                 {/* Luna */}
                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">

@@ -53,22 +53,33 @@ function ErrorFallback({ error, resetErrorBoundary }) {
   };
 
   return (
-    <div role="alert" className="p-4 text-center max-w-md mx-auto my-8 bg-white/80 backdrop-blur-md rounded-2xl border border-red-200 shadow-md">
-      <p className="fw-bold text-danger text-lg mb-2">
+    <div
+      role="alert"
+      className="p-6 text-center max-w-md mx-auto my-10 bg-white/80 dark:bg-slate-900/85 backdrop-blur-2xl rounded-3xl border border-red-200/80 dark:border-red-500/30 shadow-[0_20px_50px_rgba(15,23,42,0.12)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+    >
+      <p className="font-bold text-red-600 dark:text-red-400 text-lg mb-2">
         {isChunkError ? t('common.appUpdated', 'Nueva versión disponible') : t('common.somethingWentWrong', 'Algo salió mal:')}
       </p>
-      <p className="text-muted text-sm mb-3">
+      <p className="text-slate-600 dark:text-slate-300 text-sm mb-5 leading-relaxed">
         {isChunkError 
           ? t('common.appUpdatedDesc', 'Se ha desplegado una actualización de la aplicación. Por favor, recarga la página.')
           : error.message}
       </p>
-      <div className="flex gap-2 justify-center">
+      <div className="flex gap-3 justify-center">
         {isChunkError ? (
-          <button type="button" className="btn btn-primary" onClick={handleReload}>
+          <button
+            type="button"
+            className="px-5 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-[#b3c34c] to-[#9eb038] hover:from-[#a2b144] hover:to-[#8d9e2e] text-slate-950 shadow-md hover:scale-[1.02] active:scale-95 transition-transform cursor-pointer border-0"
+            onClick={handleReload}
+          >
             {t('common.reloadApp', 'Recargar aplicación')}
           </button>
         ) : (
-          <button type="button" className="btn btn-primary" onClick={resetErrorBoundary}>
+          <button
+            type="button"
+            className="px-5 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-[#b3c34c] to-[#9eb038] hover:from-[#a2b144] hover:to-[#8d9e2e] text-slate-950 shadow-md hover:scale-[1.02] active:scale-95 transition-transform cursor-pointer border-0"
+            onClick={resetErrorBoundary}
+          >
             {t('common.tryAgain', 'Reintentar')}
           </button>
         )}
@@ -79,15 +90,15 @@ function ErrorFallback({ error, resetErrorBoundary }) {
 
 function PageLoadingFallback() {
   return (
-    <div className="da-container" style={{ paddingTop: '24px' }}>
-      <div className="da-ghost-card">
-        <div className="da-ghost-element da-ghost-title" />
-        <div className="da-ghost-element da-ghost-subtitle" />
-        <div style={{ marginTop: '24px' }}>
-          <div className="da-ghost-element da-ghost-row" />
-          <div className="da-ghost-element da-ghost-row" />
-          <div className="da-ghost-element da-ghost-row" />
-          <div className="da-ghost-element da-ghost-row" />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 animate-pulse" aria-busy="true">
+      <div className="bg-white/65 dark:bg-slate-900/65 backdrop-blur-2xl rounded-3xl p-6 border border-white/70 dark:border-white/10 shadow-[0_12px_36px_rgba(15,23,42,0.06)]">
+        <div className="h-7 w-48 sm:w-64 rounded-xl bg-slate-300/60 dark:bg-slate-700/60 mb-3" />
+        <div className="h-4 w-72 sm:w-96 max-w-full rounded-lg bg-slate-300/45 dark:bg-slate-700/45" />
+        <div className="mt-6 space-y-3">
+          <div className="h-14 w-full rounded-2xl bg-slate-300/40 dark:bg-slate-800/60" />
+          <div className="h-14 w-full rounded-2xl bg-slate-300/40 dark:bg-slate-800/60" />
+          <div className="h-14 w-full rounded-2xl bg-slate-300/40 dark:bg-slate-800/60" />
+          <div className="h-14 w-full rounded-2xl bg-slate-300/40 dark:bg-slate-800/60" />
         </div>
       </div>
     </div>
@@ -147,7 +158,7 @@ function AnimatedRoutes() {
 
 function App() {
   return (
-    <SWRConfig value={{ provider: localStorageProvider, revalidateOnFocus: false, dedupingInterval: 10000 }}>
+    <SWRConfig value={{ provider: localStorageProvider, revalidateOnFocus: false, shouldRetryOnError: false, dedupingInterval: 10000 }}>
       <ToastProvider>
         <NotificationProvider>
           <ErrorBoundary FallbackComponent={ErrorFallback}>
