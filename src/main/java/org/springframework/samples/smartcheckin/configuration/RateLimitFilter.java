@@ -26,16 +26,19 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final Cache<String, Bucket> cacheStrict = Caffeine.newBuilder()
             .maximumSize(10_000)
             .expireAfterAccess(10, TimeUnit.MINUTES)
+            .recordStats()
             .build();
 
     private final Cache<String, Bucket> cacheQrFichaje = Caffeine.newBuilder()
             .maximumSize(20_000)
             .expireAfterAccess(10, TimeUnit.MINUTES)
+            .recordStats()
             .build();
 
     private final Cache<String, Bucket> cacheGlobal = Caffeine.newBuilder()
             .maximumSize(20_000)
             .expireAfterAccess(10, TimeUnit.MINUTES)
+            .recordStats()
             .build();
 
     private Bucket resolveBucketStrict(String key) {

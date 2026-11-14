@@ -14,18 +14,22 @@ import soundAndHaptics from './util/soundAndHaptics';
 import { preload } from 'swr';
 import api from './services/api';
 
-const swrFetcher = (url) => api.get(url).then((res) => res.data);
+const swrFetcher = (url) => api.get(url).then((res) => res.data).catch(() => null);
+
+const safePreload = (url) => {
+    Promise.resolve(preload(url, swrFetcher)).catch(() => null);
+};
 
 const prefetchRouteData = (route) => {
     if (route === '/users') {
-        void preload('/users', swrFetcher);
-        void preload('/users/pending', swrFetcher);
+        safePreload('/users');
+        safePreload('/users/pending');
     } else if (route === '/companies') {
-        void preload('/companies', swrFetcher);
+        safePreload('/companies');
     } else if (route === '/formations') {
-        void preload('/formations', swrFetcher);
+        safePreload('/formations');
     } else if (route === '/audit') {
-        void preload('/audit', swrFetcher);
+        safePreload('/audit');
     }
 };
 

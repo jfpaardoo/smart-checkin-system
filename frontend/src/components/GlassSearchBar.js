@@ -77,8 +77,7 @@ export default function GlassSearchBar({
             />
             <input
                 type="text"
-                className="da-glass-search-input w-full"
-                style={{ paddingLeft: '48px', paddingRight: '42px' }}
+                className="da-glass-search-input w-full !pl-12 !pr-11"
                 placeholder={effectivePlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}

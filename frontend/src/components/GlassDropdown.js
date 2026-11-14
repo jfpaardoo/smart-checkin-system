@@ -145,18 +145,11 @@ export default function GlassDropdown({
       <div className={menuContainerClass}>
         <div className={`min-h-0 rounded-2xl ${isOpen ? 'overflow-visible' : 'overflow-hidden'} sm:overflow-visible`}>
           <div 
-            className="da-glass-dropdown-panel rounded-2xl border border-slate-200/90 dark:border-slate-700/80 bg-white dark:bg-slate-900 shadow-[0_16px_36px_-6px_rgba(0,0,0,0.16),0_4px_12px_rgba(0,0,0,0.06)] dark:shadow-[0_20px_45px_-8px_rgba(0,0,0,0.7)] p-1 overflow-hidden"
-            style={{
-              backdropFilter: 'none',
-              WebkitBackdropFilter: 'none'
-            }}
+            className="da-glass-dropdown-panel rounded-2xl border border-slate-200/90 dark:border-slate-700/80 bg-white dark:bg-slate-900 backdrop-blur-none shadow-[0_16px_36px_-6px_rgba(0,0,0,0.16),0_4px_12px_rgba(0,0,0,0.06)] dark:shadow-[0_20px_45px_-8px_rgba(0,0,0,0.7)] p-1 overflow-hidden"
           >
             <div 
-              className="overflow-y-auto p-1 rounded-xl overscroll-contain"
-              style={{
-                maxHeight: `${maxMenuHeight}px`,
-                scrollbarWidth: 'thin'
-              }}
+              className="overflow-y-auto p-1 rounded-xl overscroll-contain [scrollbar-width:thin]"
+              style={{ maxHeight: `${maxMenuHeight}px` }}
             >
               {searchable && (
                 <div className="p-1.5 pb-1">

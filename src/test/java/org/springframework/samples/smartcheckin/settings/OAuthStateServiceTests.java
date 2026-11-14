@@ -17,7 +17,7 @@ class OAuthStateServiceTests {
     void setUp() {
         oAuthStateService = new OAuthStateService();
         ReflectionTestUtils.setField(oAuthStateService, "configuredFrontendUrl", "http://localhost:3000");
-        ReflectionTestUtils.setField(oAuthStateService, "allowedOrigins", "http://localhost:3000,https://smart-checkin-system.onrender.com");
+        ReflectionTestUtils.setField(oAuthStateService, "allowedOrigins", "http://localhost:3000,http://localhost:*,https://smart-checkin-system.onrender.com");
         ReflectionTestUtils.setField(oAuthStateService, "frontendSettingsPath", "/admin/cloud-settings");
     }
 
@@ -62,5 +62,14 @@ class OAuthStateServiceTests {
         
         assertTrue(itemOpt.isPresent());
         assertEquals("https://smart-checkin-system.onrender.com/admin/cloud-settings", itemOpt.get().targetFrontendUrl());
+    }
+
+    @Test
+    void testWildcardPortOriginIsAccepted() {
+        String state = oAuthStateService.generateState("adminUser", "http://localhost:54112");
+        Optional<OAuthStateService.OAuthStateItem> itemOpt = oAuthStateService.validateAndConsumeState(state);
+
+        assertTrue(itemOpt.isPresent());
+        assertEquals("http://localhost:54112/admin/cloud-settings", itemOpt.get().targetFrontendUrl());
     }
 }

@@ -28,7 +28,7 @@ public class OAuthStateService {
     @Value("${app.frontend.url:http://localhost:3000}")
     private String configuredFrontendUrl;
 
-    @Value("${app.cors.allowed-origins:http://localhost:3000,https://smart-checkin-system.onrender.com}")
+    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:*,http://127.0.0.1:*,https://smart-checkin-system.onrender.com}")
     private String allowedOrigins;
 
     @Value("${app.oauth.frontend-settings-path:/admin/cloud-settings}")
@@ -121,12 +121,24 @@ public class OAuthStateService {
 
         if (allowedOrigins != null) {
             for (String allowed : allowedOrigins.split(",")) {
-                if (normalized.equalsIgnoreCase(trimTrailingSlash(allowed.trim()))) {
+                if (matchesOriginPattern(normalized, trimTrailingSlash(allowed.trim().toLowerCase()))) {
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    private boolean matchesOriginPattern(String normalizedOrigin, String pattern) {
+        if (pattern.isEmpty()) {
+            return false;
+        }
+        if (pattern.endsWith(":*")) {
+            String prefix = pattern.substring(0, pattern.length() - 1);
+            return normalizedOrigin.startsWith(prefix)
+                    && normalizedOrigin.substring(prefix.length()).matches("\\d+");
+        }
+        return normalizedOrigin.equalsIgnoreCase(pattern);
     }
 
     private String trimTrailingSlash(String str) {

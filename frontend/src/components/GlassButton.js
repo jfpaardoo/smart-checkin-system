@@ -2,10 +2,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 const VARIANT_MAP = {
-  primary: 'da-btn-primary',
-  secondary: 'da-btn-secondary',
-  danger: 'da-btn-danger',
-  blue: 'da-btn-blue',
+  primary: 'da-btn-primary bg-gradient-to-r from-[#b3c34c] to-[#9eb038] hover:from-[#a2b144] hover:to-[#8d9e2e] text-slate-950 font-bold shadow-[0_4px_14px_rgba(179,195,76,0.3)]',
+  secondary: 'da-btn-secondary bg-white/75 dark:bg-slate-800/80 hover:bg-white/95 dark:hover:bg-slate-700/90 text-slate-700 dark:text-slate-200 border border-white/80 dark:border-white/15 backdrop-blur-md shadow-xs',
+  danger: 'da-btn-danger bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold shadow-[0_4px_14px_rgba(239,68,68,0.3)]',
+  blue: 'da-btn-blue bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-bold shadow-[0_4px_14px_rgba(14,165,233,0.3)]',
   ghost: 'bg-transparent text-slate-700 dark:text-slate-200 hover:bg-white/40 dark:hover:bg-slate-700/40 border border-transparent'
 };
 

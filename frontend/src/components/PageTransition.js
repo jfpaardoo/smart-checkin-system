@@ -39,12 +39,7 @@ export default function PageTransition({ children }) {
       exit="out"
       variants={pageVariants}
       transition={pageTransition}
-      style={{
-        width: '100%',
-        transform: 'translateZ(0)',
-        backfaceVisibility: 'hidden',
-        willChange: 'transform, opacity'
-      }}
+      className="w-full transform-gpu [backface-visibility:hidden] will-change-[transform,opacity]"
     >
       {children}
     </motion.div>

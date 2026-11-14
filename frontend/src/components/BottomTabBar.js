@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { FaHome, FaQrcode, FaGraduationCap, FaUser, FaChartLine } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import tokenService from '../services/token.service';
@@ -127,22 +128,6 @@ export default function BottomTabBar() {
             : location.pathname.startsWith(item.to)
     );
 
-    const [indicatorStyle, setIndicatorStyle] = useState({ left: '0%', width: '0%', opacity: 0 });
-
-    useEffect(() => {
-        if (activeIndex >= 0 && navItems.length > 0) {
-            const widthPct = 100 / navItems.length;
-            const leftPct = activeIndex * widthPct;
-            setIndicatorStyle({
-                left: `${leftPct}%`,
-                width: `${widthPct}%`,
-                opacity: 1
-            });
-        } else {
-            setIndicatorStyle((prev) => ({ ...prev, opacity: 0 }));
-        }
-    }, [activeIndex, navItems.length]);
-
     if (!user) {
         return null;
     }
@@ -157,18 +142,6 @@ export default function BottomTabBar() {
             aria-label={t('nav.bottomNavAria', 'Navegación inferior móvil')}
         >
             <div className="relative flex items-center justify-between w-full">
-                {/* Sliding Liquid Glass Sheen Indicator */}
-                <div
-                    className="absolute top-0 bottom-0 py-0.5 px-0.5 pointer-events-none transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]"
-                    style={{
-                        left: indicatorStyle.left,
-                        width: indicatorStyle.width,
-                        opacity: indicatorStyle.opacity
-                    }}
-                >
-                    <div className="da-tab-sliding-capsule w-full h-full rounded-full" />
-                </div>
-
                 {navItems.map((item, idx) => {
                     const Icon = item.icon;
                     const isActive = idx === activeIndex;
@@ -178,13 +151,20 @@ export default function BottomTabBar() {
                             key={item.to}
                             to={item.to}
                             onClick={handleTabClick}
-                            className={`relative z-10 flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-full no-underline select-none transition-all duration-200 ${
+                            className={`relative z-10 flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-full no-underline select-none transition-colors duration-200 ${
                                 isActive
                                     ? 'text-[#73841e] dark:text-[#d4e84a] da-tab-active-glow font-bold'
                                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                             }`}
                             title={item.label}
                         >
+                            {isActive && (
+                                <motion.div
+                                    layoutId="bottom-tab-active-capsule"
+                                    transition={{ type: 'spring', stiffness: 420, damping: 32, mass: 0.8 }}
+                                    className="da-tab-sliding-capsule absolute inset-0.5 rounded-full pointer-events-none -z-10"
+                                />
+                            )}
                             <div className="relative flex items-center justify-center">
                                 <Icon className={`text-base sm:text-lg transition-transform duration-200 ${isActive ? 'scale-110' : ''}`} />
                             </div>

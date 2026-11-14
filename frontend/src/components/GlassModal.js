@@ -17,11 +17,11 @@ import { AnimatePresence, motion } from 'framer-motion';
  *   className  {string}    Clase extra en el contenedor del panel
  *   size       {string}    'sm' | 'md' | 'lg' | 'xl' — atajos de maxWidth
  */
-const SIZE_MAP = {
-  sm: '380px',
-  md: '500px',
-  lg: '700px',
-  xl: '900px',
+const SIZE_CLASS_MAP = {
+  sm: 'max-w-[380px]',
+  md: 'max-w-[500px]',
+  lg: 'max-w-[700px]',
+  xl: 'max-w-[900px]',
 };
 
 export default function GlassModal({
@@ -37,7 +37,7 @@ export default function GlassModal({
   className = '',
 }) {
   const closeCallback = toggle || onClose;
-  const resolvedMaxWidth = maxWidth || SIZE_MAP[size] || SIZE_MAP.md;
+  const resolvedSizeClass = SIZE_CLASS_MAP[size] || SIZE_CLASS_MAP.md;
   const panelRef = useRef(null);
 
   // Bloquear scroll del body cuando el modal está abierto
@@ -85,8 +85,7 @@ export default function GlassModal({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[1050] flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(10px) saturate(150%)', WebkitBackdropFilter: 'blur(10px) saturate(150%)' }}
+          className="fixed inset-0 z-[1050] flex items-center justify-center p-4 bg-slate-900/45 dark:bg-slate-950/65 backdrop-blur-md backdrop-saturate-150"
           onClick={handleBackdropClick}
           aria-modal="true"
           role="dialog"
@@ -100,18 +99,8 @@ export default function GlassModal({
             exit={{ opacity: 0, scale: 0.97, y: 10 }}
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
             onClick={(e) => e.stopPropagation()}
-            className={`w-full relative flex flex-col ${className}`}
-            style={{
-              maxWidth: resolvedMaxWidth,
-              maxHeight: '92vh',
-              background: 'var(--da-glass-modal-bg, rgba(255, 255, 255, 0.75))',
-              backdropFilter: 'blur(30px) saturate(180%)',
-              WebkitBackdropFilter: 'blur(30px) saturate(180%)',
-              border: '1.5px solid rgba(255, 255, 255, 0.75)',
-              borderRadius: '28px',
-              boxShadow: '0 25px 60px rgba(15, 23, 42, 0.18), inset 0 1.5px 2px rgba(255, 255, 255, 0.95), inset 0 -1px 1.5px rgba(255, 255, 255, 0.3)',
-              overflow: 'hidden',
-            }}
+            className={`w-full ${resolvedSizeClass} max-h-[92vh] relative flex flex-col overflow-hidden rounded-[28px] bg-white/80 dark:bg-slate-900/85 backdrop-blur-2xl backdrop-saturate-180 border-[1.5px] border-white/75 dark:border-white/15 shadow-[0_25px_60px_rgba(15,23,42,0.18),inset_0_1.5px_2px_rgba(255,255,255,0.95),inset_0_-1px_1.5px_rgba(255,255,255,0.3)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.65),inset_0_1px_1.5px_rgba(255,255,255,0.12)] ${className}`}
+            style={maxWidth ? { maxWidth } : undefined}
           >
             {/* Header */}
             {title !== undefined && (
@@ -119,8 +108,7 @@ export default function GlassModal({
                 className="flex items-center justify-between px-6 py-4 flex-shrink-0 border-b border-white/60 dark:border-white/10 bg-white/20 dark:bg-white/[0.03]"
               >
                 <h5
-                  className="m-0 font-bold text-slate-800 dark:text-slate-100 text-base"
-                  style={{ lineHeight: 1.3 }}
+                  className="m-0 font-bold text-slate-800 dark:text-slate-100 text-base leading-snug"
                 >
                   {title}
                 </h5>
@@ -141,8 +129,7 @@ export default function GlassModal({
 
             {/* Body */}
             <div
-              className="px-6 py-5 overflow-y-auto flex-1 text-slate-800 dark:text-slate-100"
-              style={{ overscrollBehavior: 'contain' }}
+              className="px-6 py-5 overflow-y-auto overscroll-contain flex-1 text-slate-800 dark:text-slate-100"
             >
               {children}
             </div>

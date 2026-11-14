@@ -15,14 +15,23 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
   - Sustituido el binding directo de la entidad `User` en creación/actualización por `UserRequestDTO` con validación explícita y mapeo seguro.
 - **Protección contra Formula Injection en CSV (`AuditController.java`)**:
   - Sanitización de celdas potencialmente ejecutables al exportar registros de auditoría (`/api/v1/audit/csv`).
+- **Endurecimiento de Orígenes Dinámicos y Consola H2 (`application.properties`, `application-postgres.properties`, `OAuthStateService.java`)**:
+  - Soporte de comodines de puerto (`http://localhost:*`, `http://127.0.0.1:*`) en CORS y validación de orígenes OAuth2 (`OAuthStateService`), y desactivación por defecto de `/h2-console` en perfiles PostgreSQL/producción.
 
 ### Rendimiento, Paginación & PWA
 - **Paginación y Búsqueda en Base de Datos (`UserRepository`, `FormationRepository`, `AuditLogRepository`, Services & Controllers)**:
   - Implementada paginación y filtrado indexado en servidor manteniendo retrocompatibilidad cuando `page` no se especifica.
 - **Sincronización Dinámica de Caché Service Worker (`generate-version.js`, `sw.js`)**:
   - Sincronización automática de `CURRENT_CACHE_NAME` (`da-cache-vX.Y.Z`) al generar `version.json`, evitando cachés obsoletas tras despliegues.
-- **Animaciones Fluidas y Físicas de Muelle en Notificaciones Toast (`ToastProvider.js`, `ToastProvider.test.js`)**:
-  - Migradas las notificaciones *Liquid Glass* a `framer-motion` (`AnimatePresence mode="popLayout"`, físicas `spring`, composición exclusiva GPU `transform`/`opacity` eliminando `clip-path` sobre `backdrop-blur`), gesto *swipe-up* para descartar y soporte `prefers-reduced-motion`.
+- **Animaciones Fluidas y Físicas de Muelle en Notificaciones Toast y Navegación (`ToastProvider.js`, `BottomTabBar.js`, `PwaUpdateNotification.js`)**:
+  - Migradas las notificaciones *Liquid Glass* y el banner de actualización PWA a `framer-motion` (`AnimatePresence`, físicas `spring`, composición exclusiva GPU `transform`/`opacity` eliminando `clip-path` sobre `backdrop-blur`), gesto *swipe-up* para descartar y soporte `prefers-reduced-motion`.
+  - Migrado el indicador deslizante de pestaña activa en `BottomTabBar.js` a `layoutId` con físicas de muelle (`spring`) de 120Hz, eliminando cálculos manuales de porcentaje e inline styles.
+- **Migración a Tailwind CSS Puro en Componentes Base (`GlassModal.js`, `PageTransition.js`, `GhostLoader.js`, `GlassSearchBar.js`, `GlassDropdown.js`, `GlassButton.js`, `GlassConfirmModal.js`, `SecureImage.js`, `App.js`)**:
+  - Eliminados bloques `style={{ ... }}` y clases heredadas (`fw-bold`, `btn-primary`, `text-muted`, `da-ghost-*`) en favor de utilidades puras de Tailwind CSS (`backdrop-blur-2xl`, `overscroll-contain`, `transform-gpu`, esqueletos adaptativos claro/oscuro y gradientes con sombras cromáticas).
+- **Resiliencia en Pre-carga SWR y Proxy de Desarrollo (`AppNavbar.js`, `App.js`, `setupProxy.js`)**:
+  - Captura segura de promesas en `preload` de barra de navegación, desactivación de reintentos en cascada (`shouldRetryOnError: false`) y manejador `onError` JSON `503` en el proxy local ante reinicios en caliente del backend.
+- **Observabilidad de Cachés Caffeine y Limpieza de Arranque (`application.properties`, `application-postgres.properties`, `pom.xml`)**:
+  - Activado `recordStats` en cachés Caffeine para exposición de métricas en Micrometer/Prometheus, eliminado el dialecto explícito deprecado `PostgreSQLDialect` en Hibernate 6 y actualizado el artefacto Maven `allure-jupiter`.
 - **Limpieza de Metadatos OpenAPI (`application.properties`, `OpenApiConfiguration.java`)**:
   - Depuración y ordenación de la configuración de documentación OpenAPI.
 
