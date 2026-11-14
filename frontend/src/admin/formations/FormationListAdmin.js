@@ -63,7 +63,8 @@ export default function FormationListAdmin() {
   const filteredFormations = useMemo(() => {
     const now = new Date();
     const q = searchQuery.toLowerCase().trim();
-    return formations
+    const list = Array.isArray(formations) ? formations : [];
+    return list
       .filter((f) => {
         if (q) {
           const match = (

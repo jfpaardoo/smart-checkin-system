@@ -121,7 +121,6 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/v1/exports/**").hasAnyAuthority(ADMIN, HR_MANAGER)
                         .requestMatchers("/api/v1/audit/**").hasAuthority(ADMIN)
                         .requestMatchers("/api/v1/cloud-settings/**").hasAuthority(ADMIN)
-                        .requestMatchers(PathRequest.toH2Console()).hasAuthority(ADMIN)
                         .requestMatchers("/h2-console/**").hasAuthority(ADMIN)
 
                         // 7. Formaciones (POST, PUT, DELETE restringidos a ADMIN)
