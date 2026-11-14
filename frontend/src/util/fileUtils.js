@@ -41,7 +41,7 @@ export const getFileIconAndType = (fileName) => {
 export const isOneDriveLiveHost = (url) => {
   if (!url) return false;
   try {
-    const base = globalThis.location?.origin || "https://localhost";
+    const base = typeof window !== "undefined" && window.location?.origin ? window.location.origin : "https://localhost";
     const { hostname } = new URL(url, base);
     const lowerHost = hostname.toLowerCase();
     return lowerHost === "onedrive.live.com" || lowerHost.endsWith(".onedrive.live.com");
@@ -58,7 +58,7 @@ export const isOneDriveLiveHost = (url) => {
 export const isMicrosoftCloudHost = (url) => {
   if (!url) return false;
   try {
-    const base = globalThis.location?.origin || "https://localhost";
+    const base = typeof window !== "undefined" && window.location?.origin ? window.location.origin : "https://localhost";
     const { hostname } = new URL(url, base);
     const lowerHost = hostname.toLowerCase();
     const microsoftHosts = ["onedrive.live.com", "1drv.ms", "sharepoint.com"];
