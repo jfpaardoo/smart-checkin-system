@@ -4,6 +4,38 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), y este proyecto sigue [Versionado Semántico (SemVer)](https://semver.org/lang/es/).
 
+## [1.4.2](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.4.2) - 2026-11-14
+
+### Seguridad, Autenticación & Protección de Datos
+- **Resolución de IP Real en Rate Limiting (`RateLimitFilter.java`)**:
+  - Implementada extracción fiable de la IP del cliente evaluando `X-Forwarded-For`, `X-Real-IP` y `getRemoteAddr()` para evitar colisiones de cuota detrás de proxies inversos.
+- **Soporte Unificado de Sesión Cookie + Bearer (`JwtUtils.java`, `AuthController.java`, `UserRestController.java`, `UserSessionRestController.java`)**:
+  - Introducido `extractJwtFromRequest(HttpServletRequest)` para extraer el token JWT tanto de la cookie `jwt` como de la cabecera `Authorization: Bearer`.
+- **Protección contra Mass-Assignment en Usuarios (`UserRequestDTO.java`, `UserRestController.java`)**:
+  - Sustituido el binding directo de la entidad `User` en creación/actualización por `UserRequestDTO` con validación explícita y mapeo seguro.
+- **Protección contra Formula Injection en CSV (`AuditController.java`)**:
+  - Sanitización de celdas potencialmente ejecutables al exportar registros de auditoría (`/api/v1/audit/csv`).
+
+### Rendimiento, Paginación & PWA
+- **Paginación y Búsqueda en Base de Datos (`UserRepository`, `FormationRepository`, `AuditLogRepository`, Services & Controllers)**:
+  - Implementada paginación y filtrado indexado en servidor manteniendo retrocompatibilidad cuando `page` no se especifica.
+- **Sincronización Dinámica de Caché Service Worker (`generate-version.js`, `sw.js`)**:
+  - Sincronización automática de `CURRENT_CACHE_NAME` (`da-cache-vX.Y.Z`) al generar `version.json`, evitando cachés obsoletas tras despliegues.
+- **Limpieza de Metadatos OpenAPI (`application.properties`, `OpenApiConfiguration.java`)**:
+  - Depuración y ordenación de la configuración de documentación OpenAPI.
+
+### Calidad de Software, Testing & CI/CD
+- **Cobertura de Pruebas Frontend (`offlineQueue.test.js`, `ManualCheckinForm.test.js`)**:
+  - Añadidas pruebas unitarias para la cola offline en IndexedDB (guardado idempotente, `formatLocalISO`, sincronización por lotes y fallback secuencial) y el formulario de fichaje manual.
+- **Validador de Paridad i18n (`frontend/scripts/check-i18n.js`, `npm run i18n:check`)**:
+  - Verificación automatizada de paridad de claves entre los 8 idiomas oficiales (`es`, `en`, `fr`, `de`, `pt`, `pl`, `ro`, `bg`).
+- **Pipeline Frontend CI (`.github/workflows/frontend-ci.yml`)**:
+  - Flujo de GitHub Actions para validar paridad i18n, ejecutar tests unitarios de React y verificar el build de producción en cada PR/push.
+- **Resolución de Incidencias SonarQube y Estabilización de Tests**:
+  - Resueltas alertas `java:S107`, `java:S2143`, `java:S1168`, `java:S1125` y advertencias de null-safety; alineados `AuthControllerTests`, `UserSessionServiceTests` y `AutoCheckoutScheduledServiceTests`.
+- **Guía Operativa del Repositorio (`AGENTS.md`)**:
+  - Documentación integral de arquitectura, estándares de código, comandos y protocolo de lanzamiento.
+
 ## [1.4.1](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.4.1) - 2026-11-04
 
 ### Seguridad, Autenticación & Calidad de Código
