@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { LazyMotion, domMax, m } from 'framer-motion';
 import { FaHome, FaQrcode, FaGraduationCap, FaUser, FaChartLine } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import tokenService from '../services/token.service';
@@ -137,44 +137,46 @@ export default function BottomTabBar() {
     };
 
     return (
-        <nav
-            className="da-bottom-tab-bar md:hidden fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] inset-x-3 sm:inset-x-6 max-w-md mx-auto z-40 rounded-full p-1 transition-all duration-300"
-            aria-label={t('nav.bottomNavAria', 'Navegación inferior móvil')}
-        >
-            <div className="relative flex items-center justify-between w-full">
-                {navItems.map((item, idx) => {
-                    const Icon = item.icon;
-                    const isActive = idx === activeIndex;
+        <LazyMotion features={domMax}>
+            <nav
+                className="da-bottom-tab-bar md:hidden fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] inset-x-3 sm:inset-x-6 max-w-md mx-auto z-40 rounded-full p-1 transition-transform duration-300"
+                aria-label={t('nav.bottomNavAria', 'Navegación inferior móvil')}
+            >
+                <div className="relative flex items-center justify-between w-full">
+                    {navItems.map((item, idx) => {
+                        const Icon = item.icon;
+                        const isActive = idx === activeIndex;
 
-                    return (
-                        <NavLink
-                            key={item.to}
-                            to={item.to}
-                            onClick={handleTabClick}
-                            className={`relative z-10 flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-full no-underline select-none transition-colors duration-200 ${
-                                isActive
-                                    ? 'text-[#73841e] dark:text-[#d4e84a] da-tab-active-glow font-bold'
-                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                            }`}
-                            title={item.label}
-                        >
-                            {isActive && (
-                                <motion.div
-                                    layoutId="bottom-tab-active-capsule"
-                                    transition={{ type: 'spring', stiffness: 420, damping: 32, mass: 0.8 }}
-                                    className="da-tab-sliding-capsule absolute inset-0.5 rounded-full pointer-events-none -z-10"
-                                />
-                            )}
-                            <div className="relative flex items-center justify-center">
-                                <Icon className={`text-base sm:text-lg transition-transform duration-200 ${isActive ? 'scale-110' : ''}`} />
-                            </div>
-                            <span className="text-[10px] sm:text-[11px] font-semibold mt-0.5 tracking-tight leading-none">
-                                {item.label}
-                            </span>
-                        </NavLink>
-                    );
-                })}
-            </div>
-        </nav>
+                        return (
+                            <NavLink
+                                key={item.to}
+                                to={item.to}
+                                onClick={handleTabClick}
+                                className={`relative z-10 flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-full no-underline select-none transition-colors duration-200 ${
+                                    isActive
+                                        ? 'text-[#73841e] dark:text-[#d4e84a] da-tab-active-glow font-bold'
+                                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                }`}
+                                title={item.label}
+                            >
+                                {isActive && (
+                                    <m.div
+                                        layoutId="bottom-tab-active-capsule"
+                                        transition={{ type: 'spring', stiffness: 420, damping: 32, mass: 0.8 }}
+                                        className="da-tab-sliding-capsule absolute inset-0.5 rounded-full pointer-events-none -z-10"
+                                    />
+                                )}
+                                <div className="relative flex items-center justify-center">
+                                    <Icon className={`text-base sm:text-lg transition-transform duration-200 ${isActive ? 'scale-110' : ''}`} />
+                                </div>
+                                <span className="text-[10px] sm:text-[11px] font-semibold mt-0.5 tracking-tight leading-none">
+                                    {item.label}
+                                </span>
+                            </NavLink>
+                        );
+                    })}
+                </div>
+            </nav>
+        </LazyMotion>
     );
 }

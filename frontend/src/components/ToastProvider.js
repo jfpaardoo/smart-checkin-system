@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { AnimatePresence, motion, MotionConfig } from "framer-motion";
+import { AnimatePresence, LazyMotion, domMax, m, MotionConfig } from "framer-motion";
 
 import soundAndHaptics from "../util/soundAndHaptics";
 
@@ -152,8 +152,9 @@ export function ToastProvider({ children }) {
       info: (msg) => addToast("info", msg),
       confirm: (msg, onConfirm) => addToast("confirm", msg, { onConfirm, persistent: true }),
       clearAll: removeAllToasts,
+      dismiss: removeToast,
     }),
-    [addToast, removeAllToasts]
+    [addToast, removeAllToasts, removeToast]
   );
 
   // Ordenamos para que la notificación más reciente esté al frente (arriba de la pila)
@@ -163,82 +164,82 @@ export function ToastProvider({ children }) {
     <ToastContext.Provider value={toastApi}>
       {children}
       <MotionConfig reducedMotion="user">
-        {/* Única definición compartida para la barra de progreso */}
-        <style>{`
-          @keyframes daToastProgressShrink {
-            from { transform: scaleX(1); }
-            to { transform: scaleX(0); }
-          }
-        `}</style>
+        <LazyMotion features={domMax}>
+          {/* Única definición compartida para la barra de progreso */}
+          <style>{`
+            @keyframes daToastProgressShrink {
+              from { transform: scaleX(1); }
+              to { transform: scaleX(0); }
+            }
+          `}</style>
 
-        {/* Contenedor flotante centrado bajo la barra superior, respetando el notch/Dynamic Island de iOS */}
-        <div
-          ref={containerRef}
-          className="fixed left-0 right-0 z-[999999] flex flex-col items-center pointer-events-none px-3 select-none"
-          style={{ top: "calc(4.75rem + env(safe-area-inset-top, 0px))" }}
-        >
-          {/* Barra de control superior cuando la pila de notificaciones está desplegada */}
-          <AnimatePresence>
-            {toasts.length > 1 && isStackExpanded && (
-              <motion.div
-                key="toast-stack-controls"
-                initial={{ opacity: 0, y: -12, scale: 0.94 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.94 }}
-                transition={SPRING_TRANSITION}
-                className="pointer-events-auto flex items-center justify-between w-full max-w-[calc(100vw-32px)] sm:max-w-[440px] px-3.5 py-1.5 mb-2.5 rounded-full bg-white/80 dark:bg-slate-900/85 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-[0_10px_30px_rgba(15,23,42,0.12)]"
-                style={{ willChange: "transform, opacity" }}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#73841e] dark:bg-[#b3c34c] opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#73841e] dark:bg-[#b3c34c]" />
-                  </span>
-                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
-                    {toasts.length} {t("common.notifications", "notificaciones")}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setIsStackExpanded(false)}
-                    className="px-2.5 py-1 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer border-0 bg-transparent"
-                  >
-                    {t("common.collapse", "Plegar")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={removeAllToasts}
-                    className="px-2.5 py-1 rounded-full text-xs font-bold text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 hover:bg-rose-500/10 transition-colors cursor-pointer border-0 bg-transparent"
-                  >
-                    {t("common.clearAll", "Cerrar todas")}
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Pila de Notificaciones con físicas de muelle y composición GPU */}
+          {/* Contenedor flotante centrado bajo la barra superior, respetando el notch/Dynamic Island de iOS */}
           <div
-            className={`relative flex flex-col items-center w-full max-w-[calc(100vw-32px)] sm:max-w-[440px] ${
-              isStackExpanded ? "gap-2" : ""
-            }`}
+            ref={containerRef}
+            className="fixed left-0 right-0 z-[999999] flex flex-col items-center pointer-events-none px-3 select-none"
+            style={{ top: "calc(4.75rem + env(safe-area-inset-top, 0px))" }}
           >
-            <AnimatePresence mode="popLayout" initial={false}>
-              {orderedToasts.map((toast, index) => (
-                <ToastItem
-                  key={toast.id}
-                  toast={toast}
-                  index={index}
-                  totalCount={orderedToasts.length}
-                  isStackExpanded={isStackExpanded}
-                  onToggleStack={() => setIsStackExpanded((prev) => !prev)}
-                  onRemove={removeToast}
-                />
-              ))}
+            {/* Barra de control superior cuando la pila de notificaciones está desplegada */}
+            <AnimatePresence>
+              {toasts.length > 1 && isStackExpanded && (
+                <m.div
+                  key="toast-stack-controls"
+                  initial={{ opacity: 0, y: -12, scale: 0.94 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.94 }}
+                  transition={SPRING_TRANSITION}
+                  className="pointer-events-auto flex items-center justify-between w-full max-w-[calc(100vw-32px)] sm:max-w-[440px] px-3.5 py-1.5 mb-2.5 rounded-full bg-white/80 dark:bg-slate-900/85 backdrop-blur-2xl border border-white/60 dark:border-white/10 shadow-[0_10px_30px_rgba(15,23,42,0.12)]"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#73841e] dark:bg-[#b3c34c] opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#73841e] dark:bg-[#b3c34c]" />
+                    </span>
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                      {toasts.length} {t("common.notifications", "notificaciones")}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setIsStackExpanded(false)}
+                      className="px-2.5 py-1 rounded-full text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer border-0 bg-transparent"
+                    >
+                      {t("common.collapse", "Plegar")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={removeAllToasts}
+                      className="px-2.5 py-1 rounded-full text-xs font-bold text-rose-600 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 hover:bg-rose-500/10 transition-colors cursor-pointer border-0 bg-transparent"
+                    >
+                      {t("common.clearAll", "Cerrar todas")}
+                    </button>
+                  </div>
+                </m.div>
+              )}
             </AnimatePresence>
+
+            {/* Pila de Notificaciones con físicas de muelle y composición GPU */}
+            <div
+              className={`relative flex flex-col items-center w-full max-w-[calc(100vw-32px)] sm:max-w-[440px] ${
+                isStackExpanded ? "gap-2" : ""
+              }`}
+            >
+              <AnimatePresence mode="popLayout" initial={false}>
+                {orderedToasts.map((toast, index) => (
+                  <ToastItem
+                    key={toast.id}
+                    toast={toast}
+                    index={index}
+                    totalCount={orderedToasts.length}
+                    isStackExpanded={isStackExpanded}
+                    onToggleStack={() => setIsStackExpanded((prev) => !prev)}
+                  />
+                ))}
+              </AnimatePresence>
+            </div>
           </div>
-        </div>
+        </LazyMotion>
       </MotionConfig>
     </ToastContext.Provider>
   );
@@ -281,11 +282,11 @@ const ToastItem = React.forwardRef(function ToastItem(
     totalCount,
     isStackExpanded,
     onToggleStack,
-    onRemove,
   },
   ref
 ) {
   const { t } = useTranslation();
+  const { dismiss } = useContext(ToastContext);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -329,26 +330,22 @@ const ToastItem = React.forwardRef(function ToastItem(
   useEffect(() => {
     if (isSuspended) return;
 
-    if (remainingRef.current <= 0) {
-      onRemove(toast.id);
-      return;
-    }
-
+    const delay = Math.max(0, remainingRef.current);
     lastStartRef.current = Date.now();
     const timerId = setTimeout(() => {
-      onRemove(toast.id);
-    }, remainingRef.current);
+      dismiss(toast.id);
+    }, delay);
 
     return () => {
       clearTimeout(timerId);
       const elapsed = Date.now() - lastStartRef.current;
       remainingRef.current = Math.max(0, remainingRef.current - elapsed);
     };
-  }, [isSuspended, toast.bumpKey, toast.id, onRemove]);
+  }, [isSuspended, toast.bumpKey, toast.id, dismiss]);
 
   const handleClose = (e) => {
     if (e) e.stopPropagation();
-    onRemove(toast.id);
+    dismiss(toast.id);
   };
 
   const handleConfirm = (e) => {
@@ -365,7 +362,7 @@ const ToastItem = React.forwardRef(function ToastItem(
   const stackMotion = getStackMotionProps(isStacked, index);
 
   return (
-    <motion.output
+    <m.output
       ref={ref}
       layout="position"
       initial={{ opacity: 0, y: -22, scale: 0.9 }}
@@ -387,7 +384,7 @@ const ToastItem = React.forwardRef(function ToastItem(
       dragSnapToOrigin
       onDragEnd={(_, info) => {
         if (canSwipeDismiss && (info.offset.y < -32 || info.velocity.y < -280)) {
-          onRemove(toast.id);
+          dismiss(toast.id);
         }
       }}
       onMouseEnter={() => setIsHovered(true)}
@@ -420,7 +417,6 @@ const ToastItem = React.forwardRef(function ToastItem(
         zIndex: stackMotion.zIndex,
         pointerEvents: stackMotion.pointerEvents,
         transformOrigin: "center top",
-        willChange: "transform, opacity",
         backfaceVisibility: "hidden",
         WebkitBackfaceVisibility: "hidden",
         isolation: "isolate",
@@ -441,7 +437,6 @@ const ToastItem = React.forwardRef(function ToastItem(
               <span className={`relative flex h-2.5 w-2.5 rounded-full ring-2 ${cfg.ringColor}`}>
                 <span
                   className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-40 ${cfg.badgeDot}`}
-                  style={{ willChange: "transform, opacity" }}
                 />
                 <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${cfg.badgeDot} shadow-2xs`} />
               </span>
@@ -449,7 +444,7 @@ const ToastItem = React.forwardRef(function ToastItem(
 
             {/* Badge de deduplicación con pop elástico */}
             {toast.count > 1 && (
-              <motion.span
+              <m.span
                 key={toast.bumpKey}
                 initial={{ scale: 0.6, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -458,11 +453,11 @@ const ToastItem = React.forwardRef(function ToastItem(
                 title={`${toast.count} ${t("common.repetitions", "repeticiones")}`}
               >
                 ×{toast.count}
-              </motion.span>
+              </m.span>
             )}
 
             {isExpanded ? (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, y: -2 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
@@ -476,7 +471,7 @@ const ToastItem = React.forwardRef(function ToastItem(
                 >
                   {typeLabel}
                 </span>
-              </motion.div>
+              </m.div>
             ) : (
               <span className="text-slate-800 dark:text-slate-100 text-[0.85rem] sm:text-[0.90rem] font-semibold tracking-tight truncate min-w-0">
                 {toast.message}
@@ -550,40 +545,39 @@ const ToastItem = React.forwardRef(function ToastItem(
           </div>
         </div>
 
-        {/* Contenido desplegable suave acelerado */}
-        <motion.div
-          initial={false}
-          animate={{
-            height: isExpanded ? "auto" : 0,
-            opacity: isExpanded ? 1 : 0,
-            marginTop: isExpanded ? 10 : 0,
-          }}
-          transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-          className={`overflow-hidden ${isExpanded ? "" : "pointer-events-none"}`}
+        {/* Contenido desplegable suave sin animar propiedades de layout */}
+        <div
+          className={`grid transition-[grid-template-rows,opacity] duration-200 ease-out ${
+            isExpanded
+              ? "grid-rows-[1fr] opacity-100 mt-2.5"
+              : "grid-rows-[0fr] opacity-0 mt-0 pointer-events-none"
+          }`}
         >
-          <p className="text-slate-700 dark:text-slate-200 text-[0.88rem] sm:text-[0.92rem] leading-relaxed font-medium select-text break-words m-0">
-            {toast.message}
-          </p>
+          <div className="overflow-hidden">
+            <p className="text-slate-700 dark:text-slate-200 text-[0.88rem] sm:text-[0.92rem] leading-relaxed font-medium select-text break-words m-0">
+              {toast.message}
+            </p>
 
-          {toast.type === "confirm" && (
-            <div className="flex gap-2 justify-end mt-3 pt-2.5 border-t border-black/5 dark:border-white/10">
-              <button
-                type="button"
-                onClick={handleConfirm}
-                className="px-4 py-1.5 rounded-full text-xs font-bold text-slate-950 bg-[#b3c34c] hover:bg-[#a2b144] transition-transform active:scale-95 cursor-pointer border-0 shadow-2xs"
-              >
-                {t("common.yes", "Sí")}
-              </button>
-              <button
-                type="button"
-                onClick={handleClose}
-                className="px-4 py-1.5 rounded-full text-xs font-semibold text-slate-700 hover:text-slate-900 bg-black/5 hover:bg-black/10 dark:text-white/80 dark:hover:text-white dark:bg-white/10 dark:hover:bg-white/20 transition-transform active:scale-95 cursor-pointer border-0"
-              >
-                {t("common.no", "No")}
-              </button>
-            </div>
-          )}
-        </motion.div>
+            {toast.type === "confirm" && (
+              <div className="flex gap-2 justify-end mt-3 pt-2.5 border-t border-black/5 dark:border-white/10">
+                <button
+                  type="button"
+                  onClick={handleConfirm}
+                  className="px-4 py-1.5 rounded-full text-xs font-bold text-slate-950 bg-[#b3c34c] hover:bg-[#a2b144] transition-transform active:scale-95 cursor-pointer border-0 shadow-2xs"
+                >
+                  {t("common.yes", "Sí")}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="px-4 py-1.5 rounded-full text-xs font-semibold text-slate-700 hover:text-slate-900 bg-black/5 hover:bg-black/10 dark:text-white/80 dark:hover:text-white dark:bg-white/10 dark:hover:bg-white/20 transition-transform active:scale-95 cursor-pointer border-0"
+                >
+                  {t("common.no", "No")}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Barra de progreso continua */}
@@ -600,7 +594,7 @@ const ToastItem = React.forwardRef(function ToastItem(
           />
         </div>
       )}
-    </motion.output>
+    </m.output>
   );
 });
 

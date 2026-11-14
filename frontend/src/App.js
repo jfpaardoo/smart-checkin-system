@@ -69,7 +69,7 @@ function ErrorFallback({ error, resetErrorBoundary }) {
         {isChunkError ? (
           <button
             type="button"
-            className="px-5 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-[#b3c34c] to-[#9eb038] hover:from-[#a2b144] hover:to-[#8d9e2e] text-slate-950 shadow-md hover:scale-[1.02] active:scale-95 transition-all cursor-pointer border-0"
+            className="px-5 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-[#b3c34c] to-[#9eb038] hover:from-[#a2b144] hover:to-[#8d9e2e] text-slate-950 shadow-md hover:scale-[1.02] active:scale-95 transition-transform cursor-pointer border-0"
             onClick={handleReload}
           >
             {t('common.reloadApp', 'Recargar aplicación')}
@@ -77,7 +77,7 @@ function ErrorFallback({ error, resetErrorBoundary }) {
         ) : (
           <button
             type="button"
-            className="px-5 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-[#b3c34c] to-[#9eb038] hover:from-[#a2b144] hover:to-[#8d9e2e] text-slate-950 shadow-md hover:scale-[1.02] active:scale-95 transition-all cursor-pointer border-0"
+            className="px-5 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-[#b3c34c] to-[#9eb038] hover:from-[#a2b144] hover:to-[#8d9e2e] text-slate-950 shadow-md hover:scale-[1.02] active:scale-95 transition-transform cursor-pointer border-0"
             onClick={resetErrorBoundary}
           >
             {t('common.tryAgain', 'Reintentar')}

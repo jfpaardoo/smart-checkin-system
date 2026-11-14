@@ -60,7 +60,7 @@ function ThemeToggleButton() {
             className="relative p-2 rounded-[20px] text-slate-700 dark:text-white hover:bg-white/50 dark:hover:bg-white/15 focus:outline-none transition-all duration-300 group"
         >
             <span
-                className={`inset-0 flex items-center justify-center transition-all duration-500 ${
+                className={`inset-0 flex items-center justify-center transition-[transform,opacity] duration-500 ${
                     isDark ? 'relative opacity-100 rotate-0 scale-100' : 'absolute opacity-0 rotate-[30deg] scale-85'
                 }`}
             >
@@ -74,7 +74,7 @@ function ThemeToggleButton() {
                 </svg>
             </span>
             <span
-                className={`inset-0 flex items-center justify-center transition-all duration-500 ${
+                className={`inset-0 flex items-center justify-center transition-[transform,opacity] duration-500 ${
                     isDark ? 'absolute opacity-0 -rotate-[30deg] scale-85' : 'relative opacity-100 rotate-0 scale-100'
                 }`}
             >

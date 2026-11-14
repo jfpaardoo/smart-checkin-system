@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { LazyMotion, domAnimation, m } from 'framer-motion';
 
 const VARIANT_MAP = {
   primary: 'da-btn-primary bg-gradient-to-r from-[#b3c34c] to-[#9eb038] hover:from-[#a2b144] hover:to-[#8d9e2e] text-slate-950 font-bold shadow-[0_4px_14px_rgba(179,195,76,0.3)]',
@@ -48,30 +48,32 @@ export default function GlassButton({
   }
 
   return (
-    <motion.button
-      type={type}
-      whileTap={{ scale: isButtonDisabled ? 1 : 0.96 }}
-      whileHover={{ scale: isButtonDisabled ? 1 : 1.01 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-      onClick={onClick}
-      disabled={isButtonDisabled}
-      className={`${variantClass} inline-flex items-center justify-center gap-2 border-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
-      {...props}
-    >
-      {loading && (
-        <svg className="animate-spin h-4 w-4 text-current" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-        </svg>
-      )}
+    <LazyMotion features={domAnimation}>
+      <m.button
+        type={type}
+        whileTap={{ scale: isButtonDisabled ? 1 : 0.96 }}
+        whileHover={{ scale: isButtonDisabled ? 1 : 1.01 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+        onClick={onClick}
+        disabled={isButtonDisabled}
+        className={`${variantClass} inline-flex items-center justify-center gap-2 border-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+        {...props}
+      >
+        {loading && (
+          <svg className="animate-spin h-4 w-4 text-current" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+        )}
 
-      {!loading && renderedIcon && (
-        <span className="flex-shrink-0">
-          {renderedIcon}
-        </span>
-      )}
+        {!loading && renderedIcon && (
+          <span className="flex-shrink-0">
+            {renderedIcon}
+          </span>
+        )}
 
-      <span>{labelContent}</span>
-    </motion.button>
+        <span>{labelContent}</span>
+      </m.button>
+    </LazyMotion>
   );
 }
