@@ -12,6 +12,7 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 @Converter
@@ -23,17 +24,28 @@ public class StringCryptoConverter implements AttributeConverter<String, String>
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     public static final String ACTIVE_VERSION = "v1";
 
+    private record CachedKey(String secret, SecretKeySpec keySpec) {}
+
+    private static final AtomicReference<CachedKey> V1_KEY_CACHE = new AtomicReference<>();
+
     /**
-     * Deriva una clave AES-256 de 32 bytes (256 bits) usando SHA-256 a partir del secreto configurado.
+     * Deriva y cachea una clave AES-256 de 32 bytes (256 bits) usando SHA-256 a partir del secreto configurado.
      */
-    private byte[] getActiveV1Key() {
+    private SecretKeySpec getActiveV1KeySpec() {
         String secret = EncryptionConfig.getSecret();
         if (secret == null || secret.length() < 16) {
             throw new IllegalStateException("CRÍTICO: Clave de cifrado ausente o inválida en StringCryptoConverter.");
         }
+        CachedKey cached = V1_KEY_CACHE.get();
+        if (cached != null && secret.equals(cached.secret())) {
+            return cached.keySpec();
+        }
         try {
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
-            return sha256.digest(secret.getBytes(StandardCharsets.UTF_8));
+            byte[] derived = sha256.digest(secret.getBytes(StandardCharsets.UTF_8));
+            SecretKeySpec spec = new SecretKeySpec(derived, "AES");
+            V1_KEY_CACHE.set(new CachedKey(secret, spec));
+            return spec;
         } catch (Exception e) {
             throw new RuntimeException("Error derivando clave AES-256", e);
         }
@@ -42,14 +54,14 @@ public class StringCryptoConverter implements AttributeConverter<String, String>
     /**
      * Clave legacy v0: 16 bytes truncados (compatibilidad hacia atrás con registros previos a v1.3).
      */
-    private byte[] getLegacyV0Key() {
+    private SecretKeySpec getLegacyV0KeySpec() {
         String secret = EncryptionConfig.getSecret();
         if (secret == null || secret.length() < 16) {
             throw new IllegalStateException("CRÍTICO: Clave de cifrado ausente o inválida en StringCryptoConverter.");
         }
         byte[] key = new byte[16];
         System.arraycopy(secret.getBytes(StandardCharsets.UTF_8), 0, key, 0, 16);
-        return key;
+        return new SecretKeySpec(key, "AES");
     }
 
     @Override
@@ -61,7 +73,7 @@ public class StringCryptoConverter implements AttributeConverter<String, String>
             SECURE_RANDOM.nextBytes(iv);
             GCMParameterSpec parameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
             
-            cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(getActiveV1Key(), "AES"), parameterSpec);
+            cipher.init(Cipher.ENCRYPT_MODE, getActiveV1KeySpec(), parameterSpec);
             byte[] encrypted = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
             
             String ivString = Base64.getEncoder().encodeToString(iv);
@@ -82,7 +94,7 @@ public class StringCryptoConverter implements AttributeConverter<String, String>
                 // Formato v1 versionado con AES-256
                 byte[] iv = Base64.getDecoder().decode(parts[1]);
                 byte[] encrypted = Base64.getDecoder().decode(parts[2]);
-                return decrypt(encrypted, iv, getActiveV1Key());
+                return decrypt(encrypted, iv, getActiveV1KeySpec());
             } catch (Exception e) {
                 throw new SecurityException("Fallo criptográfico al descifrar atributo versionado: datos corruptos o manipulados", e);
             }
@@ -103,7 +115,7 @@ public class StringCryptoConverter implements AttributeConverter<String, String>
 
     private String decryptLegacyWithFallback(byte[] encrypted, byte[] iv) {
         try {
-            return decrypt(encrypted, iv, getLegacyV0Key());
+            return decrypt(encrypted, iv, getLegacyV0KeySpec());
         } catch (GeneralSecurityException ex) {
             return tryDecryptWithActiveKey(encrypted, iv);
         }
@@ -111,16 +123,16 @@ public class StringCryptoConverter implements AttributeConverter<String, String>
 
     private String tryDecryptWithActiveKey(byte[] encrypted, byte[] iv) {
         try {
-            return decrypt(encrypted, iv, getActiveV1Key());
+            return decrypt(encrypted, iv, getActiveV1KeySpec());
         } catch (GeneralSecurityException fallbackEx) {
             throw new SecurityException("Fallo al descifrar payload legacy", fallbackEx);
         }
     }
 
-    private String decrypt(byte[] encrypted, byte[] iv, byte[] key) throws GeneralSecurityException {
+    private String decrypt(byte[] encrypted, byte[] iv, SecretKeySpec keySpec) throws GeneralSecurityException {
         Cipher cipher = Cipher.getInstance(ALGORITHM);
         GCMParameterSpec parameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
-        cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "AES"), parameterSpec);
+        cipher.init(Cipher.DECRYPT_MODE, keySpec, parameterSpec);
         return new String(cipher.doFinal(encrypted), StandardCharsets.UTF_8);
     }
 }

@@ -7,8 +7,8 @@ import api from '../services/api';
 const WebSocketContext = createContext(null);
 
 const resolveSocketUrl = () => {
-    if (process.env.REACT_APP_WS_URL) {
-        return process.env.REACT_APP_WS_URL;
+    if (import.meta.env.REACT_APP_WS_URL) {
+        return import.meta.env.REACT_APP_WS_URL;
     }
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     if (isLocalhost) {
@@ -67,7 +67,7 @@ export const WebSocketProvider = ({ children }) => {
                 webSocketFactory: () => new SockJS(socketUrl),
                 connectHeaders: {},
                 debug: function (str) {
-                    if (process.env.NODE_ENV === 'development' && window.DEBUG_STOMP) {
+                    if (import.meta.env.DEV && window.DEBUG_STOMP) {
                         console.log('STOMP: ' + str);
                     }
                 },

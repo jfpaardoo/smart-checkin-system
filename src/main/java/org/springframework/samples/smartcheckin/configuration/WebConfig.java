@@ -12,6 +12,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.PathResourceResolver;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.filter.ShallowEtagHeaderFilter;
 
@@ -26,8 +27,20 @@ public class WebConfig implements WebMvcConfigurer {
 	}
 
     @Bean
-    public ShallowEtagHeaderFilter shallowEtagHeaderFilter() {
-        return new ShallowEtagHeaderFilter();
+    public FilterRegistrationBean<ShallowEtagHeaderFilter> shallowEtagHeaderFilter() {
+        FilterRegistrationBean<ShallowEtagHeaderFilter> registration =
+                new FilterRegistrationBean<>(new ShallowEtagHeaderFilter());
+        // Acotar ETag a respuestas JSON ligeras; excluir /api/v1/exports/* y /api/v1/certificates/* para evitar buffering OOM
+        registration.addUrlPatterns(
+                "/api/v1/companies",
+                "/api/v1/companies/*",
+                "/api/v1/formations",
+                "/api/v1/formations/*",
+                "/api/v1/users",
+                "/api/v1/users/*",
+                "/api/v1/analytics",
+                "/api/v1/analytics/*");
+        return registration;
     }
 	
     @Override

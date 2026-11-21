@@ -4,6 +4,42 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), y este proyecto sigue [Versionado Semántico (SemVer)](https://semver.org/lang/es/).
 
+## [1.5.0](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.5.0) - 2026-11-21
+
+### Seguridad, Autenticación & Hardening
+- **Prevención de IP Spoofing en Rate Limiting y Sesiones (`RateLimitFilter.java`, `AuthTokenFilter.java`)**:
+  - Eliminada la lectura directa de cabeceras manipulables (`X-Forwarded-For`, `X-Real-IP`); resolución unificada sobre `request.getRemoteAddr()` validado por `server.forward-headers-strategy=framework`.
+  - Corrección de `AuthTokenFilter.shouldNotFilter` para excluir exclusivamente `/actuator/health/**` y permitir la autenticación JWT de administradores en `/actuator/prometheus`, `/metrics` e `/info`.
+- **Endurecimiento de CSP, CORS y Perfil de Producción (`SecurityConfiguration.java`, `application-prod.properties`, `docker-compose.yml`)**:
+  - Restringidas las directivas CSP eliminando el comodín `https:` en `script-src` y los esquemas sin cifrar `http:` / `ws:` en `connect-src`.
+  - Eliminado el fallback peligroso `AllowedOriginPatterns("*")` cuando `app.cors.allowed-origins` está vacío.
+  - Creado perfil dedicado `src/main/resources/application-prod.properties` (`jwtCookieSecure=true`, `spring.flyway.validate-on-migrate=true`, `spring.h2.console.enabled=false`, `server.shutdown=graceful`) y añadida `JWT_COOKIE_SECURE` en `docker-compose.yml`.
+- **Seguridad GitHub Nativa, Trivy, Gitleaks y Dependabot (`.github/`, `.gitleaks.toml`, `SECURITY.md`)**:
+  - Activados en el repositorio GitHub *Secret Scanning*, *Push Protection* y *Dependabot Security Updates*.
+  - Añadido ecosistema `docker` y agrupación `groups` (`minor`/`patch`) en `.github/dependabot.yml`.
+  - Fijado `aquasecurity/trivy-action@v0.36.0` (eliminando `@master`) y ampliados los scanners a `vuln,misconfig,secret`.
+  - Endurecida la allowlist de `.gitleaks.toml` y actualizada la política de soporte en `SECURITY.md` a `1.5.x`.
+
+### Frontend: Migración a Vite + Vitest & Limpieza
+- **Migración de Create React App (`react-scripts`) a Vite 6 + Vitest 3 (`vite.config.mjs`, `frontend/index.html`, `frontend/package.json`)**:
+  - Eliminado `react-scripts: 5.0.1` (eliminando ~20 alertas históricas de Dependabot en herramientas webpack/CRA) junto con `http-proxy-middleware`, `source-map-loader`, `@splidejs/react-splide` y `@tailwindcss/postcss`.
+  - Actualizado `react-router-dom` a `^7.18.2` (remediando las alertas de seguridad en `react-router`).
+  - Reubicadas las librerías `@testing-library/*` a `devDependencies`, adaptadas las variables `REACT_APP_*` a `import.meta.env` y migradas las 10 suites de pruebas unitarias (49 tests) a Vitest (`vi.*`) con `jsdom`.
+  - Actualizado `.github/workflows/frontend-ci.yml` a Node.js 22 y `npm test`.
+- **Estabilidad y Enrutamiento (`App.js`, `swrCacheProvider.js`)**:
+  - Eliminada la ruta duplicada inalcanzable `/users/:username` en `App.js`.
+  - Añadido manejo defensivo con `try/catch` al restaurar la caché SWR desde `sessionStorage` en `swrCacheProvider.js`.
+
+### Rendimiento, Optimización & Docker
+- **Optimización Backend & JVM (`AuthTokenFilter.java`, `WebConfig.java`, `StringCryptoConverter.java`, `UserDetailsServiceImpl.java`, `AnalyticsService.java`, `application.properties`)**:
+  - Eliminado el doble parseo criptográfico de JWT por petición en `AuthTokenFilter` utilizando `jwtUtils.validateAndGetClaims(jwt)` en una sola pasada.
+  - Acotado `ShallowEtagHeaderFilter` mediante `FilterRegistrationBean` exclusivamente a endpoints JSON ligeros, excluyendo exportaciones binarias (`/api/v1/exports/*`, `/api/v1/certificates/*`) para evitar picos de memoria en heap limitado (`320m`).
+  - Cacheada la clave AES-256 derivada (`SecretKeySpec`) en `StringCryptoConverter`.
+  - Configurado `@Transactional(readOnly = true)` en `UserDetailsServiceImpl.loadUserByUsername`, eliminado el fallback `findAll()` en `AnalyticsService.calculateTotalActiveUsers()`, y sustituidas las propiedades HikariCP específicas de MySQL por parámetros nativos de PostgreSQL (`prepareThreshold`, `preparedStatementCacheQueries`, `preparedStatementCacheSizeMiB`).
+- **Limpieza de Dependencias Maven & Optimización `Dockerfile` (`pom.xml`, `Dockerfile`)**:
+  - Eliminadas dependencias y procesadores sin uso (`javax.cache:cache-api`, `mapstruct-processor`, `lombok-mapstruct-binding`), acotado `spring-boot-devtools` como `runtime`/`optional`, y actualizados `bcprov-jdk18on`/`bcpkix-jdk18on` (`1.86`), `pitest-junit5-plugin` (`1.2.3`), `cyclonedx-maven-plugin` (`2.9.3`) y Node `v22.14.0`.
+  - Refactorizado `Dockerfile` a 3 etapas (`node:22-alpine` → `maven:3.9.9-eclipse-temurin-21` → `eclipse-temurin:21-jre-alpine`), corregidos flags JVM (retirando `-XX:+UseStringDeduplication` incompatible con SerialGC y `-XX:TieredStopAtLevel=1`) y habilitado `exec java` para propagación correcta de `SIGTERM`.
+
 ## [1.4.2](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.4.2) - 2026-11-14
 
 ### Seguridad, Autenticación & Protección de Datos

@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.lang.NonNull;
 
+import io.jsonwebtoken.Claims;
 import org.springframework.samples.smartcheckin.auth.session.UserSessionService;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsServiceImpl;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -45,7 +46,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 				|| path.equals("/api/v1/auth/forgot-password")
 				|| path.equals("/api/v1/auth/reset-password")
 				|| path.startsWith("/api/v1/auth/webauthn/login/")
-				|| path.startsWith("/actuator/")
+				|| path.equals("/actuator/health")
+				|| path.startsWith("/actuator/health/")
 				|| path.startsWith("/ws/");
 	}
 
@@ -54,8 +56,11 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 			throws ServletException, IOException {
 		try {
 			String jwt = parseJwt(request);
-			if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
-				processJwtAuthentication(jwt, request);
+			if (jwt != null) {
+				Claims claims = jwtUtils.validateAndGetClaims(jwt);
+				if (claims != null && claims.getSubject() != null) {
+					processJwtAuthentication(jwt, claims.getSubject(), request);
+				}
 			}
 		} catch (Exception e) {
 			logger.error("Cannot set user authentication: {}", e);
@@ -64,7 +69,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 		filterChain.doFilter(request, response);
 	}
 
-	private void processJwtAuthentication(String jwt, HttpServletRequest request) {
+	private void processJwtAuthentication(String jwt, String username, HttpServletRequest request) {
 		boolean blacklisted = jwtBlacklistService != null && jwtBlacklistService.isBlacklisted(jwt);
 		boolean sessionInactive = userSessionService != null && !userSessionService.isSessionActive(jwt);
 
@@ -73,7 +78,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		String username = jwtUtils.getUserNameFromJwtToken(jwt);
 		UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 		UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
 				userDetails, null, userDetails.getAuthorities());
@@ -89,11 +93,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 	}
 
 	private String extractClientIp(HttpServletRequest request) {
-		String forwarded = request.getHeader("X-Forwarded-For");
-		if (forwarded != null && !forwarded.isBlank()) {
-			return forwarded.split(",")[0].trim();
-		}
-		return request.getRemoteAddr();
+		String remoteAddr = request.getRemoteAddr();
+		return (remoteAddr != null && !remoteAddr.isBlank()) ? remoteAddr : "127.0.0.1";
 	}
 
 	private String parseJwt(HttpServletRequest request) {

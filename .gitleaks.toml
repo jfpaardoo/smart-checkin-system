@@ -7,5 +7,5 @@ paths = [
 regexes = [
   '''(?i)(mock|test|dummy|sample|fake)[0-9a-zA-Z_-]{8,}''',
   '''(?i)client_id.*client[0-9a-zA-Z_-]*''',
-  '''(?i)secret.*secret[0-9a-zA-Z_-]*'''
+  '''(?i)(mock|test|dummy|sample|fake)_?secret[0-9a-zA-Z_-]*'''
 ]

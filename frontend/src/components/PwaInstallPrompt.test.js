@@ -6,18 +6,18 @@ import * as pwaHelper from '../util/pwaHelper';
 describe('PwaInstallPrompt Component', () => {
   beforeEach(() => {
     sessionStorage.clear();
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   test('does not render when app is already in standalone mode', () => {
-    jest.spyOn(pwaHelper, 'isAppStandalone').mockReturnValue(true);
+    vi.spyOn(pwaHelper, 'isAppStandalone').mockReturnValue(true);
     render(<PwaInstallPrompt />);
     expect(screen.queryByLabelText(/Instalar/i)).not.toBeInTheDocument();
   });
 
   test('renders 3 clear visual steps for iPhone (iOS)', () => {
-    jest.spyOn(pwaHelper, 'isAppStandalone').mockReturnValue(false);
-    jest.spyOn(pwaHelper, 'getDevicePlatform').mockReturnValue('ios');
+    vi.spyOn(pwaHelper, 'isAppStandalone').mockReturnValue(false);
+    vi.spyOn(pwaHelper, 'getDevicePlatform').mockReturnValue('ios');
 
     render(<PwaInstallPrompt />);
 
@@ -29,15 +29,15 @@ describe('PwaInstallPrompt Component', () => {
   });
 
   test('renders direct 1-click install button for Android when native prompt is available', async () => {
-    jest.spyOn(pwaHelper, 'isAppStandalone').mockReturnValue(false);
-    jest.spyOn(pwaHelper, 'getDevicePlatform').mockReturnValue('android');
+    vi.spyOn(pwaHelper, 'isAppStandalone').mockReturnValue(false);
+    vi.spyOn(pwaHelper, 'getDevicePlatform').mockReturnValue('android');
 
     render(<PwaInstallPrompt />);
 
     // Simulate beforeinstallprompt event
-    const mockPrompt = jest.fn();
+    const mockPrompt = vi.fn();
     const mockEvent = new Event('beforeinstallprompt');
-    mockEvent.preventDefault = jest.fn();
+    mockEvent.preventDefault = vi.fn();
     mockEvent.prompt = mockPrompt;
     mockEvent.userChoice = Promise.resolve({ outcome: 'accepted' });
 
@@ -56,8 +56,8 @@ describe('PwaInstallPrompt Component', () => {
   });
 
   test('renders manual steps for Android when native prompt is unavailable', () => {
-    jest.spyOn(pwaHelper, 'isAppStandalone').mockReturnValue(false);
-    jest.spyOn(pwaHelper, 'getDevicePlatform').mockReturnValue('android');
+    vi.spyOn(pwaHelper, 'isAppStandalone').mockReturnValue(false);
+    vi.spyOn(pwaHelper, 'getDevicePlatform').mockReturnValue('android');
 
     render(<PwaInstallPrompt />);
 
@@ -68,8 +68,8 @@ describe('PwaInstallPrompt Component', () => {
   });
 
   test('dismisses and saves state in sessionStorage when close button is clicked', () => {
-    jest.spyOn(pwaHelper, 'isAppStandalone').mockReturnValue(false);
-    jest.spyOn(pwaHelper, 'getDevicePlatform').mockReturnValue('ios');
+    vi.spyOn(pwaHelper, 'isAppStandalone').mockReturnValue(false);
+    vi.spyOn(pwaHelper, 'getDevicePlatform').mockReturnValue('ios');
 
     render(<PwaInstallPrompt />);
 
@@ -82,8 +82,8 @@ describe('PwaInstallPrompt Component', () => {
 
   test('re-opens prompt when da-open-pwa-install event is triggered', () => {
     sessionStorage.setItem('da_pwa_dismissed', 'true');
-    jest.spyOn(pwaHelper, 'isAppStandalone').mockReturnValue(false);
-    jest.spyOn(pwaHelper, 'getDevicePlatform').mockReturnValue('ios');
+    vi.spyOn(pwaHelper, 'isAppStandalone').mockReturnValue(false);
+    vi.spyOn(pwaHelper, 'getDevicePlatform').mockReturnValue('ios');
 
     render(<PwaInstallPrompt />);
     expect(screen.queryByLabelText(/Instalar App en iPhone/i)).not.toBeInTheDocument();

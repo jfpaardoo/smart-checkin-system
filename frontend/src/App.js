@@ -133,7 +133,6 @@ function AnimatedRoutes() {
             {/* Rutas de Administración */}
             <Route path="/users" element={<PrivateRoute roles={['ADMIN', 'HR_MANAGER']}><UserListAdmin /></PrivateRoute>} />
             <Route path="/users/:id" element={<PrivateRoute roles={['ADMIN', 'HR_MANAGER']}><UserEditAdmin /></PrivateRoute>} />
-            <Route path="/users/:username" element={<PrivateRoute roles={['ADMIN', 'HR_MANAGER']}><UserEditAdmin /></PrivateRoute>} />
             <Route path="/formations" element={<PrivateRoute roles={['ADMIN', 'HR_MANAGER']}><FormationListAdmin /></PrivateRoute>} />
             <Route path="/formations/new" element={<PrivateRoute roles={['ADMIN', 'HR_MANAGER']}><FormationEditAdmin /></PrivateRoute>} />
             <Route path="/formations/:id" element={<PrivateRoute roles={['ADMIN', 'HR_MANAGER']}><FormationEditAdmin /></PrivateRoute>} />

@@ -1,38 +1,44 @@
 # ==============================================================================
 # Multi-stage Dockerfile for Distribution Academy (Smart Checkin System)
-# Stage 1: Build Java backend + React frontend using Maven & Node.js
-# Stage 2: Production runtime image with Eclipse Temurin OpenJDK 21 JRE
+# Stage 1: Build React (Vite) frontend with Node.js 22
+# Stage 2: Build Java backend with Maven & Eclipse Temurin 21
+# Stage 3: Production runtime image with Eclipse Temurin OpenJDK 21 JRE
 # ==============================================================================
 
-# STAGE 1: Build Application
+# STAGE 1: Build Frontend
+FROM node:22-alpine AS frontend-builder
+
+WORKDIR /app/frontend
+
+COPY frontend/package*.json ./
+RUN npm ci
+
+COPY frontend ./
+RUN npm run build
+
+# STAGE 2: Build Backend & Package Application
 FROM maven:3.9.9-eclipse-temurin-21 AS builder
 
 WORKDIR /app
 
-# Copy pom.xml and download dependencies (layer caching)
 COPY pom.xml .
-COPY frontend/package*.json ./frontend/
-
-# Download Maven dependencies in offline mode where possible
 RUN mvn dependency:go-offline -B || true
 
-# Copy source code and frontend
 COPY src ./src
-COPY frontend ./frontend
+COPY --from=frontend-builder /app/frontend/build ./frontend/build
 
-# Build full package (frontend npm build is triggered via frontend-maven-plugin if configured, or mvn package)
-RUN mvn clean package -DskipTests
+RUN mvn package -DskipTests -Dfrontend.skip=true
 
-# STAGE 2: Production Runtime
+# STAGE 3: Production Runtime
 FROM eclipse-temurin:21-jre-alpine AS runner
 
-# Upgrade OS packages (e.g. zlib CVE-2026-4738) and create non-root user for security compliance
+# Upgrade OS packages and create non-root user for security compliance
 RUN apk update && apk upgrade --no-cache && \
     addgroup -S appgroup && adduser -S appuser -G appgroup
 
 WORKDIR /app
 
-# Copy built JAR artifact from stage 1
+# Copy built JAR artifact from builder stage
 COPY --from=builder /app/target/smartcheckin-*.jar app.jar
 
 # Set ownership to non-root user
@@ -45,10 +51,10 @@ EXPOSE 8080
 
 # Environment variables with sensible defaults (optimized for low-RAM / 512MB hosting)
 ENV SPRING_PROFILES_ACTIVE=prod \
-    JAVA_OPTS="-Xms128m -Xmx320m -XX:+UseSerialGC -XX:+UseStringDeduplication -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError"
+    JAVA_OPTS="-Xms128m -Xmx320m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError"
 
 # Healthcheck to monitor app status
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
   CMD wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]

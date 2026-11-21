@@ -6,8 +6,8 @@ Currently, only the latest active release branch receives security patches and u
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
-| < 1.0.0 | :x:                |
+| 1.5.x   | :white_check_mark: |
+| < 1.5.0 | :x:                |
 
 ---
 
