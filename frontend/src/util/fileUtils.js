@@ -106,11 +106,13 @@ export const getCleanFileInfo = (item) => {
   try {
     let url = item;
     let originalName = "";
+    let itemId = null;
 
     if (item.includes("||")) {
       const parts = item.split("||");
       originalName = parts[0]?.trim() || "";
       url = parts[1]?.trim() || item;
+      itemId = parts[2]?.trim() || null;
     } else {
       const decoded = decodeURIComponent(item);
       const segments = decoded.split('/');
@@ -127,8 +129,8 @@ export const getCleanFileInfo = (item) => {
 
     const { icon, color, type } = getFileIconAndType(originalName);
 
-    return { name: originalName, url, icon, color, type };
+    return { name: originalName, url, itemId, icon, color, type };
   } catch {
-    return { name: "Documento Adjunto", url: item, icon: faFile, color: '#95a5a6', type: 'other' };
+    return { name: "Documento Adjunto", url: item, itemId: null, icon: faFile, color: '#95a5a6', type: 'other' };
   }
 };

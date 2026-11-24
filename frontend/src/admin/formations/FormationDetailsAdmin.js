@@ -14,7 +14,7 @@ import StatusBadge from "../../components/StatusBadge";
 
 import { useFormationDetails } from "./hooks/useFormationDetails";
 import FormationAttendeesTable from "./components/FormationAttendeesTable";
-import { DocumentPreviewModal, AttendanceDetailsModal, CloseFormationModal } from "./components/FormationModals";
+import { DocumentPreviewModal, AttendanceDetailsModal, CloseFormationModal, AdminCheckoutModal } from "./components/FormationModals";
 import PublishFormationModal from "./components/PublishFormationModal";
 import CalendarSyncDropdown from "../../components/CalendarSyncDropdown";
 
@@ -34,6 +34,7 @@ export default function FormationDetailsAdmin() {
     downloadOfficialSheet,
     isDownloadingSheet,
     handleCloseFormation,
+    handleManualCheckout,
     canCloseFormation
   } = useFormationDetails(id);
 
@@ -41,9 +42,10 @@ export default function FormationDetailsAdmin() {
   const [modalOpen, setModalOpen] = useState(false);
   const [closeModalOpen, setCloseModalOpen] = useState(false);
   const [publishModalOpen, setPublishModalOpen] = useState(false);
+  const [checkoutTarget, setCheckoutTarget] = useState(null);
 
   const [documentModalOpen, setDocumentModalOpen] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState({ url: "", name: "", type: "unknown" });
+  const [selectedDocument, setSelectedDocument] = useState({ url: "", name: "", itemId: null, type: "unknown" });
   const [docsOpen, setDocsOpen] = useState(false);
 
   const renderStatusBadge = () => {
@@ -56,10 +58,9 @@ export default function FormationDetailsAdmin() {
     return <StatusBadge variant="success" pulse>{t('formationDetails.statusPublished', 'Publicada / Abierta')}</StatusBadge>;
   };
 
-  const openDocumentModal = (e, url, fileName) => {
+  const openDocumentModal = (e, fileMeta) => {
     e.currentTarget.blur();
-    const fileInfo = getFileIconAndType(fileName);
-    setSelectedDocument({ url, name: fileName, type: fileInfo.type });
+    setSelectedDocument({ url: fileMeta.url, name: fileMeta.name, itemId: fileMeta.itemId || null, type: fileMeta.type });
     setDocumentModalOpen(true);
   };
 
@@ -316,7 +317,7 @@ export default function FormationDetailsAdmin() {
                         key={item}
                         type="button"
                         className="px-3.5 py-2 rounded-xl bg-white/60 dark:bg-slate-700/60 border border-white/80 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-600 flex items-center gap-2 text-xs font-bold shadow-xs hover:scale-105 active:scale-95 transition cursor-pointer"
-                        onClick={(e) => openDocumentModal(e, fileMeta.url, fileMeta.name)}
+                        onClick={(e) => openDocumentModal(e, fileMeta)}
                       >
                         <FontAwesomeIcon icon={fileMeta.icon} style={{ color: fileMeta.color }} />
                         <span className="truncate max-w-[200px]">{fileMeta.name}</span>
@@ -340,6 +341,7 @@ export default function FormationDetailsAdmin() {
             setModalOpen(true);
           }}
           onDownloadPdf={downloadSignaturePdf}
+          onManualCheckout={(att) => setCheckoutTarget(att)}
         />
       </div>
 
@@ -347,6 +349,14 @@ export default function FormationDetailsAdmin() {
         isOpen={documentModalOpen}
         toggle={() => setDocumentModalOpen(false)}
         document={selectedDocument}
+        formationId={formation?.id}
+      />
+
+      <AdminCheckoutModal
+        isOpen={!!checkoutTarget}
+        toggle={() => setCheckoutTarget(null)}
+        attendance={checkoutTarget}
+        onConfirmCheckout={handleManualCheckout}
       />
 
       <AttendanceDetailsModal

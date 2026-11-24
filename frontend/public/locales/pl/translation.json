@@ -343,7 +343,17 @@
     "statusPublished": "Opublikowane / Otwarte",
     "syncCalendar": "Synchronizuj kalendarz",
     "calendarDownloaded": "Zaproszenie do kalendarza (.ics) pobrane.",
-    "calendarError": "Błąd podczas pobierania zaproszenia do kalendarza."
+    "calendarError": "Błąd podczas pobierania zaproszenia do kalendarza.",
+    "documentLoadError": "Nie udało się załadować podglądu dokumentu.",
+    "downloadReady": "Dokument gotowy do bezpośredniego pobrania bez logowania.",
+    "manualCheckout": "Ręczne wymeldowanie",
+    "manualCheckoutTitle": "Ręczne Wymeldowanie",
+    "manualCheckoutDesc": "Zamierzasz ręcznie wymeldować uczestnika:",
+    "optionalAttendeeSignature": "Podpis uczestnika (Opcjonalny)",
+    "manualCheckoutHint": "Możesz zebrać podpis na ekranie lub bezpośrednio potwierdzić ręczne wymeldowanie.",
+    "confirmManualCheckout": "Potwierdź wyjście",
+    "manualCheckoutSuccess": "Ręczne wymeldowanie zapisane pomyślnie.",
+    "manualCheckoutError": "Błąd podczas zapisywania ręcznego wymeldowania."
   },
   "qr": {
     "title": "QR Szkolenia",
@@ -581,7 +591,9 @@
     "generating": "Generowanie...",
     "reset": "Resetuj",
     "verifying": "Weryfikacja...",
-    "deleting": "Usuwanie..."
+    "deleting": "Usuwanie...",
+    "download": "Pobierz",
+    "openInNewTab": "Otwórz w nowej karcie"
   },
   "lang": {
     "es": "Español",

@@ -343,7 +343,17 @@
     "statusPublished": "Publicada / Aberta",
     "syncCalendar": "Sincronizar Calendário",
     "calendarDownloaded": "Convocatória descarregada (.ics) para o calendário.",
-    "calendarError": "Erro ao descarregar a convocatória de calendário."
+    "calendarError": "Erro ao descarregar a convocatória de calendário.",
+    "documentLoadError": "Não foi possível carregar a pré-visualização do documento.",
+    "downloadReady": "Documento pronto para transferência direta sem iniciar sessão.",
+    "manualCheckout": "Registar saída manual",
+    "manualCheckoutTitle": "Registar Saída Manual",
+    "manualCheckoutDesc": "Vai registar manualmente a saída de:",
+    "optionalAttendeeSignature": "Assinatura do Participante (Opcional)",
+    "manualCheckoutHint": "Pode recolher a assinatura no ecrã ou confirmar diretamente a saída manual.",
+    "confirmManualCheckout": "Confirmar Saída",
+    "manualCheckoutSuccess": "Saída manual registada com sucesso.",
+    "manualCheckoutError": "Erro ao registar a saída manual."
   },
   "qr": {
     "title": "QR de Formação",
@@ -581,7 +591,9 @@
     "generating": "A gerar...",
     "reset": "Repor",
     "verifying": "Verificando...",
-    "deleting": "Excluindo..."
+    "deleting": "Excluindo...",
+    "download": "Transferir",
+    "openInNewTab": "Abrir num novo separador"
   },
   "lang": {
     "es": "Español",

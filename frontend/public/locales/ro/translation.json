@@ -343,7 +343,17 @@
     "statusPublished": "Publicată / Deschisă",
     "syncCalendar": "Sincronizare calendar",
     "calendarDownloaded": "Invitația de calendar (.ics) a fost descărcată.",
-    "calendarError": "Eroare la descărcarea invitației de calendar."
+    "calendarError": "Eroare la descărcarea invitației de calendar.",
+    "documentLoadError": "Nu s-a putut încărca previzualizarea documentului.",
+    "downloadReady": "Document pregătit pentru descărcare directă fără autentificare.",
+    "manualCheckout": "Ieșire manuală",
+    "manualCheckoutTitle": "Înregistrare Ieșire Manuală",
+    "manualCheckoutDesc": "Urmează să înregistrați manual ieșirea pentru:",
+    "optionalAttendeeSignature": "Semnătura Participantului (Opțional)",
+    "manualCheckoutHint": "Puteți captura semnătura pe ecran sau confirma direct ieșirea manuală.",
+    "confirmManualCheckout": "Confirmă Ieșirea",
+    "manualCheckoutSuccess": "Ieșirea manuală a fost înregistrată cu succes.",
+    "manualCheckoutError": "Eroare la înregistrarea ieșirii manuale."
   },
   "qr": {
     "title": "QR Formare",
@@ -581,7 +591,9 @@
     "generating": "Se generează...",
     "reset": "Resetează",
     "verifying": "Se verifică...",
-    "deleting": "Se șterge..."
+    "deleting": "Se șterge...",
+    "download": "Descarcă",
+    "openInNewTab": "Deschide într-o filă nouă"
   },
   "lang": {
     "es": "Español",

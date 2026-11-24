@@ -365,7 +365,17 @@
     "statusPublished": "Published / Open",
     "syncCalendar": "Sync Calendar",
     "calendarDownloaded": "Calendar invite (.ics) downloaded.",
-    "calendarError": "Error downloading calendar invite."
+    "calendarError": "Error downloading calendar invite.",
+    "documentLoadError": "Could not load document preview.",
+    "downloadReady": "Document ready to download directly without signing in.",
+    "manualCheckout": "Manual check-out",
+    "manualCheckoutTitle": "Manual Check-out",
+    "manualCheckoutDesc": "You are about to manually check out:",
+    "optionalAttendeeSignature": "Attendee Signature (Optional)",
+    "manualCheckoutHint": "You can capture the signature on screen or confirm the manual check-out directly.",
+    "confirmManualCheckout": "Confirm Check-out",
+    "manualCheckoutSuccess": "Manual check-out recorded successfully.",
+    "manualCheckoutError": "Error recording manual check-out."
   },
   "qr": {
     "title": "Formation QR",
@@ -603,7 +613,9 @@
     "generating": "Generating...",
     "reset": "Reset",
     "verifying": "Verifying...",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "download": "Download",
+    "openInNewTab": "Open in new tab"
   },
   "lang": {
     "es": "Español",

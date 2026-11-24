@@ -163,6 +163,22 @@ export function useFormationDetails(id) {
     }
   };
 
+  const handleManualCheckout = async (userId, signature) => {
+    try {
+      const res = await api.post(`/formations/${id}/attendances/${userId}/checkout`, {
+        signature: signature || null
+      });
+      setFormation(res.data);
+      toast.success(t('formationDetails.manualCheckoutSuccess', 'Salida registrada manualmente con éxito.'));
+      return true;
+    } catch (err) {
+      console.error("Error in manual checkout:", err);
+      const msg = err.response?.data?.message || t('formationDetails.manualCheckoutError', 'Error al registrar la salida manual.');
+      toast.error(msg);
+      return false;
+    }
+  };
+
   const downloadCalendarIcs = async () => {
     try {
       const res = await api.get(`/formations/${id}/calendar.ics`, { responseType: 'blob' });
@@ -193,6 +209,7 @@ export function useFormationDetails(id) {
     downloadCalendarIcs,
     isDownloadingSheet,
     handleCloseFormation,
+    handleManualCheckout,
     allAttendeesCompleted,
     canCloseFormation
   };

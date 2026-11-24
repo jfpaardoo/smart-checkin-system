@@ -285,18 +285,26 @@ public class FormationService {
             throw new IllegalArgumentException("La firma digital es obligatoria para confirmar la salida.");
         }
 
+        return completeCheckout(formation, att, user, signature);
+    }
+
+    private Formation completeCheckout(Formation formation, FormationAttendance att, User user, String signature) {
         att.setCheckOutDate(LocalDateTime.now(ZoneId.systemDefault()));
-        String fName = formation.getName() != null ? formation.getName() : "Unknown_Formation";
-        String pathContext = "formations/" + fName.replaceAll("[^a-zA-Z0-9.-]", "_");
-        String fileName = signatureStorageService.saveSignature(signature, pathContext);
-        att.setSignature(fileName);
+        if (signature != null && !signature.trim().isEmpty()) {
+            String fName = formation.getName() != null ? formation.getName() : "Unknown_Formation";
+            String pathContext = "formations/" + fName.replaceAll("[^a-zA-Z0-9.-]", "_");
+            String fileName = signatureStorageService.saveSignature(signature, pathContext);
+            att.setSignature(fileName);
+        } else {
+            att.setSignature("ADMIN_MANUAL_CHECKOUT");
+        }
         attendanceRepository.save(att);
 
         user.setIsWorking(false);
         userService.saveUser(user);
 
         try {
-            notificationContext.sendNotification(user, 
+            notificationContext.sendNotification(user,
                 "Salida registrada",
                 "Has registrado correctamente tu salida de la formación: " + formation.getName());
         } catch (Exception e) {
@@ -305,6 +313,38 @@ public class FormationService {
 
         eventPublisher.publishEvent(new FormationAttendanceEvent(this));
         return formation;
+    }
+
+    @Transactional
+    public Formation adminCheckoutAttendee(Integer formationId, Integer userId, String signature) {
+        Formation formation = formationRepository.findById(formationId)
+            .orElseThrow(() -> new IllegalArgumentException(FORMATION_NOT_FOUND_MSG));
+
+        if (Boolean.TRUE.equals(formation.getIsClosed())) {
+            throw new IllegalStateException("Esta formación ya está finalizada y cerrada. No se admiten nuevos registros de salida.");
+        }
+
+        User user = userService.findUser(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("Usuario no encontrado.");
+        }
+
+        FormationAttendance att = findAttendance(formation, user)
+            .orElseThrow(() -> new IllegalArgumentException("El usuario no tiene un registro de entrada previo en esta formación."));
+
+        if (att.getCheckInDate() == null) {
+            throw new IllegalArgumentException("El usuario debe tener un check-in previo antes de registrar su salida.");
+        }
+
+        if (att.getCheckOutDate() != null) {
+            throw new IllegalArgumentException("El usuario ya tiene registrada su salida en esta formación.");
+        }
+
+        return completeCheckout(formation, att, user, signature);
+    }
+
+    public byte[] downloadDocument(String itemId) throws IOException {
+        return cloudStorageAdapter.downloadFile(itemId);
     }
 
     @Transactional

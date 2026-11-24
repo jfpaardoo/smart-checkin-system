@@ -44,19 +44,18 @@ function triggerAnchorDownload(blob, filename) {
 
   const downloadUrl = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
+  a.style.display = 'none';
   a.href = downloadUrl;
   a.download = filename;
-  a.target = '_blank';
-  a.rel = 'noopener noreferrer';
   document.body.appendChild(a);
   a.click();
-  
+
   setTimeout(() => {
     try {
       a.remove();
       window.URL.revokeObjectURL(downloadUrl);
     } catch {}
-  }, 400);
+  }, 15000);
 
   return true;
 }

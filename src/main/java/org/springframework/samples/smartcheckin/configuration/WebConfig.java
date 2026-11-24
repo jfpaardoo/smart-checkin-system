@@ -2,6 +2,7 @@ package org.springframework.samples.smartcheckin.configuration;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -28,9 +29,16 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Bean
     public FilterRegistrationBean<ShallowEtagHeaderFilter> shallowEtagHeaderFilter() {
+        ShallowEtagHeaderFilter filter = new ShallowEtagHeaderFilter() {
+            @Override
+            protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
+                String uri = request.getRequestURI();
+                return uri.endsWith("/documents/download") || uri.endsWith("/calendar.ics");
+            }
+        };
         FilterRegistrationBean<ShallowEtagHeaderFilter> registration =
-                new FilterRegistrationBean<>(new ShallowEtagHeaderFilter());
-        // Acotar ETag a respuestas JSON ligeras; excluir /api/v1/exports/* y /api/v1/certificates/* para evitar buffering OOM
+                new FilterRegistrationBean<>(filter);
+        // Acotar ETag a respuestas JSON ligeras; excluir /api/v1/exports/*, /api/v1/certificates/* y descargas binarias para evitar buffering OOM
         registration.addUrlPatterns(
                 "/api/v1/companies",
                 "/api/v1/companies/*",
@@ -54,6 +62,11 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/static/static/")
                 .setCacheControl(CacheControl.maxAge(365, TimeUnit.DAYS).cachePublic());
+
+        // Traducciones i18n: permite revalidación condicional (304 Not Modified) sin mostrar contenido obsoleto
+        registry.addResourceHandler("/locales/**")
+                .addResourceLocations("classpath:/static/locales/")
+                .setCacheControl(CacheControl.noCache());
 
         // Manejador para SPA (React Router) y recursos raíz (/sw.js, /manifest.json, /index.html)
         // Utiliza PathResourceResolver en lugar de reenvíos forward servlet para evitar cualquier StackOverflowError

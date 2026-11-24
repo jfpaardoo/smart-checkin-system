@@ -34,6 +34,26 @@ export default defineConfig(({ mode }) => ({
     outDir: 'build',
     assetsDir: 'static',
     sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+          if (id.includes('/react/') || id.includes('\\react\\')
+              || id.includes('/react-dom/') || id.includes('\\react-dom\\')
+              || id.includes('/react-router-dom/') || id.includes('\\react-router-dom\\')
+              || id.includes('/react-router/') || id.includes('\\react-router\\')
+              || id.includes('/scheduler/') || id.includes('\\scheduler\\')) {
+            return 'vendor-react';
+          }
+          if (id.includes('framer-motion')) {
+            return 'vendor-motion';
+          }
+          if (id.includes('@fortawesome')) {
+            return 'vendor-icons';
+          }
+        },
+      },
+    },
   },
   server: {
     port: 3000,
