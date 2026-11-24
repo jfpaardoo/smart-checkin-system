@@ -4,15 +4,18 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from '../i18n';
 import { ToastProvider, useToast } from './ToastProvider';
 
-jest.mock('../util/soundAndHaptics', () => ({
-  playSuccess: jest.fn(),
-  playError: jest.fn(),
-  playWarning: jest.fn(),
-  playInfo: jest.fn(),
-  playClick: jest.fn(),
-}));
+vi.mock('../util/soundAndHaptics', () => {
+  const mock = {
+    playSuccess: vi.fn(),
+    playError: vi.fn(),
+    playWarning: vi.fn(),
+    playInfo: vi.fn(),
+    playClick: vi.fn(),
+  };
+  return { default: mock, ...mock };
+});
 
-function TestHarness({ onConfirm = jest.fn() }) {
+function TestHarness({ onConfirm = vi.fn() }) {
   const toast = useToast();
   return (
     <div>
@@ -36,7 +39,7 @@ function renderWithToast(onConfirm) {
 
 describe('ToastProvider & Fluid Animations', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test('renders success toast and dismisses when close button is clicked', async () => {
@@ -85,7 +88,7 @@ describe('ToastProvider & Fluid Animations', () => {
   });
 
   test('executes onConfirm callback when confirming persistent confirm toast', async () => {
-    const onConfirm = jest.fn();
+    const onConfirm = vi.fn();
     renderWithToast(onConfirm);
 
     fireEvent.click(screen.getByText('Trigger Confirm'));

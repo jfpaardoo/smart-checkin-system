@@ -30,7 +30,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         if (username == null || username.isBlank()) {
             throw new UsernameNotFoundException("Username cannot be empty");

@@ -3,35 +3,38 @@ import { render, screen, fireEvent } from '../../../test-utils';
 import ManualCheckinForm from './ManualCheckinForm';
 import soundAndHaptics from '../../../util/soundAndHaptics';
 
-jest.mock('../../../util/soundAndHaptics', () => ({
-  playClick: jest.fn(),
-  vibrateLight: jest.fn(),
-  vibrateSuccess: jest.fn(),
-  vibrateWarning: jest.fn(),
-  vibrateError: jest.fn()
-}));
+vi.mock('../../../util/soundAndHaptics', () => {
+  const mock = {
+    playClick: vi.fn(),
+    vibrateLight: vi.fn(),
+    vibrateSuccess: vi.fn(),
+    vibrateWarning: vi.fn(),
+    vibrateError: vi.fn()
+  };
+  return { default: mock, ...mock };
+});
 
-const mockToastError = jest.fn();
-jest.mock('../../../components/ToastProvider', () => {
-  const actual = jest.requireActual('../../../components/ToastProvider');
+const mockToastError = vi.fn();
+vi.mock('../../../components/ToastProvider', async (importOriginal) => {
+  const actual = await importOriginal();
   return {
     ...actual,
     useToast: () => ({
       error: mockToastError,
-      success: jest.fn(),
-      info: jest.fn(),
-      warning: jest.fn()
+      success: vi.fn(),
+      info: vi.fn(),
+      warning: vi.fn()
     })
   };
 });
 
 describe('ManualCheckinForm Component', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test('renders manual check-in form heading, input and action buttons', () => {
-    render(<ManualCheckinForm onSubmit={jest.fn()} onCancel={jest.fn()} />);
+    render(<ManualCheckinForm onSubmit={vi.fn()} onCancel={vi.fn()} />);
 
     expect(screen.getByRole('heading', { level: 4 })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('000000')).toBeInTheDocument();
@@ -40,8 +43,8 @@ describe('ManualCheckinForm Component', () => {
   });
 
   test('disables submit button and shows error toast on invalid form submission', () => {
-    const handleSubmit = jest.fn();
-    render(<ManualCheckinForm onSubmit={handleSubmit} onCancel={jest.fn()} />);
+    const handleSubmit = vi.fn();
+    render(<ManualCheckinForm onSubmit={handleSubmit} onCancel={vi.fn()} />);
 
     const input = screen.getByPlaceholderText('000000');
     fireEvent.change(input, { target: { value: '123' } });
@@ -59,8 +62,8 @@ describe('ManualCheckinForm Component', () => {
   });
 
   test('calls onSubmit with 6 digits code and plays click sound', () => {
-    const handleSubmit = jest.fn();
-    render(<ManualCheckinForm onSubmit={handleSubmit} onCancel={jest.fn()} />);
+    const handleSubmit = vi.fn();
+    render(<ManualCheckinForm onSubmit={handleSubmit} onCancel={vi.fn()} />);
 
     const input = screen.getByPlaceholderText('000000');
     fireEvent.change(input, { target: { value: '123456' } });
@@ -74,7 +77,7 @@ describe('ManualCheckinForm Component', () => {
   });
 
   test('filters out non-digit characters from user input', () => {
-    render(<ManualCheckinForm onSubmit={jest.fn()} onCancel={jest.fn()} />);
+    render(<ManualCheckinForm onSubmit={vi.fn()} onCancel={vi.fn()} />);
 
     const input = screen.getByPlaceholderText('000000');
     fireEvent.change(input, { target: { value: 'ab12c34' } });
@@ -83,8 +86,8 @@ describe('ManualCheckinForm Component', () => {
   });
 
   test('calls onCancel callback when Cancel button is clicked', () => {
-    const handleCancel = jest.fn();
-    render(<ManualCheckinForm onSubmit={jest.fn()} onCancel={handleCancel} />);
+    const handleCancel = vi.fn();
+    render(<ManualCheckinForm onSubmit={vi.fn()} onCancel={handleCancel} />);
 
     const cancelBtn = screen.getByRole('button', { name: /cancelar|cancel/i });
     fireEvent.click(cancelBtn);

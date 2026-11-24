@@ -1,21 +1,77 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faExternalLinkAlt, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { useToast } from "../../../components/ToastProvider";
+import api from "../../../services/api";
+import { saveBlobFile } from "../../../util/downloadExportFile";
 import { getFileIconAndType, getEmbedUrl, isMicrosoftCloudHost } from "../../../util/fileUtils";
 import { formatDate } from "../../../util/dateUtils";
 import SecureImage from "../../../components/SecureImage";
 import GlassModal from "../../../components/GlassModal";
 
-export function DocumentPreviewModal({ isOpen, toggle, document, fileUrl, fileName }) {
+export function DocumentPreviewModal({ isOpen, toggle, document, fileUrl, fileName, formationId }) {
   const { t } = useTranslation();
+  const [blobUrl, setBlobUrl] = useState(null);
+  const blobDataRef = useRef(null);
+  const [loadingDoc, setLoadingDoc] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   const doc = document || (fileUrl ? { url: fileUrl, name: fileName || 'Documento' } : null);
+  const effectiveFormationId = formationId || doc?.formationId;
+  const itemId = doc?.itemId;
+  const useProxy = Boolean(isOpen && effectiveFormationId && itemId);
+
+  useEffect(() => {
+    if (!useProxy) {
+      setBlobUrl(null);
+      blobDataRef.current = null;
+      setLoadError(false);
+      return;
+    }
+
+    let cancelled = false;
+    let objectUrl = null;
+    setLoadingDoc(true);
+    setLoadError(false);
+
+    api.get(`/formations/${effectiveFormationId}/documents/download`, {
+      params: { itemId },
+      responseType: 'blob'
+    })
+      .then((res) => {
+        if (cancelled) return;
+        objectUrl = URL.createObjectURL(res.data);
+        blobDataRef.current = res.data;
+        setBlobUrl(objectUrl);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error("Error loading formation document via proxy:", err);
+        setLoadError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingDoc(false);
+      });
+
+    return () => {
+      cancelled = true;
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [useProxy, effectiveFormationId, itemId]);
+
   if (!doc) return null;
 
   const fileInfo = getFileIconAndType(doc.name);
+
+  const handleProxyDownload = async () => {
+    const blobData = blobDataRef.current;
+    if (!blobData) return;
+    await saveBlobFile(blobData, doc.name, blobData.type || 'application/octet-stream');
+  };
 
   const modalTitle = (
     <div className="truncate max-w-[55vw] text-slate-800 dark:text-slate-100 flex items-center gap-2">
@@ -23,7 +79,64 @@ export function DocumentPreviewModal({ isOpen, toggle, document, fileUrl, fileNa
       <span>{doc.name}</span>
     </div>
   );
-  
+
+  const renderProxyBody = () => {
+    if (loadingDoc) {
+      return (
+        <div className="mb-4 flex flex-col items-center justify-center h-[260px] bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+          <FontAwesomeIcon icon={faSpinner} spin size="2x" className="text-[#73841e] dark:text-[#d4e84a] mb-3" />
+          <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold mb-0">
+            {t('common.loading', 'Cargando documento...')}
+          </p>
+        </div>
+      );
+    }
+
+    if (loadError || !blobUrl) {
+      return (
+        <div className="mb-4 flex flex-col items-center justify-center h-[220px] bg-slate-50 dark:bg-slate-900 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+          <FontAwesomeIcon icon={fileInfo.icon} style={{ fontSize: "48px", color: fileInfo.color, marginBottom: "12px" }} />
+          <p className="text-slate-500 dark:text-slate-400 text-xs text-center px-4 mb-0">
+            {t('formationDetails.documentLoadError', 'No se pudo cargar la vista previa del documento.')}
+          </p>
+        </div>
+      );
+    }
+
+    if (fileInfo.type === 'image') {
+      return (
+        <div className="mb-4 max-h-[500px] w-full overflow-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-2 flex justify-center">
+          <img src={blobUrl} alt={doc.name} className="max-h-[480px] object-contain rounded-lg" />
+        </div>
+      );
+    }
+
+    if (fileInfo.type === 'pdf') {
+      return (
+        <div className="mb-4 h-[500px] w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+          <iframe
+            src={blobUrl}
+            width="100%"
+            height="100%"
+            style={{ border: 'none' }}
+            title={doc.name}
+            sandbox="allow-scripts allow-popups"
+          ></iframe>
+        </div>
+      );
+    }
+
+    return (
+      <div className="mb-4 flex flex-col items-center justify-center h-[200px] bg-slate-50 dark:bg-slate-900 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+        <FontAwesomeIcon icon={fileInfo.icon} style={{ fontSize: "50px", color: fileInfo.color, marginBottom: "12px" }} />
+        <h5 className="text-slate-600 dark:text-slate-300 font-bold text-sm mb-1">{doc.name}</h5>
+        <p className="text-slate-400 text-xs text-center px-4 mb-0">
+          {t('formationDetails.downloadReady', 'Documento listo para descargar directamente sin iniciar sesión.')}
+        </p>
+      </div>
+    );
+  };
+
   return (
     <GlassModal
       isOpen={isOpen}
@@ -43,41 +156,72 @@ export function DocumentPreviewModal({ isOpen, toggle, document, fileUrl, fileNa
       <div className="p-2 text-center">
         <div className="p-4 bg-white/70 dark:bg-slate-800/70 rounded-2xl shadow-xs border border-slate-200 dark:border-slate-700">
           <h5 className="text-slate-800 dark:text-slate-100 mb-3 break-all font-bold">{doc.name}</h5>
-          
-          {!isMicrosoftCloudHost(doc.url) ? (
-            <div className="mb-4 h-[500px] w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
-              <iframe 
-                src={getEmbedUrl(doc.url)} 
-                width="100%" 
-                height="100%" 
-                style={{ border: 'none' }}
-                title={doc.name}
-                allowFullScreen
-                sandbox="allow-scripts allow-popups"
-              ></iframe>
-            </div>
+
+          {useProxy ? (
+            <>
+              {renderProxyBody()}
+              {blobUrl && (
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleProxyDownload}
+                    className="da-btn-blue px-4 py-2 inline-flex items-center justify-center gap-2 rounded-xl text-xs font-bold border-0 cursor-pointer"
+                  >
+                    <FontAwesomeIcon icon={faDownload} />
+                    {t('common.download', 'Descargar')}
+                  </button>
+                  {(fileInfo.type === 'pdf' || fileInfo.type === 'image') && (
+                    <a
+                      href={blobUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="da-btn-secondary px-4 py-2 inline-flex items-center justify-center gap-2 rounded-xl text-xs font-bold text-decoration-none"
+                    >
+                      <FontAwesomeIcon icon={faExternalLinkAlt} />
+                      {t('common.openInNewTab', 'Abrir en pestaña nueva')}
+                    </a>
+                  )}
+                </div>
+              )}
+            </>
           ) : (
-            <div className="mb-4 flex flex-col items-center justify-center h-[220px] bg-slate-50 dark:bg-slate-900 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
-              <FontAwesomeIcon icon={fileInfo.icon} style={{ fontSize: "50px", color: fileInfo.color, marginBottom: "15px" }} />
-              <h5 className="text-slate-500 dark:text-slate-400 font-bold text-sm">{t('formationDetails.previewNotAvailable', 'Previsualización no disponible')}</h5>
-              <p className="text-slate-400 text-xs text-center px-4 mb-0">
-                {t('formationDetails.cspMessage', 'Por políticas de seguridad de Microsoft OneDrive, este documento no puede incrustarse directamente aquí.')}
+            <>
+              {!isMicrosoftCloudHost(doc.url) ? (
+                <div className="mb-4 h-[500px] w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+                  <iframe
+                    src={getEmbedUrl(doc.url)}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 'none' }}
+                    title={doc.name}
+                    allowFullScreen
+                    sandbox="allow-scripts allow-popups"
+                  ></iframe>
+                </div>
+              ) : (
+                <div className="mb-4 flex flex-col items-center justify-center h-[220px] bg-slate-50 dark:bg-slate-900 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+                  <FontAwesomeIcon icon={fileInfo.icon} style={{ fontSize: "50px", color: fileInfo.color, marginBottom: "15px" }} />
+                  <h5 className="text-slate-500 dark:text-slate-400 font-bold text-sm">{t('formationDetails.previewNotAvailable', 'Previsualización no disponible')}</h5>
+                  <p className="text-slate-400 text-xs text-center px-4 mb-0">
+                    {t('formationDetails.cspMessage', 'Por políticas de seguridad de Microsoft OneDrive, este documento no puede incrustarse directamente aquí.')}
+                  </p>
+                </div>
+              )}
+
+              <p className="text-slate-500 dark:text-slate-400 text-xs mb-4">
+                {t('formationDetails.cloudDocDescription', 'Este documento está almacenado de forma segura en la nube. Haz clic en el botón inferior para abrirlo.')}
               </p>
-            </div>
+              <a
+                href={doc.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="da-btn-blue px-4 py-2 inline-flex items-center justify-center gap-2 text-decoration-none rounded-xl text-xs font-bold"
+              >
+                <FontAwesomeIcon icon={faExternalLinkAlt} />
+                {t('common.openSecure', 'Abrir / Ver Documento en la Nube')}
+              </a>
+            </>
           )}
-          
-          <p className="text-slate-500 dark:text-slate-400 text-xs mb-4">
-            {t('formationDetails.cloudDocDescription', 'Este documento está almacenado de forma segura en la nube. Haz clic en el botón inferior para abrirlo.')}
-          </p>
-          <a
-            href={doc.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="da-btn-blue px-4 py-2 inline-flex items-center justify-center gap-2 text-decoration-none rounded-xl text-xs font-bold"
-          >
-            <FontAwesomeIcon icon={faExternalLinkAlt} />
-            {t('common.openSecure', 'Abrir / Ver Documento en la Nube')}
-          </a>
         </div>
       </div>
     </GlassModal>
@@ -335,6 +479,104 @@ export function CloseFormationModal({ isOpen, toggle, formation, onCloseFormatio
             disabled={isSubmitting}
           >
             {isSubmitting ? t('common.saving', 'Finalizando...') : t('formationDetails.confirmClose', 'Finalizar Formación')}
+          </button>
+        </div>
+      </form>
+    </GlassModal>
+  );
+}
+
+export function AdminCheckoutModal({ isOpen, toggle, attendance, onConfirmCheckout }) {
+  const { t } = useTranslation();
+  const sigCanvas = React.useRef(null);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  if (!attendance) return null;
+
+  const fullName = `${attendance.user?.firstName || ''} ${attendance.user?.lastName || ''}`.trim() || attendance.user?.username || '';
+
+  const handleClear = () => {
+    if (sigCanvas.current) sigCanvas.current.clear();
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const signatureDataUrl = sigCanvas.current && !sigCanvas.current.isEmpty()
+      ? sigCanvas.current.getCanvas().toDataURL('image/png')
+      : null;
+
+    setIsSubmitting(true);
+    try {
+      const success = await onConfirmCheckout(attendance.user?.id, signatureDataUrl);
+      if (success) {
+        handleClear();
+        toggle();
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <GlassModal
+      isOpen={isOpen}
+      toggle={toggle}
+      title={t('formationDetails.manualCheckoutTitle', 'Registrar Salida Manual')}
+      size="md"
+    >
+      <form onSubmit={handleSubmit} className="p-2 flex flex-col gap-4">
+        <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-xs text-slate-700 dark:text-slate-200">
+          {t('formationDetails.manualCheckoutDesc', 'Vas a registrar manualmente la salida de:')} <strong>{fullName}</strong>
+        </div>
+
+        <div>
+          <div className="flex justify-between items-center mb-1.5">
+            <span
+              id="admin-checkout-signature-label"
+              className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-0"
+            >
+              {t('formationDetails.optionalAttendeeSignature', 'Firma del Asistente (Opcional)')}
+            </span>
+            <button
+              type="button"
+              className="text-[11px] font-bold text-slate-500 hover:text-red-500 bg-transparent border-0 cursor-pointer"
+              onClick={handleClear}
+            >
+              {t('common.clear', 'Limpiar')}
+            </button>
+          </div>
+          <div className="border border-dashed border-slate-300 dark:border-slate-600 rounded-2xl bg-white overflow-hidden shadow-inner flex justify-center items-center">
+            <SignatureCanvas
+              ref={sigCanvas}
+              penColor="#000000"
+              canvasProps={{
+                width: 380,
+                height: 150,
+                'aria-labelledby': 'admin-checkout-signature-label',
+                className: "sigCanvas cursor-crosshair block w-full h-[150px]"
+              }}
+            />
+          </div>
+          <small className="text-[11px] text-slate-400 block mt-1">
+            {t('formationDetails.manualCheckoutHint', 'Puedes capturar la firma en pantalla o confirmar directamente la salida manual.')}
+          </small>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+          <button
+            type="button"
+            className="da-btn-secondary px-4 py-2 rounded-full font-bold text-xs"
+            onClick={toggle}
+            disabled={isSubmitting}
+          >
+            {t('common.cancel', 'Cancelar')}
+          </button>
+          <button
+            type="submit"
+            className="px-5 py-2 rounded-full font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white border-0 transition-[transform,background-color,opacity] hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? t('common.saving', 'Guardando...') : t('formationDetails.confirmManualCheckout', 'Confirmar Salida')}
           </button>
         </div>
       </form>

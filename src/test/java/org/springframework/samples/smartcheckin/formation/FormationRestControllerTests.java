@@ -677,4 +677,100 @@ class FormationRestControllerTests {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Todos los asistentes deben completar checkout"));
     }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void testAdminCheckoutAttendeeSuccess() throws Exception {
+        AdminCheckoutRequest req = new AdminCheckoutRequest();
+        req.setSignature("data:image/png;base64,sig");
+
+        Formation updated = new Formation();
+        updated.setId(1);
+        updated.setName(JAVA_101);
+
+        when(formationService.adminCheckoutAttendee(1, 5, "data:image/png;base64,sig"))
+            .thenReturn(updated);
+
+        mockMvc.perform(post(BASE_URL + "/1/attendances/5/checkout")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1));
+    }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void testAdminCheckoutAttendeeErrorReturnsBadRequest() throws Exception {
+        when(formationService.adminCheckoutAttendee(eq(1), eq(5), isNull()))
+            .thenThrow(new IllegalStateException("El usuario ya tiene registrada su salida"));
+
+        mockMvc.perform(post(BASE_URL + "/1/attendances/5/checkout")
+                .with(csrf()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("El usuario ya tiene registrada su salida"));
+    }
+
+    @Test
+    @WithMockUser(authorities = {"ADMIN"})
+    void testDownloadFormationDocumentAsAdminSuccess() throws Exception {
+        Formation formation = new Formation();
+        formation.setId(1);
+        formation.setStatus(FormationStatus.DRAFT);
+        formation.setDocumentUrls(List.of(FILE1_ONEDRIVE_URL));
+
+        when(formationService.findById(1)).thenReturn(Optional.of(formation));
+        when(formationService.downloadDocument("item123")).thenReturn("pdf-bytes".getBytes());
+
+        mockMvc.perform(get(BASE_URL + "/1/documents/download").param("itemId", "item123"))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header()
+                        .string("Content-Disposition", org.hamcrest.Matchers.containsString("inline")))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
+                        .bytes("pdf-bytes".getBytes()));
+    }
+
+    @Test
+    @WithMockUser(authorities = {"EMPLOYEE"})
+    void testDownloadFormationDocumentAsEmployeeNotCheckedInForbidden() throws Exception {
+        User emp = new User();
+        emp.setId(10);
+
+        Formation formation = new Formation();
+        formation.setId(1);
+        formation.setStatus(FormationStatus.PUBLISHED);
+        formation.setIsClosed(false);
+        formation.setDocumentUrls(List.of(FILE1_ONEDRIVE_URL));
+        formation.setAttendances(List.of());
+
+        when(formationService.findById(1)).thenReturn(Optional.of(formation));
+        when(userService.findCurrentUser()).thenReturn(emp);
+
+        mockMvc.perform(get(BASE_URL + "/1/documents/download").param("itemId", "item123"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(authorities = {"EMPLOYEE"})
+    void testDownloadFormationDocumentOfficialSheetHiddenForEmployee() throws Exception {
+        User emp = new User();
+        emp.setId(10);
+
+        FormationAttendance att = new FormationAttendance();
+        att.setUser(emp);
+        att.setCheckInDate(LocalDateTime.now());
+
+        Formation formation = new Formation();
+        formation.setId(1);
+        formation.setStatus(FormationStatus.PUBLISHED);
+        formation.setIsClosed(false);
+        formation.setDocumentUrls(List.of("FOR_99_sheet.pdf||http://onedrive.link/sheet||officialItem"));
+        formation.setAttendances(List.of(att));
+
+        when(formationService.findById(1)).thenReturn(Optional.of(formation));
+        when(userService.findCurrentUser()).thenReturn(emp);
+
+        mockMvc.perform(get(BASE_URL + "/1/documents/download").param("itemId", "officialItem"))
+                .andExpect(status().isNotFound());
+    }
 }

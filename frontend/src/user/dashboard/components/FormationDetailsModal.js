@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { getCleanFileInfo } from '../../../util/fileUtils';
 import { formatDate } from '../../../util/dateUtils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFilePdf, faExternalLinkAlt, faEye, faLock } from '@fortawesome/free-solid-svg-icons';
+import { faFilePdf, faDownload, faExternalLinkAlt, faEye, faLock } from '@fortawesome/free-solid-svg-icons';
 import { DocumentPreviewModal } from '../../../admin/formations/components/FormationModals';
 import api from '../../../services/api';
 import { saveBlobFile } from '../../../util/downloadExportFile';
@@ -40,8 +40,21 @@ function LockedDocumentationNotice({ t }) {
   );
 }
 
-function FormationDocumentList({ documentUrls, isClosedWithoutCheckin, t, onPreview }) {
+function FormationDocumentList({ formationId, documentUrls, isClosedWithoutCheckin, t, onPreview }) {
   if (!documentUrls || documentUrls.length === 0) return null;
+
+  const handleDirectDownload = async (e, fileMeta) => {
+    e.stopPropagation();
+    try {
+      const res = await api.get(`/formations/${formationId}/documents/download`, {
+        params: { itemId: fileMeta.itemId },
+        responseType: 'blob'
+      });
+      await saveBlobFile(res.data, fileMeta.name, res.data.type || 'application/octet-stream');
+    } catch (err) {
+      console.error('Error downloading document:', err);
+    }
+  };
 
   return (
     <div className="pt-3 border-t border-slate-200/50 dark:border-slate-700/50 flex flex-col gap-2">
@@ -73,7 +86,7 @@ function FormationDocumentList({ documentUrls, isClosedWithoutCheckin, t, onPrev
             >
               <button
                 type="button"
-                onClick={() => onPreview({ url: fileMeta.url, name: fileMeta.name })}
+                onClick={() => onPreview({ url: fileMeta.url, name: fileMeta.name, itemId: fileMeta.itemId, formationId })}
                 className="flex items-center gap-3 min-w-0 flex-1 text-left bg-transparent border-0 p-0 m-0 cursor-pointer"
                 title={`Previsualizar ${fileMeta.name}`}
               >
@@ -102,17 +115,29 @@ function FormationDocumentList({ documentUrls, isClosedWithoutCheckin, t, onPrev
                 </div>
               </button>
 
-              <a
-                href={fileMeta.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0 ms-1"
-                title="Abrir en pestaña nueva"
-                aria-label={`Abrir ${fileMeta.name} en pestaña nueva`}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <FontAwesomeIcon icon={faExternalLinkAlt} size="xs" />
-              </a>
+              {fileMeta.itemId && formationId ? (
+                <button
+                  type="button"
+                  onClick={(e) => handleDirectDownload(e, fileMeta)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0 ms-1 bg-transparent border-0 cursor-pointer"
+                  title={t('common.download', 'Descargar')}
+                  aria-label={`${t('common.download', 'Descargar')} ${fileMeta.name}`}
+                >
+                  <FontAwesomeIcon icon={faDownload} size="xs" />
+                </button>
+              ) : (
+                <a
+                  href={fileMeta.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0 ms-1"
+                  title="Abrir en pestaña nueva"
+                  aria-label={`Abrir ${fileMeta.name} en pestaña nueva`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <FontAwesomeIcon icon={faExternalLinkAlt} size="xs" />
+                </a>
+              )}
             </div>
           );
         })}
@@ -242,6 +267,7 @@ export default function FormationDetailsModal({ isOpen, onClose, selectedAtt }) 
           {/* DOCUMENTACIÓN ADJUNTA O BLOQUEO */}
           {canAccessDocuments ? (
             <FormationDocumentList
+              formationId={selectedAtt.formation?.id}
               documentUrls={selectedAtt.formation.documentUrls}
               isClosedWithoutCheckin={isClosed && !hasCheckedIn}
               t={t}
@@ -295,6 +321,7 @@ export default function FormationDetailsModal({ isOpen, onClose, selectedAtt }) 
           document={previewDoc}
           fileUrl={previewDoc.url}
           fileName={previewDoc.name}
+          formationId={previewDoc.formationId || selectedAtt?.formation?.id}
         />
       )}
     </>

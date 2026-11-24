@@ -1,5 +1,7 @@
 package org.springframework.samples.smartcheckin.formation;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -7,12 +9,17 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.smartcheckin.user.User;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -214,6 +221,78 @@ public class FormationRestController {
             return ResponseEntity.ok("Successfully removed attendee");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to remove attendee");
+        }
+    }
+
+    @PostMapping("/{formationId}/attendances/{userId}/checkout")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")
+    public ResponseEntity<Object> adminCheckoutAttendee(
+            @PathVariable Integer formationId,
+            @PathVariable Integer userId,
+            @RequestBody(required = false) AdminCheckoutRequest request) {
+        try {
+            String signature = request != null ? request.getSignature() : null;
+            Formation formation = facade.adminCheckoutAttendee(formationId, userId, signature);
+            return ResponseEntity.ok(formation);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of(MESSAGE_KEY, e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id}/documents/download")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER', 'EMPLOYEE')")
+    public ResponseEntity<byte[]> downloadFormationDocument(@PathVariable Integer id, @RequestParam String itemId) {
+        Formation f = formationService.findById(id).orElse(null);
+        if (f == null || f.getDocumentUrls() == null || itemId == null || itemId.isBlank()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ADMIN") || a.getAuthority().equals("HR_MANAGER"));
+
+        if (!isAdmin) {
+            if (FormationStatus.DRAFT.equals(f.getStatus())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            User currentUser = userService.findCurrentUser();
+            boolean isClosed = Boolean.TRUE.equals(f.getIsClosed()) || FormationStatus.CLOSED.equals(f.getStatus());
+            boolean hasCheckedIn = currentUser != null && f.getAttendances() != null && f.getAttendances().stream()
+                .anyMatch(a -> a.getUser() != null && currentUser.getId().equals(a.getUser().getId()) && a.getCheckInDate() != null);
+            if (!isClosed && !hasCheckedIn) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }
+
+        String matchedDoc = f.getDocumentUrls().stream()
+            .filter(doc -> isAdmin || !isOfficialSheetDocument(doc))
+            .filter(doc -> {
+                String[] parts = doc.split("\\|\\|");
+                return parts.length >= 3 && itemId.equals(parts[2].trim());
+            })
+            .findFirst()
+            .orElse(null);
+
+        if (matchedDoc == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        String[] parts = matchedDoc.split("\\|\\|");
+        String fileName = parts.length > 0 && !parts[0].trim().isEmpty() ? parts[0].trim() : "document";
+        String safeFileName = fileName.replaceAll("[\\r\\n\"\\\\/]", "_");
+
+        try {
+            byte[] bytes = formationService.downloadDocument(itemId);
+            MediaType mediaType = MediaTypeFactory.getMediaType(safeFileName).orElse(MediaType.APPLICATION_OCTET_STREAM);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(mediaType);
+            headers.setContentDisposition(ContentDisposition.inline().filename(safeFileName, StandardCharsets.UTF_8).build());
+            return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(5, TimeUnit.MINUTES).cachePrivate())
+                .headers(headers)
+                .body(bytes);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
         }
     }
 

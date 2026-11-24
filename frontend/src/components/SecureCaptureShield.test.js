@@ -4,11 +4,11 @@ import SecureCaptureShield from './SecureCaptureShield';
 
 describe('SecureCaptureShield Component', () => {
     beforeEach(() => {
-        jest.useFakeTimers();
+        vi.useFakeTimers();
     });
 
     afterEach(() => {
-        jest.useRealTimers();
+        vi.useRealTimers();
     });
 
     test('renders children in normal state', () => {
@@ -54,7 +54,7 @@ describe('SecureCaptureShield Component', () => {
 
         act(() => {
             window.dispatchEvent(new Event('focus'));
-            jest.advanceTimersByTime(300);
+            vi.advanceTimersByTime(300);
         });
 
         expect(screen.queryByText(/Contenido protegido contra capturas/i)).not.toBeInTheDocument();

@@ -343,7 +343,17 @@
     "statusPublished": "Публикувана / Отворена",
     "syncCalendar": "Синхронизиране на календар",
     "calendarDownloaded": "Поканата за календар (.ics) е изтеглена.",
-    "calendarError": "Грешка при изтегляне на поканата за календар."
+    "calendarError": "Грешка при изтегляне на поканата за календар.",
+    "documentLoadError": "Неуспешно зареждане на прегледа на документа.",
+    "downloadReady": "Документът е готов за директно изтегляне без влизане в профил.",
+    "manualCheckout": "Ръчно отписване",
+    "manualCheckoutTitle": "Ръчно Отписване",
+    "manualCheckoutDesc": "Ще регистрирате ръчно излизане за:",
+    "optionalAttendeeSignature": "Подпис на участника (По избор)",
+    "manualCheckoutHint": "Можете да запишете подписа на екрана или директно да потвърдите ръчното отписване.",
+    "confirmManualCheckout": "Потвърди излизане",
+    "manualCheckoutSuccess": "Ръчното отписване е записано успешно.",
+    "manualCheckoutError": "Грешка при записване на ръчното отписване."
   },
   "qr": {
     "title": "QR на Обучение",
@@ -581,7 +591,9 @@
     "generating": "Генериране...",
     "reset": "Нулиране",
     "verifying": "Проверка...",
-    "deleting": "Изтриване..."
+    "deleting": "Изтриване...",
+    "download": "Изтегли",
+    "openInNewTab": "Отвори в нов раздел"
   },
   "lang": {
     "es": "Español",

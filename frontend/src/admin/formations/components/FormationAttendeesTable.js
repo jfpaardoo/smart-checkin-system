@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faFilePdf, faTrash, faUser, faUserPlus } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faFilePdf, faRightFromBracket, faTrash, faUser, faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import GlassDropdown from "../../../components/GlassDropdown";
@@ -19,7 +19,8 @@ export default function FormationAttendeesTable({
   handleAddUser,
   handleRemoveUser,
   onViewSignature,
-  onDownloadPdf
+  onDownloadPdf,
+  onManualCheckout
 }) {
   const { t } = useTranslation();
   const [selectedUserId, setSelectedUserId] = useState("");
@@ -234,6 +235,19 @@ export default function FormationAttendeesTable({
                             </button>
                           )}
 
+                          {/* Botón 2b: Checkout manual (si ha hecho check-in pero no checkout y no está cerrada) */}
+                          {!formation?.isClosed && hasCheckedIn && !isCompleted && onManualCheckout && (
+                            <button
+                              type="button"
+                              className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25 hover:scale-105 active:scale-95 transition shadow-xs inline-flex items-center justify-center cursor-pointer"
+                              onClick={() => onManualCheckout(att)}
+                              title={t('formationDetails.manualCheckout', 'Registrar salida manual')}
+                              aria-label={t('formationDetails.manualCheckout', 'Registrar salida manual')}
+                            >
+                              <FontAwesomeIcon icon={faRightFromBracket} />
+                            </button>
+                          )}
+
                           {/* Botón 3: Eliminar (solo si no está cerrada) */}
                           {!formation?.isClosed && (
                             <button
@@ -302,6 +316,18 @@ export default function FormationAttendeesTable({
                         title="PDF"
                       >
                         <FontAwesomeIcon icon={faFilePdf} />
+                      </button>
+                    )}
+
+                    {!formation?.isClosed && hasCheckedIn && !isCompleted && onManualCheckout && (
+                      <button
+                        type="button"
+                        className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25 inline-flex items-center justify-center shadow-xs cursor-pointer"
+                        onClick={() => onManualCheckout(att)}
+                        title={t('formationDetails.manualCheckout', 'Registrar salida manual')}
+                        aria-label={t('formationDetails.manualCheckout', 'Registrar salida manual')}
+                      >
+                        <FontAwesomeIcon icon={faRightFromBracket} />
                       </button>
                     )}
 

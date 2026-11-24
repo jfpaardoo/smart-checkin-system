@@ -365,7 +365,17 @@
     "statusPublished": "Publicada / Abierta",
     "syncCalendar": "Sincronizar Calendario",
     "calendarDownloaded": "Convocatoria descargada (.ics) para tu calendario.",
-    "calendarError": "Error al descargar la convocatoria de calendario."
+    "calendarError": "Error al descargar la convocatoria de calendario.",
+    "documentLoadError": "No se pudo cargar la vista previa del documento.",
+    "downloadReady": "Documento listo para descargar directamente sin iniciar sesión.",
+    "manualCheckout": "Registrar salida manual",
+    "manualCheckoutTitle": "Registrar Salida Manual",
+    "manualCheckoutDesc": "Vas a registrar manualmente la salida de:",
+    "optionalAttendeeSignature": "Firma del Asistente (Opcional)",
+    "manualCheckoutHint": "Puedes capturar la firma en pantalla o confirmar directamente la salida manual.",
+    "confirmManualCheckout": "Confirmar Salida",
+    "manualCheckoutSuccess": "Salida registrada manualmente con éxito.",
+    "manualCheckoutError": "Error al registrar la salida manual."
   },
   "qr": {
     "title": "QR de Formación",
@@ -603,7 +613,9 @@
     "generating": "Generando...",
     "reset": "Restablecer",
     "verifying": "Verificando...",
-    "deleting": "Eliminando..."
+    "deleting": "Eliminando...",
+    "download": "Descargar",
+    "openInNewTab": "Abrir en pestaña nueva"
   },
   "lang": {
     "es": "Español",

@@ -4,8 +4,25 @@
  * para arranque instantáneo (0ms) en recargas y nuevas sesiones.
  */
 export function localStorageProvider() {
-  // 1. Inicializar mapa en memoria restaurando desde sessionStorage si existe
-  const map = new Map(JSON.parse(sessionStorage.getItem('da_swr_cache') || '[]'));
+  // 1. Inicializar mapa en memoria restaurando desde sessionStorage de forma segura
+  let initialEntries = [];
+  try {
+    const raw = sessionStorage.getItem('da_swr_cache');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        initialEntries = parsed;
+      }
+    }
+  } catch (e) {
+    console.debug('SWR Cache restore note:', e);
+    try {
+      sessionStorage.removeItem('da_swr_cache');
+    } catch {
+      // Ignorar
+    }
+  }
+  const map = new Map(initialEntries);
 
   // 2. Antes de cerrar o descargar la ventana, serializar la caché
   window.addEventListener('beforeunload', () => {

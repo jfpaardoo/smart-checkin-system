@@ -4,18 +4,21 @@ import BottomTabBar from './BottomTabBar';
 import tokenService from '../services/token.service';
 import soundAndHaptics from '../util/soundAndHaptics';
 
-jest.mock('../services/token.service');
-jest.mock('../util/soundAndHaptics', () => ({
-    playClick: jest.fn(),
-    vibrateLight: jest.fn(),
-    vibrateSuccess: jest.fn(),
-    vibrateWarning: jest.fn(),
-    vibrateError: jest.fn()
-}));
+vi.mock('../services/token.service');
+vi.mock('../util/soundAndHaptics', () => {
+    const mock = {
+        playClick: vi.fn(),
+        vibrateLight: vi.fn(),
+        vibrateSuccess: vi.fn(),
+        vibrateWarning: vi.fn(),
+        vibrateError: vi.fn()
+    };
+    return { default: mock, ...mock };
+});
 
 describe('BottomTabBar Component', () => {
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     test('renders nothing when user is not logged in', () => {

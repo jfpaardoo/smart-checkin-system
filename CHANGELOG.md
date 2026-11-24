@@ -4,6 +4,54 @@ Todos los cambios notables de este proyecto se documentan en este archivo.
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), y este proyecto sigue [Versionado Semántico (SemVer)](https://semver.org/lang/es/).
 
+## [1.5.0](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.5.0) - 2026-11-24
+
+### Nuevas Funcionalidades y Correcciones (Formaciones & Documentos)
+- **Checkout manual de asistentes por parte de Administradores/RRHH (`FormationRestController.java`, `FormationService.java`, `FormationCheckinFacade.java`, `FormationModals.js`, `FormationAttendeesTable.js`, `FormationDetailsAdmin.js`)**:
+  - Nuevo endpoint `POST /api/v1/formations/{formationId}/attendances/{userId}/checkout` protegido con `@PreAuthorize("hasAnyAuthority('ADMIN', 'HR_MANAGER')")` y auditoría `ADMIN_CHECKOUT_FORMATION`.
+  - Botón de registro de salida manual en la tabla de asistentes (vista escritorio y móvil) para participantes en estado "En curso" (`checkInDate` sin `checkOutDate`) mientras la formación no esté cerrada, con modal dedicado (`AdminCheckoutModal`) que permite capturar firma opcional o confirmar salida directa.
+- **Visualización y descarga de documentos de OneDrive sin inicio de sesión (`FormationRestController.java`, `FormationService.java`, `FormationModals.js`, `FormationDetailsModal.js`, `fileUtils.js`)**:
+  - Nuevo endpoint autenticado `GET /api/v1/formations/{id}/documents/download?itemId=...` que valida permisos de acceso del usuario (admin o empleado con check-in / formación cerrada, ocultando hojas oficiales `FOR_99`) y sirve los bytes del documento desde `CloudStorageAdapter.downloadFile(itemId)`.
+  - Actualizado `DocumentPreviewModal` y `FormationDetailsModal` para previsualizar PDFs/imágenes y descargar documentos directamente mediante petición autenticada (`blob`) sin redirigir al login de Microsoft OneDrive.
+
+### Seguridad, Autenticación & Hardening
+- **Prevención de IP Spoofing en Rate Limiting y Sesiones (`RateLimitFilter.java`, `AuthTokenFilter.java`)**:
+  - Eliminada la lectura directa de cabeceras manipulables (`X-Forwarded-For`, `X-Real-IP`); resolución unificada sobre `request.getRemoteAddr()` validado por `server.forward-headers-strategy=framework`.
+  - Corrección de `AuthTokenFilter.shouldNotFilter` para excluir exclusivamente `/actuator/health/**` y permitir la autenticación JWT de administradores en `/actuator/prometheus`, `/metrics` e `/info`.
+- **Endurecimiento de CSP, CORS y Perfil de Producción (`SecurityConfiguration.java`, `application-prod.properties`, `docker-compose.yml`)**:
+  - Restringidas las directivas CSP eliminando el comodín `https:` en `script-src` y los esquemas sin cifrar `http:` / `ws:` en `connect-src`.
+  - Eliminado el fallback peligroso `AllowedOriginPatterns("*")` cuando `app.cors.allowed-origins` está vacío.
+  - Creado perfil dedicado `src/main/resources/application-prod.properties` (`jwtCookieSecure=true`, `spring.flyway.validate-on-migrate=true`, `spring.h2.console.enabled=false`, `server.shutdown=graceful`) y añadida `JWT_COOKIE_SECURE` en `docker-compose.yml`.
+- **Seguridad GitHub Nativa, Trivy, Gitleaks y Dependabot (`.github/`, `.gitleaks.toml`, `SECURITY.md`)**:
+  - Activados en el repositorio GitHub *Secret Scanning*, *Push Protection* y *Dependabot Security Updates*.
+  - Añadido ecosistema `docker` y agrupación `groups` (`minor`/`patch`) en `.github/dependabot.yml`.
+  - Fijado `aquasecurity/trivy-action@v0.36.0` (eliminando `@master`) y ampliados los scanners a `vuln,misconfig,secret`.
+  - Endurecida la allowlist de `.gitleaks.toml` y actualizada la política de soporte en `SECURITY.md` a `1.5.x`.
+
+### Frontend: Migración a Vite + Vitest & Limpieza
+- **Migración de Create React App (`react-scripts`) a Vite 6 + Vitest 3 (`vite.config.mjs`, `frontend/index.html`, `frontend/package.json`)**:
+  - Eliminado `react-scripts: 5.0.1` (eliminando ~20 alertas históricas de Dependabot en herramientas webpack/CRA) junto con `http-proxy-middleware`, `source-map-loader`, `@splidejs/react-splide` y `@tailwindcss/postcss`.
+  - Actualizado `react-router-dom` a `^7.18.2` (remediando las alertas de seguridad en `react-router`).
+  - Reubicadas las librerías `@testing-library/*` a `devDependencies`, adaptadas las variables `REACT_APP_*` a `import.meta.env` y migradas las 10 suites de pruebas unitarias (49 tests) a Vitest (`vi.*`) con `jsdom`.
+  - Actualizado `.github/workflows/frontend-ci.yml` a Node.js 22 y `npm test`.
+- **Estabilidad y Enrutamiento (`App.js`, `swrCacheProvider.js`)**:
+  - Eliminada la ruta duplicada inalcanzable `/users/:username` en `App.js`.
+  - Añadido manejo defensivo con `try/catch` al restaurar la caché SWR desde `sessionStorage` en `swrCacheProvider.js`.
+
+### Rendimiento, Optimización & Docker
+- **Optimización Backend & JVM (`AuthTokenFilter.java`, `WebConfig.java`, `FormationRestController.java`, `StringCryptoConverter.java`, `UserDetailsServiceImpl.java`, `AnalyticsService.java`, `application.properties`)**:
+  - Eliminado el doble parseo criptográfico de JWT por petición en `AuthTokenFilter` utilizando `jwtUtils.validateAndGetClaims(jwt)` en una sola pasada.
+  - Acotado `ShallowEtagHeaderFilter` mediante `FilterRegistrationBean` exclusivamente a endpoints JSON ligeros, excluyendo exportaciones binarias (`/api/v1/exports/*`, `/api/v1/certificates/*`) y descargas de documentos/calendario (`/documents/download`, `/calendar.ics`) para evitar picos de memoria en heap limitado (`320m`).
+  - Añadido `Cache-Control: private, max-age=300` en la descarga proxy de documentos de OneDrive y caché revalidable (`no-cache`) para los ficheros de idioma `/locales/**`.
+  - Cacheada la clave AES-256 derivada (`SecretKeySpec`) en `StringCryptoConverter`.
+  - Configurado `@Transactional(readOnly = true)` en `UserDetailsServiceImpl.loadUserByUsername`, eliminado el fallback `findAll()` en `AnalyticsService.calculateTotalActiveUsers()`, y sustituidas las propiedades HikariCP específicas de MySQL por parámetros nativos de PostgreSQL (`prepareThreshold`, `preparedStatementCacheQueries`, `preparedStatementCacheSizeMiB`).
+- **Optimización Frontend & Móvil (`vite.config.mjs`, `downloadExportFile.js`)**:
+  - Separación de chunks estables de dependencias (`vendor-react`, `vendor-motion`, `vendor-icons`) en Vite para maximizar el aprovechamiento de la caché del navegador en `/static/**`.
+  - Ajustada la descarga de archivos `Blob` en dispositivos móviles (`triggerAnchorDownload`) eliminando `target="_blank"` y ampliando la revocación del `ObjectURL` a 15 segundos.
+- **Limpieza de Dependencias Maven & Optimización `Dockerfile` (`pom.xml`, `Dockerfile`)**:
+  - Eliminadas dependencias y procesadores sin uso (`javax.cache:cache-api`, `mapstruct-processor`, `lombok-mapstruct-binding`), acotado `spring-boot-devtools` como `runtime`/`optional`, y actualizados `bcprov-jdk18on`/`bcpkix-jdk18on` (`1.86`), `pitest-junit5-plugin` (`1.2.3`), `cyclonedx-maven-plugin` (`2.9.3`) y Node `v22.14.0`.
+  - Refactorizado `Dockerfile` a 3 etapas (`node:22-alpine` → `maven:3.9.9-eclipse-temurin-21` → `eclipse-temurin:21-jre-alpine`), corregidos flags JVM (retirando `-XX:+UseStringDeduplication` incompatible con SerialGC y `-XX:TieredStopAtLevel=1`) y habilitado `exec java` para propagación correcta de `SIGTERM`.
+
 ## [1.4.2](https://github.com/jfpaardoo/smart-checkin-system/releases/tag/v1.4.2) - 2026-11-14
 
 ### Seguridad, Autenticación & Protección de Datos

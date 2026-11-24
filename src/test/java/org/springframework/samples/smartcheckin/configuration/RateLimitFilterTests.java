@@ -87,24 +87,36 @@ class RateLimitFilterTests {
     }
 
     @Test
-    void testRateLimit_XForwardedForWithMultipleIPs() throws Exception {
-        when(request.getRequestURI()).thenReturn("/api/v1/checkins/qr-fichaje");
-        when(request.getHeader("X-Forwarded-For")).thenReturn("198.51.100.1, 10.0.0.1");
+    void testRateLimit_XForwardedForSpoofingDoesNotBypassRemoteAddr() throws Exception {
+        when(request.getRequestURI()).thenReturn("/api/v1/auth/signin");
+        when(request.getRemoteAddr()).thenReturn("198.51.100.25");
 
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter);
+        when(response.getWriter()).thenReturn(printWriter);
+
+        // Un atacante que rote X-Forwarded-For desde la misma IP no debe evadir el límite estricto
+        for (int i = 0; i < 10; i++) {
+            when(request.getHeader("X-Forwarded-For")).thenReturn("10.0.0." + i);
+            when(request.getHeader("X-Real-IP")).thenReturn("172.16.0." + i);
+            rateLimitFilter.doFilterInternal(request, response, filterChain);
+        }
+        verify(filterChain, times(10)).doFilter(request, response);
+
+        when(request.getHeader("X-Forwarded-For")).thenReturn("10.0.0.99");
         rateLimitFilter.doFilterInternal(request, response, filterChain);
-        verify(filterChain, times(1)).doFilter(request, response);
+        verify(response).setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
     }
 
     @Test
-    void testRateLimit_XForwardedForUnknownOrEmptyFallbackToRemoteAddr() throws Exception {
+    void testRateLimit_NullOrBlankRemoteAddrFallsBackSafely() throws Exception {
         when(request.getRequestURI()).thenReturn("/api/v1/users");
-        when(request.getHeader("X-Forwarded-For")).thenReturn("unknown");
-        when(request.getRemoteAddr()).thenReturn("192.168.1.50");
+        when(request.getRemoteAddr()).thenReturn(null);
 
         rateLimitFilter.doFilterInternal(request, response, filterChain);
         verify(filterChain, times(1)).doFilter(request, response);
 
-        when(request.getHeader("X-Forwarded-For")).thenReturn("");
+        when(request.getRemoteAddr()).thenReturn("");
         rateLimitFilter.doFilterInternal(request, response, filterChain);
         verify(filterChain, times(2)).doFilter(request, response);
     }
@@ -154,20 +166,11 @@ class RateLimitFilterTests {
     }
 
     @Test
-    void testRateLimit_WithXForwardedForHeader() throws Exception {
+    void testRateLimit_WithRemoteAddrAndForwardedHeaders() throws Exception {
         when(request.getRequestURI()).thenReturn("/api/v1/auth/signin");
         when(request.getHeader("X-Forwarded-For")).thenReturn("203.0.113.195, 172.18.0.1");
-        when(request.getRemoteAddr()).thenReturn("172.18.0.1");
-
-        rateLimitFilter.doFilterInternal(request, response, filterChain);
-        verify(filterChain, times(1)).doFilter(request, response);
-    }
-
-    @Test
-    void testRateLimit_WithXRealIpHeader() throws Exception {
-        when(request.getRequestURI()).thenReturn("/api/v1/auth/signin");
         when(request.getHeader("X-Real-IP")).thenReturn("203.0.113.50");
-        when(request.getRemoteAddr()).thenReturn("172.18.0.1");
+        when(request.getRemoteAddr()).thenReturn("172.18.0.2");
 
         rateLimitFilter.doFilterInternal(request, response, filterChain);
         verify(filterChain, times(1)).doFilter(request, response);

@@ -343,7 +343,17 @@
     "statusPublished": "Publiée / Ouverte",
     "syncCalendar": "Synchroniser le calendrier",
     "calendarDownloaded": "Invitation de calendrier (.ics) téléchargée.",
-    "calendarError": "Erreur lors du téléchargement de l'invitation de calendrier."
+    "calendarError": "Erreur lors du téléchargement de l'invitation de calendrier.",
+    "documentLoadError": "Impossible de charger l'aperçu du document.",
+    "downloadReady": "Document prêt à être téléchargé directement sans connexion.",
+    "manualCheckout": "Sortie manuelle",
+    "manualCheckoutTitle": "Enregistrer la sortie manuelle",
+    "manualCheckoutDesc": "Vous allez enregistrer manuellement la sortie de :",
+    "optionalAttendeeSignature": "Signature du participant (Optionnel)",
+    "manualCheckoutHint": "Vous pouvez capturer la signature à l'écran ou confirmer directement la sortie manuelle.",
+    "confirmManualCheckout": "Confirmer la sortie",
+    "manualCheckoutSuccess": "Sortie manuelle enregistrée avec succès.",
+    "manualCheckoutError": "Erreur lors de l'enregistrement de la sortie manuelle."
   },
   "qr": {
     "title": "QR de Formation",
@@ -581,7 +591,9 @@
     "generating": "Génération...",
     "reset": "Réinitialiser",
     "verifying": "Vérification...",
-    "deleting": "Suppression..."
+    "deleting": "Suppression...",
+    "download": "Télécharger",
+    "openInNewTab": "Ouvrir dans un nouvel onglet"
   },
   "lang": {
     "es": "Español",

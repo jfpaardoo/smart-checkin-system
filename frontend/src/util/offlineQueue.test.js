@@ -16,21 +16,21 @@ describe('offlineQueue utility', () => {
 
     // In-memory IndexedDB mock
     const mockDb = {
-      transaction: jest.fn(() => ({
-        objectStore: jest.fn(() => ({
-          add: jest.fn((entry) => {
+      transaction: vi.fn(() => ({
+        objectStore: vi.fn(() => ({
+          add: vi.fn((entry) => {
             const item = { ...entry, id: nextId++ };
             mockStore.push(item);
             const req = {};
             setTimeout(() => req.onsuccess && req.onsuccess({ target: { result: item.id } }), 0);
             return req;
           }),
-          getAll: jest.fn(() => {
+          getAll: vi.fn(() => {
             const req = { result: [...mockStore] };
             setTimeout(() => req.onsuccess && req.onsuccess({ target: { result: req.result } }), 0);
             return req;
           }),
-          delete: jest.fn((id) => {
+          delete: vi.fn((id) => {
             mockStore = mockStore.filter((item) => item.id !== id);
             const req = {};
             setTimeout(() => req.onsuccess && req.onsuccess({ target: { result: undefined } }), 0);
@@ -41,7 +41,7 @@ describe('offlineQueue utility', () => {
     };
 
     window.indexedDB = {
-      open: jest.fn(() => {
+      open: vi.fn(() => {
         const req = { result: mockDb };
         setTimeout(() => req.onsuccess && req.onsuccess({ target: { result: mockDb } }), 0);
         return req;
@@ -56,7 +56,7 @@ describe('offlineQueue utility', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('formatLocalISO', () => {
@@ -121,8 +121,8 @@ describe('offlineQueue utility', () => {
   describe('syncOfflineCheckins', () => {
     it('skips sync when device is offline', async () => {
       Object.defineProperty(navigator, 'onLine', { value: false });
-      const api = { post: jest.fn() };
-      const toast = { success: jest.fn(), error: jest.fn() };
+      const api = { post: vi.fn() };
+      const toast = { success: vi.fn(), error: vi.fn() };
 
       await syncOfflineCheckins(api, toast);
       expect(api.post).not.toHaveBeenCalled();
@@ -133,9 +133,9 @@ describe('offlineQueue utility', () => {
       await saveOfflineCheckin({ token: 'batch-token-2', userLat: 40.0, userLng: -3.0 });
 
       const api = {
-        post: jest.fn().mockResolvedValue({ status: 200, data: { count: 2 } })
+        post: vi.fn().mockResolvedValue({ status: 200, data: { count: 2 } })
       };
-      const toast = { success: jest.fn(), error: jest.fn() };
+      const toast = { success: vi.fn(), error: vi.fn() };
 
       await syncOfflineCheckins(api, toast);
 
@@ -156,7 +156,7 @@ describe('offlineQueue utility', () => {
       await saveOfflineCheckin({ token: 'invalid-token' });
 
       const api = {
-        post: jest
+        post: vi
           .fn()
           .mockRejectedValueOnce({
             response: { status: 400, data: { message: 'Token expired' } }
@@ -165,7 +165,7 @@ describe('offlineQueue utility', () => {
             response: { status: 400, data: { message: 'Token expired' } }
           })
       };
-      const toast = { success: jest.fn(), error: jest.fn() };
+      const toast = { success: vi.fn(), error: vi.fn() };
 
       await syncOfflineCheckins(api, toast);
 

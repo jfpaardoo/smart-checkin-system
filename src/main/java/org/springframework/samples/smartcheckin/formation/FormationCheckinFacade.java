@@ -322,6 +322,13 @@ public class FormationCheckinFacade {
         return checkoutAttendance(id, signature, null);
     }
 
+    @Auditable(action = "ADMIN_CHECKOUT_FORMATION", details = "Admin manually checked out attendee from formation")
+    public Formation adminCheckoutAttendee(Integer formationId, Integer userId, String signature) {
+        Formation formation = formationService.adminCheckoutAttendee(formationId, userId, signature);
+        executeAfterCommitOrNow(() -> notifyFormationsUpdate(formationId));
+        return formation;
+    }
+
     @Auditable(action = "FORMATION_ADD_ATTENDEE", details = "Admin added attendee to formation")
     public void addAttendee(Integer formationId, Integer userId) {
         formationService.addAttendee(formationId, userId);

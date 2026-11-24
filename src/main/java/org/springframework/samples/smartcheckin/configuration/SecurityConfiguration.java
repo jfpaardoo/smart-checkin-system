@@ -12,6 +12,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
+import java.util.Collections;
 import org.springframework.samples.smartcheckin.configuration.services.UserDetailsServiceImpl;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
@@ -59,7 +60,7 @@ public class SecurityConfiguration {
                                 .includeSubDomains(true)
                                 .maxAgeInSeconds(31536000))
                         .contentSecurityPolicy(csp -> csp.policyDirectives(
-                                "default-src 'self' https: data: blob:; script-src 'self' https: https://challenges.cloudflare.com 'unsafe-inline'; style-src 'self' https: 'unsafe-inline'; img-src 'self' https: data: blob:; font-src 'self' https: data:; connect-src 'self' https: wss: ws: http:; frame-src 'self' https: https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self';"))
+                                "default-src 'self' https: data: blob:; script-src 'self' https://challenges.cloudflare.com 'unsafe-inline'; style-src 'self' https: 'unsafe-inline'; img-src 'self' https: data: blob:; font-src 'self' https: data:; connect-src 'self' https: wss:; frame-src 'self' https: https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self';"))
                         .addHeaderWriter((request, response) -> 
                             response.setHeader("Permissions-Policy", "camera=(self), geolocation=(self), microphone=(), payment=(), usb=()")
                         ))
@@ -191,7 +192,7 @@ public class SecurityConfiguration {
         if (allowedOrigins != null && allowedOrigins.length > 0) {
             configuration.setAllowedOriginPatterns(Arrays.asList(allowedOrigins));
         } else {
-            configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+            configuration.setAllowedOriginPatterns(Collections.emptyList());
         }
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));

@@ -343,7 +343,17 @@
     "statusPublished": "Veröffentlicht / Offen",
     "syncCalendar": "Kalender synchronisieren",
     "calendarDownloaded": "Kalendereinladung (.ics) heruntergeladen.",
-    "calendarError": "Fehler beim Herunterladen der Kalendereinladung."
+    "calendarError": "Fehler beim Herunterladen der Kalendereinladung.",
+    "documentLoadError": "Dokumentvorschau konnte nicht geladen werden.",
+    "downloadReady": "Dokument bereit zum direkten Download ohne Anmeldung.",
+    "manualCheckout": "Manueller Check-out",
+    "manualCheckoutTitle": "Manueller Check-out",
+    "manualCheckoutDesc": "Sie erfassen manuell den Check-out für:",
+    "optionalAttendeeSignature": "Unterschrift des Teilnehmers (Optional)",
+    "manualCheckoutHint": "Sie können die Unterschrift auf dem Bildschirm erfassen oder den manuellen Check-out direkt bestätigen.",
+    "confirmManualCheckout": "Check-out bestätigen",
+    "manualCheckoutSuccess": "Manueller Check-out erfolgreich erfasst.",
+    "manualCheckoutError": "Fehler beim Erfassen des manuellen Check-outs."
   },
   "qr": {
     "title": "Schulungs-QR",
@@ -581,7 +591,9 @@
     "generating": "Generieren...",
     "reset": "Zurücksetzen",
     "verifying": "Wird überprüft...",
-    "deleting": "Wird gelöscht..."
+    "deleting": "Wird gelöscht...",
+    "download": "Herunterladen",
+    "openInNewTab": "In neuem Tab öffnen"
   },
   "lang": {
     "es": "Español",

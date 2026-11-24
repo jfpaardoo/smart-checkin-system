@@ -496,21 +496,8 @@ public class AnalyticsService {
     }
 
     private long calculateTotalActiveUsers() {
-        try {
-            long count = userRepository.countActiveEmployees();
-            if (count > 0) {
-                return count;
-            }
-        } catch (Exception e) {
-            // Fallback to in-memory count
-        }
-        long total = StreamSupport.stream(userRepository.findAll().spliterator(), false)
-                .filter(u -> u.getAuthority() != null
-                        && ("EMPLOYEE".equalsIgnoreCase(u.getAuthority().getAuthority()) || "USER".equalsIgnoreCase(u.getAuthority().getAuthority()))
-                        && Boolean.TRUE.equals(u.getIsApproved())
-                        && (u.getUsername() == null || !u.getUsername().startsWith("GDPR_DEL_")))
-                .count();
-        return total == 0 ? 1 : total;
+        long count = userRepository.countActiveEmployees();
+        return count > 0 ? count : 1L;
     }
 
     private FormationAnalyticsDTO createFormationAnalyticsDTO(Formation f, long totalActiveUsers) {
