@@ -42,7 +42,7 @@
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.4.3",
     "@vitejs/plugin-react": "^4.7.0",
-    "@vitest/coverage-v8": "^3.2.7",
+    "@vitest/coverage-v8": "^5.1.1",
     "autoprefixer": "^10.5.4",
     "jsdom": "^26.1.0",
     "msw": "^1.2.1",
@@ -51,7 +51,7 @@
     "source-map-explorer": "^2.5.3",
     "tailwindcss": "^3.4.1",
     "vite": "^6.4.6",
-    "vitest": "^3.2.7"
+    "vitest": "^5.1.1"
   },
   "scripts": {
     "prestart": "node scripts/generate-version.js",
