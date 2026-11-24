@@ -23,7 +23,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<lombok.version>1.18.46</lombok.version>
+		<lombok.version>1.18.48</lombok.version>
 
 		<!-- Security-hardened dependency overrides (Trivy CVE remediation) -->
 		<thymeleaf.version>3.1.7.RELEASE</thymeleaf.version>
@@ -38,7 +38,7 @@
 		<postgresql.version>42.7.14</postgresql.version>
 		<netty.version>4.1.140.Final</netty.version>
 
-		<jacoco.version>0.8.15</jacoco.version>
+		<jacoco.version>0.8.16</jacoco.version>
 		<allure.version>2.35.4</allure.version>
 		<aspectj.version>1.9.21</aspectj.version>
 		<spring-format.version>0.0.19</spring-format.version>
@@ -265,17 +265,17 @@
 		<dependency>
 			<groupId>org.bitbucket.b_c</groupId>
 			<artifactId>jose4j</artifactId>
-			<version>0.9.6</version>
+			<version>0.9.7</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk18on</artifactId>
-			<version>1.86</version>
+			<version>1.87</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpkix-jdk18on</artifactId>
-			<version>1.86</version>
+			<version>1.87</version>
 		</dependency>
 	</dependencies>
 
@@ -308,7 +308,7 @@
 			<plugin>
 				<groupId>io.qameta.allure</groupId>
 				<artifactId>allure-maven</artifactId>
-				<version>3.0.3</version>
+				<version>3.1.0</version>
 				<configuration>
 					<singleFile>true</singleFile>
 					<reportDirectory>${project.build.directory}/site/test-status</reportDirectory>
@@ -432,7 +432,7 @@
 			<plugin>
 				<groupId>org.pitest</groupId>
 				<artifactId>pitest-maven</artifactId>
-				<version>1.15.0</version>
+				<version>1.30.2</version>
 				<dependencies>
 					<dependency>
 						<groupId>org.pitest</groupId>
@@ -465,7 +465,7 @@
 			<plugin>
 				<groupId>io.github.git-commit-id</groupId>
 				<artifactId>git-commit-id-maven-plugin</artifactId>
-				<version>10.0.0</version>
+				<version>10.0.1</version>
 				<executions>
 					<execution>
 						<goals>
