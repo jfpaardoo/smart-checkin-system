@@ -30,7 +30,7 @@ COPY --from=frontend-builder /app/frontend/build ./frontend/build
 RUN mvn package -DskipTests -Dfrontend.skip=true
 
 # STAGE 3: Production Runtime
-FROM eclipse-temurin:21-jre-alpine AS runner
+FROM eclipse-temurin:25-jre-alpine AS runner
 
 # Upgrade OS packages and create non-root user for security compliance
 RUN apk update && apk upgrade --no-cache && \
