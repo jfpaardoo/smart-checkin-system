@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload, faExternalLinkAlt, faSpinner } from "@fortawesome/free-solid-svg-icons";
@@ -14,7 +14,7 @@ import GlassModal from "../../../components/GlassModal";
 export function DocumentPreviewModal({ isOpen, toggle, document, fileUrl, fileName, formationId }) {
   const { t } = useTranslation();
   const [blobUrl, setBlobUrl] = useState(null);
-  const [blobData, setBlobData] = useState(null);
+  const blobDataRef = useRef(null);
   const [loadingDoc, setLoadingDoc] = useState(false);
   const [loadError, setLoadError] = useState(false);
 
@@ -26,7 +26,7 @@ export function DocumentPreviewModal({ isOpen, toggle, document, fileUrl, fileNa
   useEffect(() => {
     if (!useProxy) {
       setBlobUrl(null);
-      setBlobData(null);
+      blobDataRef.current = null;
       setLoadError(false);
       return;
     }
@@ -43,7 +43,7 @@ export function DocumentPreviewModal({ isOpen, toggle, document, fileUrl, fileNa
       .then((res) => {
         if (cancelled) return;
         objectUrl = URL.createObjectURL(res.data);
-        setBlobData(res.data);
+        blobDataRef.current = res.data;
         setBlobUrl(objectUrl);
       })
       .catch((err) => {
@@ -68,6 +68,7 @@ export function DocumentPreviewModal({ isOpen, toggle, document, fileUrl, fileNa
   const fileInfo = getFileIconAndType(doc.name);
 
   const handleProxyDownload = async () => {
+    const blobData = blobDataRef.current;
     if (!blobData) return;
     await saveBlobFile(blobData, doc.name, blobData.type || 'application/octet-stream');
   };
@@ -119,6 +120,7 @@ export function DocumentPreviewModal({ isOpen, toggle, document, fileUrl, fileNa
             height="100%"
             style={{ border: 'none' }}
             title={doc.name}
+            sandbox="allow-scripts allow-popups"
           ></iframe>
         </div>
       );
@@ -504,11 +506,14 @@ export function AdminCheckoutModal({ isOpen, toggle, attendance, onConfirmChecko
       : null;
 
     setIsSubmitting(true);
-    const success = await onConfirmCheckout(attendance.user?.id, signatureDataUrl);
-    setIsSubmitting(false);
-    if (success) {
-      handleClear();
-      toggle();
+    try {
+      const success = await onConfirmCheckout(attendance.user?.id, signatureDataUrl);
+      if (success) {
+        handleClear();
+        toggle();
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -526,9 +531,12 @@ export function AdminCheckoutModal({ isOpen, toggle, attendance, onConfirmChecko
 
         <div>
           <div className="flex justify-between items-center mb-1.5">
-            <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-0">
+            <span
+              id="admin-checkout-signature-label"
+              className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-0"
+            >
               {t('formationDetails.optionalAttendeeSignature', 'Firma del Asistente (Opcional)')}
-            </label>
+            </span>
             <button
               type="button"
               className="text-[11px] font-bold text-slate-500 hover:text-red-500 bg-transparent border-0 cursor-pointer"
@@ -544,6 +552,7 @@ export function AdminCheckoutModal({ isOpen, toggle, attendance, onConfirmChecko
               canvasProps={{
                 width: 380,
                 height: 150,
+                'aria-labelledby': 'admin-checkout-signature-label',
                 className: "sigCanvas cursor-crosshair block w-full h-[150px]"
               }}
             />
@@ -564,7 +573,7 @@ export function AdminCheckoutModal({ isOpen, toggle, attendance, onConfirmChecko
           </button>
           <button
             type="submit"
-            className="px-5 py-2 rounded-full font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white border-0 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="px-5 py-2 rounded-full font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white border-0 transition-[transform,background-color,opacity] hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
             disabled={isSubmitting}
           >
             {isSubmitting ? t('common.saving', 'Guardando...') : t('formationDetails.confirmManualCheckout', 'Confirmar Salida')}
